@@ -1,0 +1,13 @@
+This is an Objective-C Foundation shared library for Android.
+
+Features:
+ * builds for Froyo or later
+ * builds as a shared library
+
+Created with:
+create project --target android-8 --name foundation --path foundation --activity foundation --package com.apportable.foundation
+
+Build with:
+cd jni
+ndk-build
+
