@@ -190,6 +190,18 @@ extern "C" {
 @class NSDirectoryEnumerator;
 @class NSError;
 
+enum {
+    NSDirectoryEnumerationSkipsSubdirectoryDescendants = 1UL << 0,
+    NSDirectoryEnumerationSkipsPackageDescendants      = 1UL << 1,
+    NSDirectoryEnumerationSkipsHiddenFiles             = 1UL << 2
+};
+typedef NSUInteger NSDirectoryEnumerationOptions;
+
+enum {
+    NSFileManagerItemReplacementUsingNewMetadataOnly = 1UL << 0,
+    NSFileManagerItemReplacementWithoutDeletingBackupItem = 1UL << 1
+};
+
 /* MacOS-X defines OSType as a 32bit unsigned integer.
  */
 #ifndef OSTYPE_DECLARED
@@ -225,6 +237,7 @@ typedef	uint32_t	OSType;
 - (BOOL) copyPath: (NSString*)source
 	   toPath: (NSString*)destination
 	  handler: (id)handler;
+- (BOOL) copyItemAtPath:(NSString *)srcPath toPath:(NSString *)dstPath error:(NSError **)error;
 - (BOOL) createDirectoryAtPath: (NSString *)path
    withIntermediateDirectories: (BOOL)flag
 		    attributes: (NSDictionary *)attributes
@@ -239,6 +252,7 @@ typedef	uint32_t	OSType;
 - (NSString*) currentDirectoryPath;
 - (NSArray*) directoryContentsAtPath: (NSString*)path;
 - (NSString*) displayNameAtPath: (NSString*)path;
+- (NSArray *)contentsOfDirectoryAtURL:(NSURL *)url includingPropertiesForKeys:(NSArray *)keys options:(NSDirectoryEnumerationOptions)mask error:(NSError **)error;
 /**
  * <p>Returns an enumerator which can be used to return each item with
  * the directory at path in turn.
@@ -284,6 +298,7 @@ typedef	uint32_t	OSType;
 - (NSString*) pathContentOfSymbolicLinkAtPath: (NSString*)path;
 - (BOOL) removeFileAtPath: (NSString*)path
 		  handler: (id)handler;
+- (BOOL)removeItemAtPath:(NSString *)path error:(NSError **)error;
 
 /**
  * Convert to OpenStep internal string format from a string in
@@ -305,6 +320,7 @@ typedef	uint32_t	OSType;
 // maybe this should go in NSPlatform
 -(BOOL)readContentsOfFile:(NSString *)path bytes:(const void **)bytes length:(NSUInteger*)length;
 -(BOOL)writeContentsOfFile:(NSString *)path bytes:(const void *)bytes length:(NSUInteger)length atomically:(BOOL)atomically;
+-(BOOL)createFileAtPath:(NSString *)path contents: (NSData*)contents attributes: (NSDictionary*)attributes;
 
 @end /* NSFileManager */
 

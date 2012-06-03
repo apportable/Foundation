@@ -55,7 +55,7 @@ extern "C" {
 @class	NSPortMessage;
 @class	NSHost;
 
-@interface NSObject(NSPortDelegateMethods)
+@protocol NSPortDelegate
 /** <override-dummy />
  * Subclasses of NSPort send this message to their delegate on receipt
  * of a port message.

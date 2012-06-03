@@ -263,7 +263,11 @@ typedef struct _NSHandler
 {
     jmp_buf jumpState;			/* place to longjmp to */
     struct _NSHandler *next;		/* ptr to next handler */
+#if defined(__has_feature) && __has_feature(objc_arc)
+    void *exception;
+#else
     NSException *exception;
+#endif
 } NSHandler;
 
 /**

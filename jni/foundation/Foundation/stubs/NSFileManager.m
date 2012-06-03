@@ -52,6 +52,18 @@ static NSFileManager *defaultManager = nil;
 
 }
 
+- (BOOL)removeItemAtPath:(NSString *)path error:(NSError **)error
+{
+  NSInvalidAbstractInvocation();
+  return NO;
+}
+
+- (BOOL) removeFileAtPath: (NSString*)path handler: (id)handler 
+{
+  NSInvalidAbstractInvocation();
+  return NO;
+}
+
 - (BOOL) fileExistsAtPath: (NSString*)path
 {
   NSInvalidAbstractInvocation();
@@ -96,5 +108,63 @@ static NSFileManager *defaultManager = nil;
   return NO;
 }
 
+-(BOOL)writeContentsOfFile:(NSString *)path bytes:(const void *)bytes length:(NSUInteger)length {
+  NSInvalidAbstractInvocation();
+  return NO;
+}
 
+-(BOOL)isWritableFileAtPath:(NSString *)path {
+  NSInvalidAbstractInvocation();
+  return NO;
+}
+
+-(BOOL)isExecutableFileAtPath:(NSString *)path {
+  NSInvalidAbstractInvocation();
+  return NO;
+}
+
+-(BOOL)createFileAtPath:(NSString *)path contents: (NSData*)contents attributes: (NSDictionary*)attributes {
+  NSInvalidAbstractInvocation();
+  return NO;
+}
+
+- (NSDictionary*) fileAttributesAtPath: (NSString*)path traverseLink: (BOOL)flag {
+  NSInvalidAbstractInvocation();
+  return NO;
+}
+
+- (BOOL) changeFileAttributes: (NSDictionary*)attributes atPath: (NSString*)path {
+  NSInvalidAbstractInvocation();
+  return NO;
+}
+
+- (const GSNativeChar*) fileSystemRepresentationWithPath: (NSString*)path
+{
+  return
+    (const GSNativeChar*)[path cStringUsingEncoding: NSUTF8StringEncoding];
+}
+
+- (NSString*) stringWithFileSystemRepresentation: (const GSNativeChar*)string
+					  length: (NSUInteger)len
+{
+  return AUTORELEASE([[NSString allocWithZone: NSDefaultMallocZone()]
+    initWithBytes: string length: len encoding: NSUTF8StringEncoding]);
+}
 @end
+
+@implementation	GSAttrDictionary
+
++ (NSDictionary*) attributesAt: (const unichar*)lpath
+                  traverseLink: (BOOL)traverse
+{
+  NSInvalidAbstractInvocation();
+  return NO;
+}
+
+- (NSDate*) fileModificationDate
+{
+  NSInvalidAbstractInvocation();
+  return NO;
+}
+
+@end	/* GSAttrDictionary */

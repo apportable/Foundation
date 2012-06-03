@@ -599,7 +599,7 @@ GSListModules()
     }
   addresses = [[NSArray alloc] initWithObjects: vals count: count];
   free(addr);
-#else
+#elif !defined(ANDROID)
   addresses = [GSPrivateStackAddresses() copy];
 #endif
   return self;
@@ -948,10 +948,17 @@ callUncaughtHandler(id value)
   return AUTORELEASE(result);
 }
 
+static void __NSExceptionHandler(NSException *e) {
+    NSLog(@"NSException raise unimplemented %s %d, name=%@, reason=\x1b[1;31;40m%@\x1b[0m",__FILE__,__LINE__, [e name] ,[e reason]);
+}
+
+void (*_NSExceptionHandler)(NSException *e) = &__NSExceptionHandler;
+
 - (void) raise
 {
 #if defined(TARGET_OS_android) || defined(TARGET_OS_googletv)
-    NSLog(@"NSException raise unimplemented %s %d, name=%@, reason=\x1b[1;31;40m%@\x1b[0m",__FILE__,__LINE__,_e_name,_e_reason);
+    if(_NSExceptionHandler)
+        _NSExceptionHandler(self);
     return;
 #endif
 

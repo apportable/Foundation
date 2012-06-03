@@ -1,1 +1,1 @@
-APP_ABI ?= armeabi
+APP_ABI := $(TARGET_ARCH_ABI)

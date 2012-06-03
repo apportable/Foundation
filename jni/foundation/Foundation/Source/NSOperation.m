@@ -33,6 +33,8 @@
 #import <CoreFoundation/CFRunLoop.h>
 #import <pthread.h>
 
+typedef void (^NSOperationCompletionBlock)(void);
+
 #define	GS_NSOperation_IVARS \
   NSRecursiveLock *lock; \
   NSConditionLock *cond; \
@@ -43,7 +45,8 @@
   BOOL executing; \
   BOOL finished; \
   BOOL ready; \
-  NSMutableArray *dependencies;
+  NSMutableArray *dependencies; \
+  NSOperationCompletionBlock completionBlock;
 
 #define	GS_NSOperationQueue_IVARS \
   NSRecursiveLock	*lock; \
@@ -383,6 +386,23 @@ static void NSOperationQueueDispose(void *queue)
   internal->threadPriority = pri;
 }
 
+- (void (^)(void))completionBlock
+{
+    return internal->completionBlock;
+}
+
+- (void)setCompletionBlock:(void (^)(void))block
+{
+    if (internal->completionBlock != block)
+    {
+        if (internal->completionBlock != NULL)
+        {
+            [internal->completionBlock release];
+        }
+        internal->completionBlock = [block copy];
+    }
+}
+
 - (void) start
 {
   CREATE_AUTORELEASE_POOL(pool);
@@ -452,6 +472,10 @@ static void NSOperationQueueDispose(void *queue)
       [self willChangeValueForKey: @"isFinished"];
       internal->executing = NO;
       internal->finished = YES;
+      if (internal->completionBlock != NULL)
+      {
+          internal->completionBlock();
+      }
       [self didChangeValueForKey: @"isFinished"];
       [self didChangeValueForKey: @"isExecuting"];
       [internal->cond lock];
@@ -534,15 +558,13 @@ static NSOperationQueue *mainQueue = nil;
   return mainQueue;
 }
 
+- (void)addOperationWithBlock:(void (^)(void))block
+{
+    [self addOperation:[NSBlockOperation blockOperationWithBlock:block]];
+}
+
 - (void) addOperation: (NSOperation *)op
 {
-    // The reason why the operation queue was not working is because the android 
-    // run loop target does not allow for non VerdeKitContinue run loop events
-    // to be perform after delay selectors other than on the main thread, concequently
-    // the only way to run a new CFRunLoop with appropriate sources to allow for the execution
-    // of operations enqueued into the queue. The CFRunLoop code now allows NSOperationQueue 
-    // to be built on a seperated thread.
-    
     if (op == nil || NO == [op isKindOfClass: [NSOperation class]])
     {
         [NSException raise: NSInvalidArgumentException
@@ -553,9 +575,7 @@ static NSOperationQueue *mainQueue = nil;
     if (NSNotFound == [internal->operations indexOfObjectIdenticalTo: op] && NO == [op isFinished])
     {
         // Currently KVO stalls out for the run-loop code on Android
-#ifndef ANDROID
         [op addObserver:self forKeyPath:@"isReady" options:NSKeyValueObservingOptionNew context:NULL];
-#endif
         [self willChangeValueForKey: @"operations"];
         [self willChangeValueForKey: @"operationCount"];
         [internal->operations addObject: op];
@@ -676,15 +696,12 @@ static NSOperationQueue *mainQueue = nil;
   [internal->cond lock];
   while ((o = [internal->waiting lastObject]) != nil)
     {
-#ifndef ANDROID
       [o removeObserver: self
 	     forKeyPath: @"isReady"];
-#endif
       [o cancel];
       [internal->waiting removeLastObject];
     }
   [internal->cond unlockWithCondition: 0];	// Nothing waiting to execute
-#ifndef ANDROID
   [internal->lock lock];
   index = [internal->operations count];
   while (index-- > 0)
@@ -700,7 +717,6 @@ static NSOperationQueue *mainQueue = nil;
 	}
     }
   [internal->lock unlock];
-#endif
 }
 
 - (void) dealloc
@@ -920,138 +936,10 @@ static NSOperationQueue *mainQueue = nil;
     }
 }
 
-#ifdef ANDROID
-
-static void NSOperationQueueSchedule(void *info, CFRunLoopRef rl, CFStringRef mode)
-{
-    NSOperationQueue *self = (NSOperationQueue *)info;
-    GSInternal *NSOperationQueueInternal = self->_internal;
-    pthread_setspecific(OperationQueueKey, [self retain]);
-    
-}
-
-static void NSOperationQueuePerform(void *info)
-{
-    NSOperationQueue *self = (NSOperationQueue *)info;
-    GSInternal *NSOperationQueueInternal = self->_internal;
-    [NSOperationQueueInternal->lock lock];
-    
-    if(!NSOperationQueueInternal->terminated)
-    {
-        NSOperation	*op;
-        NSUInteger	index;
-        NSDate		*timeout;
-        
-        timeout = [[NSDate alloc] initWithTimeIntervalSinceNow: 5.0];
-        if (NO == [NSOperationQueueInternal->cond lockWhenCondition: 1 beforeDate: timeout])
-        {
-            NSOperationQueueInternal->terminated = YES;
-        }
-        [timeout release];
-        if (NO == NSOperationQueueInternal->terminated)
-        {
-            op = nil;
-            
-            if ((unsigned)NSOperationQueueInternal->threads > (unsigned)NSOperationQueueInternal->count)
-            {
-                NSOperationQueueInternal->terminated = YES;
-            }
-            else if (NSOperationQueueInternal->count != 0 && NO == NSOperationQueueInternal->suspended
-                     && [NSOperationQueueInternal->waiting count] > 0)
-            {
-                [NSOperationQueueInternal->waiting sortUsingFunction: sortFunc context: 0];
-                op = [[NSOperationQueueInternal->waiting objectAtIndex: 0] retain];
-                [NSOperationQueueInternal->waiting removeObjectAtIndex: 0];
-            }
-            if ([NSOperationQueueInternal->waiting count] == 0)
-            {
-                [NSOperationQueueInternal->cond unlockWithCondition: 0];
-            }
-            else
-            {
-                [NSOperationQueueInternal->cond unlockWithCondition: 1];
-            }
-            
-            if (YES == [op isReady])
-            {
-                if (NO == [op isCancelled])
-                {
-                    NSOperationQueueInternal->idle--;
-                    
-                    [NSOperationQueueInternal->lock unlock];
-                    [op start];
-                    [op waitUntilFinished];
-                    
-                    [NSOperationQueueInternal->lock lock];
-                    NSOperationQueueInternal->idle++;
-                }
-                [self willChangeValueForKey: @"operations"];
-                [self willChangeValueForKey: @"operationCount"];
-                [NSOperationQueueInternal->operations removeObjectIdenticalTo: op];
-                [self didChangeValueForKey: @"operationCount"];
-                [self didChangeValueForKey: @"operations"];
-            }
-            [op release];
-        
-            index = [NSOperationQueueInternal->operations count];
-        
-            while (index-- > 0)
-            {
-                op = [NSOperationQueueInternal->operations objectAtIndex: index];
-                if (YES == [op isFinished])
-                {
-                    [self willChangeValueForKey: @"operations"];
-                    [self willChangeValueForKey: @"operationCount"];
-                    [NSOperationQueueInternal->operations removeObjectAtIndex: index];
-                    [self didChangeValueForKey: @"operationCount"];
-                    [self didChangeValueForKey: @"operations"];
-                }
-            }
-        }
-    }
-    
-    [NSOperationQueueInternal->lock unlock];
-    if(NSOperationQueueInternal->terminated)
-    {
-        [NSOperationQueueInternal->source retain];
-        CFRunLoopRemoveSource(NSOperationQueueInternal->runLoop, NSOperationQueueInternal->source, (CFStringRef)NSDefaultRunLoopMode);
-    }
-}
-
-
-- (void)_android_thread
-{
-    [[NSPlatform currentPlatform] startThread];
-
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    internal->runLoop = CFRunLoopGetCurrent();
-    CFRunLoopSourceContext ctx = {
-        0,
-        self,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        &NSOperationQueueSchedule,
-        NULL,
-        &NSOperationQueuePerform,
-    };
-    
-    internal->source = CFRunLoopSourceCreate(NULL, 0, &ctx);
-    CFRunLoopAddSource(internal->runLoop, internal->source, (CFStringRef)NSDefaultRunLoopMode);
-    CFRunLoopRunInMode((CFStringRef)NSDefaultRunLoopMode, -1.0, YES);
-    internal->idle--;
-    internal->threads--;
-    [pool drain];
-    [[NSPlatform currentPlatform] endThread];
-}
-#endif
-
 - (void) _thread
 {
   BOOL	terminate = NO;
-
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
   /* Record which operation queue the current thread is running.
    */
     
@@ -1169,7 +1057,9 @@ static void NSOperationQueuePerform(void *info)
     }
   internal->idle--;
   internal->threads--;
+  [pool drain];
   [internal->lock unlock];
+
 }
 
 /* Just check to see if a new thread needs to be started.
@@ -1196,20 +1086,9 @@ static void NSOperationQueuePerform(void *info)
 	   */
 	  internal->threads++;
 	  internal->idle++;
-#ifdef ANDROID
-        static NSLock *threadCreateLock = NULL;
-        if (threadCreateLock == NULL)
-            threadCreateLock = [[NSLock alloc] init];
-        [threadCreateLock lock];
-        [NSThread detachNewThreadSelector: @selector(_android_thread)
-                                 toTarget: self
-                               withObject: nil];
-        [threadCreateLock unlock];
-#else
 	  [NSThread detachNewThreadSelector: @selector(_thread)
 				   toTarget: self
 				 withObject: nil];
-#endif
 	}
     }
   [internal->lock unlock];
@@ -1227,6 +1106,7 @@ static void NSOperationQueuePerform(void *info)
         DEBUG_LOG("%s failed to obtain signature for selector %s", [[target description] UTF8String], sel_getName(sel));
     }
     NSInvocation *inv = [NSInvocation invocationWithMethodSignature:sig];
+    [inv retainArguments];
     [inv setTarget:target];
     [inv setSelector:sel];
     if(arg)
@@ -1265,5 +1145,52 @@ static void NSOperationQueuePerform(void *info)
         return NULL;
     }
 }
+@end
+
+@implementation NSBlockOperation
+
+- (id)initWithBlock:(void (^)(void))block
+{
+    _private2 = [[NSMutableArray alloc] initWithObject:block];
+    return self;
+}
+
+- (void)dealloc
+{
+    [_private2 release];
+    [super dealloc];
+}
+
++ (id)blockOperationWithBlock:(void (^)(void))block
+{
+    return [[[self alloc] initWithBlock:block] autorelease];
+}
+
+- (void)addExecutionBlock:(void (^)(void))block
+{
+    @synchronized(_private2) {
+        [_private2 addObject:block];
+    }
+}
+- (NSArray *)executionBlocks
+{
+    return _private2;
+}
+
+- (void)main
+{
+    NSUInteger index = 0;
+    NSUInteger count = [_private2 count];
+    while(index > count)
+    {
+        @synchronized(_private2) {
+            void (^block)(void) = (void (^)(void))[_private2 objectAtIndex:index];
+            block();
+            index++;
+            count = [_private2 count];
+        }
+    }
+}
+
 @end
 

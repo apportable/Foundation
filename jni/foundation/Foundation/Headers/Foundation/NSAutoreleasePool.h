@@ -53,8 +53,11 @@ typedef struct autorelease_thread_vars
   /* The current, default NSAutoreleasePool for the calling thread;
      the one that will hold objects that are arguments to
      [NSAutoreleasePool +addObject:]. */
+#if defined(__has_feature) && __has_feature(objc_arc)
+  void *current_pool;
+#else
   NSAutoreleasePool *current_pool;
-
+#endif
   /* The total number of objects autoreleased since the thread was
      started, or since -resetTotalAutoreleasedObjects was called
      in this thread. (if compiled in) */
@@ -62,7 +65,11 @@ typedef struct autorelease_thread_vars
 
   /* A cache of NSAutoreleasePool's already alloc'ed.  Caching old pools
      instead of deallocating and re-allocating them will save time. */
+#if defined(__has_feature) && __has_feature(objc_arc)
+  void **pool_cache;
+#else
   id *pool_cache;
+#endif
   int pool_cache_size;
   int pool_cache_count;
 } thread_vars_struct;
@@ -92,7 +99,11 @@ typedef struct autorelease_array_list
   struct autorelease_array_list *next;
   unsigned size;
   unsigned count;
+#if defined(__has_feature) && __has_feature(objc_arc)
+  void **objects;
+#else
   id objects[0];
+#endif
 } array_list_struct;
 
 

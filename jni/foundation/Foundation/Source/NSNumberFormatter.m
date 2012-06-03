@@ -803,4 +803,14 @@
 
   return number;
 }
+
+- (void) setNumberStyle:(NSNumberFormatterStyle)style
+{
+  // TODO(jackson): Finish implementing NSNumberFormatter. For common cases, this might look right.
+  if (style == NSNumberFormatterDecimalStyle)
+  {
+    [self setDecimalSeparator:nil];
+  }
+}
+
 @end

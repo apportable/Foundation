@@ -80,7 +80,7 @@ extern "C" {
 - (void) setCharactersToBeSkipped: (NSCharacterSet *)aSet;
 
 - (NSDictionary*)locale;
-- (void)setLocale:(NSDictionary*)localeDictionary;
+- (void)setLocale:(NSLocale*)theLocale;
 
 /*
  * Scanning a string

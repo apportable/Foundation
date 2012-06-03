@@ -53,6 +53,9 @@ extern NSString * const NSURLAuthenticationMethodHTTPBasic;
 /** HTTP Digest authentication */
 extern NSString * const NSURLAuthenticationMethodHTTPDigest;
 
+extern NSString * const NSURLAuthenticationMethodNTLM;
+
+extern NSString * const NSURLAuthenticationMethodServerTrust;
 
 /**
  * Class to encapsulate a protection space ... where authentication is
@@ -129,6 +132,10 @@ authenticationMethod: (NSString *)authenticationMethod;
  */
 - (BOOL) receivesCredentialSecurely;
 
+@end
+
+@interface NSURLProtectionSpace(NSServerTrustValidationSpace)
+- (void *)serverTrust;
 @end
 
 #if	defined(__cplusplus)

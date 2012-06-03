@@ -36,6 +36,12 @@
 extern "C" {
 #endif
 
+@protocol NSKeyedArchiverDelegate <NSObject>
+@end
+
+@protocol NSKeyedUnarchiverDelegate <NSObject>
+@end
+
 @class NSMutableArray, NSMutableDictionary, NSMutableData, NSData, NSString;
 
 #if	OS_API_VERSION(GS_API_OSSPEC,GS_API_LATEST)

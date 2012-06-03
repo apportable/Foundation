@@ -824,8 +824,13 @@ GSDecimalString(const GSDecimal *number, NSDictionary *locale)
   if (!number->length)
     {
       [string appendString: @"0"];
-      [string appendString: sep];
-      [string appendString: @"0"];
+      // Number formatters don't seem to be fully implemented,
+      // so this is a short term fix to get the result I want
+      // but is not a general solution.
+      if ([sep length] > 0) {
+        [string appendString: sep];
+        [string appendString: @"0"];
+      }
       return string;
     }
 

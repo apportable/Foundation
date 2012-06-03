@@ -254,6 +254,7 @@ static NSLock		*pairLock = nil;
   NSURLAuthenticationChallenge	*_challenge;
   NSURLCredential		*_credential;
   NSHTTPURLResponse		*_response;
+  NSURLRequest *_request;
 }
 - (void) setDebug: (BOOL)flag;
 @end
@@ -276,6 +277,8 @@ typedef struct {
   BOOL				decompressing;	// are we decompressing?
   NSData			*compressed;	// only partially decompressed
 #endif
+  NSRunLoop *_runloop;
+  NSString *_mode;
 } Internal;
  
 #define	this	((Internal*)(self->_NSURLProtocolInternal))
@@ -314,25 +317,25 @@ static NSURLProtocol	*placeholder = nil;
 
 @implementation	NSURLProtocol
 
-+ (id) allocWithZone: (NSZone*)z
-{
-  NSURLProtocol	*o;
+// + (id) allocWithZone: (NSZone*)z
+// {
+//   NSURLProtocol	*o;
 
-  if ((self == abstractClass) && (z == 0 || z == NSDefaultMallocZone()))
-    {
-      /* Return a default placeholder instance to avoid the overhead of
-       * creating and destroying instances of the abstract class.
-       */
-      o = placeholder;
-    }
-  else
-    {
-      /* Create and return an instance of the concrete subclass.
-       */
-      o = (NSURLProtocol*)NSAllocateObject(self, 0, z);
-    }
-  return o;
-}
+//   if ((self == abstractClass) && (z == 0 || z == NSDefaultMallocZone()))
+//     {
+//       /* Return a default placeholder instance to avoid the overhead of
+//        * creating and destroying instances of the abstract class.
+//        */
+//       o = placeholder;
+//     }
+//   else
+//     {
+//       /* Create and return an instance of the concrete subclass.
+//        */
+//       o = (NSURLProtocol*)NSAllocateObject(self, 0, z);
+//     }
+//   return o;
+// }
 
 + (void) initialize
 {
@@ -424,14 +427,19 @@ static NSURLProtocol	*placeholder = nil;
 	{
 	  [this->input setDelegate: nil];
 	  [this->output setDelegate: nil];
-	  [this->input removeFromRunLoop: [NSRunLoop currentRunLoop]
-				 forMode: NSDefaultRunLoopMode];
-	  [this->output removeFromRunLoop: [NSRunLoop currentRunLoop]
-				  forMode: NSDefaultRunLoopMode];
+	  [this->input removeFromRunLoop: this->_runloop
+				 forMode: this->_mode];
+	  [this->output removeFromRunLoop: this->_runloop
+				  forMode: this->_mode];
           [this->input close];
           [this->output close];
           DESTROY(this->input);
           DESTROY(this->output);
+    if (this->_mode != NULL)
+    {
+        [this->_mode release];
+        this->_mode = NULL;
+    }
 	}
       DESTROY(this->cachedResponse);
       DESTROY(this->request);
@@ -535,7 +543,7 @@ static NSURLProtocol	*placeholder = nil;
   return [a isEqual: b];
 }
 
-- (void) startLoading
+- (void) startLoading:(NSRunLoop *)rl forMode:(NSString *)mode
 {
   [self subclassResponsibility: _cmd];
 }
@@ -595,11 +603,16 @@ static NSURLProtocol	*placeholder = nil;
   _debug = flag;
 }
 
-- (void)startLoading
+- (void)setRequest:(NSURLRequest *)request
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    _request = [request retain];
+}
+
+- (void)startLoading:(NSRunLoop *)rl forMode:(NSString *)mode
+{
     static NSDictionary *methods = nil;
-    
+    this->_runloop = rl;
+    this->_mode = [mode copy];
     if (methods == nil)
     {
         methods = [[NSDictionary alloc] initWithObjectsAndKeys: 
@@ -742,15 +755,13 @@ static NSURLProtocol	*placeholder = nil;
         }
         [this->input setDelegate: self];
         [this->output setDelegate: self];
-        [this->input scheduleInRunLoop: [NSRunLoop currentRunLoop]
-                               forMode: NSDefaultRunLoopMode];
-        [this->output scheduleInRunLoop: [NSRunLoop currentRunLoop]
-                                forMode: NSDefaultRunLoopMode];
+        [this->input scheduleInRunLoop: this->_runloop
+                               forMode: this->_mode];
+        [this->output scheduleInRunLoop: this->_runloop
+                                forMode: this->_mode];
         [this->input open];
         [this->output open];
-        CFRunLoopRun();
     }
-    [pool drain];
 }
 
 - (void) stopLoading
@@ -765,10 +776,10 @@ static NSURLProtocol	*placeholder = nil;
     {
         [this->input setDelegate: nil];
         [this->output setDelegate: nil];
-        [this->input removeFromRunLoop: [NSRunLoop currentRunLoop]
-                               forMode: NSDefaultRunLoopMode];
-        [this->output removeFromRunLoop: [NSRunLoop currentRunLoop]
-                                forMode: NSDefaultRunLoopMode];
+        [this->input removeFromRunLoop: this->_runloop
+                               forMode: this->_mode];
+        [this->output removeFromRunLoop: this->_runloop
+                                forMode: this->_mode];
         [this->input close];
         [this->output close];
         DESTROY(this->input);
@@ -892,7 +903,12 @@ static NSURLProtocol	*placeholder = nil;
 	    }
 	  else if ([enc isEqualToString: @"chunked"] == YES)	
 	    {
+#ifdef WAIT_FIVE_MINUTES_AFTER_GETTING_ALL_THE_DATA
+          // As far as I am able to tell, this incorrectly resets the connection
+          // state from complete to not complete.  Removing it makes network requests
+          // take normal amounts of time.
 	      _complete = NO;	// Read chunked body data
+#endif
 	    }
 	  if (_complete == NO && [d length] == 0)
 	    {
@@ -1138,16 +1154,16 @@ static NSURLProtocol	*placeholder = nil;
 		      [this->request release];
 		      this->request = request;
 		      DESTROY(this->cachedResponse);
-		      [self startLoading];
+		      [self startLoading:this->_runloop forMode:this->_mode];
 		      return;
 		    }
 		}
 	    }
 
 	  [this->input removeFromRunLoop: [NSRunLoop currentRunLoop]
-				 forMode: NSDefaultRunLoopMode];
+				 forMode: NSRunLoopCommonModes];
 	  [this->output removeFromRunLoop: [NSRunLoop currentRunLoop]
-				  forMode: NSDefaultRunLoopMode];
+				  forMode: NSRunLoopCommonModes];
 	  if (_shouldClose == YES)
 	    {
 	      [this->input setDelegate: nil];
@@ -1541,9 +1557,11 @@ static NSURLProtocol	*placeholder = nil;
   return request;
 }
 
-- (void) startLoading
+- (void) startLoading:(NSRunLoop *)rl forMode:(NSString *)mode
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    this->_runloop = rl;
+    this->_mode = [mode copy];
+    // NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     if (this->cachedResponse)
     { // handle from cache
     }
@@ -1588,9 +1606,9 @@ static NSURLProtocol	*placeholder = nil;
         // set socket options for ftps requests
         [this->input open];
         [this->output open];
-        CFRunLoopRun();
+        // [[NSRunLoop currentRunLoop] runUntilDate:[NSDate distantFuture]];
     }
-    [pool drain];
+    // [pool drain];
 }
 
 - (void) stopLoading
@@ -1673,9 +1691,11 @@ static NSURLProtocol	*placeholder = nil;
   return request;
 }
 
-- (void)startLoading
+- (void)startLoading:(NSRunLoop *)rl forMode:(NSString *)mode
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    this->_runloop = rl;
+    this->_mode = [mode copy];
+    // NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     // check for GET/PUT/DELETE etc so that we can also write to a file
     NSData	*data;
     NSURLResponse	*r;
@@ -1705,7 +1725,7 @@ static NSURLProtocol	*placeholder = nil;
     [this->client URLProtocol: self didLoadData: data];
     [this->client URLProtocolDidFinishLoading: self];
     RELEASE(r);
-    [pool drain];
+    // [pool drain];
 }
 
 - (void) stopLoading
@@ -1727,9 +1747,11 @@ static NSURLProtocol	*placeholder = nil;
   return request;
 }
 
-- (void)startLoading
+- (void)startLoading:(NSRunLoop *)rl forMode:(NSString *)mode
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    this->_runloop = rl;
+    this->_mode = [mode copy];
+    // NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSURLResponse	*r;
     NSData	*data = [NSData data];	// no data
     
@@ -1744,7 +1766,7 @@ static NSURLProtocol	*placeholder = nil;
     [this->client URLProtocol: self didLoadData: data];
     [this->client URLProtocolDidFinishLoading: self];
     RELEASE(r);
-    [pool drain];
+    // [pool drain];
 }
 
 - (void) stopLoading

@@ -125,6 +125,7 @@ class_getInstanceMethodNonrecursive(Class aClass, SEL aSelector)
 static void
 objc_updateDtableForClassContainingMethod(Method m)
 {
+  DEBUG_LOG("Potential infinite loop");
   Class nextClass = Nil;
   void *state = NULL;
   SEL sel = method_getName(m);

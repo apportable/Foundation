@@ -53,6 +53,8 @@ GS_EXPORT NSString * const NSSystemTimeZoneDidChangeNotification;
 + (NSTimeZone*) timeZoneForSecondsFromGMT: (NSInteger)seconds;
 + (NSTimeZone*) timeZoneWithName: (NSString*)aTimeZoneName;
 
+- (NSInteger)secondsFromGMT;
+
 //Managing Time Zones
 + (void) setDefaultTimeZone: (NSTimeZone*)aTimeZone;
 

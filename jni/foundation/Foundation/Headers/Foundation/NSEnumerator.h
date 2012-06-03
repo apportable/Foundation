@@ -37,7 +37,11 @@ extern "C" {
 typedef struct 
 {
   unsigned long	state;
+#if defined(__has_feature) && __has_feature(objc_arc)
+  void  **itemsPtr;
+#else
   id		*itemsPtr;
+#endif
   unsigned long	*mutationsPtr;
   unsigned long	extra[5];
 } NSFastEnumerationState;

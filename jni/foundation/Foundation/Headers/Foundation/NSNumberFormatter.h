@@ -50,6 +50,13 @@ enum {
 };
 typedef NSUInteger NSNumberFormatterStyle;
 
+enum {
+    NSNumberFormatterBehaviorDefault = 0,
+    NSNumberFormatterBehavior10_0 = 1000,
+    NSNumberFormatterBehavior10_4 = 1040,
+};
+typedef NSUInteger NSNumberFormatterBehavior;
+
 /**
  * <p><em><strong>This class is currently not implemented in GNUstep!  All set
  * methods will work, but stringForObject: will ignore the format completely.
@@ -111,6 +118,9 @@ typedef NSUInteger NSNumberFormatterStyle;
 #endif
 }
 
+- (NSNumberFormatterStyle)numberStyle;
+- (void) setNumberStyle:(NSNumberFormatterStyle) style;
+
 // Format
 /**
  * Returns the format string this instance was initialized with.
@@ -133,6 +143,11 @@ typedef NSUInteger NSNumberFormatterStyle;
  * separator and decimal point.  The default is to NOT localize.
  */
 - (void) setLocalizesFormat: (BOOL)flag;
+
+/**
+ * Set the local.
+ */
+- (void) setLocale:(NSLocale*)locale;
 
 /**
  * Returns format used for negative numbers.

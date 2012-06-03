@@ -197,6 +197,7 @@ enum {
 /** Not implemented */
 - (unsigned long long) physicalMemory;
 #endif
+- (NSTimeInterval)systemUptime;
 @end
 
 #if GS_API_VERSION(GS_API_NONE,011700)

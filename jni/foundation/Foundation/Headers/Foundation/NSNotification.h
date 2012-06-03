@@ -40,6 +40,7 @@ extern "C" {
 @class NSString;
 @class NSDictionary;
 @class NSLock;
+@class NSOperationQueue;
 
 @interface NSNotification : NSObject <NSCopying, NSCoding>
 
@@ -87,6 +88,8 @@ extern "C" {
 - (void) postNotificationName: (NSString*)name
                        object: (id)object
                      userInfo: (NSDictionary*)info;
+
+- (id)addObserverForName:(NSString *)name object:(id)obj queue:(NSOperationQueue *)queue usingBlock:(void (^)(NSNotification *note))block;
 
 @end
 

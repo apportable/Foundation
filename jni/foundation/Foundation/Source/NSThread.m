@@ -1,38 +1,38 @@
 /** Control of executable units within a shared virtual memory space
-   Copyright (C) 1996-2000 Free Software Foundation, Inc.
-
-   Original Author:  Scott Christley <scottc@net-community.com>
-   Rewritten by: Andrew Kachites McCallum <mccallum@gnu.ai.mit.edu>
-   Created: 1996
-   Rewritten by: Richard Frith-Macdonald <richard@brainstorm.co.uk>
-   to add optimisations features for faster thread access.
-   Modified by: Nicola Pero <n.pero@mi.flashnet.it>
-   to add GNUstep extensions allowing to interact with threads created
-   by external libraries/code (eg, a Java Virtual Machine).
-
-   This file is part of the GNUstep Objective-C Library.
-
-   This library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
-
-   This library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Library General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this library; if not, write to the Free
-   Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-   Boston, MA 02111 USA.
-
-   <title>NSThread class reference</title>
-   $Date: 2010-08-30 12:16:30 -0700 (Mon, 30 Aug 2010) $ $Revision: 31210 $
-*/
+ Copyright (C) 1996-2000 Free Software Foundation, Inc.
+ 
+ Original Author:  Scott Christley <scottc@net-community.com>
+ Rewritten by: Andrew Kachites McCallum <mccallum@gnu.ai.mit.edu>
+ Created: 1996
+ Rewritten by: Richard Frith-Macdonald <richard@brainstorm.co.uk>
+ to add optimisations features for faster thread access.
+ Modified by: Nicola Pero <n.pero@mi.flashnet.it>
+ to add GNUstep extensions allowing to interact with threads created
+ by external libraries/code (eg, a Java Virtual Machine).
+ 
+ This file is part of the GNUstep Objective-C Library.
+ 
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later version.
+ 
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Library General Public License for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free
+ Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ Boston, MA 02111 USA.
+ 
+ <title>NSThread class reference</title>
+ $Date: 2010-08-30 12:16:30 -0700 (Mon, 30 Aug 2010) $ $Revision: 31210 $
+ */
 
 #import "common.h"
-#define	EXPOSE_NSThread_IVARS	1
+#define EXPOSE_NSThread_IVARS 1
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -68,7 +68,7 @@
 
 #include <errno.h>
 
-#ifdef	__POSIX_SOURCE
+#ifdef  __POSIX_SOURCE
 #define NBLK_OPT     O_NONBLOCK
 #else
 #define NBLK_OPT     FNDELAY
@@ -86,8 +86,8 @@
 #import "GSPrivate.h"
 #import "GSRunLoopCtxt.h"
 
-#if	GS_WITH_GC
-#include	<gc.h>
+#if GS_WITH_GC
+#include  <gc.h>
 #endif
 
 // Some older BSD systems used a non-standard range of thread priorities.
@@ -129,18 +129,18 @@ static NSNotificationCenter *nc = nil;
  */
 @interface GSPerformHolder : NSObject
 {
-  id			receiver;
-  id			argument;
-  SEL			selector;
-  NSConditionLock	*lock;		// Not retained.
-  NSArray		*modes;
-  BOOL                  invalidated;
+    id      receiver;
+    id      argument;
+    SEL     selector;
+    NSConditionLock *lock;    // Not retained.
+    NSArray   *modes;
+    BOOL                  invalidated;
 }
 + (GSPerformHolder*) newForReceiver: (id)r
-			   argument: (id)a
-			   selector: (SEL)s
-			      modes: (NSArray*)m
-			       lock: (NSConditionLock*)l;
+                           argument: (id)a
+                           selector: (SEL)s
+                              modes: (NSArray*)m
+                               lock: (NSConditionLock*)l;
 - (void) fire;
 - (void) invalidate;
 - (BOOL) isInvalidated;
@@ -160,133 +160,133 @@ static NSNotificationCenter *nc = nil;
 void
 GSSleepUntilIntervalSinceReferenceDate(NSTimeInterval when)
 {
-  NSTimeInterval delay;
-
-  // delay is always the number of seconds we still need to wait
-  delay = when - GSTimeNow();
-  if (delay <= 0.0)
+    NSTimeInterval delay;
+    
+    // delay is always the number of seconds we still need to wait
+    delay = when - GSTimeNow();
+    if (delay <= 0.0)
     {
-      sched_yield();
-      return;
+        sched_yield();
+        return;
     }
-
-#ifdef	HAVE_NANOSLEEP
-  // Avoid any possibility of overflow by sleeping in chunks.
-  while (delay > 32768)
+    
+#ifdef  HAVE_NANOSLEEP
+    // Avoid any possibility of overflow by sleeping in chunks.
+    while (delay > 32768)
     {
-      struct timespec request;
-
-      request.tv_sec = (time_t)32768;
-      request.tv_nsec = (long)0;
-      nanosleep(&request, 0);
-      delay = when - GSTimeNow();
+        struct timespec request;
+        
+        request.tv_sec = (time_t)32768;
+        request.tv_nsec = (long)0;
+        nanosleep(&request, 0);
+        delay = when - GSTimeNow();
     }
-  if (delay > 0)
+    if (delay > 0)
     {
-      struct timespec request;
-      struct timespec remainder;
-
-      request.tv_sec = (time_t)delay;
-      request.tv_nsec = (long)((delay - request.tv_sec) * 1000000000);
-      remainder.tv_sec = 0;
-      remainder.tv_nsec = 0;
-
-      /*
-       * With nanosleep, we can restart the sleep after a signal by using
-       * the remainder information ... so we can be sure to sleep to the
-       * desired limit without having to re-generate the delay needed.
-       */
-      while (nanosleep(&request, &remainder) < 0
-	&& (remainder.tv_sec > 0 || remainder.tv_nsec > 0))
-	{
-	  request.tv_sec = remainder.tv_sec;
-	  request.tv_nsec = remainder.tv_nsec;
-	  remainder.tv_sec = 0;
-	  remainder.tv_nsec = 0;
-	}
+        struct timespec request;
+        struct timespec remainder;
+        
+        request.tv_sec = (time_t)delay;
+        request.tv_nsec = (long)((delay - request.tv_sec) * 1000000000);
+        remainder.tv_sec = 0;
+        remainder.tv_nsec = 0;
+        
+        /*
+         * With nanosleep, we can restart the sleep after a signal by using
+         * the remainder information ... so we can be sure to sleep to the
+         * desired limit without having to re-generate the delay needed.
+         */
+        while (nanosleep(&request, &remainder) < 0
+               && (remainder.tv_sec > 0 || remainder.tv_nsec > 0))
+        {
+            request.tv_sec = remainder.tv_sec;
+            request.tv_nsec = remainder.tv_nsec;
+            remainder.tv_sec = 0;
+            remainder.tv_nsec = 0;
+        }
     }
 #else
-
-  /*
-   * Avoid integer overflow by breaking up long sleeps.
-   */
-  while (delay > 30.0*60.0)
+    
+    /*
+     * Avoid integer overflow by breaking up long sleeps.
+     */
+    while (delay > 30.0*60.0)
     {
-      // sleep 30 minutes
+        // sleep 30 minutes
 #if defined(__MINGW__)
-      Sleep (30*60*1000);
+        Sleep (30*60*1000);
 #else
-      sleep (30*60);
+        sleep (30*60);
 #endif
-      delay = when - GSTimeNow();
+        delay = when - GSTimeNow();
     }
-
-  /*
-   * sleeping may return early because of signals, so we need to re-calculate
-   * the required delay and check to see if we need to sleep again.
-   */
-  while (delay > 0)
+    
+    /*
+     * sleeping may return early because of signals, so we need to re-calculate
+     * the required delay and check to see if we need to sleep again.
+     */
+    while (delay > 0)
     {
-#if	defined(__MINGW__)
-#if	defined(HAVE_USLEEP)
-      /* On windows usleep() seems to perform a busy wait ... so we only
-       * use it for short delays ... otherwise use the less accurate Sleep()
-       */
-      if (delay > 0.1)
-	{
-          Sleep ((NSInteger)(delay*1000));
-	}
-      else
-	{
-          usleep ((NSInteger)(delay*1000000));
-	}
+#if defined(__MINGW__)
+#if defined(HAVE_USLEEP)
+        /* On windows usleep() seems to perform a busy wait ... so we only
+         * use it for short delays ... otherwise use the less accurate Sleep()
+         */
+        if (delay > 0.1)
+        {
+            Sleep ((NSInteger)(delay*1000));
+        }
+        else
+        {
+            usleep ((NSInteger)(delay*1000000));
+        }
 #else
-      Sleep ((NSInteger)(delay*1000));
-#endif	/* HAVE_USLEEP */
+        Sleep ((NSInteger)(delay*1000));
+#endif  /* HAVE_USLEEP */
 #else
-#if	defined(HAVE_USLEEP)
-      usleep ((NSInteger)(delay*1000000));
+#if defined(HAVE_USLEEP)
+        usleep ((NSInteger)(delay*1000000));
 #else
-      sleep ((NSInteger)delay);
-#endif	/* HAVE_USLEEP */
-#endif	/* __MINGW__ */
-      delay = when - GSTimeNow();
+        sleep ((NSInteger)delay);
+#endif  /* HAVE_USLEEP */
+#endif  /* __MINGW__ */
+        delay = when - GSTimeNow();
     }
-#endif	/* HAVE_NANOSLEEP */
+#endif  /* HAVE_NANOSLEEP */
 }
 
 static NSArray *
 commonModes(void)
 {
-  static NSArray	*modes = nil;
-
-  if (modes == nil)
+    static NSArray  *modes = nil;
+    
+    if (modes == nil)
     {
-      [gnustep_global_lock lock];
-      if (modes == nil)
-	{
-	  Class	c = NSClassFromString(@"NSApplication");
-	  SEL	s = @selector(allRunLoopModes);
-
-	  if (c != 0 && [c respondsToSelector: s])
-	    {
-	      modes = RETAIN([c performSelector: s]);
-	    }
-	  else
-	    {
-	      modes = [[NSArray alloc] initWithObjects:
-		NSDefaultRunLoopMode, NSConnectionReplyMode, nil];
-	    }
-	}
-      [gnustep_global_lock unlock];
+        [gnustep_global_lock lock];
+        if (modes == nil)
+        {
+            Class c = NSClassFromString(@"NSApplication");
+            SEL s = @selector(allRunLoopModes);
+            
+            if (c != 0 && [c respondsToSelector: s])
+            {
+                modes = RETAIN([c performSelector: s]);
+            }
+            else
+            {
+                modes = [[NSArray alloc] initWithObjects:
+                         NSDefaultRunLoopMode, NSConnectionReplyMode, nil];
+            }
+        }
+        [gnustep_global_lock unlock];
     }
-  return modes;
+    return modes;
 }
 
 #if !defined(HAVE_OBJC_THREAD_ADD) && !defined(NeXT_RUNTIME) && !defined(__GNUSTEP_RUNTIME__)
 /* We need to access these private vars in the objc runtime - because
-   the objc runtime's API is not enough powerful for the GNUstep
-   extensions we want to add.  */
+ the objc runtime's API is not enough powerful for the GNUstep
+ extensions we want to add.  */
 extern objc_mutex_t __objc_runtime_mutex;
 extern int __objc_runtime_threads_alive;
 extern int __objc_is_multi_threaded;
@@ -298,17 +298,17 @@ extern int __objc_is_multi_threaded;
  */
 inline static void objc_thread_add (void)
 {
-  objc_mutex_lock(__objc_runtime_mutex);
-  __objc_is_multi_threaded = 1;
-  __objc_runtime_threads_alive++;
-  objc_mutex_unlock(__objc_runtime_mutex);
+    objc_mutex_lock(__objc_runtime_mutex);
+    __objc_is_multi_threaded = 1;
+    __objc_runtime_threads_alive++;
+    objc_mutex_unlock(__objc_runtime_mutex);
 }
 #endif /* not HAVE_OBJC_THREAD_ADD */
 
 /*
  * Flag indicating whether the objc runtime ever went multi-threaded.
  */
-static BOOL	entered_multi_threaded_state = NO;
+static BOOL entered_multi_threaded_state = NO;
 
 static NSThread *defaultThread;
 static NSLock *thread_creation_lock;
@@ -334,10 +334,10 @@ static pthread_key_t thread_object_key;
  */
 static void exitedThread(void *thread)
 {
-  if (thread != defaultThread)
+    if (thread != defaultThread)
     {
-      fprintf(stderr, "WARNING thread %p terminated without calling +exit!\n",
-        thread);
+        fprintf(stderr, "WARNING thread %p terminated without calling +exit!\n",
+                thread);
     }
 }
 
@@ -348,21 +348,21 @@ static void exitedThread(void *thread)
 inline NSThread*
 GSCurrentThread(void)
 {
-  if (defaultThread == nil)
+    if (defaultThread == nil)
     {
-      [NSThread currentThread];
+        [NSThread currentThread];
     }
-  return (NSThread*)pthread_getspecific(thread_object_key);
+    return (NSThread*)pthread_getspecific(thread_object_key);
 }
 
 NSMutableDictionary*
 GSDictionaryForThread(NSThread *t)
 {
-  if (nil == t)
+    if (nil == t)
     {
-      t = GSCurrentThread();
+        t = GSCurrentThread();
     }
-  return [t threadDictionary];
+    return [t threadDictionary];
 }
 
 /**
@@ -371,7 +371,7 @@ GSDictionaryForThread(NSThread *t)
 NSMutableDictionary*
 GSCurrentThreadDictionary(void)
 {
-  return GSDictionaryForThread(nil);
+    return GSDictionaryForThread(nil);
 }
 
 /*
@@ -380,174 +380,178 @@ GSCurrentThreadDictionary(void)
 static void
 gnustep_base_thread_callback(void)
 {
-  /*
-   * Protect this function with locking ... to avoid any possibility
-   * of multiple threads registering with the system simultaneously,
-   * and so that all NSWillBecomeMultiThreadedNotifications are sent
-   * out before any second thread can interfere with anything.
-   */
-  if (entered_multi_threaded_state == NO)
+    /*
+     * Protect this function with locking ... to avoid any possibility
+     * of multiple threads registering with the system simultaneously,
+     * and so that all NSWillBecomeMultiThreadedNotifications are sent
+     * out before any second thread can interfere with anything.
+     */
+    if (entered_multi_threaded_state == NO)
     {
-      [gnustep_global_lock lock];
-      if (entered_multi_threaded_state == NO)
-	{
-	  /*
-	   * For apple compatibility ... and to make things easier for
-	   * code called indirectly within a will-become-multi-threaded
-	   * notification handler, we set the flag to say we are multi
-	   * threaded BEFORE sending the notifications.
-	   */
-	  entered_multi_threaded_state = YES;
-#if	GS_WITH_GC && defined(HAVE_GC_ALLOW_REGISTER_THREADS)
-	  /* This function needs to be called before going multi-threaded
-	   * so that the garbage collection library knows to support
-	   * registration of new threads.
-	   */
-	  GS_allow_register_threads();
+        [gnustep_global_lock lock];
+        if (entered_multi_threaded_state == NO)
+        {
+            /*
+             * For apple compatibility ... and to make things easier for
+             * code called indirectly within a will-become-multi-threaded
+             * notification handler, we set the flag to say we are multi
+             * threaded BEFORE sending the notifications.
+             */
+            entered_multi_threaded_state = YES;
+#if GS_WITH_GC && defined(HAVE_GC_ALLOW_REGISTER_THREADS)
+            /* This function needs to be called before going multi-threaded
+             * so that the garbage collection library knows to support
+             * registration of new threads.
+             */
+            GS_allow_register_threads();
 #endif
-	  NS_DURING
-	    {
-	      [GSPerformHolder class];	// Force initialization
-
-	      /*
-	       * Post a notification if this is the first new thread
-	       * to be created.
-	       * Won't work properly if threads are not all created
-	       * by this class, but it's better than nothing.
-	       */
-	      // FIXME: This code is complete nonsense; this can be called from
-	      // any thread (and is when adding new foreign threads), so this
-	      // will often be called from the wrong thread, delivering
-	      // notifications to the wrong thread, and generally doing the
-	      // wrong thing..
-	      if (nc == nil)
-		{
-		  nc = RETAIN([NSNotificationCenter defaultCenter]);
-		}
-	      [nc postNotificationName: NSWillBecomeMultiThreadedNotification
-				object: nil
-			      userInfo: nil];
-	    }
-	  NS_HANDLER
-	    {
-	      fprintf(stderr,
-"ALERT ... exception while becoming multi-threaded ... system may not be\n"
-"properly initialised.\n");
-	      fflush(stderr);
-	    }
-	  NS_ENDHANDLER
-	}
-      [gnustep_global_lock unlock];
+            NS_DURING
+            {
+                [GSPerformHolder class];  // Force initialization
+                
+                /*
+                 * Post a notification if this is the first new thread
+                 * to be created.
+                 * Won't work properly if threads are not all created
+                 * by this class, but it's better than nothing.
+                 */
+                // FIXME: This code is complete nonsense; this can be called from
+                // any thread (and is when adding new foreign threads), so this
+                // will often be called from the wrong thread, delivering
+                // notifications to the wrong thread, and generally doing the
+                // wrong thing..
+                if (nc == nil)
+                {
+                    nc = RETAIN([NSNotificationCenter defaultCenter]);
+                }
+                [nc postNotificationName: NSWillBecomeMultiThreadedNotification
+                                  object: nil
+                                userInfo: nil];
+            }
+            NS_HANDLER
+            {
+                fprintf(stderr,
+                        "ALERT ... exception while becoming multi-threaded ... system may not be\n"
+                        "properly initialised.\n");
+                fflush(stderr);
+            }
+            NS_ENDHANDLER
+        }
+        [gnustep_global_lock unlock];
     }
 }
 
-
+
 @implementation NSThread
 
 static void
 setThreadForCurrentThread(NSThread *t)
 {
-  pthread_setspecific(thread_object_key, t);
-  gnustep_base_thread_callback();
+    pthread_setspecific(thread_object_key, t);
+    gnustep_base_thread_callback();
 }
 
 static void
 unregisterActiveThread(NSThread *thread)
 {
-  if (thread->_active == YES)
+    if (thread->_active == YES)
     {
-      /*
-       * Set the thread to be inactive to avoid any possibility of recursion.
-       */
-      thread->_active = NO;
-      thread->_finished = YES;
-
-      /*
-       * Let observers know this thread is exiting.
-       */
-      if (nc == nil)
-	{
-	  nc = RETAIN([NSNotificationCenter defaultCenter]);
-	}
-      [nc postNotificationName: NSThreadWillExitNotification
-			object: thread
-		      userInfo: nil];
-
-      [(GSRunLoopThreadInfo*)thread->_runLoopInfo invalidate];
-      [thread  release];
-      pthread_setspecific(thread_object_key, nil);
+        /*
+         * Set the thread to be inactive to avoid any possibility of recursion.
+         */
+        thread->_active = NO;
+        thread->_finished = YES;
+        
+        /*
+         * Let observers know this thread is exiting.
+         */
+        if (nc == nil)
+        {
+            nc = RETAIN([NSNotificationCenter defaultCenter]);
+        }
+        [nc postNotificationName: NSThreadWillExitNotification
+                          object: thread
+                        userInfo: nil];
+        
+        [(GSRunLoopThreadInfo*)thread->_runLoopInfo invalidate];
+        [thread  release];
+        pthread_setspecific(thread_object_key, nil);
     }
 }
 
 + (NSArray*) callStackReturnAddresses
 {
-  NSMutableArray        *stack = GSPrivateStackAddresses();
-
-  return stack;
+#if !defined(ANDROID)
+    NSMutableArray        *stack = GSPrivateStackAddresses();
+    
+    return stack;
+#else
+    return [NSMutableArray array];
+#endif
 }
 
 + (BOOL) _createThreadForCurrentPthread
 {
-  NSThread	*t = pthread_getspecific(thread_object_key);
-
-  if (t == nil)
+    NSThread  *t = pthread_getspecific(thread_object_key);
+    
+    if (t == nil)
     {
-      [thread_creation_lock lock];
-      t = pthread_getspecific(thread_object_key);
-      if (t == nil)
-	{
-	  t = [self new];
-	  t->_active = YES;
-	  pthread_setspecific(thread_object_key, t);
-	  [thread_creation_lock unlock];
-	  return YES;
-	}
-      [thread_creation_lock unlock];
+        [thread_creation_lock lock];
+        t = pthread_getspecific(thread_object_key);
+        if (t == nil)
+        {
+            t = [self new];
+            t->_active = YES;
+            pthread_setspecific(thread_object_key, t);
+            [thread_creation_lock unlock];
+            return YES;
+        }
+        [thread_creation_lock unlock];
     }
-  return NO;
+    return NO;
 }
 
 + (NSThread*) currentThread
 {
-  return (NSThread*)pthread_getspecific(thread_object_key);
+    return (NSThread*)pthread_getspecific(thread_object_key);
 }
 
 + (void) detachNewThreadSelector: (SEL)aSelector
-		        toTarget: (id)aTarget
+                        toTarget: (id)aTarget
                       withObject: (id)anArgument
 {
-  NSThread	*thread;
-
-  /*
-   * Create the new thread.
-   */
-  thread = [[NSThread alloc] initWithTarget: aTarget
-                                   selector: aSelector
-                                     object: anArgument];
-
-  [thread start];
-  RELEASE(thread);
+    NSThread  *thread;
+    
+    /*
+     * Create the new thread.
+     */
+    thread = [[NSThread alloc] initWithTarget: aTarget
+                                     selector: aSelector
+                                       object: anArgument];
+    
+    [thread start];
+    RELEASE(thread);
 }
 
 + (void) exit
 {
-  NSThread	*t;
-
-  t = GSCurrentThread();
-  if (t->_active == YES)
+    NSThread  *t;
+    
+    t = GSCurrentThread();
+    if (t->_active == YES)
     {
-      unregisterActiveThread (t);
-
-      if (t == defaultThread || defaultThread == nil)
-	{
-	  /* For the default thread, we exit the process.
-	   */
-	  exit(0);
-	}
-      else
-	{
-          pthread_exit(NULL);
-	}
+        unregisterActiveThread (t);
+        
+        if (t == defaultThread || defaultThread == nil)
+        {
+            /* For the default thread, we exit the process.
+             */
+            exit(0);
+        }
+        else
+        {
+            pthread_exit(NULL);
+        }
     }
 }
 
@@ -556,54 +560,72 @@ unregisterActiveThread(NSThread *thread)
  */
 + (void) initialize
 {
-  if (self == [NSThread class])
+    if (self == [NSThread class])
     {
-      if (pthread_key_create(&thread_object_key, exitedThread))
-	{
-	  [NSException raise: NSInternalInconsistencyException
-		      format: @"Unable to create thread key!"];
-	}
-      thread_creation_lock = [NSLock new];
-      /*
-       * Ensure that the default thread exists.
-       */
-      threadClass = self;
-
-      [NSThread _createThreadForCurrentPthread];
-      defaultThread = [NSThread currentThread];
-
-      /*
-       * The objc runtime calls this callback AFTER creating a new thread -
-       * which is not correct for us, but does at least mean that we can tell
-       * if we have become multi-threaded due to a call to the runtime directly
-       * rather than via the NSThread class.
-       */
+        if (pthread_key_create(&thread_object_key, exitedThread))
+        {
+            [NSException raise: NSInternalInconsistencyException
+                        format: @"Unable to create thread key!"];
+        }
+        thread_creation_lock = [NSLock new];
+        /*
+         * Ensure that the default thread exists.
+         */
+        threadClass = self;
+        
+        [NSThread _createThreadForCurrentPthread];
+        defaultThread = [NSThread currentThread];
+        
+        /*
+         * The objc runtime calls this callback AFTER creating a new thread -
+         * which is not correct for us, but does at least mean that we can tell
+         * if we have become multi-threaded due to a call to the runtime directly
+         * rather than via the NSThread class.
+         */
 #if defined(__GNUSTEP_RUNTIME__) || defined(NeXT_RUNTIME)
-      gnustep_base_thread_callback();
+        gnustep_base_thread_callback();
 #else
-      objc_set_thread_callback(gnustep_base_thread_callback);
+        objc_set_thread_callback(gnustep_base_thread_callback);
 #endif
     }
 }
 
 + (BOOL) isMainThread
 {
-  return (GSCurrentThread() == defaultThread ? YES : NO);
+    return (GSCurrentThread() == defaultThread ? YES : NO);
+}
+
+static pthread_t mainPthread = -1;
+static BOOL threadLocked = NO;
+
+pthread_t pthread_main_np() {
+    return mainPthread;
+}
+
++ (void)setMainThread:(NSThread *)mainThread lock:(BOOL)final
+{
+    if (threadLocked)
+        return;
+    threadLocked = final;
+    defaultThread = mainThread;
+    mainPthread = pthread_self();
 }
 
 + (void) setMainThread: (NSThread *)mainThread
 {
-  defaultThread = mainThread;
+    [self setMainThread:mainThread lock:NO];
 }
+
+
 
 + (BOOL) isMultiThreaded
 {
-  return entered_multi_threaded_state;
+    return entered_multi_threaded_state;
 }
 
 + (NSThread*) mainThread
 {
-  return defaultThread;
+    return defaultThread;
 }
 
 /**
@@ -614,26 +636,26 @@ unregisterActiveThread(NSThread *thread)
 + (void) setThreadPriority: (double)pri
 {
 #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
-  int	policy;
-  struct sched_param param;
-
-  // Clamp pri into the required range.
-  if (pri > 1) { pri = 1; }
-  if (pri < 0) { pri = 0; }
-
-  // Scale pri based on the range of the host system.
-  pri *= (PTHREAD_MAX_PRIORITY - PTHREAD_MIN_PRIORITY);
-  pri += PTHREAD_MIN_PRIORITY;
-
-  pthread_getschedparam(pthread_self(), &policy, &param);
-  param.sched_priority = pri;
-  pthread_setschedparam(pthread_self(), policy, &param);
+    int policy;
+    struct sched_param param;
+    
+    // Clamp pri into the required range.
+    if (pri > 1) { pri = 1; }
+    if (pri < 0) { pri = 0; }
+    
+    // Scale pri based on the range of the host system.
+    pri *= (PTHREAD_MAX_PRIORITY - PTHREAD_MIN_PRIORITY);
+    pri += PTHREAD_MIN_PRIORITY;
+    
+    pthread_getschedparam(pthread_self(), &policy, &param);
+    param.sched_priority = pri;
+    pthread_setschedparam(pthread_self(), policy, &param);
 #endif
 }
 
 + (void) sleepForTimeInterval: (NSTimeInterval)ti
 {
-  GSSleepUntilIntervalSinceReferenceDate(GSTimeNow() + ti);
+    GSSleepUntilIntervalSinceReferenceDate(GSTimeNow() + ti);
 }
 
 /**
@@ -641,7 +663,7 @@ unregisterActiveThread(NSThread *thread)
  */
 + (void) sleepUntilDate: (NSDate*)date
 {
-  GSSleepUntilIntervalSinceReferenceDate([date timeIntervalSinceReferenceDate]);
+    GSSleepUntilIntervalSinceReferenceDate([date timeIntervalSinceReferenceDate]);
 }
 
 
@@ -650,25 +672,25 @@ unregisterActiveThread(NSThread *thread)
  */
 + (double) threadPriority
 {
-  double pri = 0;
+    double pri = 0;
 #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
-  int policy;
-  struct sched_param param;
-
-  pthread_getschedparam(pthread_self(), &policy, &param);
-  pri = param.sched_priority;
-  // Scale pri based on the range of the host system.
-  pri -= PTHREAD_MIN_PRIORITY;
-  pri /= (PTHREAD_MAX_PRIORITY - PTHREAD_MIN_PRIORITY);
-
+    int policy;
+    struct sched_param param;
+    
+    pthread_getschedparam(pthread_self(), &policy, &param);
+    pri = param.sched_priority;
+    // Scale pri based on the range of the host system.
+    pri -= PTHREAD_MIN_PRIORITY;
+    pri /= (PTHREAD_MAX_PRIORITY - PTHREAD_MIN_PRIORITY);
+    
 #else
 #warning Your pthread implementation does not support thread priorities
 #endif
-  return pri;
-
+    return pri;
+    
 }
 
-
+
 
 /*
  * Thread instance methods.
@@ -676,129 +698,129 @@ unregisterActiveThread(NSThread *thread)
 
 - (void) cancel
 {
-  _cancelled = YES;
+    _cancelled = YES;
 }
 
 - (void) dealloc
 {
-  if (_active == YES)
+    if (_active == YES)
     {
-      [NSException raise: NSInternalInconsistencyException
-		  format: @"Deallocating an active thread without [+exit]!"];
+        [NSException raise: NSInternalInconsistencyException
+                    format: @"Deallocating an active thread without [+exit]!"];
     }
-  if (_runLoopInfo != 0)
+    if (_runLoopInfo != 0)
     {
-      GSRunLoopThreadInfo       *info = (GSRunLoopThreadInfo*)_runLoopInfo;
-
-      _runLoopInfo = 0;
-      [info release];
+        GSRunLoopThreadInfo       *info = (GSRunLoopThreadInfo*)_runLoopInfo;
+        
+        _runLoopInfo = 0;
+        [info release];
     }
-  DESTROY(_thread_dictionary);
-  DESTROY(_target);
-  DESTROY(_arg);
-  DESTROY(_name);
-  if (_autorelease_vars.pool_cache != 0)
+    DESTROY(_thread_dictionary);
+    DESTROY(_target);
+    DESTROY(_arg);
+    DESTROY(_name);
+    if (_autorelease_vars.pool_cache != 0)
     {
-      [NSAutoreleasePool _endThread: self];
+        [NSAutoreleasePool _endThread: self];
     }
-
-  if (_thread_dictionary != nil)
+    
+    if (_thread_dictionary != nil)
     {
-      /*
-       * Try again to get rid of thread dictionary.
-       */
-      DESTROY(_thread_dictionary);
-      if (_autorelease_vars.pool_cache != 0)
-	{
-	  [NSAutoreleasePool _endThread: self];
-	}
-      if (_thread_dictionary != nil)
-	{
-	  NSLog(@"Oops - leak - thread dictionary is %@", _thread_dictionary);
-	  if (_autorelease_vars.pool_cache != 0)
-	    {
-	      [NSAutoreleasePool _endThread: self];
-	    }
-	}
+        /*
+         * Try again to get rid of thread dictionary.
+         */
+        DESTROY(_thread_dictionary);
+        if (_autorelease_vars.pool_cache != 0)
+        {
+            [NSAutoreleasePool _endThread: self];
+        }
+        if (_thread_dictionary != nil)
+        {
+            NSLog(@"Oops - leak - thread dictionary is %@", _thread_dictionary);
+            if (_autorelease_vars.pool_cache != 0)
+            {
+                [NSAutoreleasePool _endThread: self];
+            }
+        }
     }
-  DESTROY(_gcontext);
-  [super dealloc];
+    DESTROY(_gcontext);
+    [super dealloc];
 }
 
 - (id) init
 {
-  init_autorelease_thread_vars(&_autorelease_vars);
-  return self;
+    init_autorelease_thread_vars(&_autorelease_vars);
+    return self;
 }
 
 - (id) initWithTarget: (id)aTarget
              selector: (SEL)aSelector
                object: (id)anArgument
 {
-  /* initialize our ivars. */
-  _selector = aSelector;
-  _target = RETAIN(aTarget);
-  _arg = RETAIN(anArgument);
-  init_autorelease_thread_vars(&_autorelease_vars);
-  return self;
+    /* initialize our ivars. */
+    _selector = aSelector;
+    _target = RETAIN(aTarget);
+    _arg = RETAIN(anArgument);
+    init_autorelease_thread_vars(&_autorelease_vars);
+    return self;
 }
 
 - (BOOL) isCancelled
 {
-  return _cancelled;
+    return _cancelled;
 }
 
 - (BOOL) isExecuting
 {
-  return _active;
+    return _active;
 }
 
 - (BOOL) isFinished
 {
-  return _finished;
+    return _finished;
 }
 
 - (BOOL) isMainThread
 {
-  return (self == defaultThread ? YES : NO);
+    return (self == defaultThread ? YES : NO);
 }
 
 - (void) main
 {
-  if (_active == NO)
+    if (_active == NO)
     {
-      [NSException raise: NSInternalInconsistencyException
-                  format: @"[%@-$@] called on inactive thread",
-        NSStringFromClass([self class]),
-        NSStringFromSelector(_cmd)];
+        [NSException raise: NSInternalInconsistencyException
+                    format: @"[%@-$@] called on inactive thread",
+         NSStringFromClass([self class]),
+         NSStringFromSelector(_cmd)];
     }
-
-  [_target performSelector: _selector withObject: _arg];
-
+    
+    [_target performSelector: _selector withObject: _arg];
+    
 }
 
 #if !APPORTABLE
 
 - (NSString*) name
 {
-  return _name;
+    return _name;
 }
 
 - (void) setName: (NSString*)aName
 {
-  ASSIGN(_name, aName);
+    ASSIGN(_name, aName);
 }
 
 #endif
 
 - (void) setStackSize: (NSUInteger)stackSize
 {
-  _stackSize = stackSize;
+    _stackSize = stackSize;
 }
 
 - (NSUInteger) stackSize
 {
-  return _stackSize;
+    return _stackSize;
 }
 
 /**
@@ -808,103 +830,103 @@ static void *nsthreadLauncher(void* thread)
 {
     NSThread *t = (NSThread*)thread;
     setThreadForCurrentThread(t);
-#if	GS_WITH_GC && defined(HAVE_GC_REGISTER_MY_THREAD)
-  {
-    struct GC_stack_base	base;
-
-    if (GC_get_stack_base(&base) == GC_SUCCESS)
-      {
-	int	result;
-
-	result = GC_register_my_thread(&base);
-	if (result != GC_SUCCESS && result != GC_DUPLICATE)
-	  {
-	    fprintf(stderr, "Argh ... no thread support in garbage collection library\n");
-	  }
-      }
-    else
-      {
-	fprintf(stderr, "Unable to determine stack base to register new thread for garbage collection\n");
-      }
-  }
-#endif
-
-  /*
-   * Let observers know a new thread is starting.
-   */
-  if (nc == nil)
+#if GS_WITH_GC && defined(HAVE_GC_REGISTER_MY_THREAD)
     {
-      nc = RETAIN([NSNotificationCenter defaultCenter]);
+        struct GC_stack_base  base;
+        
+        if (GC_get_stack_base(&base) == GC_SUCCESS)
+        {
+            int result;
+            
+            result = GC_register_my_thread(&base);
+            if (result != GC_SUCCESS && result != GC_DUPLICATE)
+            {
+                fprintf(stderr, "Argh ... no thread support in garbage collection library\n");
+            }
+        }
+        else
+        {
+            fprintf(stderr, "Unable to determine stack base to register new thread for garbage collection\n");
+        }
     }
-  [nc postNotificationName: NSThreadDidStartNotification
-		    object: t
-		  userInfo: nil];
-  [[NSPlatform currentPlatform] startThread];
-  [t main];
-  [[NSPlatform currentPlatform] endThread];
-  [NSThread exit];
-  // Not reached
-  return NULL;
+#endif
+    
+    /*
+     * Let observers know a new thread is starting.
+     */
+    if (nc == nil)
+    {
+        nc = RETAIN([NSNotificationCenter defaultCenter]);
+    }
+    [nc postNotificationName: NSThreadDidStartNotification
+                      object: t
+                    userInfo: nil];
+    [[NSPlatform currentPlatform] startThread];
+    [t main];
+    [[NSPlatform currentPlatform] endThread];
+    [NSThread exit];
+    // Not reached
+    return NULL;
 }
 
 - (void) start
 {
-  pthread_attr_t	attr;
-  pthread_t		thr;
-
-  if (_active == YES)
+    pthread_attr_t  attr;
+    pthread_t   thr;
+    
+    if (_active == YES)
     {
-      [NSException raise: NSInternalInconsistencyException
-                  format: @"[%@-$@] called on active thread",
-        NSStringFromClass([self class]),
-        NSStringFromSelector(_cmd)];
+        [NSException raise: NSInternalInconsistencyException
+                    format: @"[%@-$@] called on active thread",
+         NSStringFromClass([self class]),
+         NSStringFromSelector(_cmd)];
     }
-  if (_cancelled == YES)
+    if (_cancelled == YES)
     {
-      [NSException raise: NSInternalInconsistencyException
-                  format: @"[%@-$@] called on cancelled thread",
-        NSStringFromClass([self class]),
-        NSStringFromSelector(_cmd)];
+        [NSException raise: NSInternalInconsistencyException
+                    format: @"[%@-$@] called on cancelled thread",
+         NSStringFromClass([self class]),
+         NSStringFromSelector(_cmd)];
     }
-  if (_finished == YES)
+    if (_finished == YES)
     {
-      [NSException raise: NSInternalInconsistencyException
-                  format: @"[%@-$@] called on finished thread",
-        NSStringFromClass([self class]),
-        NSStringFromSelector(_cmd)];
+        [NSException raise: NSInternalInconsistencyException
+                    format: @"[%@-$@] called on finished thread",
+         NSStringFromClass([self class]),
+         NSStringFromSelector(_cmd)];
     }
-
-  /* Make sure the notification is posted BEFORE the new thread starts.
-   */
-  gnustep_base_thread_callback();
-
-  /* The thread must persist until it finishes executing.
-   */
-  RETAIN(self);
-
-  /* Mark the thread as active whiul it's running.
-   */
-  _active = YES;
-
-  errno = 0;
-  pthread_attr_init(&attr);
-  /* Create this thread detached, because we never use the return state from
-   * threads.
-   */
-  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-  /* Set the stack size when the thread is created.  Unlike the old setrlimit
-   * code, this actually works.
-   */
-  if (_stackSize > 0)
+    
+    /* Make sure the notification is posted BEFORE the new thread starts.
+     */
+    gnustep_base_thread_callback();
+    
+    /* The thread must persist until it finishes executing.
+     */
+    RETAIN(self);
+    
+    /* Mark the thread as active whiul it's running.
+     */
+    _active = YES;
+    
+    errno = 0;
+    pthread_attr_init(&attr);
+    /* Create this thread detached, because we never use the return state from
+     * threads.
+     */
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    /* Set the stack size when the thread is created.  Unlike the old setrlimit
+     * code, this actually works.
+     */
+    if (_stackSize > 0)
     {
-      pthread_attr_setstacksize(&attr, _stackSize);
+        pthread_attr_setstacksize(&attr, _stackSize);
     }
-  if (pthread_create(&thr, &attr, nsthreadLauncher, self))
+    if (pthread_create(&thr, &attr, nsthreadLauncher, self))
     {
-      DESTROY(self);
-      [NSException raise: NSInternalInconsistencyException
-                  format: @"Unable to detach thread (last error %@)",
-                  [NSError _last]];
+        DESTROY(self);
+        [NSException raise: NSInternalInconsistencyException
+                    format: @"Unable to detach thread (last error %@)",
+         [NSError _last]];
     }
 }
 
@@ -917,182 +939,196 @@ static void *nsthreadLauncher(void* thread)
  */
 - (NSMutableDictionary*) threadDictionary
 {
-  if (_thread_dictionary == nil)
+    if (_thread_dictionary == nil)
     {
-      _thread_dictionary = [NSMutableDictionary new];
+        _thread_dictionary = [NSMutableDictionary new];
     }
-  return _thread_dictionary;
+    return _thread_dictionary;
 }
 
 @end
 
-
+
 
 @implementation GSRunLoopThreadInfo
 - (void) addPerformer: (id)performer
 {
-  [lock lock];
-  [performers addObject: performer];
+    [lock lock];
+    [performers addObject: performer];
 #if defined(__MINGW__)
-  if (SetEvent(event) == 0)
+    if (SetEvent(event) == 0)
     {
-      NSLog(@"Set event failed - %@", [NSError _last]);
+        NSLog(@"Set event failed - %@", [NSError _last]);
     }
 #else
-  /* The write could concievably fail if the pipe is full.
-   * In that case we need to release the lock teporarily to allow the other
-   * thread to consume data from the pipe.  It's possible that the thread
-   * and its runloop might stop during that ... so we need to check that
-   * outputFd is still valid.
-   */
-  while (outputFd >= 0 && write(outputFd, "0", 1) != 1)
+    /* The write could concievably fail if the pipe is full.
+     * In that case we need to release the lock teporarily to allow the other
+     * thread to consume data from the pipe.  It's possible that the thread
+     * and its runloop might stop during that ... so we need to check that
+     * outputFd is still valid.
+     */
+    while (outputFd >= 0 && write(outputFd, "0", 1) != 1)
     {
-      [lock unlock];
-      [lock lock];
+        [lock unlock];
+        [lock lock];
     }
 #endif
-  [lock unlock];
+    [lock unlock];
 }
 
 - (void) dealloc
 {
-  [self invalidate];
-  DESTROY(lock);
-  DESTROY(loop);
-  [super dealloc];
+    [self invalidate];
+    DESTROY(lock);
+    DESTROY(loop);
+    [super dealloc];
 }
 
 - (id) init
 {
 #ifdef __MINGW__
-  if ((event = CreateEvent(NULL, TRUE, FALSE, NULL)) == INVALID_HANDLE_VALUE)
+    if ((event = CreateEvent(NULL, TRUE, FALSE, NULL)) == INVALID_HANDLE_VALUE)
     {
-      DESTROY(self);
-      [NSException raise: NSInternalInconsistencyException
-        format: @"Failed to create event to handle perform in thread"];
+        DESTROY(self);
+        [NSException raise: NSInternalInconsistencyException
+                    format: @"Failed to create event to handle perform in thread"];
     }
 #else
-  int	fd[2];
-
-  if (pipe(fd) == 0)
+    int fd[2];
+    
+    if (pipe(fd) == 0)
     {
-      int	e;
-
-      inputFd = fd[0];
-      outputFd = fd[1];
-      if ((e = fcntl(inputFd, F_GETFL, 0)) >= 0)
-	{
-	  e |= NBLK_OPT;
-	  if (fcntl(inputFd, F_SETFL, e) < 0)
-	    {
-	      [NSException raise: NSInternalInconsistencyException
-		format: @"Failed to set non block flag for perform in thread"];
-	    }
-	}
-      else
-	{
-	  [NSException raise: NSInternalInconsistencyException
-	    format: @"Failed to get non block flag for perform in thread"];
-	}
-      if ((e = fcntl(outputFd, F_GETFL, 0)) >= 0)
-	{
-	  e |= NBLK_OPT;
-	  if (fcntl(outputFd, F_SETFL, e) < 0)
-	    {
-	      [NSException raise: NSInternalInconsistencyException
-		format: @"Failed to set non block flag for perform in thread"];
-	    }
-	}
-      else
-	{
-	  [NSException raise: NSInternalInconsistencyException
-	    format: @"Failed to get non block flag for perform in thread"];
-	}
+        int e;
+        
+        inputFd = fd[0];
+        outputFd = fd[1];
+        if ((e = fcntl(inputFd, F_GETFL, 0)) >= 0)
+        {
+            e |= NBLK_OPT;
+            if (fcntl(inputFd, F_SETFL, e) < 0)
+            {
+                [NSException raise: NSInternalInconsistencyException
+                            format: @"Failed to set non block flag for perform in thread"];
+            }
+        }
+        else
+        {
+            [NSException raise: NSInternalInconsistencyException
+                        format: @"Failed to get non block flag for perform in thread"];
+        }
+        if ((e = fcntl(outputFd, F_GETFL, 0)) >= 0)
+        {
+            e |= NBLK_OPT;
+            if (fcntl(outputFd, F_SETFL, e) < 0)
+            {
+                [NSException raise: NSInternalInconsistencyException
+                            format: @"Failed to set non block flag for perform in thread"];
+            }
+        }
+        else
+        {
+            [NSException raise: NSInternalInconsistencyException
+                        format: @"Failed to get non block flag for perform in thread"];
+        }
     }
-  else
+    else
     {
-      DESTROY(self);
-      [NSException raise: NSInternalInconsistencyException
-        format: @"Failed to create pipe to handle perform in thread"];
+        DESTROY(self);
+        switch (errno) 
+        {
+            case EFAULT:
+                [NSException raise: NSInternalInconsistencyException format: @"Failed to create pipe to handle perform in thread: invalid process address space"];
+                break;
+            case EMFILE:
+                [NSException raise: NSInternalInconsistencyException format: @"Failed to create pipe to handle perform in thread: too many active descriptors"];
+                break;
+            case ENFILE:
+                [NSException raise: NSInternalInconsistencyException format: @"Failed to create pipe to handle perform in thread: system file table full"];
+                break;
+            default:
+                [NSException raise: NSInternalInconsistencyException format: @"Failed to create pipe to handle perform in thread: wtf?"];
+                break;
+        }
+        return NULL;
     }
 #endif  
-  lock = [NSLock new];
-  performers = [NSMutableArray new];
-  return self;
+    lock = [NSLock new];
+    performers = [NSMutableArray new];
+    return self;
 }
 
 - (void) invalidate
 {
-  [lock lock];
-  [performers makeObjectsPerformSelector: @selector(invalidate)];
-  [performers removeAllObjects];
+    [lock lock];
+    [performers makeObjectsPerformSelector: @selector(invalidate)];
+    [performers removeAllObjects];
 #ifdef __MINGW__
-  if (event != INVALID_HANDLE_VALUE)
+    if (event != INVALID_HANDLE_VALUE)
     {
-      CloseHandle(event);
-      event = INVALID_HANDLE_VALUE;
+        CloseHandle(event);
+        event = INVALID_HANDLE_VALUE;
     }
 #else
-  if (inputFd >= 0)
+    if (inputFd >= 0)
     {
-      close(inputFd);
-      inputFd = -1;
+        close(inputFd);
+        inputFd = -1;
     }
-  if (outputFd >= 0)
+    if (outputFd >= 0)
     {
-      close(outputFd);
-      outputFd = -1;
+        close(outputFd);
+        outputFd = -1;
     }
 #endif
-  [lock unlock];
+    [lock unlock];
 }
 
 - (void) fire
 {
-  NSArray	*toDo;
-  unsigned int	i;
-  unsigned int	c;
-
-  [lock lock];
+    NSArray *toDo;
+    unsigned int  i;
+    unsigned int  c;
+    
+    [lock lock];
 #if defined(__MINGW__)
-  if (event != INVALID_HANDLE_VALUE)
+    if (event != INVALID_HANDLE_VALUE)
     {
-      if (ResetEvent(event) == 0)
+        if (ResetEvent(event) == 0)
         {
-          NSLog(@"Reset event failed - %@", [NSError _last]);
+            NSLog(@"Reset event failed - %@", [NSError _last]);
         }
     }
 #else
-  if (inputFd >= 0)
+    if (inputFd >= 0)
     {
-      char	buf[BUFSIZ];
-
-      /* We don't care how much we read.  If there have been multiple
-       * performers queued then there will be multiple bytes available,
-       * but we always handle all available performers, so we can also
-       * read all available bytes.
-       * The descriptor is non-blocking ... so it's safe to ask for more
-       * bytes than are available.
-       */
-      while (read(inputFd, buf, sizeof(buf)) > 0)
-	;
+        char  buf[BUFSIZ];
+        
+        /* We don't care how much we read.  If there have been multiple
+         * performers queued then there will be multiple bytes available,
+         * but we always handle all available performers, so we can also
+         * read all available bytes.
+         * The descriptor is non-blocking ... so it's safe to ask for more
+         * bytes than are available.
+         */
+        while (read(inputFd, buf, sizeof(buf)) > 0)
+            ;
     }
 #endif
-
-  toDo = [NSArray arrayWithArray: performers];
-  [performers removeAllObjects];
-  [lock unlock];
-
-  c = [toDo count];
-  for (i = 0; i < c; i++)
+    
+    toDo = [NSArray arrayWithArray: performers];
+    [performers removeAllObjects];
+    [lock unlock];
+    
+    c = [toDo count];
+    for (i = 0; i < c; i++)
     {
-      GSPerformHolder	*h = [toDo objectAtIndex: i];
-
-      [loop performSelector: @selector(fire)
-		     target: h
-		   argument: nil
-		      order: 0
-		      modes: [h modes]];
+        GSPerformHolder *h = [toDo objectAtIndex: i];
+        
+        [loop performSelector: @selector(fire)
+                       target: h
+                     argument: nil
+                        order: 0
+                        modes: [h modes]];
     }
 }
 @end
@@ -1100,142 +1136,142 @@ static void *nsthreadLauncher(void* thread)
 GSRunLoopThreadInfo *
 GSRunLoopInfoForThread(NSThread *aThread)
 {
-  GSRunLoopThreadInfo   *info;
-
-  if (aThread == nil)
+    GSRunLoopThreadInfo   *info;
+    
+    if (aThread == nil)
     {
-      aThread = GSCurrentThread();
+        aThread = GSCurrentThread();
     }
-  if (aThread->_runLoopInfo == nil)
+    if (aThread->_runLoopInfo == nil)
     {
-      [gnustep_global_lock lock];
-      if (aThread->_runLoopInfo == nil)
+        [gnustep_global_lock lock];
+        if (aThread->_runLoopInfo == nil)
         {
-          aThread->_runLoopInfo = [GSRunLoopThreadInfo new];
-	}
-      [gnustep_global_lock unlock];
+            aThread->_runLoopInfo = [GSRunLoopThreadInfo new];
+        }
+        [gnustep_global_lock unlock];
     }
-  info = aThread->_runLoopInfo;
-  return info;
+    info = aThread->_runLoopInfo;
+    return info;
 }
 
 @implementation GSPerformHolder
 
 + (GSPerformHolder*) newForReceiver: (id)r
-			   argument: (id)a
-			   selector: (SEL)s
-			      modes: (NSArray*)m
-			       lock: (NSConditionLock*)l
+                           argument: (id)a
+                           selector: (SEL)s
+                              modes: (NSArray*)m
+                               lock: (NSConditionLock*)l
 {
-  GSPerformHolder	*h;
-
-  h = (GSPerformHolder*)NSAllocateObject(self, 0, NSDefaultMallocZone());
-  h->receiver = RETAIN(r);
-  h->argument = RETAIN(a);
-  h->selector = s;
-  h->modes = RETAIN(m);
-  h->lock = l;
-
-  return h;
+    GSPerformHolder *h;
+    
+    h = (GSPerformHolder*)NSAllocateObject(self, 0, NSDefaultMallocZone());
+    h->receiver = RETAIN(r);
+    h->argument = RETAIN(a);
+    h->selector = s;
+    h->modes = RETAIN(m);
+    h->lock = l;
+    
+    return h;
 }
 
 - (void) dealloc
 {
-  DESTROY(receiver);
-  DESTROY(argument);
-  DESTROY(modes);
-  if (lock != nil)
+    DESTROY(receiver);
+    DESTROY(argument);
+    DESTROY(modes);
+    if (lock != nil)
     {
-      [lock lock];
-      [lock unlockWithCondition: 1];
-      lock = nil;
+        [lock lock];
+        [lock unlockWithCondition: 1];
+        lock = nil;
     }
-  NSDeallocateObject(self);
-  GSNOSUPERDEALLOC;
+    NSDeallocateObject(self);
+    GSNOSUPERDEALLOC;
 }
 
 - (void) fire
 {
-  GSRunLoopThreadInfo   *threadInfo;
-
-  if (receiver == nil)
+    GSRunLoopThreadInfo   *threadInfo;
+    
+    if (receiver == nil)
     {
-      return;	// Already fired!
+        return; // Already fired!
     }
-  threadInfo = GSRunLoopInfoForThread(GSCurrentThread());
-  [threadInfo->loop cancelPerformSelectorsWithTarget: self];
-  [receiver performSelector: selector withObject: argument];
-  DESTROY(receiver);
-  DESTROY(argument);
-  DESTROY(modes);
-  if (lock != nil)
+    threadInfo = GSRunLoopInfoForThread(GSCurrentThread());
+    [threadInfo->loop cancelPerformSelectorsWithTarget: self];
+    [receiver performSelector: selector withObject: argument];
+    DESTROY(receiver);
+    DESTROY(argument);
+    DESTROY(modes);
+    if (lock != nil)
     {
-      NSConditionLock	*l = lock;
-
-      [lock lock];
-      lock = nil;
-      [l unlockWithCondition: 1];
+        NSConditionLock *l = lock;
+        
+        [lock lock];
+        lock = nil;
+        [l unlockWithCondition: 1];
     }
 }
 
 - (void) invalidate
 {
-  if (invalidated == NO)
+    if (invalidated == NO)
     {
-      invalidated = YES;
-      DESTROY(receiver);
-      if (lock != nil)
+        invalidated = YES;
+        DESTROY(receiver);
+        if (lock != nil)
         {
-          NSConditionLock	*l = lock;
-
-          [lock lock];
-          lock = nil;
-          [l unlockWithCondition: 1];
+            NSConditionLock *l = lock;
+            
+            [lock lock];
+            lock = nil;
+            [l unlockWithCondition: 1];
         }
     }
 }
 
 - (BOOL) isInvalidated
 {
-  return invalidated;
+    return invalidated;
 }
 
 - (NSArray*) modes
 {
-  return modes;
+    return modes;
 }
 @end
 
-@implementation	NSObject (NSThreadPerformAdditions)
+@implementation NSObject (NSThreadPerformAdditions)
 
 - (void) performSelectorOnMainThread: (SEL)aSelector
-			  withObject: (id)anObject
-		       waitUntilDone: (BOOL)aFlag
-			       modes: (NSArray*)anArray
+                          withObject: (id)anObject
+                       waitUntilDone: (BOOL)aFlag
+                               modes: (NSArray*)anArray
 {
-  /* It's possible that this method could be called before the NSThread
-   * class is initialised, so we check and make sure it's initiailised
-   * if necessary.
-   */
-  if (defaultThread == nil)
+    /* It's possible that this method could be called before the NSThread
+     * class is initialised, so we check and make sure it's initiailised
+     * if necessary.
+     */
+    if (defaultThread == nil)
     {
-      [NSThread currentThread];
+        [NSThread currentThread];
     }
-  [self performSelector: aSelector
-               onThread: defaultThread
-             withObject: anObject
-          waitUntilDone: aFlag
-                  modes: anArray];
+    [self performSelector: aSelector
+                 onThread: defaultThread
+               withObject: anObject
+            waitUntilDone: aFlag
+                    modes: anArray];
 }
 
 - (void) performSelectorOnMainThread: (SEL)aSelector
-			  withObject: (id)anObject
-		       waitUntilDone: (BOOL)aFlag
+                          withObject: (id)anObject
+                       waitUntilDone: (BOOL)aFlag
 {
-  [self performSelectorOnMainThread: aSelector
-			 withObject: anObject
-		      waitUntilDone: aFlag
-			      modes: commonModes()];
+    [self performSelectorOnMainThread: aSelector
+                           withObject: anObject
+                        waitUntilDone: aFlag
+                                modes: commonModes()];
 }
 
 - (void) performSelector: (SEL)aSelector
@@ -1244,75 +1280,75 @@ GSRunLoopInfoForThread(NSThread *aThread)
            waitUntilDone: (BOOL)aFlag
                    modes: (NSArray*)anArray
 {
-  GSRunLoopThreadInfo   *info;
-  NSThread	        *t;
-
-  if ([anArray count] == 0)
+    GSRunLoopThreadInfo   *info;
+    NSThread          *t;
+    
+    if ([anArray count] == 0)
     {
-      return;
+        return;
     }
-
-  t = GSCurrentThread();
-  if (aThread == nil)
+    
+    t = GSCurrentThread();
+    if (aThread == nil)
     {
-      aThread = t;
+        aThread = t;
     }
-  info = GSRunLoopInfoForThread(aThread);
-  if (t == aThread)
+    info = GSRunLoopInfoForThread(aThread);
+    if (t == aThread)
     {
-      /* Perform in current thread.
-       */
-      if (aFlag == YES || info->loop == nil)
-	{
-          /* Wait until done or no run loop.
-           */
-	  [self performSelector: aSelector withObject: anObject];
-	}
-      else
-	{
-          /* Don't wait ... schedule operation in run loop.
-           */
-	  [info->loop performSelector: aSelector
-                               target: self
-                             argument: anObject
-                                order: 0
-                                modes: anArray];
-	}
-    }
-  else
-    {
-      GSPerformHolder   *h;
-      NSConditionLock	*l = nil;
-
-      if ([t isFinished] == YES)
+        /* Perform in current thread.
+         */
+        if (aFlag == YES || info->loop == nil)
         {
-          [NSException raise: NSInternalInconsistencyException
-                      format: @"perform on finished thread"];
+            /* Wait until done or no run loop.
+             */
+            [self performSelector: aSelector withObject: anObject];
         }
-      if (aFlag == YES)
-	{
-	  l = [[NSConditionLock alloc] init];
-	}
-
-      h = [GSPerformHolder newForReceiver: self
-				 argument: anObject
-				 selector: aSelector
-				    modes: anArray
-				     lock: l];
-      [info addPerformer: h];
-      if (l != nil)
-	{
-          [l lockWhenCondition: 1];
-	  [l unlock];
-	  RELEASE(l);
-          if ([h isInvalidated] == YES)
+        else
+        {
+            /* Don't wait ... schedule operation in run loop.
+             */
+            [info->loop performSelector: aSelector
+                                 target: self
+                               argument: anObject
+                                  order: 0
+                                  modes: anArray];
+        }
+    }
+    else
+    {
+        GSPerformHolder   *h;
+        NSConditionLock *l = nil;
+        
+        if ([t isFinished] == YES)
+        {
+            [NSException raise: NSInternalInconsistencyException
+                        format: @"perform on finished thread"];
+        }
+        if (aFlag == YES)
+        {
+            l = [[NSConditionLock alloc] init];
+        }
+        
+        h = [GSPerformHolder newForReceiver: self
+                                   argument: anObject
+                                   selector: aSelector
+                                      modes: anArray
+                                       lock: l];
+        [info addPerformer: h];
+        if (l != nil)
+        {
+            [l lockWhenCondition: 1];
+            [l unlock];
+            RELEASE(l);
+            if ([h isInvalidated] == YES)
             {
-              [NSException raise: NSInternalInconsistencyException
-                          format: @"perform on finished thread"];
-              RELEASE(h);
+                [NSException raise: NSInternalInconsistencyException
+                            format: @"perform on finished thread"];
+                RELEASE(h);
             }
-	}
-      RELEASE(h);
+        }
+        RELEASE(h);
     }
 }
 
@@ -1321,11 +1357,11 @@ GSRunLoopInfoForThread(NSThread *aThread)
               withObject: (id)anObject
            waitUntilDone: (BOOL)aFlag
 {
-  [self performSelector: aSelector
-               onThread: aThread
-             withObject: anObject
-          waitUntilDone: aFlag
-                  modes: commonModes()];
+    [self performSelector: aSelector
+                 onThread: aThread
+               withObject: anObject
+            waitUntilDone: aFlag
+                    modes: commonModes()];
 }
 @end
 
@@ -1348,7 +1384,7 @@ GSRunLoopInfoForThread(NSThread *aThread)
 BOOL
 GSRegisterCurrentThread (void)
 {
-  return [NSThread _createThreadForCurrentPthread];
+    return [NSThread _createThreadForCurrentPthread];
 }
 /**
  * <p>
@@ -1367,5 +1403,5 @@ GSRegisterCurrentThread (void)
 void
 GSUnregisterCurrentThread (void)
 {
-  unregisterActiveThread(GSCurrentThread());
+    unregisterActiveThread(GSCurrentThread());
 }

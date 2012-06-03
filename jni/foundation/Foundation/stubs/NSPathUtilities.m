@@ -49,15 +49,23 @@ NSString *GSDefaultsRootForUser(NSString *userName)
   return NSHomeDirectoryForUser(userName);
 }
 
-static NSDictionary *gnustepConfig = nil;
+static NSMutableDictionary *gGNUstepConfig;
 NSMutableDictionary *GNUstepConfig(NSDictionary *newConfig)
 {
-  if (!gnustepConfig)
-    gnustepConfig = [[NSMutableDictionary alloc] initWithObjectsAndKeys:NULL];
-  return gnustepConfig;
+  if (!gGNUstepConfig) {
+    gGNUstepConfig = [[NSMutableDictionary alloc] init];
+  }
+  return gGNUstepConfig;
 }
 
 NSArray *NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory directoryKey, NSSearchPathDomainMask domainMask, BOOL expandTilde)
 {
   return [NSArray arrayWithObject:NSHomeDirectory()];
 }
+
+NSString *
+NSTemporaryDirectory(void)
+{
+  return [[NSPlatform currentPlatform] temporaryDirectory];
+}
+

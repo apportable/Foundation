@@ -35,6 +35,11 @@ enum {
 
 @implementation NSXMLParser
 
+- (id)initWithContentsOfURL:(NSURL *)url
+{
+  return [self initWithData:[NSData dataWithContentsOfURL:url]];
+}
+
 -initWithData:(NSData *)data {
    _data=[data retain];
    

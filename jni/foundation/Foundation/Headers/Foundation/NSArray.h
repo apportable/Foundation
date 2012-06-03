@@ -213,6 +213,8 @@ DEFINE_BLOCK_TYPE(GSPredicateBlock, BOOL, id, NSUInteger, BOOL*);
 - (NSUInteger) indexOfObjectAtIndexes: (NSIndexSet*)indexSet
 			      options: (NSEnumerationOptions)opts
 			  passingTest: (GSPredicateBlock)predicate;
+
+- (NSArray *)sortedArrayUsingComparator:(NSComparator)cmptr;
 #endif
 @end
 

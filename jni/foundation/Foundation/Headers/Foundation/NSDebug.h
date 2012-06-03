@@ -232,8 +232,10 @@ GS_EXPORT NSUInteger NSCountFrames(void);
 #if !defined(DEBUG_LOG)
 #if !defined(NDEBUG) && defined(ANDROID)
 #include <android/log.h>
-#define DEBUG_LOG(...) __android_log_print(ANDROID_LOG_INFO,         \
-                                           "Foundation",__VA_ARGS__)
+#define DEBUG_LOG__(file, line, format, ...) \
+    __android_log_print(ANDROID_LOG_INFO, "CoreFoundation", file " %s " #line ": " format "%s", __FUNCTION__, ##__VA_ARGS__);
+#define DEBUG_LOG_(file, line, format, ...) DEBUG_LOG__(file, line, format, __VA_ARGS__)
+#define DEBUG_LOG(format, ...) DEBUG_LOG_(__FILE__, __LINE__, format, ##__VA_ARGS__, "")
 #else
 #define DEBUG_LOG(...)
 #endif

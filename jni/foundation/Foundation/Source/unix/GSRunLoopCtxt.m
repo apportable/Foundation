@@ -288,6 +288,7 @@ static void setPollfd(int fd, int event, GSRunLoopCtxt *ctxt)
   unsigned	count;
   unsigned int	i;
   BOOL		immediate = NO;
+  #error HAVE_POLL_F not supported with libdispatch!
 
   i = GSIArrayCount(watchers);
 
@@ -683,6 +684,11 @@ static void setPollfd(int fd, int event, GSRunLoopCtxt *ctxt)
 
 #else
 
+- (void)_dispatchMainQueueCallback
+{
+    
+}
+
 - (BOOL) pollUntil: (int)milliseconds within: (NSArray*)contexts
 {
   GSRunLoopThreadInfo   *threadInfo = GSRunLoopInfoForThread(nil);
@@ -699,6 +705,7 @@ static void setPollfd(int fd, int event, GSRunLoopCtxt *ctxt)
   unsigned		count;
   unsigned		i;
   BOOL			immediate = NO;
+  [self _dispatchMainQueueCallback];
 
   i = GSIArrayCount(watchers);
 

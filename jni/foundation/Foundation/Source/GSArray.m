@@ -25,6 +25,8 @@
    $Date: 2010-03-08 04:07:11 -0800 (Mon, 08 Mar 2010) $ $Revision: 29877 $
    */
 
+#define NDEBUG
+
 #import "common.h"
 #import "Foundation/NSArray.h"
 #import "GNUstepBase/GSObjCRuntime.h"

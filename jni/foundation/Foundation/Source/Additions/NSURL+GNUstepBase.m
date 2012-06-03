@@ -44,9 +44,23 @@
       s = [s substringToIndex: r.location];
     }
   r = [s rangeOfString: @"//"];
-  s = [s substringFromIndex: NSMaxRange(r)];
-  r = [s rangeOfString: @"/"];
-  s = [s substringFromIndex: r.location];
+  if (r.location != NSNotFound)
+  {
+      s = [s substringFromIndex: NSMaxRange(r)];
+      r = [s rangeOfString: @"/"];
+      if (r.location != NSNotFound)
+      {
+          s = [s substringFromIndex: r.location];
+      }
+      else
+      {
+          return @"";
+      }
+  }
+  else
+  {
+      return @"";
+  }
   return s;
 }
 @end

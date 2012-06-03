@@ -40,7 +40,8 @@ NSString * const NSURLAuthenticationMethodHTTPBasic
   = @"NSURLAuthenticationMethodHTTPBasic";
 NSString * const NSURLAuthenticationMethodHTTPDigest
   = @"NSURLAuthenticationMethodHTTPDigest";
-
+NSString * const NSURLAuthenticationMethodNTLM = @"NSURLAuthenticationMethodNTLM";
+NSString * const NSURLAuthenticationMethodServerTrust = @"NSURLAuthenticationMethodServerTrust";
 // Internal data storage
 typedef struct {
   NSString	*host;

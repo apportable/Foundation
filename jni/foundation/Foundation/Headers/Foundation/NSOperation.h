@@ -57,6 +57,8 @@ typedef NSInteger NSOperationQueuePriority;
 @private id _internal;
 #endif
 }
+- (void (^)(void))completionBlock;
+- (void)setCompletionBlock:(void (^)(void))block;
 
 /** Adds a dependency to the receiver.<br />
  * The receiver is not considered ready to execute until all of its
@@ -213,6 +215,8 @@ enum {
 + (id) mainQueue;
 #endif
 
+- (void)addOperationWithBlock:(void (^)(void))block;
+
 /** Adds an operation to the receiver.
  */
 - (void) addOperation: (NSOperation *)op;
@@ -286,6 +290,16 @@ enum {
 - (NSInvocation *)invocation;
 
 - (id)result;
+@end
+
+@interface NSBlockOperation : NSOperation {
+@private
+    id _private2;
+    void *_reserved2;
+}
++ (id)blockOperationWithBlock:(void (^)(void))block;
+- (void)addExecutionBlock:(void (^)(void))block;
+- (NSArray *)executionBlocks;
 @end
     
 #if	defined(__cplusplus)

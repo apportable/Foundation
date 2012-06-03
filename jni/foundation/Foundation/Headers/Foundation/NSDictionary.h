@@ -86,6 +86,8 @@ extern "C" {
 #endif
 - (void)getObjects:(id *)objects andKeys:(id *)keys;
 
+- (void)enumerateKeysAndObjectsUsingBlock:(void (^)(id key, id obj, BOOL *stop))block;
+
 @end
 
 @interface NSMutableDictionary: NSDictionary

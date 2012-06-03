@@ -1358,6 +1358,12 @@ static void determineOperatingSystem()
   return availMem;
 }
 
+#include <time.h>
+- (NSTimeInterval) systemUptime
+{
+  return (NSTimeInterval)((1.f * clock()) / CLOCKS_PER_SEC);
+}
+
 @end
 
 void

@@ -46,6 +46,8 @@ extern NSString * const NSURLErrorDomain;
  */
 extern NSString * const NSErrorFailingURLStringKey;
 
+extern NSString * const NSURLErrorFailingURLErrorKey;
+
 /**
  * Error codes for URL errors
  */
@@ -87,6 +89,8 @@ enum
   NSURLErrorCannotMoveFile = 			-3005,
   NSURLErrorDownloadDecodingFailedMidStream =	-3006,
   NSURLErrorDownloadDecodingFailedToComplete =	-3007,
+
+  NSURLErrorCannotDecodeContentData = -1016,
 };
 
 #if	defined(__cplusplus)

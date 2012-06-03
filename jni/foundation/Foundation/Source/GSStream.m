@@ -99,6 +99,26 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 }
 
 @implementation	NSRunLoop (NSStream)
+
++ (void)initializeStreamClasses
+{
+    static BOOL initialized = NO;
+    if (!initialized)
+    {
+        initialized = YES;
+        [GSSocketStream load];
+        [GSInetInputStream load];
+        // [GSLocalInputStream load];
+        [GSInet6InputStream load];
+        [GSInetOutputStream load];
+        // [GSLocalOutputStream load];
+        [GSInet6InputStream load];
+        [GSInetServerStream load];
+        [GSInet6ServerStream load];
+        // [GSLocalServerStream load]; 
+    }
+}
+
 - (void) addStream: (NSStream*)aStream mode: (NSString*)mode
 {
   [self addEvent: [aStream _loopID]
@@ -919,9 +939,6 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 
 @end
 
-// The following classes are implementeded for their functionality in CFNetwork (however they are being left here for reference)
-
-/*
 @interface	GSLocalServerStream : GSServerStream
 @end
 
@@ -983,5 +1000,3 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 }
 
 @end
- */
-

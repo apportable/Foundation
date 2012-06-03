@@ -12,6 +12,11 @@ static Boolean noDefaultLocalizableStrings = NO;
     return _mainBundle;
 }
 
+- (id)initWithPath:(NSString *)path
+{
+  return [self init];
+}
+
 + (NSBundle*) bundleForClass: (Class)aClass
 {
     // NOTIMPLEMENTED
@@ -103,5 +108,11 @@ static Boolean noDefaultLocalizableStrings = NO;
 
   return result;
 }
+
+- (NSString*) bundleIdentifier
+{
+  return [[self infoDictionary] objectForKey: @"CFBundleIdentifier"];
+}
+
 
 @end

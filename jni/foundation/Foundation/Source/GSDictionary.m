@@ -22,6 +22,7 @@
    Boston, MA 02111 USA.
    */
 
+#define NDEBUG
 
 #import "common.h"
 #import "Foundation/NSDictionary.h"

@@ -57,6 +57,8 @@ GS_EXPORT NSString * const NSRunLoopCommonModes;
 
 + (NSRunLoop*) currentRunLoop;
 
++ (NSRunLoop *)mainRunLoop;
+
 - (void) acceptInputForMode: (NSString*)mode
                  beforeDate: (NSDate*)limit_date;
 
@@ -64,6 +66,7 @@ GS_EXPORT NSString * const NSRunLoopCommonModes;
 	  forMode: (NSString*)mode;
 
 - (NSString*) currentMode;
+- (NSString*) mainRunLoop;
 
 - (NSDate*) limitDateForMode: (NSString*)mode;
 

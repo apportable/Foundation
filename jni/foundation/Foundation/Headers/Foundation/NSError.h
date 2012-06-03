@@ -29,6 +29,7 @@
 #import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObject.h>
+#import  <Foundation/NSValue.h>
 
 #if	OS_API_VERSION(100300,GS_API_LATEST)
 

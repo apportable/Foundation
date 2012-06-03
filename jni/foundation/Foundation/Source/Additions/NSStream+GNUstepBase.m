@@ -41,6 +41,7 @@ NSString * const GSStreamRemotePortKey
 
 /* The remaining code is specific to the Apple Foundation
  */
+/*
 #if	!defined(GNUSTEP)
 
 @implementation NSStream (GNUstepBase)
@@ -95,4 +96,4 @@ NSString * const GSStreamRemotePortKey
 
 @end
 #endif
-
+*/

@@ -50,11 +50,22 @@ enum {
 };
 #endif
 
+
+enum {	                          
+    NSDataWritingAtomic = 1UL << 0,
+    NSDataWritingFileProtectionNone                                 = 0x10000000,
+    NSDataWritingFileProtectionComplete                             = 0x20000000,
+    NSDataWritingFileProtectionCompleteUnlessOpen                   = 0x30000000,
+    NSDataWritingFileProtectionCompleteUntilFirstUserAuthentication = 0x40000000,
+    NSDataWritingFileProtectionMask                                 = 0xf0000000
+};
+
 // Not implemented
 enum {
    NSDataReadingMappedIfSafe = 1UL << 0,
    NSDataReadingUncached = 1UL << 1,
    NSDataReadingMappedAlways = 1UL << 3,
+   NSDataReadingMapped = 1UL << 4,
 };
 typedef NSUInteger NSDataReadingOptions;
 

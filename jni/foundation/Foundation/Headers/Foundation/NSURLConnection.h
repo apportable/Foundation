@@ -34,12 +34,45 @@
 extern "C" {
 #endif
 
+#import <Foundation/NSURLProtectionSpace.h>
+#import <Foundation/NSStream.h>
+
 @class NSCachedURLResponse;
 @class NSData;
 @class NSError;
 @class NSURLAuthenticationChallenge;
 @class NSURLRequest;
 @class NSURLResponse;
+
+
+@class NSURLConnection;
+
+@protocol NSURLConnectionDelegate <NSObject>
+@optional
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error;
+- (BOOL)connectionShouldUseCredentialStorage:(NSURLConnection *)connection;
+- (void)connection:(NSURLConnection *)connection willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge;
+- (BOOL)connection:(NSURLConnection *)connection canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace;
+- (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge;
+- (void)connection:(NSURLConnection *)connection didCancelAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge;
+@end
+
+@protocol NSURLConnectionDataDelegate <NSURLConnectionDelegate>
+@optional
+- (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)response;
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response;
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data;
+
+- (NSInputStream *)connection:(NSURLConnection *)connection needNewBodyStream:(NSURLRequest *)request;
+- (void)connection:(NSURLConnection *)connection   didSendBodyData:(NSInteger)bytesWritten
+  totalBytesWritten:(NSInteger)totalBytesWritten
+  totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite;
+
+- (NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse;
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection;
+@end
 
 /**
  */
@@ -66,6 +99,8 @@ extern "C" {
 + (NSURLConnection *) connectionWithRequest: (NSURLRequest *)request
 				   delegate: (id)delegate;
 
+- (void)start;
+
 /**
  * Cancel the asynchronous load in progress (if any) for this connection.
  */
@@ -83,6 +118,10 @@ extern "C" {
  * of the load.
  */
 - (id) initWithRequest: (NSURLRequest *)request delegate: (id)delegate;
+
+- (id) initWithRequest:(NSURLRequest *)request delegate:(id)delegate startImmediately:(BOOL)startsImmediately;
+
+- (void)scheduleInRunLoop:(NSRunLoop *)loop forMode:(NSString *)mode;
 
 @end
 

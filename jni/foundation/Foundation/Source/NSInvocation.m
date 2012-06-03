@@ -229,7 +229,8 @@ static void byteCopy(void *src,void *dst,NSUInteger length){
      *((char *)pointerToValue)=*((int *)promoted);
     else if(naturalSize==2)
      *((short *)pointerToValue)=*((int *)promoted);
-
+    else
+     *((int *)pointerToValue) = *((int *)promoted);
    }
    else
    {
@@ -251,6 +252,9 @@ static void byteCopy(void *src,void *dst,NSUInteger length){
      *((int *)promoted)=*((char *)pointerToValue);
     else if(naturalSize==2)
      *((int *)promoted)=*((short *)pointerToValue);
+    else {
+      *((int *)promoted)=*((int *)pointerToValue);
+    }
 
     byteCopy(promoted,_argumentFrame+_argumentOffsets[index],promotedSize);
    }

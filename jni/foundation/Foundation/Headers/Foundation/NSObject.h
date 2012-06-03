@@ -86,6 +86,7 @@ extern "C" {
 - (NSUInteger) retainCount;		/** See [NSObject-retainCount] */
 - (NSZone*) zone;			/** See [NSObject-zone] */
 - (NSString*) description;		/** See [NSObject-description] */
+- (NSString *) debugDescription;
 @end
 
 /**

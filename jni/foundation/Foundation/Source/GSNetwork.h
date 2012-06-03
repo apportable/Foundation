@@ -36,7 +36,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#  include  <fcntl.h>
 
 #if     defined(__MINGW32__) || defined(__MINGW64__)
 
@@ -59,18 +59,21 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#ifndef	AF_LOCAL
-#define	AF_LOCAL	AF_UNIX
+#ifndef  AF_LOCAL
+#define  AF_LOCAL AF_UNIX
 #endif
-#ifndef	PF_LOCAL
-#define	PF_LOCAL	PF_UNIX
+#ifndef  PF_LOCAL
+#define  PF_LOCAL PF_UNIX
 #endif
 
 #define SOCKET  int     /* Socket type  */
 #define INVALID_SOCKET  -1
 #define BADSOCKET(X)    ((X) < 0)
 #define GSNETERROR      errno
-#define GSWOULDBLOCK    (errno == EINPROGRESS)
+#define GSWOULDBLOCK    (EINPROGRESS == errno\
+ || EALREADY == errno\
+ || EINTR == errno\
+ || EAGAIN == errno)
 
 #endif  /* __MINGW__ */
 
@@ -79,7 +82,7 @@
  * as large as we set, so it makes sense to set a large value in order to
  * support high volume applications.
  */
-#define	GSBACKLOG	10000
+#define  GSBACKLOG   10000
 
 #ifndef INADDRSZ
 #define INADDRSZ        4
@@ -91,8 +94,18 @@
 
 #if     !defined(HAVE_SOCKLEN_T)
 #  if   !defined(socklen_t)
-#    define	socklen_t	uint32_t
+#    define socklen_t   uint32_t
 #  endif
 #endif
+
+extern NSString* GSPrivateSockaddrHost(struct sockaddr *addr);
+
+extern unsigned GSPrivateSockaddrLength(struct sockaddr *addr);
+
+extern NSString* GSPrivateSockaddrName(struct sockaddr *addr);
+
+extern uint16_t GSPrivateSockaddrPort(struct sockaddr *addr);
+
+extern BOOL GSPrivateSockaddrSetup(NSString *machine, uint16_t port, NSString *service, NSString *protocol, struct sockaddr *sin);
 
 #endif

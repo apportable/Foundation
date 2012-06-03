@@ -36,6 +36,16 @@
 
 @implementation NSDateFormatter
 
+- (void)setDateStyle:(NSDateFormatterStyle)style
+{
+    dateStyle_ = style;
+}
+
+- (NSDateFormatterStyle)dateStyle
+{
+    return dateStyle_;
+}
+
 - (BOOL) allowsNaturalLanguage
 {
   return _allowsNaturalLanguage;

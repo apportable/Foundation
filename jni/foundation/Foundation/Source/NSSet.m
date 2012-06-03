@@ -908,6 +908,22 @@ static Class NSMutableSet_concrete_class;
 }
 @end
 
+@implementation NSSet (Blocks)
+
+- (void)enumerateObjectsUsingBlock:(void (^)(id obj, BOOL *stop))block
+{
+    NSEnumerator *enumerator = [self objectEnumerator];
+    id setObject;
+    BOOL shouldStop = NO;
+    for (id setObject in self)
+    {
+        if (shouldStop) return;
+        block(setObject, &shouldStop);
+    }
+}
+
+@end
+
 
 /**
  *  Mutable version of [NSSet].

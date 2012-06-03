@@ -57,7 +57,6 @@ FOUNDATION_EXPORT NSString * const NSPlatformResourceNameSuffix;
 
 -(void)startThread;
 -(void)endThread;
--(Class)URLProtocolClass;
 @end
 
 FOUNDATION_EXPORT int NSPlatformProcessID();

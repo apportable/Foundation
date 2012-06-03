@@ -362,10 +362,12 @@
   GSSocketStream *outs = nil;
 
   // try ipv4 first
-  ins = AUTORELEASE([[GSInetInputStream alloc]
-    initToAddr: address port: port]);
-  outs = AUTORELEASE([[GSInetOutputStream alloc]
-    initToAddr: address port: port]);
+  if (address != NULL)
+  {
+      ins = AUTORELEASE([[GSInetInputStream alloc]
+        initToAddr: address port: port]);
+      outs = AUTORELEASE([[GSInetOutputStream alloc]
+        initToAddr: address port: port]);
   if (!ins)
     {
 #if	defined(PF_INET6)
@@ -375,7 +377,7 @@
 	initToAddr: address port: port]);
 #endif
     }  
-
+  }
   if (inputStream)
     {
       [ins _setSibling: outs];

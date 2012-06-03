@@ -105,6 +105,8 @@ typedef enum {
  */
 - (NSString *) user;
 
++ (id)credentialForTrust:(void *)trust;
+
 @end
 
 #if	defined(__cplusplus)

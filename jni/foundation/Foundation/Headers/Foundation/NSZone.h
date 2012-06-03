@@ -74,8 +74,13 @@ struct _NSZone
   struct NSZoneStats (*stats)(struct _NSZone *zone);
   
   size_t gran; // Zone granularity
+#if defined(__has_feature) && __has_feature(objc_arc)
+  void *name;
+  void *next;
+#else
   NSString *name; // Name of zone (default is 'nil')
   NSZone *next;
+#endif
 };
 
 /**

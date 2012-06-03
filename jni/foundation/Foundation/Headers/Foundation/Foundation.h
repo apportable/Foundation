@@ -44,6 +44,7 @@
 #import	<Foundation/NSBundle.h>
 #import	<Foundation/NSByteOrder.h>
 #import	<Foundation/NSCache.h>
+#import	<Foundation/NSCalendar.h>
 #import	<Foundation/NSCalendarDate.h>
 #import	<Foundation/NSCharacterSet.h>
 #import	<Foundation/NSClassDescription.h>
@@ -105,6 +106,7 @@
 #import	<Foundation/NSScanner.h>
 #import	<Foundation/NSSerialization.h>
 #import	<Foundation/NSSet.h>
+#import	<Foundation/NSOrderedSet.h>
 #import	<Foundation/NSSortDescriptor.h>
 #import	<Foundation/NSSpellServer.h>
 #import	<Foundation/NSStream.h>
@@ -142,5 +144,6 @@
 #import	<CoreFoundation/CoreFoundation.h>
 #import <CFNetwork/CFNetwork.h>
 #import <Security/Security.h>
+#import <dispatch/dispatch.h>
 
 #endif /* __Foundation_h_GNUSTEP_BASE_INCLUDE */

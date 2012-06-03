@@ -81,6 +81,9 @@ enum {
  */
 typedef NSUInteger NSPropertyListFormat;
 
+typedef NSUInteger NSPropertyListReadOptions;
+typedef NSUInteger NSPropertyListWriteOptions;
+
 /**
  * <p>The NSPropertyListSerialization class provides facilities for
  * serialising and deserializing property list data in a number of

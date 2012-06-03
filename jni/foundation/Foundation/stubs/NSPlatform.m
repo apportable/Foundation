@@ -151,11 +151,6 @@ static NSPlatform *currentPlatform = nil;
    NSInvalidAbstractInvocation();
 }
 
--(Class)URLProtocolClass {
-   NSInvalidAbstractInvocation();
-   return Nil;
-}
-
 -(id)RunLoopCreate {
    NSInvalidAbstractInvocation();
    return Nil;

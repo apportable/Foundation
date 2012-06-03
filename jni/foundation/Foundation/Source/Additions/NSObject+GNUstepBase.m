@@ -113,17 +113,8 @@
 
 - (id) subclassResponsibility: (SEL)aSel
 {
-#ifdef NDEBUG
+  DEBUG_LOG("The subclass does not handle %s correctly. Undefined behaviour may follow.", NSStringFromSelector(aSel).UTF8String);
   return nil;
-#else
-  DEBUG_BREAK();
-  [NSException raise: NSInvalidArgumentException
-    format: @"subclass %@(%s) should override %@",
-    NSStringFromClass([self class]),
-    GSObjCIsInstance(self) ? "instance" : "class",
-    aSel ? (id)NSStringFromSelector(aSel) : (id)@"(null)"];
-  return nil;
-#endif
 }
 
 @end

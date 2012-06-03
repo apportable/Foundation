@@ -1,5 +1,6 @@
 LOCAL_PATH := $(call my-dir)
-
+ZOMBIES_ENABLED ?= no
+LOG_FN_CALLS ?= no
 # First include the Objective-C run-time library
 include $(CLEAR_VARS)
 LOCAL_MODULE    := objc
@@ -10,32 +11,71 @@ include $(PREBUILT_SHARED_LIBRARY)
 # Include prebuild openssl lib
 include $(CLEAR_VARS)
 LOCAL_MODULE    := ssl
-LOCAL_SRC_FILES := libssl.so
+LOCAL_SRC_FILES := $(TARGET_ARCH_ABI)/libssl.a
+
 LOCAL_LDLIBS    := 
-include $(PREBUILT_SHARED_LIBRARY)
+include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-BUILD     ?= release
-TARGET_OS := android
-HOST_OS   ?= Darwin
-FRONTEND  ?= clang
-ROOTDIR   := $(LOCAL_PATH)
-MODULE    := foundation
-BINDIR    := $(abspath $(ROOTDIR)/../obj/local/armeabi/objs/ )
+TARGET_ARCH_ABI  ?= armeabi
+BUILD            ?= release
+TARGET_OS        := android
+HOST_OS          ?= Darwin
+FRONTEND         ?= clang
+CLANG_VERSION    ?= 3.1
+ROOTDIR          ?= $(LOCAL_PATH)
+MODULE           := foundation
+MODULE_DST       := obj/local/$(TARGET_ARCH_ABI)/objs/foundation
+ifeq ("$(BINDIR)","")
+    BINDIR       := $(abspath $(ROOTDIR)/../obj/local/$(TARGET_ARCH_ABI)/objs/ )
+else
+    BINDIR       := $(abspath $(BINDIR) )
+endif
+TRACK_OBJC_ALLOCATIONS ?= no
 
 LOCAL_ASFLAGS   := -shared -Wl,-Bsymbolic 
-LOCAL_LDLIBS    := -llog -L../../objc-runtime/libs/armeabi/ -lobjc -L. -lssl 
+
+LOCAL_LDLIBS    := -llog -L$(BINDIR)/jni/ -lobjc -L./$(TARGET_ARCH_ABI)/ -lssl -lcrypto
+
+LOCAL_LDLIBS += -Wl,--build-id
+
 LOCAL_MODULE    := foundation
-LOCAL_ARM_MODE  := arm
+#LOCAL_ARM_MODE  := arm
+
+ifeq ($(TARGET_ARCH_ABI),x86)
 LOCAL_CFLAGS    +=  \
                     -DBUILD_FOUNDATION_LIB \
                     -DTARGET_OS_android \
                     -D__POSIX_SOURCE \
+                    -DURI_NO_UNICODE \
+                    -DURI_ENABLE_ANSI \
+                    -nostdinc \
+                    -I/$(ANDROID_NDK_ROOT)/toolchains/x86-4.4.3/prebuilt/$(HOST_OS)-$(HOST_ARCH)/lib/gcc/i686-android-linux/4.4.3/include/ \
+                    -I$(ANDROID_NDK_ROOT)/platforms/android-8/arch-x86/usr/include/ \
+
+else
+LOCAL_CFLAGS    +=  \
+                    -DBUILD_FOUNDATION_LIB \
+                    -DTARGET_OS_android \
+                    -D__POSIX_SOURCE \
+                    -DURI_NO_UNICODE \
+                    -DURI_ENABLE_ANSI \
+                    -nostdinc \
+                    -I/$(ANDROID_NDK_ROOT)/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$(HOST_OS)-$(HOST_ARCH)/lib/gcc/arm-linux-androideabi/4.4.3/include/ \
+                    -I$(ANDROID_NDK_ROOT)/platforms/android-8/arch-arm/usr/include/ \
+
+endif
 
 ifeq ($(BUILD), release)
   LOCAL_CFLAGS += \
     -O2 \
     -DNDEBUG \
+
+endif
+
+ifeq ($(TRACK_OBJC_ALLOCATIONS),yes)
+  LOCAL_CFLAGS += \
+    -DTRACK_OBJC_ALLOCATIONS=1 \
 
 endif
 
@@ -48,7 +88,7 @@ LOCAL_CFLAGS    +=  \
                     -Ifoundation/Foundation/Source \
                     -Ifoundation/objc/Headers \
                     -Ifoundation/ \
-
+                    -Ifoundation/uriparser/include
 
 LOCAL_CFLAGS    +=  \
                     -DANDROID \
@@ -58,6 +98,9 @@ LOCAL_CFLAGS    +=  \
                     -funwind-tables \
                     -fstack-protector \
                     -fno-short-enums \
+                    -fobjc-nonfragile-abi \
+                    -fobjc-nonfragile-abi-version=2 \
+                    -fobjc-call-cxx-cdtors \
                     -DHAVE_GCC_VISIBILITY \
                     -g \
                     -fpic \
@@ -65,12 +108,49 @@ LOCAL_CFLAGS    +=  \
                     -funwind-tables \
                     -fstack-protector \
                     -fno-short-enums \
-                    -D__ARM_ARCH_5__ \
                     -D__ANDROID__  \
                     -DAPPORTABLE \
-                    -march=armv5 \
-                    -msoft-float \
+
+ifeq ($(TARGET_ARCH_ABI),x86)
+LOCAL_CFLAGS    +=  \
+                    -isystem $(ANDROID_NDK_ROOT)/platforms/android-14/arch-x86/usr/include/ \
+
+else
+LOCAL_CFLAGS    +=  \
                     -isystem $(ANDROID_NDK_ROOT)/platforms/android-8/arch-arm/usr/include/ \
+
+endif
+
+ifeq ($(ZOMBIES_ENABLED),yes)
+LOCAL_CFLAGS += -DZOMBIES_ENABLED=1
+endif
+
+ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
+  LOCAL_CFLAGS += \
+      -mfloat-abi=softfp
+      -march=armv7-a \
+      -mfpu=vfp \
+
+  MODULE_ASFLAGS += \
+      -mfloat-abi=softfp
+      -march=armv7-a  \
+
+else
+  ifeq ($(TARGET_ARCH_ABI),x86)
+    COMMON_CCFLAGS += \
+        -march=i386 \
+
+  else
+    COMMON_CCFLAGS += \
+        -D__ARM_ARCH_5__ \
+        -D__ARM__ \
+        -march=armv5 \
+        -msoft-float \
+
+  endif
+
+endif
+
 
 
 LOCAL_SRC_FILES := \
@@ -147,6 +227,7 @@ LOCAL_SRC_FILES +=  \
                    Foundation/Source/NSAutoreleasePool.o \
                    Foundation/Source/NSCache.o \
                    Foundation/Source/NSCachedURLResponse.o \
+                   Foundation/Source/NSCalendar.o \
                    Foundation/Source/NSCalendarDate.o \
                    Foundation/Source/NSCallBacks.o \
                    Foundation/Source/NSCharacterSet.o \
@@ -160,7 +241,6 @@ LOCAL_SRC_FILES +=  \
                    Foundation/Source/NSData.o \
                    Foundation/Source/NSDate.o \
                    Foundation/Source/NSDateFormatter.o \
-                   Foundation/Source/NSDebug.o \
                    Foundation/Source/NSDecimal.o \
                    Foundation/Source/NSDecimalNumber.o \
                    Foundation/Source/NSDictionary.o \
@@ -250,7 +330,6 @@ LOCAL_SRC_FILES +=  \
                    Foundation/Source/NSZone.o \
                    Foundation/Source/externs.o \
                    Foundation/Source/NSHost.o \
-                   Foundation/Source/NSStream.o \
                    Foundation/Source/GSStream.o \
                    Foundation/Source/msgSendv.o \
                    Foundation/Source/NSProcessInfo.o \
@@ -260,7 +339,6 @@ LOCAL_SRC_FILES +=  \
                    Foundation/stubs/GSFTPURLHandle.o \
                    Foundation/stubs/GSHTTPAuthentication.o \
                    Foundation/stubs/GSHTTPURLHandle.o \
-                   Foundation/stubs/GSRunLoopCtxt.o \
                    Foundation/stubs/NSBundle.o \
                    Foundation/stubs/NSConnection.o \
                    Foundation/stubs/NSFileManager.o \
@@ -277,6 +355,27 @@ LOCAL_SRC_FILES +=  \
                    Foundation/stubs/NSPlatform.o \
                    Foundation/stubs/gnustep_base_user_main.o \
                    Foundation/stubs/NSPathUtilities.o \
+                   Foundation/Source/unix/NSStream.o \
+                   Foundation/Source/GSSocketStream.o \
+                   Foundation/Source/unix/GSRunLoopCtxt.o \
+
+#                  Foundation/Source/NSDebug.o \
+
+LOCAL_SRC_FILES += \
+                   uriparser/src/UriCommon.o \
+                   uriparser/src/UriCompare.o \
+                   uriparser/src/UriEscape.o \
+                   uriparser/src/UriFile.o \
+                   uriparser/src/UriIp4Base.o \
+                   uriparser/src/UriIp4.o \
+                   uriparser/src/UriNormalize.o \
+                   uriparser/src/UriNormalizeBase.o \
+                   uriparser/src/UriParse.o \
+                   uriparser/src/UriParseBase.o \
+                   uriparser/src/UriQuery.o \
+                   uriparser/src/UriRecompose.o \
+                   uriparser/src/UriResolve.o \
+                   uriparser/src/UriShorten.o \
 
 #                   Foundation/Source/NSRaise.o \
 
@@ -291,26 +390,45 @@ LOCAL_SRC_FILES +=  \
 # LOCAL_SRC_FILES += \
 #                    Security/SecBase.o \
 
+ifeq ($(LOG_FN_CALLS),yes)
+  COMMON_CCFLAGS += -flog-functions -DLOG_FN_CALLS
+  LOCAL_SRC_FILES += Foundation/Source/Additions/call_trace.o
+endif
+
 OBJECTS:=$(LOCAL_SRC_FILES)
 
 ANDROID_NDK_ROOT=/Developer/DestinyCloudFist/crystax-ndk-r7
 ANDROID_SDK_ROOT=/Developer/DestinyCloudFist/android-sdk-mac_x86
 
 CXX_SYSTEM = -isystem $(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/include/4.4.3/ \
-             -isystem $(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/libs/armeabi/4.4.3/include/ \
+             -isystem $(ANDROID_NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/libs/$(TARGET_ARCH_ABI)/4.4.3/include/ \
              -isystem $(ANDROID_NDK_ROOT)/sources/crystax/include \
 
-CCLD=$(ANDROID_NDK_ROOT)/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin/arm-linux-androideabi-g++ --sysroot=$(ANDROID_NDK_ROOT)/platforms/android-$(ANDROID_API_LEVEL)/arch-arm
+ifeq ($(TARGET_ARCH_ABI),x86)
+  CCLD=$(ANDROID_NDK_ROOT)/toolchains/x86-4.4.3/prebuilt/$(HOST_OS)-$(HOST_ARCH)/bin/i686-android-linux-g++ --sysroot=$(ANDROID_NDK_ROOT)/platforms/android-$(ANDROID_API_LEVEL)/arch-x86
 
-CC= /Developer/DestinyCloudFist/clang-2.9/bin/clang --sysroot=$(ANDROID_NDK_ROOT)/platforms/android-8/arch-arm $(CXX_SYSTEM) -ccc-host-triple arm-linux-eabi -march=armv5
-CPP= /Developer/DestinyCloudFist/clang-2.9/bin/clang --sysroot=$(ANDROID_NDK_ROOT)/platforms/android-8/arch-arm  $(CXX_SYSTEM)
+  CC= /Developer/DestinyCloudFist/clang-$(CLANG_VERSION)/bin/clang --sysroot=$(ANDROID_NDK_ROOT)/platforms/android-8/arch-x86 $(CXX_SYSTEM) -ccc-host-triple i686-android-linux -march=i386 -D__compiler_offsetof=__builtin_offsetof
+  CPP= /Developer/DestinyCloudFist/clang-$(CLANG_VERSION)/bin/clang --sysroot=$(ANDROID_NDK_ROOT)/platforms/android-8/arch-x86 $(CXX_SYSTEM)
 
-CCAS=$(ANDROID_NDK_ROOT)/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin/arm-linux-androideabi-gcc
-AS=$(ANDROID_NDK_ROOT)/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin/arm-linux-androideabi-as
-LDR=
-AR=$(ANDROID_NDK_ROOT)/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin/arm-linux-androideabi-ar
+  CCAS=$(ANDROID_NDK_ROOT)/toolchains/x86-4.4.3/prebuilt/$(HOST_OS)-$(HOST_ARCH)/bin/i686-android-linux-gcc
+  AS=$(ANDROID_NDK_ROOT)/toolchains/x86-4.4.3/prebuilt/$(HOST_OS)-$(HOST_ARCH)/bin/i686-android-linux-as
+  LDR=
+  AR=$(ANDROID_NDK_ROOT)/toolchains/x86-4.4.3/prebuilt/$(HOST_OS)-$(HOST_ARCH)/bin/i686-android-linux-ar
 
-OBJDIR = $(BINDIR)/$(MODULE)
+else
+  CCLD=$(ANDROID_NDK_ROOT)/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$(HOST_OS)-$(HOST_ARCH)/bin/arm-linux-androideabi-g++ --sysroot=$(ANDROID_NDK_ROOT)/platforms/android-$(ANDROID_API_LEVEL)/arch-arm
+
+  CC= /Developer/DestinyCloudFist/clang-$(CLANG_VERSION)/bin/clang --sysroot=$(ANDROID_NDK_ROOT)/platforms/android-8/arch-arm $(CXX_SYSTEM) -ccc-host-triple arm-android-eabi -march=armv5 -D__compiler_offsetof=__builtin_offsetof
+  CPP= /Developer/DestinyCloudFist/clang-$(CLANG_VERSION)/bin/clang --sysroot=$(ANDROID_NDK_ROOT)/platforms/android-8/arch-arm $(CXX_SYSTEM)
+
+  CCAS=$(ANDROID_NDK_ROOT)/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$(HOST_OS)-$(HOST_ARCH)/bin/arm-linux-androideabi-gcc
+  AS=$(ANDROID_NDK_ROOT)/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$(HOST_OS)-$(HOST_ARCH)/bin/arm-linux-androideabi-as
+  LDR=
+  AR=$(ANDROID_NDK_ROOT)/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$(HOST_OS)-$(HOST_ARCH)/bin/arm-linux-androideabi-ar
+
+endif
+
+OBJDIR = $(BINDIR)/$(MODULE_DST)
 
 MODULE_CFLAGS := $(COMMON_CFLAGS) $(CFLAGS) $(LOCAL_CFLAGS) 
 MODULE_CCFLAGS := $(COMMON_CCFLAGS) $(CCFLAGS) $(LOCAL_CFLAGS) 
@@ -320,42 +438,42 @@ MODULE_OBJCFLAGS := $(COMMON_OBJCFLAGS) $(LOCAL_OBJCFLAGS)
 $(OBJDIR)/%.o: $(ROOTDIR)/$(MODULE)/%.cc
 	@echo $<
 	@mkdir -p `echo $@ | sed s/[^/]*[.]o$$//`
-	$(CC) $(MODULE_CCFLAGS) -S $< -o $@.s
-	perl fixup_assembly.pl < $@.s > $@.fixed.s
-	$(CCAS) $(MODULE_ASFLAGS) -c $@.fixed.s -o $@
+	@$(CC) $(MODULE_CCFLAGS) -S $< -o $@.s
+	@perl fixup_assembly.pl < $@.s > $@.fixed.s
+	@$(CCAS) $(MODULE_ASFLAGS) -c $@.fixed.s -o $@
 
 $(OBJDIR)/%.o: $(ROOTDIR)/$(MODULE)/%.cpp
 	@echo $<
 	@mkdir -p `echo $@ | sed s/[^/]*[.]o$$//`
-	$(CC) $(MODULE_CCFLAGS) -S $< -o $@.s
-	perl fixup_assembly.pl < $@.s > $@.fixed.s
-	$(CCAS) $(MODULE_ASFLAGS) -c $@.fixed.s -o $@
+	@$(CC) $(MODULE_CCFLAGS) -S $< -o $@.s
+	@perl fixup_assembly.pl < $@.s > $@.fixed.s
+	@$(CCAS) $(MODULE_ASFLAGS) -c $@.fixed.s -o $@
 
 $(OBJDIR)/%.o: $(ROOTDIR)/$(MODULE)/%.c
 	@echo $<
 	@mkdir -p `echo $@ | sed s/[^/]*[.]o$$//`
-	$(CC) $(MODULE_CFLAGS) $(MODULE_CCFLAGS) -S $< -o $@.s
-	perl fixup_assembly.pl < $@.s > $@.fixed.s
-	$(CCAS) $(MODULE_ASFLAGS) -c $@.fixed.s -o $@
+	@$(CC) $(MODULE_CFLAGS) $(MODULE_CCFLAGS) -S $< -o $@.s
+	@perl fixup_assembly.pl < $@.s > $@.fixed.s
+	@$(CCAS) $(MODULE_ASFLAGS) -c $@.fixed.s -o $@
 
 $(OBJDIR)/%.o: $(ROOTDIR)/$(MODULE)/%.m
 	@echo $<
 	@mkdir -p `echo $@ | sed s/[^/]*[.]o$$//`
-	$(CC) $(MODULE_CFLAGS) $(MODULE_CCFLAGS) $(MODULE_OBJCFLAGS) -S $< -o $@.s
-	perl fixup_assembly.pl < $@.s > $@.fixed.s
-	$(CCAS) $(MODULE_ASFLAGS) -c $@.fixed.s -o $@
+	@$(CC) $(MODULE_CFLAGS) $(MODULE_CCFLAGS) $(MODULE_OBJCFLAGS) -S $< -o $@.s
+	@perl fixup_assembly.pl < $@.s > $@.fixed.s
+	@$(CCAS) $(MODULE_ASFLAGS) -c $@.fixed.s -o $@
 
 $(OBJDIR)/%.o: $(ROOTDIR)/$(MODULE)/%.mm
 	@echo $<
 	@mkdir -p `echo $@ | sed s/[^/]*[.]o$$//`
-	$(CC) $(MODULE_CCFLAGS) $(MODULE_OBJCFLAGS) -S $< -o $@.s
-	perl fixup_assembly.pl < $@.s > $@.fixed.s
-	$(CCAS) $(MODULE_ASFLAGS) -c $@.fixed.s -o $@
+	@$(CC) $(MODULE_CCFLAGS) $(MODULE_OBJCFLAGS) -S $< -o $@.s
+	@perl fixup_assembly.pl < $@.s > $@.fixed.s
+	@$(CCAS) $(MODULE_ASFLAGS) -c $@.fixed.s -o $@
 
 $(OBJDIR)/%.o: $(ROOTDIR)/$(MODULE)/%.s
 	@echo $<
 	@mkdir -p `echo $@ | sed s/[^/]*[.]o$$//`
-	$(CCAS) $(MODULE_ASFLAGS) -c $< -o $@
+	@$(CCAS) $(MODULE_ASFLAGS) -c $< -o $@
 
 include $(BUILD_SHARED_LIBRARY)
 

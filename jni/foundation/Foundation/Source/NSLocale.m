@@ -388,8 +388,7 @@ static NSArray *_currencyCodesWithType (uint32_t currType)
 
 + (NSArray *) preferredLanguages
 {
-  // FIXME
-  return [NSUserDefaults userLanguages];
+  return [[NSPlatform currentPlatform] preferredLanguages];
 }
 
 + (id) systemLocale

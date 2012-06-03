@@ -693,6 +693,15 @@ static inline BOOL timerInvalidated(NSTimer *t)
  * <code>NSDefaultRunLoopMode</code>.  Other options include
  * <code>NSConnectionReplyMode</code>, and certain modes used by the AppKit.</p>
  */
+
+@interface NSRunLoop (GSStreamInitializer)
++ (void)initializeStreamClasses;
+@end
+
+@interface NSRunLoop (NSURLConnectionInitializer)
++ (void)initializeConnectionClasses;
+@end
+
 @implementation NSRunLoop
 
 + (void) initialize
@@ -701,7 +710,23 @@ static inline BOOL timerInvalidated(NSTimer *t)
     {
       [self currentRunLoop];
       theFuture = RETAIN([NSDate distantFuture]);
+      [self initializeStreamClasses];
+      [self initializeConnectionClasses];
     }
+}
+
++ (NSRunLoop *) mainRunLoop {
+  if([NSThread currentThread] == [NSThread mainThread])
+    return [NSRunLoop currentRunLoop];
+  else {
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[NSMethodSignature signatureWithObjCTypes:"@#:"]];
+    [invocation setTarget: self];
+    [invocation setSelector: _cmd];
+    [invocation performSelector:@selector(invoke) onThread:[NSThread mainThread] withObject: NULL waitUntilDone: YES];
+    id retLoop = NULL;
+    [invocation getReturnValue: &retLoop];
+    return retLoop;
+  }
 }
 
 /**

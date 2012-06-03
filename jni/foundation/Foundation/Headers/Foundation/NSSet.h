@@ -84,6 +84,11 @@ extern "C" {
 - (NSSet *) setByAddingObjectsFromSet: (NSSet *)other;
 - (NSSet *) setByAddingObjectsFromArray: (NSArray *)other;
 #endif
+
+@end
+
+@interface NSSet (Blocks)
+- (void)enumerateObjectsUsingBlock:(void (^)(id obj, BOOL *stop))block;
 @end
 
 @interface NSMutableSet: NSSet

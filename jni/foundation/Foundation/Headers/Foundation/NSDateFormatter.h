@@ -106,7 +106,17 @@ typedef enum {
     NSDateFormatterBehavior10_0 = 1000,
     NSDateFormatterBehavior10_4 = 1040,
 } NSDateFormatterBehavior;
-    
+
+typedef enum {
+   NSDateFormatterNoStyle,
+   NSDateFormatterShortStyle,
+   NSDateFormatterMediumStyle,
+   NSDateFormatterLongStyle,
+   NSDateFormatterFullStyle,
+} NSDateFormatterStyle;
+
+@class NSTimeZone;
+
 @interface NSDateFormatter : NSFormatter <NSCoding, NSCopying>
 {
 #if	GS_EXPOSE(NSDateFormatter)
@@ -116,7 +126,13 @@ typedef enum {
 #if	!GS_NONFRAGILE
   void		*_unused;
 #endif
+  NSDateFormatterStyle dateStyle_;
 }
+@property (nonatomic, retain) NSTimeZone *timeZone;
+@property (nonatomic, copy) NSString *dateFormat;
+
+- (NSDateFormatterStyle)dateStyle;
+- (void)setDateStyle:(NSDateFormatterStyle)style;
 
 /* Initializing an NSDateFormatter */
 
@@ -150,14 +166,6 @@ typedef enum {
 - (NSString *) dateFormat;
 
 - (NSString *)stringFromDate:(NSDate *)date;
-
-typedef enum {
-   NSDateFormatterNoStyle,
-   NSDateFormatterShortStyle,
-   NSDateFormatterMediumStyle,
-   NSDateFormatterLongStyle,
-   NSDateFormatterFullStyle,
-} NSDateFormatterStyle;
 
 @end
 

@@ -40,6 +40,10 @@
 #import "GSSocketStream.h"
 #import "GNUstepBase/NSObject+GNUstepBase.h"
 
+#import <openssl/conf.h>
+#import <openssl/rand.h>
+#import <openssl/ssl.h>
+
 #ifndef SHUT_RD
 # ifdef  SD_RECEIVE
 #   define SHUT_RD      SD_RECEIVE
@@ -72,6 +76,174 @@ GSPrivateSockaddrLength(struct sockaddr *addr)
   }
 }
 
+NSString *
+GSPrivateSockaddrHost(struct sockaddr *addr)
+{
+  char		buf[40];
+
+#if     defined(AF_INET6)
+  if (AF_INET6 == addr->sa_family)
+    {
+      struct sockaddr_in6	*addr6 = (struct sockaddr_in6*)addr;
+
+      inet_ntop(AF_INET, &addr6->sin6_addr, buf, sizeof(buf));
+      return [NSString stringWithUTF8String: buf];
+    } 
+#endif
+  inet_ntop(AF_INET, &((struct sockaddr_in*)addr)->sin_addr, buf, sizeof(buf));
+  return [NSString stringWithUTF8String: buf];
+}
+
+NSString *
+GSPrivateSockaddrName(struct sockaddr *addr)
+{
+  return [NSString stringWithFormat: @"%@:%d",
+    GSPrivateSockaddrHost(addr),
+    GSPrivateSockaddrPort(addr)];
+}
+
+uint16_t
+GSPrivateSockaddrPort(struct sockaddr *addr)
+{
+  uint16_t	port;
+
+#if     defined(AF_INET6)
+  if (AF_INET6 == addr->sa_family)
+    {
+      struct sockaddr_in6	*addr6 = (struct sockaddr_in6*)addr;
+
+      port = addr6->sin6_port;
+      port = GSSwapBigI16ToHost(port);
+      return port;
+    } 
+#endif
+  port = ((struct sockaddr_in*)addr)->sin_port;
+  port = GSSwapBigI16ToHost(port);
+  return port;
+}
+
+BOOL
+GSPrivateSockaddrSetup(NSString *machine, uint16_t port,
+  NSString *service, NSString *protocol, struct sockaddr *sin)
+{
+  memset(sin, '\0', sizeof(*sin));
+  sin->sa_family = AF_INET;
+
+  /* If we were given a hostname, we use any address for that host.
+   * Otherwise we expect the given name to be an address unless it is
+   * a null (any address).
+   */
+  if (0 != [machine length])
+    {
+      const char	*n;
+
+      n = [machine UTF8String];
+      if ((!isdigit(n[0]) || sscanf(n, "%*d.%*d.%*d.%*d") != 4)
+	&& 0 == strchr(n, ':'))
+	{
+	  machine = [[NSHost hostWithName: machine] address];
+	  n = [machine UTF8String];
+	}
+
+      if (0 == n)
+	{
+	  return NO;
+	}
+      if (0 == strchr(n, ':'))
+	{
+	  struct sockaddr_in	*addr = (struct sockaddr_in*)sin;
+
+	  if (inet_pton(AF_INET, n, &addr->sin_addr) <= 0)
+	    {
+	      return NO;
+	    }
+	}
+      else
+	{
+#if     defined(AF_INET6)
+	  struct sockaddr_in6	*addr6 = (struct sockaddr_in6*)sin;
+
+	  sin->sa_family = AF_INET6;
+	  if (inet_pton(AF_INET6, n, &addr6->sin6_addr) <= 0)
+	    {
+	      return NO;
+	    }
+#else
+	  return NO;
+#endif
+	}
+    }
+  else
+    {
+      ((struct sockaddr_in*)sin)->sin_addr.s_addr
+	= GSSwapHostI32ToBig(INADDR_ANY);
+    }
+
+  /* The optional service and protocol parameters may be used to
+   * look up the port
+   */
+  if (nil != service)
+    {
+      const char	*sname;
+      const char	*proto;
+      struct servent	*sp;
+
+      if (nil == protocol)
+	{
+	  proto = "tcp";
+	}
+      else
+	{
+	  proto = [protocol UTF8String];
+	}
+
+      sname = [service UTF8String];
+      if ((sp = getservbyname(sname, proto)) == 0)
+	{
+	  const char*     ptr = sname;
+	  int             val = atoi(ptr);
+
+	  while (isdigit(*ptr))
+	    {
+	      ptr++;
+	    }
+	  if (*ptr == '\0' && val <= 0xffff)
+	    {
+	      port = val;
+	    }
+	  else if (strcmp(ptr, "gdomap") == 0)
+	    {
+#ifdef	GDOMAP_PORT_OVERRIDE
+	      port = GDOMAP_PORT_OVERRIDE;
+#else
+	      port = 538;	// IANA allocated port
+#endif
+	    }
+	  else
+	    {
+	      return NO;
+	    }
+	}
+      else
+	{
+	  port = GSSwapBigI16ToHost(sp->s_port);
+	}
+    }
+
+#if     defined(AF_INET6)
+  if (AF_INET6 == sin->sa_family)
+    {
+      ((struct sockaddr_in6*)sin)->sin6_port = GSSwapHostI16ToBig(port);
+    }
+  else
+    {
+      ((struct sockaddr_in*)sin)->sin_port = GSSwapHostI16ToBig(port);
+    }
+#else
+  ((struct sockaddr_ind*)sin)->sin6_port = GSSwapHostI16ToBig(port);
+#endif
+  return YES;
+}
 
 /** The GSStreamHandler abstract class defines the methods used to
  * implement a handler object for a pair of streams.
@@ -435,13 +607,13 @@ static gnutls_anon_client_credentials_t anoncred;
     }
   if ([proto isEqualToString: NSStreamSocketSecurityLevelNone] == YES)
     {
-      proto = NSStreamSocketSecurityLevelNone;
+      // proto = NSStreamSocketSecurityLevelNone;
       DESTROY(self);
       return nil;
     }
   else if ([proto isEqualToString: NSStreamSocketSecurityLevelSSLv2] == YES)
     {
-      proto = NSStreamSocketSecurityLevelSSLv2;
+      // proto = NSStreamSocketSecurityLevelSSLv2;
       GSOnceMLog(@"NSStreamSocketSecurityLevelTLSv2 is insecure ..."
         @" not implemented");
       DESTROY(self);
@@ -492,6 +664,7 @@ static gnutls_anon_client_credentials_t anoncred;
 
   if ([proto isEqualToString: NSStreamSocketSecurityLevelTLSv1] == YES)
     {
+#if GNUTLS_VERSION_NUMBER < 0x020C00
       const int proto_prio[4] = {
 #if	defined(GNUTLS_TLS1_2)
         GNUTLS_TLS1_2,
@@ -500,13 +673,20 @@ static gnutls_anon_client_credentials_t anoncred;
         GNUTLS_TLS1_0,
         0 };
       gnutls_protocol_set_priority (session, proto_prio);
+#else
+      gnutls_priority_set_direct(session, "NORMAL:-VERS-SSL3.0:+VERS-TLS-ALL", NULL);
+#endif
     }
   if ([proto isEqualToString: NSStreamSocketSecurityLevelSSLv3] == YES)
     {
+#if GNUTLS_VERSION_NUMBER < 0x020C00
       const int proto_prio[2] = {
         GNUTLS_SSL3,
         0 };
       gnutls_protocol_set_priority (session, proto_prio);
+#else
+      gnutls_priority_set_direct(session, "NORMAL:-VERS-TLS-ALL:+VERS-SSL3.0", NULL);
+#endif
     }
 
 /*
@@ -529,7 +709,9 @@ static gnutls_anon_client_credentials_t anoncred;
   
   /* Set transport layer to use our low level stream code.
    */
+#if GNUTLS_VERSION_NUMBER < 0x020C00
   gnutls_transport_set_lowat (session, 0);
+#endif
   gnutls_transport_set_pull_function (session, GSTLSPull);
   gnutls_transport_set_push_function (session, GSTLSPush);
   gnutls_transport_set_ptr (session, (gnutls_transport_ptr_t)self);
@@ -610,32 +792,219 @@ static gnutls_anon_client_credentials_t anoncred;
 
 /* GNUTLS not available ...
  */
-@interface      GSTLS : GSStreamHandler
+@interface      GSTLS : GSStreamHandler {
+    SSL_CTX *_ctx;
+    SSL *_ssl;
+    BIO *_sbio;
+    BOOL _handshake;
+    BOOL _handshaking;
+}
 @end
-@implementation GSTLS
-+ (void) tryInput: (GSSocketInputStream*)i output: (GSSocketOutputStream*)o
-{
-  NSString	*tls;
 
-  tls = [i propertyForKey: NSStreamSocketSecurityLevelKey];
-  if (tls == nil)
-    {
-      tls = [o propertyForKey: NSStreamSocketSecurityLevelKey];
-    }
-  if (tls != nil
-    && [tls isEqualToString: NSStreamSocketSecurityLevelNone] == NO)
-    {
-      NSLog(@"Attempt to use SSL/TLS without support.");
-      NSLog(@"Please reconfigure gnustep-base with GNU TLS.");
-    }
-  return;
-}
-- (id) initWithInput: (GSSocketInputStream*)i
-              output: (GSSocketOutputStream*)o
+@implementation GSTLS
+
++ (void)initialize
 {
-  DESTROY(self);
-  return nil;
+    int now = time(NULL);
+    RAND_seed(&now, sizeof(int));
+    SSL_library_init();
+    SSL_load_error_strings();
 }
+
+- (BOOL)handshake
+{
+    return _handshaking || !_handshake;
+}
+
+- (void)stream:(NSStream *)stream handleEvent:(NSStreamEvent)event
+{
+    if (_handshake == NO)
+    {
+        switch (event)
+        {
+            case NSStreamEventHasSpaceAvailable:
+            case NSStreamEventHasBytesAvailable:
+            case NSStreamEventOpenCompleted:
+                [self hello]; /* try to complete the handshake */
+                if (_handshake == YES)
+                {
+                    if ([istream streamStatus] == NSStreamStatusOpen)
+                    {
+                        [istream _resetEvents:NSStreamEventOpenCompleted];
+                        [istream _sendEvent:NSStreamEventOpenCompleted];
+                    }
+                    else
+                    {
+                        [istream _resetEvents:NSStreamEventErrorOccurred];
+                        [istream _sendEvent:NSStreamEventErrorOccurred];
+                    }
+                    if ([ostream streamStatus] == NSStreamStatusOpen)
+                    {
+                        [ostream _resetEvents:NSStreamEventOpenCompleted | NSStreamEventHasSpaceAvailable];
+                        [ostream _sendEvent:NSStreamEventOpenCompleted];
+                        [ostream _sendEvent:NSStreamEventHasSpaceAvailable];
+                    }
+                    else
+                    {
+                        [ostream _resetEvents:NSStreamEventErrorOccurred];
+                        [ostream _sendEvent:NSStreamEventErrorOccurred];
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+- (NSInteger)read:(uint8_t *)buffer maxLength:(NSUInteger)len
+{
+    NSInteger amount = SSL_read(_ssl, buffer, len);
+    DEBUG_LOG("SSL>>%s", buffer);
+    return amount;
+}
+ 
+- (NSInteger)write:(const uint8_t *)buffer maxLength:(NSUInteger)len
+{
+    DEBUG_LOG("SSL<<%s", buffer);
+    return SSL_write(_ssl, buffer, len);
+}
+ 
+- (void)hello
+{
+    if (!_handshake)
+    {
+        _handshaking = YES;
+        _handshake = YES;
+        int fd = [ostream _sock];
+        int flags = fcntl(fd, F_GETFL, 0);
+        fcntl(fd, F_SETFL, flags & ~(O_NONBLOCK));
+        if (_sbio == NULL)
+        {
+            _sbio = BIO_new_socket(fd, BIO_NOCLOSE);
+        }
+        if (_sbio == NULL)
+        {
+            DEBUG_LOG("SSL could not create BIO");
+        }
+        SSL_set_bio(_ssl, _sbio, _sbio);
+        int err = SSL_connect(_ssl);
+        fcntl(fd, F_SETFL, flags);
+        if (err < 0)
+        {
+            err = SSL_get_error(_ssl, err);
+            if (err == SSL_ERROR_WANT_READ)
+            {
+                _handshake = NO;
+            }
+            else if (err == SSL_ERROR_SSL)
+            {
+                long err_id = ERR_get_error();
+                DEBUG_LOG("SSL Error: %s reason: %s", ERR_error_string(err_id, NULL), ERR_reason_error_string(err_id));
+
+            }
+            else if (err != SSL_ERROR_NONE)
+            {
+                DEBUG_LOG("Got an ssl error %d", err);
+            }
+        }
+        _handshaking = NO;
+    }
+}
+
+- (void)bye
+{
+#ifdef I_HATE_MEMORY_LEAKS
+    // This seems to leak during cancellation of the request
+    // TODO: FIXME!
+    if (_ssl != NULL)
+    {
+        SSL_free(_ssl);
+    }
+    if (_ctx != NULL)
+    {
+        SSL_CTX_free(_ctx);
+    }
+#endif
+}
+
++ (void)tryInput:(GSSocketInputStream *)i output:(GSSocketOutputStream *)o
+{
+    NSString	*tls = [i propertyForKey:NSStreamSocketSecurityLevelKey];
+    if (tls == NULL)
+    {
+        tls = [o propertyForKey:NSStreamSocketSecurityLevelKey];
+    }
+    else
+    {
+        [o setProperty: tls forKey:NSStreamSocketSecurityLevelKey];
+    }
+
+    if (tls != NULL && [tls isEqualToString: NSStreamSocketSecurityLevelNone] == NO)
+    {
+        GSTLS *handler = [[GSTLS alloc] initWithInput: i output: o];
+        [i _setHandler:handler];
+        [o _setHandler:handler];
+        RELEASE(handler);
+    }
+
+    return;
+}
+
+- (id)initWithInput:(GSSocketInputStream *)i output:(GSSocketOutputStream *)o
+{
+    NSString *proto = [i propertyForKey:NSStreamSocketSecurityLevelKey];
+    if ([[o propertyForKey: NSStreamSocketSecurityLevelKey] isEqual: proto] == NO)
+    {
+        NSLog(@"NSStreamSocketSecurityLevel on input stream does not match output stream");
+        DESTROY(self);
+        return NULL;
+    }
+    if ([proto isEqualToString:NSStreamSocketSecurityLevelNone] == YES)
+    {
+        DESTROY(self);
+        return NULL;
+    }
+    else if ([proto isEqualToString:NSStreamSocketSecurityLevelSSLv2] == YES)
+    {
+        proto = NSStreamSocketSecurityLevelSSLv2;
+    }
+    else if ([proto isEqualToString:NSStreamSocketSecurityLevelSSLv3] == YES)
+    {
+        proto = NSStreamSocketSecurityLevelSSLv3;
+    }
+    else if ([proto isEqualToString:NSStreamSocketSecurityLevelTLSv1] == YES)
+    {
+        proto = NSStreamSocketSecurityLevelTLSv1;
+    }
+    else
+    {
+        proto = NSStreamSocketSecurityLevelNegotiatedSSL;
+    }
+    self = [super initWithInput:i output:o];
+    if (self != NULL)
+    {
+        if ([proto isEqualToString:NSStreamSocketSecurityLevelSSLv2] == YES)
+        {
+            _ctx = SSL_CTX_new(SSLv2_client_method());
+        }
+        else if ([proto isEqualToString:NSStreamSocketSecurityLevelSSLv3] == YES)
+        {
+            _ctx = SSL_CTX_new(SSLv3_client_method());
+        }
+        else if ([proto isEqualToString:NSStreamSocketSecurityLevelTLSv1] == YES)
+        {
+            _ctx = SSL_CTX_new(TLSv1_client_method());
+        }
+        else
+        {
+            _ctx = SSL_CTX_new(SSLv23_client_method());
+        }
+        _ssl = SSL_new(_ctx);
+    }
+    return self;
+}
+
 @end
 
 #endif   /* HAVE_GNUTLS */
@@ -809,7 +1178,7 @@ static NSString * const GSSOCKSAckConn = @"GSSOCKSAckConn";
 #endif	/* AF_INET6 */
       else
 	{
-	  struct sockaddr_in	*addr = (struct sockaddr_in*)[istream _address];
+	  struct sockaddr_in	*addr;
           NSDictionary          *conf;
           NSString              *host;
           int                   pnum;
@@ -817,6 +1186,7 @@ static NSString * const GSSOCKSAckConn = @"GSSOCKSAckConn";
           /* Record the host and port that the streams are supposed to be
            * connecting to.
            */ 
+	  addr = (struct sockaddr_in*)(void*)[istream _address];
 	  address = [[NSString alloc] initWithUTF8String:
 	    (char*)inet_ntoa(addr->sin_addr)];
 	  port = [[NSString alloc] initWithFormat: @"%d",
@@ -828,8 +1198,8 @@ static NSString * const GSSOCKSAckConn = @"GSSOCKSAckConn";
           conf = [istream propertyForKey: NSStreamSOCKSProxyConfigurationKey];
           host = [conf objectForKey: NSStreamSOCKSProxyHostKey];
           pnum = [[conf objectForKey: NSStreamSOCKSProxyPortKey] intValue];
-          [istream _setSocketAddress: address port: pnum family: AF_INET];
-          [ostream _setSocketAddress: address port: pnum family: AF_INET];
+          [istream _setSocketAddress: host port: pnum family: AF_INET];
+          [ostream _setSocketAddress: host port: pnum family: AF_INET];
 	}
     }
   return self;
@@ -1148,7 +1518,6 @@ static NSString * const GSSOCKSAckConn = @"GSSOCKSAckConn";
 			{
 			  NSString	*a;
 
-			  error = @"";	// success
 			  if (rbuffer[3] == 1)
 			    {
 			      a = [NSString stringWithFormat: @"%d.%d.%d.%d",
@@ -1176,7 +1545,7 @@ static NSString * const GSSOCKSAckConn = @"GSSOCKSAckConn";
 				    {
 				      buf[j++] = ':';
 				    }
-				  sprintf((char*)&buf[j], "%04x", val);
+				  snprintf((char*)&buf[j], 5, "%04x", val);
 				  j += 4;
 				}
 			      a = [NSString stringWithUTF8String:
@@ -1246,12 +1615,7 @@ socketError(int result)
 static inline BOOL
 socketWouldBlock()
 {
-#if	defined(__MINGW__)
-  int   e = WSAGetLastError();
-  return (e == WSAEWOULDBLOCK || e == WSAEINPROGRESS) ? YES : NO;
-#else
-  return (errno == EWOULDBLOCK || errno == EINPROGRESS) ? YES : NO;
-#endif
+  return GSWOULDBLOCK ? YES : NO;
 }
 
 
@@ -1321,103 +1685,40 @@ setNonBlocking(SOCKET fd)
 
   if (result == nil && _address.s.sa_family != AF_UNSPEC)
     {
-      SOCKET    s = [self _sock];
+      SOCKET    	s = [self _sock];
+      struct sockaddr	sin;
+      socklen_t	        size = sizeof(sin);
 
-      switch (_address.s.sa_family)
-        {
-          case AF_INET:
-            {
-              struct sockaddr_in sin;
-              socklen_t	        size = sizeof(sin);
-
-              if ([key isEqualToString: GSStreamLocalAddressKey])
-                {
-                  if (getsockname(s, (struct sockaddr*)&sin, &size) != -1)
-                    {
-                      result = [NSString stringWithUTF8String:
-                        (char*)inet_ntoa(sin.sin_addr)];
-                    }
-                }
-              else if ([key isEqualToString: GSStreamLocalPortKey])
-                {
-                  if (getsockname(s, (struct sockaddr*)&sin, &size) != -1)
-                    {
-                      result = [NSString stringWithFormat: @"%d",
-                        (int)GSSwapBigI16ToHost(sin.sin_port)];
-                    }
-                }
-              else if ([key isEqualToString: GSStreamRemoteAddressKey])
-                {
-                  if (getpeername(s, (struct sockaddr*)&sin, &size) != -1)
-                    {
-                      result = [NSString stringWithUTF8String:
-                        (char*)inet_ntoa(sin.sin_addr)];
-                    }
-                }
-              else if ([key isEqualToString: GSStreamRemotePortKey])
-                {
-                  if (getpeername(s, (struct sockaddr*)&sin, &size) != -1)
-                    {
-                      result = [NSString stringWithFormat: @"%d",
-                        (int)GSSwapBigI16ToHost(sin.sin_port)];
-                    }
-                }
-            }
-            break;
-#if	defined(AF_INET6)
-          case AF_INET6:
-            {
-              struct sockaddr_in6 sin;
-              socklen_t	        size = sizeof(sin);
-
-              if ([key isEqualToString: GSStreamLocalAddressKey])
-                {
-                  if (getsockname(s, (struct sockaddr*)&sin, &size) != -1)
-                    {
-                      char	buf[INET6_ADDRSTRLEN+1];
-
-                      if (inet_ntop(AF_INET6, &(sin.sin6_addr), buf,
-                        INET6_ADDRSTRLEN) == 0)
-                        {
-                          buf[INET6_ADDRSTRLEN] = '\0';
-                          result = [NSString stringWithUTF8String: buf];
-                        }
-                    }
-                }
-              else if ([key isEqualToString: GSStreamLocalPortKey])
-                {
-                  if (getsockname(s, (struct sockaddr*)&sin, &size) != -1)
-                    {
-                      result = [NSString stringWithFormat: @"%d",
-                        (int)GSSwapBigI16ToHost(sin.sin6_port)];
-                    }
-                }
-              else if ([key isEqualToString: GSStreamRemoteAddressKey])
-                {
-                  if (getpeername(s, (struct sockaddr*)&sin, &size) != -1)
-                    {
-                      char	buf[INET6_ADDRSTRLEN+1];
-
-                      if (inet_ntop(AF_INET6, &(sin.sin6_addr), buf,
-                        INET6_ADDRSTRLEN) == 0)
-                        {
-                          buf[INET6_ADDRSTRLEN] = '\0';
-                          result = [NSString stringWithUTF8String: buf];
-                        }
-                    }
-                }
-              else if ([key isEqualToString: GSStreamRemotePortKey])
-                {
-                  if (getpeername(s, (struct sockaddr*)&sin, &size) != -1)
-                    {
-                      result = [NSString stringWithFormat: @"%d",
-                        (int)GSSwapBigI16ToHost(sin.sin6_port)];
-                    }
-                }
-            }
-            break;
-#endif
-        }
+      if ([key isEqualToString: GSStreamLocalAddressKey])
+	{
+	  if (getsockname(s, (struct sockaddr*)&sin, &size) != -1)
+	    {
+	      result = GSPrivateSockaddrHost(&sin);
+	    }
+	}
+      else if ([key isEqualToString: GSStreamLocalPortKey])
+	{
+	  if (getsockname(s, (struct sockaddr*)&sin, &size) != -1)
+	    {
+	      result = [NSString stringWithFormat: @"%d",
+		(int)GSPrivateSockaddrPort(&sin)];
+	    }
+	}
+      else if ([key isEqualToString: GSStreamRemoteAddressKey])
+	{
+	  if (getpeername(s, (struct sockaddr*)&sin, &size) != -1)
+	    {
+	      result = GSPrivateSockaddrHost(&sin);
+	    }
+	}
+      else if ([key isEqualToString: GSStreamRemotePortKey])
+	{
+	  if (getpeername(s, (struct sockaddr*)&sin, &size) != -1)
+	    {
+	      result = [NSString stringWithFormat: @"%d",
+		(int)GSPrivateSockaddrPort(&sin)];
+	    }
+	}
     }
   return result;
 }
@@ -1468,9 +1769,9 @@ setNonBlocking(SOCKET fd)
           addr_c = [address cStringUsingEncoding: NSUTF8StringEncoding];
           memset(&peer, '\0', sizeof(peer));
           peer.sin_family = AF_INET;
-          peer.sin_port = GSSwapHostI16ToBig(p);
+          peer.sin_port = htons(p);
           ptonReturn = inet_pton(AF_INET, addr_c, &peer.sin_addr);
-          if (ptonReturn == 0)   // error
+          if (ptonReturn <= 0)   // error
             {
               return NO;
             }
@@ -1491,9 +1792,9 @@ setNonBlocking(SOCKET fd)
           addr_c = [address cStringUsingEncoding: NSUTF8StringEncoding];
           memset(&peer, '\0', sizeof(peer));
           peer.sin6_family = AF_INET6;
-          peer.sin6_port = GSSwapHostI16ToBig(p);
+          peer.sin6_port = htons(p);
           ptonReturn = inet_pton(AF_INET6, addr_c, &peer.sin6_addr);
-          if (ptonReturn == 0)   // error
+          if (ptonReturn <= 0)   // error
             {
               return NO;
             }
@@ -1704,6 +2005,15 @@ setNonBlocking(SOCKET fd)
   WSAEventSelect(_sock, _loopID, FD_ALL_EVENTS);
 #endif
   [super open];
+}
+
+- (void)_sendEvent:(NSStreamEvent)event
+{
+    if (_handler == nil)
+    {
+        [GSTLS tryInput: self output: _sibling];
+    }
+    [_handler hello];
 }
 
 - (void) close

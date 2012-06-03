@@ -1121,6 +1121,20 @@ compareIt(id o1, id o2, void* context)
   }
 }
 
+- (void)enumerateKeysAndObjectsUsingBlock:(void (^)(id key, id obj, BOOL *stop))block
+{
+    BOOL stop = NO;
+    for (id key in [self allKeys])
+    {
+        id value = [self objectForKey:key];
+        block(key, value, &stop);
+        if (stop)
+        {
+            break;
+        }
+    }
+}
+
 @end
 
 
@@ -1393,4 +1407,5 @@ compareIt(id o1, id o2, void* context)
       [self setObject: value forKey: key];
     }
 }
+
 @end

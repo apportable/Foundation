@@ -142,6 +142,7 @@ static NSFileManager	*mgr = nil;
       DESTROY(self);
       return nil;
     }
+#ifndef APPORTABLE
   if ([mgr isWritableFileAtPath: lockDir] == NO)
     {
       NSLog(@"parent directory of lock file '%@' is not writable\n", _lockPath);
@@ -155,6 +156,7 @@ static NSFileManager	*mgr = nil;
       DESTROY(self);
       return nil;
     }
+#endif
   return self;
 }
 

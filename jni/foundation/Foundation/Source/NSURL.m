@@ -54,8 +54,99 @@ function may be incorrect
 #import "Foundation/NSURLConnection.h"
 #import "Foundation/NSURLRequest.h"
 
+#include <uriparser/Uri.h>
+
+NSString * const NSURLNameKey = @"NSURLNameKey";
+NSString * const NSURLLocalizedNameKey = @"NSURLLocalizedNameKey";
+NSString * const NSURLIsRegularFileKey = @"NSURLIsRegularFileKey";
+NSString * const NSURLIsDirectoryKey = @"NSURLIsDirectoryKey";
+NSString * const NSURLIsSymbolicLinkKey = @"NSURLIsSymbolicLinkKey";
+NSString * const NSURLIsVolumeKey = @"NSURLIsVolumeKey";
+NSString * const NSURLIsPackageKey = @"NSURLIsPackageKey";
+NSString * const NSURLIsSystemImmutableKey = @"NSURLIsSystemImmutableKey";
+NSString * const NSURLIsUserImmutableKey = @"NSURLIsUserImmutableKey";
+NSString * const NSURLIsHiddenKey = @"NSURLIsHiddenKey";
+NSString * const NSURLHasHiddenExtensionKey = @"NSURLHasHiddenExtensionKey";
+NSString * const NSURLCreationDateKey = @"NSURLCreationDateKey";
+NSString * const NSURLContentAccessDateKey = @"NSURLContentAccessDateKey";
+NSString * const NSURLContentModificationDateKey = @"NSURLContentModificationDateKey";
+NSString * const NSURLAttributeModificationDateKey = @"NSURLAttributeModificationDateKey";
+NSString * const NSURLLinkCountKey = @"NSURLLinkCountKey";
+NSString * const NSURLParentDirectoryURLKey = @"NSURLParentDirectoryURLKey";
+NSString * const NSURLVolumeURLKey = @"NSURLVolumeURLKey";
+NSString * const NSURLTypeIdentifierKey = @"NSURLTypeIdentifierKey";
+NSString * const NSURLLocalizedTypeDescriptionKey = @"NSURLLocalizedTypeDescriptionKey";
+NSString * const NSURLLabelNumberKey = @"NSURLLabelNumberKey";
+NSString * const NSURLLabelColorKey = @"NSURLLabelColorKey";
+NSString * const NSURLLocalizedLabelKey = @"NSURLLocalizedLabelKey";
+NSString * const NSURLEffectiveIconKey = @"NSURLEffectiveIconKey";
+NSString * const NSURLCustomIconKey = @"NSURLCustomIconKey";
+NSString * const NSURLFileResourceIdentifierKey = @"NSURLFileResourceIdentifierKey";
+NSString * const NSURLVolumeIdentifierKey = @"NSURLVolumeIdentifierKey";
+NSString * const NSURLPreferredIOBlockSizeKey = @"NSURLPreferredIOBlockSizeKey";
+NSString * const NSURLIsReadableKey = @"NSURLIsReadableKey";
+NSString * const NSURLIsWritableKey = @"NSURLIsWritableKey";
+NSString * const NSURLIsExecutableKey = @"NSURLIsExecutableKey";
+NSString * const NSURLIsMountTriggerKey = @"NSURLIsMountTriggerKey";
+NSString * const NSURLFileSecurityKey = @"NSURLFileSecurityKey";
+NSString * const NSURLIsExcludedFromBackupKey = @"NSURLIsExcludedFromBackupKey";
+NSString * const NSURLFileResourceTypeKey = @"NSURLFileResourceTypeKey";
+NSString * const NSURLFileResourceTypeNamedPipe = @"NSURLFileResourceTypeNamedPipe";
+NSString * const NSURLFileResourceTypeCharacterSpecial = @"NSURLFileResourceTypeCharacterSpecial";
+NSString * const NSURLFileResourceTypeDirectory = @"NSURLFileResourceTypeDirectory";
+NSString * const NSURLFileResourceTypeBlockSpecial = @"NSURLFileResourceTypeBlockSpecial";
+NSString * const NSURLFileResourceTypeRegular = @"NSURLFileResourceTypeRegular";
+NSString * const NSURLFileResourceTypeSymbolicLink = @"NSURLFileResourceTypeSymbolicLink";
+NSString * const NSURLFileResourceTypeSocket = @"NSURLFileResourceTypeSocket";
+NSString * const NSURLFileResourceTypeUnknown = @"NSURLFileResourceTypeUnknown";
+NSString * const NSURLFileSizeKey = @"NSURLFileSizeKey";
+NSString * const NSURLFileAllocatedSizeKey = @"NSURLFileAllocatedSizeKey";
+NSString * const NSURLTotalFileSizeKey = @"NSURLTotalFileSizeKey";
+NSString * const NSURLTotalFileAllocatedSizeKey = @"NSURLTotalFileAllocatedSizeKey";
+NSString * const NSURLIsAliasFileKey = @"NSURLIsAliasFileKey";
+NSString * const NSURLVolumeLocalizedFormatDescriptionKey = @"NSURLVolumeLocalizedFormatDescriptionKey";
+NSString * const NSURLVolumeTotalCapacityKey = @"NSURLVolumeTotalCapacityKey";
+NSString * const NSURLVolumeAvailableCapacityKey = @"NSURLVolumeAvailableCapacityKey";
+NSString * const NSURLVolumeResourceCountKey = @"NSURLVolumeResourceCountKey";
+NSString * const NSURLVolumeSupportsPersistentIDsKey = @"NSURLVolumeSupportsPersistentIDsKey";
+NSString * const NSURLVolumeSupportsSymbolicLinksKey = @"NSURLVolumeSupportsSymbolicLinksKey";
+NSString * const NSURLVolumeSupportsHardLinksKey = @"NSURLVolumeSupportsHardLinksKey";
+NSString * const NSURLVolumeSupportsJournalingKey = @"NSURLVolumeSupportsJournalingKey";
+NSString * const NSURLVolumeIsJournalingKey = @"NSURLVolumeIsJournalingKey";
+NSString * const NSURLVolumeSupportsSparseFilesKey = @"NSURLVolumeSupportsSparseFilesKey";
+NSString * const NSURLVolumeSupportsZeroRunsKey = @"NSURLVolumeSupportsZeroRunsKey";
+NSString * const NSURLVolumeSupportsCaseSensitiveNamesKey = @"NSURLVolumeSupportsCaseSensitiveNamesKey";
+NSString * const NSURLVolumeSupportsCasePreservedNamesKey = @"NSURLVolumeSupportsCasePreservedNamesKey";
+NSString * const NSURLVolumeSupportsRootDirectoryDatesKey = @"NSURLVolumeSupportsRootDirectoryDatesKey";
+NSString * const NSURLVolumeSupportsVolumeSizesKey = @"NSURLVolumeSupportsVolumeSizesKey";
+NSString * const NSURLVolumeSupportsRenamingKey = @"NSURLVolumeSupportsRenamingKey";
+NSString * const NSURLVolumeSupportsAdvisoryFileLockingKey = @"NSURLVolumeSupportsAdvisoryFileLockingKey";
+NSString * const NSURLVolumeSupportsExtendedSecurityKey = @"NSURLVolumeSupportsExtendedSecurityKey";
+NSString * const NSURLVolumeIsBrowsableKey = @"NSURLVolumeIsBrowsableKey";
+NSString * const NSURLVolumeMaximumFileSizeKey = @"NSURLVolumeMaximumFileSizeKey";
+NSString * const NSURLVolumeIsEjectableKey = @"NSURLVolumeIsEjectableKey";
+NSString * const NSURLVolumeIsRemovableKey = @"NSURLVolumeIsRemovableKey";
+NSString * const NSURLVolumeIsInternalKey = @"NSURLVolumeIsInternalKey";
+NSString * const NSURLVolumeIsAutomountedKey = @"NSURLVolumeIsAutomountedKey";
+NSString * const NSURLVolumeIsLocalKey = @"NSURLVolumeIsLocalKey";
+NSString * const NSURLVolumeIsReadOnlyKey = @"NSURLVolumeIsReadOnlyKey";
+NSString * const NSURLVolumeCreationDateKey = @"NSURLVolumeCreationDateKey";
+NSString * const NSURLVolumeURLForRemountingKey = @"NSURLVolumeURLForRemountingKey";
+NSString * const NSURLVolumeUUIDStringKey = @"NSURLVolumeUUIDStringKey";
+NSString * const NSURLVolumeNameKey = @"NSURLVolumeNameKey";
+NSString * const NSURLVolumeLocalizedNameKey = @"NSURLVolumeLocalizedNameKey";
+NSString * const NSURLIsUbiquitousItemKey = @"NSURLIsUbiquitousItemKey";
+NSString * const NSURLUbiquitousItemHasUnresolvedConflictsKey = @"NSURLUbiquitousItemHasUnresolvedConflictsKey";
+NSString * const NSURLUbiquitousItemIsDownloadedKey = @"NSURLUbiquitousItemIsDownloadedKey";
+NSString * const NSURLUbiquitousItemIsDownloadingKey = @"NSURLUbiquitousItemIsDownloadingKey";
+NSString * const NSURLUbiquitousItemIsUploadedKey = @"NSURLUbiquitousItemIsUploadedKey";
+NSString * const NSURLUbiquitousItemIsUploadingKey = @"NSURLUbiquitousItemIsUploadingKey";
+NSString * const NSURLUbiquitousItemPercentDownloadedKey = @"NSURLUbiquitousItemPercentDownloadedKey";
+NSString * const NSURLUbiquitousItemPercentUploadedKey = @"NSURLUbiquitousItemPercentUploadedKey";
+
 NSString * const NSURLErrorDomain = @"NSURLErrorDomain";
 NSString * const NSErrorFailingURLStringKey = @"NSErrorFailingURLStringKey";
+NSString * const NSURLErrorFailingURLErrorKey = @"NSErrorFailingURLStringKey"; // Intentionally duplicated
 
 @interface	NSString (NSURLPrivate)
 - (NSString*) _stringByAddingPercentEscapes;
@@ -269,7 +360,8 @@ static char *buildURL(parsedURL *base, parsedURL *rel, BOOL standardize)
 	{
 	  *tmp++ = '/';
 	}
-      strcpy(tmp, rel->path);
+      if (rel->path)
+        strcpy(tmp, rel->path);
     }
   else if (base == 0)
     {
@@ -562,6 +654,18 @@ static unsigned	urlAlign;
   return AUTORELEASE([[NSURL alloc] initFileURLWithPath: aPath]);
 }
 
++ (id) fileURLWithPath: (NSString *)aPath isDirectory:(BOOL)isDir
+{
+    if (isDir)
+    {
+        return [self fileURLWithPath:[aPath stringByAppendingString:@"/"]];
+    }
+    else
+    {
+        return [self fileURLWithPath:aPath];
+    }
+}
+
 + (void) initialize
 {
   if (clientsLock == nil)
@@ -681,6 +785,13 @@ static unsigned	urlAlign;
   return self;
 }
 
+- (id) initFileURLWithPath: (NSString*)aPath isDirectory: (BOOL)isDirectory
+{
+  // TODO (aultman): do I need to do something with the isDirectory flag?
+  return [self initFileURLWithPath:aPath];
+}
+
+
 /**
  * Initialise as a file URL with the specified path (which must
  * be a valid path on the local filesystem).<br />
@@ -740,6 +851,11 @@ static unsigned	urlAlign;
 - (id) initWithString: (NSString*)aUrlString
 	relativeToURL: (NSURL*)aBaseUrl
 {
+  if (aUrlString == NULL || [aUrlString length] == 0)
+  {
+      [self release];
+      return [aBaseUrl copy];
+  }
   /* RFC 2396 'reserved' characters ...
    * as modified by RFC2732
    * static const char *reserved = ";/?:@&=+$,[]";
@@ -782,399 +898,192 @@ static unsigned	urlAlign;
 #else
       buf = _data = (parsedURL*)NSZoneMalloc(NSDefaultMallocZone(), size);
 #endif
+
+      if (buf == NULL)
+      {
+        [NSException raise: NSMallocException
+        format: @"parsedURL for URL %@ coult not be allocated", aUrlString];
+      }
+
       memset(buf, '\0', size);
       start = end = ptr = (char*)&buf[1];
       [_urlString getCString: start
 		   maxLength: size
 		    encoding: NSASCIIStringEncoding];
 
-      /*
-       * Parse the scheme if possible.
-       */
-      ptr = start;
-      if (isalpha(*ptr))
-	{
-	  ptr++;
-	  while (isalnum(*ptr) || *ptr == '+' || *ptr == '-' || *ptr == '.')
-	    {
-	      ptr++;
-	    }
-	  if (*ptr == ':')
-	    {
-	      buf->scheme = start;		// Got scheme.
-	      *ptr = '\0';			// Terminate it.
-	      end = &ptr[1];
-	      /*
-	       * Standardise uppercase to lower.
-	       */
-	      while (--ptr > start)
-		{
-		  if (isupper(*ptr))
-		    {
-		      *ptr = tolower(*ptr);
-		    }
-		}
-	      if (base != 0 && base->scheme != 0
-		&& strcmp(base->scheme, buf->scheme) != 0)
-		{
-		  [NSException raise: NSInvalidArgumentException
-                    format: @"[%@ %@](%@, %@) "
-		    @"scheme of base and relative parts does not match",
-                    NSStringFromClass([self class]),
-                    NSStringFromSelector(_cmd),
-                    aUrlString, aBaseUrl];
-		}
-	    }
-	}
-      start = end;
 
-      if (buf->scheme == 0 && base != 0)
-	{
-	  buf->scheme = base->scheme;
-	}
+      UriParserStateA state;
+      UriUriA uri;
 
-      /*
-       * Set up scheme specific parsing options.
-       */
-      if (buf->scheme != 0)
+      state.uri = &uri;
+      if (uriParseUriA(&state, start) != URI_SUCCESS) {
+        [NSException raise: NSInvalidArgumentException
+        format: @"[%@] URL could not be parsed", aUrlString];
+        uriFreeUriMembersA(&uri);
+      }
+      else
+      {
+        uriNormalizeSyntaxA(&uri);
+        if (uri.scheme.first != NULL)
         {
-          if (strcmp(buf->scheme, "file") == 0)
-	    {
-	      buf->isFile = YES;
-	    }
-	  else if (strcmp(buf->scheme, "mailto") == 0)
-	    {
-	      usesFragments = NO;
-	      usesParameters = NO;
-	      usesQueries = NO;
-	    }
+          int size = uri.scheme.afterLast-uri.scheme.first;
+          buf->scheme = NSZoneMalloc(NSDefaultMallocZone(),size+1);
+          memset(buf->scheme, '\0', size+1);
+          memcpy(buf->scheme, uri.scheme.first, size); 
         }
 
-      if (canBeGeneric == YES)
-	{
-	  /*
-	   * Parse the 'authority'
-	   * //user:password@host:port
-	   */
-	  if (start[0] == '/' && start[1] == '/')
-	    {
-	      buf->isGeneric = YES;
-	      start = end = &end[2];
+        if (uri.hostText.first != NULL)
+        {
+          size = uri.hostText.afterLast-uri.hostText.first;
+          buf->host = NSZoneMalloc(NSDefaultMallocZone(),size+1);
+          memset(buf->host, '\0', size+1);
+          memcpy(buf->host, uri.hostText.first, size);
+        }
 
-	      /*
-	       * Set 'end' to point to the start of the path, or just past
-	       * the 'authority' if there is no path.
-	       */
-	      end = strchr(start, '/');
-	      if (end == 0)
-		{
-		  buf->hasNoPath = YES;
-		  end = &start[strlen(start)];
-		}
-	      else
-		{
-		  *end++ = '\0';
-		}
+        if (uri.userInfo.first != NULL)
+        {
+          size = uri.userInfo.afterLast-uri.hostText.first;
+          char* userInfo = NSZoneMalloc(NSDefaultMallocZone(),size+1);
+          memset(userInfo, '\0', size+1);
+          memcpy(userInfo, uri.userInfo.first, size);
+          char* pass = strchr(userInfo, ':');
+          int userSize = userInfo+size-pass;
+          int passSize = size-userSize-1;
+          buf->user = malloc(userSize+1);
+          memset(buf->user, '\0', userSize+1);
+          memcpy(buf->user, userInfo, userSize);
+          buf->password = NSZoneMalloc(NSDefaultMallocZone(),passSize+1);
+          memset(buf->password, '\0', passSize+1);
+          memcpy(buf->password, pass, passSize);
+          NSZoneFree([self zone], userInfo);
+        }
 
-	      /*
-	       * Parser username:password part
-	       */
-	      ptr = strchr(start, '@');
-	      if (ptr != 0)
-		{
-		  buf->user = start;
-		  *ptr++ = '\0';
-		  start = ptr;
-		  if (legal(buf->user, ";:&=+$,") == NO)
-		    {
-		      [NSException raise: NSInvalidArgumentException
+        if (uri.absolutePath)
+        {
+          buf->pathIsAbsolute = YES;
+          base = 0;
+        }
+
+        if (uri.pathHead != NULL)
+        {
+          UriPathSegmentA* node = uri.pathHead;
+          char* path = NSZoneMalloc(NSDefaultMallocZone(),2);
+          if (buf->scheme == NULL)
+          {
+            if (aBaseUrl != NULL)
+            {
+              Class cls = [self class];
+              DESTROY(self);
+              return [[cls alloc] initWithScheme:[aBaseUrl scheme] host:[aBaseUrl host] path:[[aBaseUrl path] stringByAppendingPathComponent:aUrlString]];
+            }
+            else
+            {
+              buf->path = strdup(aUrlString.UTF8String);
+              buf->pathIsAbsolute = NO;
+              buf->hasNoPath = NO;
+              return self;
+            }
+          }
+          else if (strcmp(buf->scheme,"mailto") == 0)
+          {
+            path[0] = '\0';
+          }
+          else
+          {
+            path[0] = '/';
+            path[1] = '\0';
+          }
+          
+          if (strcmp(buf->scheme,"file") == 0)
+          {
+            buf->isFile = YES;
+          }
+          
+          while (node != NULL)
+          {
+            int size = node->text.afterLast - node->text.first;
+            if (size != 0) {
+              char* newPath = NSZoneMalloc(NSDefaultMallocZone(),strlen(path)+size+2);
+              strcpy(newPath,path);
+              memcpy(newPath+(strlen(path)),node->text.first, size);
+              if ((strcmp(buf->scheme,"mailto") == 0) || node->next == NULL )
+              {
+                //If this is a mailto, or this is the end of the path section
+                //then do not add any /
+                newPath[strlen(path)+size] = '\0';
+              }
+              else
+              {
+                newPath[strlen(path)+size] = '/';
+                newPath[strlen(path)+size+1] = '\0';
+              }
+#ifdef I_HATE_MEMORY_LEAKS
+              // We are intentionally leaking this string, because the free causes a crash on the Atrix.
+              free(path);
+#endif
+              path = newPath;
+            }
+            node = node->next;
+          }
+          buf->path=path;
+        }
+        else {
+          buf->pathIsAbsolute = YES;
+          buf->hasNoPath = YES;
+        }
+
+        if (uri.query.first != NULL)
+        {
+          size = uri.query.afterLast - uri.query.first;
+          buf->query = NSZoneMalloc(NSDefaultMallocZone(),size+1);
+          memset(buf->query, '\0', size+1);
+          memcpy(buf->query, uri.query.first, size); 
+        }
+
+        if (uri.fragment.first != NULL)
+        {
+          size = uri.fragment.afterLast - uri.fragment.first;
+          buf->fragment = NSZoneMalloc(NSDefaultMallocZone(),size+1);
+          memset(buf->fragment, '\0', size+1);
+          memcpy(buf->fragment, uri.fragment.first, size); 
+        }
+
+
+        uriFreeUriMembersA(&uri);
+
+        if (base != 0 && base->scheme != 0 && strcmp(base->scheme, buf->scheme) != 0)
+        {
+          [NSException raise: NSInvalidArgumentException
                         format: @"[%@ %@](%@, %@) "
-			@"illegal character in user/password part",
+            @"scheme of base and relative parts does not match",
                         NSStringFromClass([self class]),
                         NSStringFromSelector(_cmd),
                         aUrlString, aBaseUrl];
-		    }
-		  ptr = strchr(buf->user, ':');
-		  if (ptr != 0)
-		    {
-		      *ptr++ = '\0';
-		      buf->password = ptr;
-		    }
-		}
+        }
 
-	      /*
-	       * Parse host:port part
-	       */
-	      buf->host = start;
-	      if (*start == '[')
-		{
-	          ptr = strchr(buf->host, ']');
-		  if (ptr == 0)
-		    {
-		      [NSException raise: NSInvalidArgumentException
-			format: @"[%@ %@](%@, %@) "
-			@"illegal ipv6 host address",
-			NSStringFromClass([self class]),
-			NSStringFromSelector(_cmd),
-			aUrlString, aBaseUrl];
-		    }
-		  else
-		    {
-		      ptr = start + 1;
-		      while (*ptr != ']')
-			{
-			  if (*ptr != ':' && *ptr != '.' && !isxdigit(*ptr))
-			    {
-			      [NSException raise: NSInvalidArgumentException
-				format: @"[%@ %@](%@, %@) "
-				@"illegal ipv6 host address",
-				NSStringFromClass([self class]),
-				NSStringFromSelector(_cmd),
-				aUrlString, aBaseUrl];
-			    }
-			  ptr++;
-			}
-		    }
-	          ptr = strchr(ptr, ':');
-		}
-	      else
-		{
-	          ptr = strchr(buf->host, ':');
-		}
-	      if (ptr != 0)
-		{
-		  const char	*str;
+        if (buf->scheme == 0 && base != 0)
+        {
+          buf->scheme = base->scheme;
+        }
 
-		  *ptr++ = '\0';
-		  buf->port = ptr;
-		  str = buf->port;
-		  while (*str != 0)
-		    {
-		      if (*str == '%' && isxdigit(str[1]) && isxdigit(str[2]))
-			{
-			  unsigned char	c;
+        if (buf->fragment == 0 && base != 0)
+        {
+          buf->fragment = base->fragment;
+        }
 
-			  str++;
-			  if (*str <= '9')
-			    {
-			      c = *str - '0';
-			    }
-			  else if (*str <= 'A')
-			    {
-			      c = *str - 'A' + 10;
-			    }
-			  else
-			    {
-			      c = *str - 'a' + 10;
-			    }
-			  c <<= 4;
-			  str++;
-			  if (*str <= '9')
-			    {
-			      c |= *str - '0';
-			    }
-			  else if (*str <= 'A')
-			    {
-			      c |= *str - 'A' + 10;
-			    }
-			  else
-			    {
-			      c |= *str - 'a' + 10;
-			    }
+        if (buf->query == 0 && base != 0)
+        {
+          buf->query = base->query;
+        }
 
-			  if (isdigit(c))
-			    {
-			      str++;
-			    }
-			  else
-			    {
-			      [NSException raise: NSInvalidArgumentException
-                                format: @"[%@ %@](%@, %@) "
-				@"illegal port part",
-                                NSStringFromClass([self class]),
-                                NSStringFromSelector(_cmd),
-                                aUrlString, aBaseUrl];
-			    }
-			}
-		      else if (isdigit(*str))
-			{
-			  str++;
-			}
-		      else
-			{
-			  [NSException raise: NSInvalidArgumentException
-                            format: @"[%@ %@](%@, %@) "
-			    @"illegal character in port part",
-                            NSStringFromClass([self class]),
-                            NSStringFromSelector(_cmd),
-                            aUrlString, aBaseUrl];
-			}
-		    }
-		}
-	      start = end;
-	      /* Check for a legal host, unless it's an ipv6 address
-	       * (which would have been checked earlier).
-	       */
-	      if (*buf->host != '[' && legal(buf->host, "-") == NO)
-		{
-		  [NSException raise: NSInvalidArgumentException
-                    format: @"[%@ %@](%@, %@) "
-		    @"illegal character in host part",
-                    NSStringFromClass([self class]),
-                    NSStringFromSelector(_cmd),
-                    aUrlString, aBaseUrl];
-		}
+        if (buf->parameters == 0 && base != 0)
+        {
+          buf->parameters = base->parameters;
+        }
 
-	      /*
-	       * If we have an authority component,
-	       * this must be an absolute URL
-	       */
-	      buf->pathIsAbsolute = YES;
-	      base = 0;
-	    }
-	  else
-	    {
-	      if (base != 0)
-		{
-		  buf->isGeneric = base->isGeneric;
-		}
-	      if (*start == '/')
-		{
-		  buf->pathIsAbsolute = YES;
-		  start++;
-		}
-	    }
-
-	  if (usesFragments == YES)
-	    {
-	      /*
-	       * Strip fragment string from end of url.
-	       */
-	      ptr = strchr(start, '#');
-	      if (ptr != 0)
-		{
-		  *ptr++ = '\0';
-		  if (*ptr != 0)
-		    {
-		      buf->fragment = ptr;
-		    }
-		}
-	      if (buf->fragment == 0 && base != 0)
-		{
-		  buf->fragment = base->fragment;
-		}
-	      if (legal(buf->fragment, filepath) == NO)
-		{
-		  [NSException raise: NSInvalidArgumentException
-		    format: @"[%@ %@](%@, %@) "
-		    @"illegal character in fragment part",
-		    NSStringFromClass([self class]),
-		    NSStringFromSelector(_cmd),
-		    aUrlString, aBaseUrl];
-		}
-	    }
-
-	  if (usesQueries == YES)
-	    {
-	      /*
-	       * Strip query string from end of url.
-	       */
-	      ptr = strchr(start, '?');
-	      if (ptr != 0)
-		{
-		  *ptr++ = '\0';
-		  if (*ptr != 0)
-		    {
-		      buf->query = ptr;
-		    }
-		}
-	      if (buf->query == 0 && base != 0)
-		{
-		  buf->query = base->query;
-		}
-	      if (legal(buf->query, filepath) == NO)
-		{
-		  [NSException raise: NSInvalidArgumentException
-		    format: @"[%@ %@](%@, %@) "
-		    @"illegal character in query part",
-		    NSStringFromClass([self class]),
-		    NSStringFromSelector(_cmd),
-		    aUrlString, aBaseUrl];
-		}
-	    }
-
-	  if (usesParameters == YES)
-	    {
-	      /*
-	       * Strip parameters string from end of url.
-	       */
-	      ptr = strchr(start, ';');
-	      if (ptr != 0)
-		{
-		  *ptr++ = '\0';
-		  if (*ptr != 0)
-		    {
-		      buf->parameters = ptr;
-		    }
-		}
-	      if (buf->parameters == 0 && base != 0)
-		{
-		  buf->parameters = base->parameters;
-		}
-	      if (legal(buf->parameters, filepath) == NO)
-		{
-		  [NSException raise: NSInvalidArgumentException
-		    format: @"[%@ %@](%@, %@) "
-		    @"illegal character in parameters part",
-		    NSStringFromClass([self class]),
-		    NSStringFromSelector(_cmd),
-		    aUrlString, aBaseUrl];
-		}
-	    }
-
-	  if (buf->isFile == YES)
-	    {
-	      buf->user = 0;
-	      buf->password = 0;
-	      if (base != 0 && base->host != 0)
-		{
-		  buf->host = base->host;
-		}
-	      else if (buf->host != 0 && *buf->host == 0)
-		{
-		  buf->host = 0;
-		}
-	      buf->port = 0;
-	      buf->isGeneric = YES;
-	    }
-	  else if (base != 0
-	    && buf->user == 0 && buf->password == 0
-	    && buf->host == 0 && buf->port == 0)
-	    {
-	      buf->user = base->user;
-	      buf->password = base->password;
-	      buf->host = base->host;
-	      buf->port = base->port;
-	    }
-	}
-      /*
-       * Store the path.
-       */
-      buf->path = start;
-      if (0 == base && '\0' == *buf->path && NO == buf->pathIsAbsolute)
-	{
-	  buf->hasNoPath = YES;
-	}
-      if (legal(buf->path, filepath) == NO)
-	{
-	  [NSException raise: NSInvalidArgumentException
-            format: @"[%@ %@](%@, %@) "
-	    @"illegal character in path part",
-            NSStringFromClass([self class]),
-            NSStringFromSelector(_cmd),
-            aUrlString, aBaseUrl];
-	}
+      }
     }
+
   NS_HANDLER
     {
       NSDebugLog(@"%@", localException);
@@ -1194,6 +1103,40 @@ static unsigned	urlAlign;
   if (_data != 0)
     {
       DESTROY(myData->absolute);
+      parsedURL *buf = _data;
+      if (buf->scheme) {
+        NSZoneFree([self zone], buf->scheme);
+        buf->scheme = 0;
+      }
+      if (buf->host) {
+        NSZoneFree([self zone], buf->host);
+        buf->host = 0;
+      }
+      if (buf->path) {
+        NSZoneFree([self zone], buf->path);
+        buf->path = 0;
+      }
+      if (buf->user) {
+        NSZoneFree([self zone], buf->user);
+        buf->user = 0;
+      }
+      if (buf->password) {
+        NSZoneFree([self zone], buf->password);
+        buf->password = 0;
+      }
+      if (buf->query) {
+        NSZoneFree([self zone], buf->query);
+        buf->query = 0;
+      }
+      if (buf->parameters) {
+        NSZoneFree([self zone], buf->parameters);
+        buf->parameters = 0;
+      }
+      if (buf->fragment) {
+        NSZoneFree([self zone], buf->fragment);
+        buf->fragment = 0;
+      }
+
       NSZoneFree([self zone], _data);
       _data = 0;
     }
@@ -1977,6 +1920,62 @@ static unsigned	urlAlign;
       [clientsLock unlock];
     }
   RELEASE(self);
+}
+
+- (NSURL *)URLByDeletingLastPathComponent
+{
+	if ([self isFileURL])
+	{
+		return [NSURL fileURLWithPath:[[self path] stringByDeletingLastPathComponent]];
+	}
+	else
+	{
+		return [[[NSURL alloc] initWithScheme:[self scheme] host:[self host] path:[[self path] stringByDeletingLastPathComponent]] autorelease];
+	}
+}
+
+- (NSString *)pathExtension
+{
+	return [[self path] pathExtension];
+}
+
+- (NSURL *)URLByDeletingPathExtension
+{
+	if ([self isFileURL])
+	{
+		return [NSURL fileURLWithPath:[[self path] stringByDeletingPathExtension]];
+	}
+	else
+	{
+		return [[[NSURL alloc] initWithScheme:[self scheme] host:[self host] path:[[self path] stringByDeletingPathExtension]] autorelease];
+	}
+}
+
+- (NSURL *)URLByAppendingPathComponent:(NSString *)comp isDirectory:(BOOL)isDir
+{
+  if ([self isFileURL])
+  {
+    if (isDir)
+    {
+      return [NSURL fileURLWithPath:[[[self path] stringByAppendingPathComponent:comp] stringByAppendingString:@"/"]];
+    }
+    else
+    {
+      return [NSURL fileURLWithPath:[[self path] stringByAppendingPathComponent:comp]];
+    }
+      
+  }
+  else
+  {
+    if (isDir)
+    {
+      return [[[NSURL alloc] initWithScheme:[self scheme] host:[self host] path:[[[self path] stringByAppendingPathComponent:comp] stringByAppendingString:@"/"]] autorelease];
+    }
+    else
+    {
+      return [[[NSURL alloc] initWithScheme:[self scheme] host:[self host] path:[[self path] stringByAppendingPathComponent:comp]] autorelease];
+    }
+  }
 }
 
 @end

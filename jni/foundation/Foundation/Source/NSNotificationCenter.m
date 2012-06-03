@@ -596,7 +596,46 @@ purgeCollectedFromMapNode(GSIMapTable map, GSIMapNode node)
  */
 #define	CHEATGC(X)	(id)(((uintptr_t)X) | 1)
 
-
+typedef void (^NSBlockObserver)(NSNotification *note);
+
+@interface NSNotificationBlockObserver : NSObject {
+    NSBlockObserver _block;
+    NSOperationQueue *_queue;
+    NSNotificationCenter *_center;
+}
+- (id)initWithBlock:(NSBlockObserver)block inQueue:(NSOperationQueue *)queue center:(NSNotificationCenter *)center;
+- (void)notification:(NSNotification *)note;
+@end
+
+@implementation NSNotificationBlockObserver
+- (id)initWithBlock:(NSBlockObserver)block inQueue:(NSOperationQueue *)queue center:(NSNotificationCenter *)center
+{
+    self = [super init];
+    if (self)
+    {
+        _block = [block copy];
+        _queue = [queue retain];
+        _center = center;
+    }
+    return self;
+}
+
+- (void)dealloc
+{
+    [_center removeObserver:self];
+    [_block release];
+    [_queue release];
+    [super dealloc];
+}
+
+- (void)notification:(NSNotification *)note
+{
+    [_queue addOperationWithBlock:^{
+        _block(note);
+    }];
+}
+
+@end
 
 /**
  * <p>GNUstep provides a framework for sending messages between objects within
@@ -719,6 +758,14 @@ static NSNotificationCenter *default_center = nil;
  * removing an observer will remove <em>all</em> of the multiple registrations.
  * </p>
  */
+
+- (id)addObserverForName:(NSString *)name object:(id)obj queue:(NSOperationQueue *)queue usingBlock:(void (^)(NSNotification *note))block
+{
+    NSNotificationBlockObserver *blockObserver = [[NSNotificationBlockObserver alloc] initWithBlock:block inQueue:queue center:self];
+    [self addObserver:blockObserver selector:@selector(notification:) name:name object:obj];
+    return [blockObserver autorelease];
+}
+
 - (void) addObserver: (id)observer
 	    selector: (SEL)selector
                 name: (NSString*)name

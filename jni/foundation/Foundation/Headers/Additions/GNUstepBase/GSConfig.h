@@ -38,7 +38,7 @@
 #define GS_PASS_ARGUMENTS 0
 #endif
 
-#define GS_FAKE_MAIN	1
+#define GS_FAKE_MAIN	0 // dont burn in Computer Hell...
 #if	GS_FAKE_MAIN
 
 /*
@@ -150,7 +150,7 @@ typedef	gsuaddr gsaddr;
 /*
  *	Do we have zlib for file handle compression?
  */
-#define USE_ZLIB	0
+#define USE_ZLIB	1
 
 /*
  *	Do we have the GNU Multiple-precision library for NSDecimal?

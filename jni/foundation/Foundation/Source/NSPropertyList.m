@@ -142,7 +142,13 @@ extern BOOL GSScanDouble(unichar*, unsigned, double*);
 - (void) parser: (NSXMLParser *)parser
 foundCharacters: (NSString *)string
 {
+#ifdef APPORTABLE
+  NSString *trimmedString = [string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+  [value appendString: trimmedString];
+#else
   [value appendString: string];
+#endif
+  
 }
 
 - (void) parser: (NSXMLParser *)parser
