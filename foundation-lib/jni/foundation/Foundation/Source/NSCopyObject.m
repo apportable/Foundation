@@ -23,17 +23,17 @@
 
    <title>NSCopyObject class reference</title>
    $Date: 2010-09-09 08:06:09 -0700 (Thu, 09 Sep 2010) $ $Revision: 31265 $
-   */
+ */
 
 #import "common.h"
 
 NSObject *NSCopyObject(NSObject *anObject, NSUInteger extraBytes, NSZone *zone)
 {
-  // Note: The cast to Class* and dereference gets the isa pointer.  This is
-  // ugly, but is required because the old GNU runtime calls this
-  // class_pointer, rather than isa, just to be different.
-  id copy = NSAllocateObject((*(Class*)anObject), extraBytes, zone);
-  memcpy(copy, anObject,
-    class_getInstanceSize(object_getClass(anObject)) + extraBytes);
-  return copy;
+    // Note: The cast to Class* and dereference gets the isa pointer.  This is
+    // ugly, but is required because the old GNU runtime calls this
+    // class_pointer, rather than isa, just to be different.
+    id copy = NSAllocateObject((*(Class*)anObject), extraBytes, zone);
+    memcpy(copy, anObject,
+           class_getInstanceSize(object_getClass(anObject)) + extraBytes);
+    return copy;
 }

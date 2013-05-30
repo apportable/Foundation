@@ -3,150 +3,150 @@
 
    Written by:  Richard Frith-Macdonald <rfm@gnu.org>
    Date: 2006
-   
+
    This file is part of the GNUstep Base Library.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
    version 2 of the License, or (at your option) any later version.
-   
+
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Library General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
-   */ 
+ */
 
 #import "common.h"
-#define	EXPOSE_NSCachedURLResponse_IVARS	1
+#define EXPOSE_NSCachedURLResponse_IVARS    1
 #import "GSURLPrivate.h"
 #import "Foundation/NSCoder.h"
 
 // Internal data storage
 typedef struct {
-  NSData			*data;
-  NSURLResponse			*response;
-  NSDictionary			*userInfo;
-  NSURLCacheStoragePolicy	storagePolicy;
+    NSData            *data;
+    NSURLResponse         *response;
+    NSDictionary          *userInfo;
+    NSURLCacheStoragePolicy storagePolicy;
 } Internal;
- 
-#define	this	((Internal*)(self->_NSCachedURLResponseInternal))
+
+#define this    ((Internal*)(self->_NSCachedURLResponseInternal))
 
 
-@implementation	NSCachedURLResponse
+@implementation NSCachedURLResponse
 
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
-  NSCachedURLResponse	*o = [super allocWithZone: z];
+    NSCachedURLResponse   *o = [super allocWithZone:z];
 
-  if (o != nil)
+    if (o != nil)
     {
-      o->_NSCachedURLResponseInternal = NSZoneMalloc(z, sizeof(Internal));
-      memset(o->_NSCachedURLResponseInternal, '\0', sizeof(Internal));
+        o->_NSCachedURLResponseInternal = NSZoneMalloc(z, sizeof(Internal));
+        memset(o->_NSCachedURLResponseInternal, '\0', sizeof(Internal));
     }
-  return o;
+    return o;
 }
 
-- (id) copyWithZone: (NSZone*)z
+- (id)copyWithZone:(NSZone*)z
 {
-  NSCachedURLResponse	*o;
+    NSCachedURLResponse   *o;
 
-  if (NSShouldRetainWithZone(self, z) == YES)
+    if (NSShouldRetainWithZone(self, z) == YES)
     {
-      o = RETAIN(self);
+        o = RETAIN(self);
     }
-  else
+    else
     {
-      o = [[self class] allocWithZone: z];
-      o = [self initWithResponse: [self response]
-			    data: [self data]
-		        userInfo: [self userInfo]
-		   storagePolicy: [self storagePolicy]];
+        o = [[self class] allocWithZone:z];
+        o = [self initWithResponse:[self response]
+             data:[self data]
+             userInfo:[self userInfo]
+             storagePolicy:[self storagePolicy]];
     }
-  return o;
+    return o;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  if (this != 0)
+    if (this != 0)
     {
-      RELEASE(this->data);
-      RELEASE(this->response);
-      RELEASE(this->userInfo);
-      NSZoneFree([self zone], this);
+        RELEASE(this->data);
+        RELEASE(this->response);
+        RELEASE(this->userInfo);
+        NSZoneFree([self zone], this);
     }
-  [super dealloc];
+    [super dealloc];
 }
 
-- (void) encodeWithCoder: (NSCoder*)aCoder
+- (void)encodeWithCoder:(NSCoder*)aCoder
 {
 // FIXME
-  if ([aCoder allowsKeyedCoding])
+    if ([aCoder allowsKeyedCoding])
     {
     }
-  else
+    else
     {
     }
 }
 
-- (id) initWithCoder: (NSCoder*)aCoder
+- (id)initWithCoder:(NSCoder*)aCoder
 {
 // FIXME
-  if ([aCoder allowsKeyedCoding])
+    if ([aCoder allowsKeyedCoding])
     {
     }
-  else
+    else
     {
     }
-  return self;
+    return self;
 }
 
-- (NSData *) data
+- (NSData *)data
 {
-  return this->data;
+    return this->data;
 }
 
-- (id) initWithResponse: (NSURLResponse *)response data: (NSData *)data
+- (id)initWithResponse:(NSURLResponse *)response data:(NSData *)data
 {
-  return [self initWithResponse: response
-			   data: data
-		       userInfo: nil
-		  storagePolicy: NSURLCacheStorageAllowed];
+    return [self initWithResponse:response
+            data:data
+            userInfo:nil
+            storagePolicy:NSURLCacheStorageAllowed];
 }
 
-- (id) initWithResponse: (NSURLResponse *)response
-		   data: (NSData *)data
-	       userInfo: (NSDictionary *)userInfo
-	  storagePolicy: (NSURLCacheStoragePolicy)storagePolicy;
+- (id)initWithResponse:(NSURLResponse *)response
+    data:(NSData *)data
+    userInfo:(NSDictionary *)userInfo
+    storagePolicy:(NSURLCacheStoragePolicy)storagePolicy;
 {
-  if ((self = [super init]) != nil)
+    if ((self = [super init]) != nil)
     {
-      ASSIGNCOPY(this->data, data);
-      ASSIGNCOPY(this->response, response);
-      ASSIGNCOPY(this->userInfo, userInfo);
-      this->storagePolicy = storagePolicy;
+        ASSIGNCOPY(this->data, data);
+        ASSIGNCOPY(this->response, response);
+        ASSIGNCOPY(this->userInfo, userInfo);
+        this->storagePolicy = storagePolicy;
     }
-  return self;
+    return self;
 }
 
-- (NSURLResponse *) response
+- (NSURLResponse *)response
 {
-  return this->response;
+    return this->response;
 }
 
-- (NSURLCacheStoragePolicy) storagePolicy
+- (NSURLCacheStoragePolicy)storagePolicy
 {
-  return this->storagePolicy;
+    return this->storagePolicy;
 }
 
-- (NSDictionary *) userInfo
+- (NSDictionary *)userInfo
 {
-  return this->userInfo;
+    return this->userInfo;
 }
 
 @end

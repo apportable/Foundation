@@ -38,9 +38,7 @@ typedef	union {
 #ifdef	AF_INET6
   struct sockaddr_in	i6;
 #endif
-#ifndef	__MINGW__
   struct sockaddr_un	u;
-#endif
 } sockaddr_any;
 
 #define	SOCKIVARS \
@@ -70,11 +68,16 @@ SOCKIVARS
 - (void) _setAddress: (struct sockaddr*)address;
 
 /**
+ * getter for closing flag
+ */
+- (BOOL) _isClosing;
+
+/**
  * setter for closing flag ... the remote end has stopped either sending
  * or receiving, so any I/O operation which would block means that the
  * connection is no longer operable in that direction.
  */
-- (void) _setClosing: (BOOL)passive;
+- (void) _setClosing: (BOOL)closing;
 
 /*
  * Set the handler for this stream.
@@ -122,7 +125,8 @@ SOCKIVARS
 - (struct sockaddr*) _address;
 - (void) _setAddress: (struct sockaddr*)address;
 - (NSInteger) _read: (uint8_t *)buffer maxLength: (NSUInteger)len;
-- (void) _setClosing: (BOOL)passive;
+- (BOOL) _isClosing;
+- (void) _setClosing: (BOOL)closing;
 - (void) _setHandler: (id)h;
 - (void) _setPassive: (BOOL)passive;
 - (void) _setSibling: (GSSocketStream*)sibling;
@@ -163,7 +167,8 @@ SOCKIVARS
 @interface GSSocketOutputStream (AddedBehaviors)
 - (struct sockaddr*) _address;
 - (void) _setAddress: (struct sockaddr*)address;
-- (void) _setClosing: (BOOL)passive;
+- (BOOL) _isClosing;
+- (void) _setClosing: (BOOL)closing;
 - (void) _setHandler: (id)h;
 - (void) _setPassive: (BOOL)passive;
 - (void) _setSibling: (GSSocketStream*)sibling;
@@ -219,7 +224,8 @@ SOCKIVARS
 @interface GSSocketServerStream (AddedBehaviors)
 - (struct sockaddr*) _address;
 - (void) _setAddress: (struct sockaddr*)address;
-- (void) _setClosing: (BOOL)passive;
+- (BOOL) _isClosing;
+- (void) _setClosing: (BOOL)closing;
 - (void) _setHandler: (id)h;
 - (void) _setPassive: (BOOL)passive;
 - (void) _setSibling: (GSSocketStream*)sibling;

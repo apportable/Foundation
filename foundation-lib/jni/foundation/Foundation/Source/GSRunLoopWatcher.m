@@ -1,4 +1,4 @@
-/** 
+/**
    Copyright (C) 2008-2009 Free Software Foundation, Inc.
 
    By: Richard Frith-Macdonald <richard@brainstorm.co.uk>
@@ -21,7 +21,7 @@
    Boston, MA 02111 USA.
 
    $Date: 2009-02-23 20:42:32 +0000 (Mon, 23 Feb 2009) $ $Revision: 27962 $
-*/
+ */
 
 #import "common.h"
 
@@ -29,66 +29,61 @@
 #import "Foundation/NSException.h"
 #import "Foundation/NSPort.h"
 
-@implementation	GSRunLoopWatcher
+@implementation GSRunLoopWatcher
 
-- (void) dealloc
+- (void)dealloc
 {
-  [super dealloc];
+    [super dealloc];
 }
 
-- (id) initWithType: (RunLoopEventType)aType
-	   receiver: (id)anObj
-	       data: (void*)item
+- (id)initWithType:(RunLoopEventType)aType
+    receiver:(id)anObj
+    data:(void*)item
 {
-  _invalidated = NO;
-  receiver = anObj;
-  data = item;
-  switch (aType)
+    _invalidated = NO;
+    receiver = anObj;
+    data = item;
+    switch (aType)
     {
-#if	defined(__MINGW__)
-      case ET_HANDLE:   type = aType;   break;
-      case ET_WINMSG:   type = aType;   break;
-#else
-      case ET_EDESC: 	type = aType;	break;
-      case ET_RDESC: 	type = aType;	break;
-      case ET_WDESC: 	type = aType;	break;
-#endif
-      case ET_RPORT: 	type = aType;	break;
-      case ET_TRIGGER: 	type = aType;	break;
-      default: 
-	DESTROY(self);
-	[NSException raise: NSInvalidArgumentException
-		    format: @"NSRunLoop - unknown event type"];
+    case ET_EDESC:    type = aType;   break;
+    case ET_RDESC:    type = aType;   break;
+    case ET_WDESC:    type = aType;   break;
+    case ET_RPORT:    type = aType;   break;
+    case ET_TRIGGER:  type = aType;   break;
+    default:
+        DESTROY(self);
+        [NSException raise:NSInvalidArgumentException
+         format:@"NSRunLoop - unknown event type"];
     }
 
-  if ([anObj respondsToSelector: @selector(runLoopShouldBlock:)])
+    if ([anObj respondsToSelector:@selector(runLoopShouldBlock:)])
     {
-      checkBlocking = YES;
+        checkBlocking = YES;
     }
 
-  if (![anObj respondsToSelector: @selector(receivedEvent:type:extra:forMode:)])
+    if (![anObj respondsToSelector:@selector(receivedEvent:type:extra:forMode:)])
     {
-      DESTROY(self);
-      [NSException raise: NSInvalidArgumentException
-		  format: @"RunLoop listener has no event handling method"];
+        DESTROY(self);
+        [NSException raise:NSInvalidArgumentException
+         format:@"RunLoop listener has no event handling method"];
     }
-  return self;
+    return self;
 }
 
-- (BOOL) runLoopShouldBlock: (BOOL*)trigger
+- (BOOL)runLoopShouldBlock:(BOOL*)trigger
 {
-  if (checkBlocking == YES)
+    if (checkBlocking == YES)
     {
-      BOOL result = [(id)receiver runLoopShouldBlock: trigger];
-      return result;
+        BOOL result = [(id)receiver runLoopShouldBlock : trigger];
+        return result;
     }
-  else if (type == ET_TRIGGER)
+    else if (type == ET_TRIGGER)
     {
-      *trigger = YES;
-      return NO;	// By default triggers may fire immediately
+        *trigger = YES;
+        return NO;  // By default triggers may fire immediately
     }
-  *trigger = YES;
-  return YES;		// By default we must wait for input sources
+    *trigger = YES;
+    return YES;     // By default we must wait for input sources
 }
 @end
 

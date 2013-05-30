@@ -222,7 +222,7 @@
 #define HAVE_GETGRNAM 1
 
 /* Define to 1 if you have the `getgrnam_r' function. */
-#define HAVE_GETGRNAM_R 1
+#undef HAVE_GETGRNAM_R
 
 /* Define to 1 if you have the `gethostbyaddr_r' function. */
 #define HAVE_GETHOSTBYADDR_R 1
@@ -336,11 +336,7 @@
 #define HAVE_LOCALE_H 1
 
 /* Define to 1 if you have the <malloc.h> header file. */
-#ifdef __native_client__
-#undef HAVE_MALLOC_H
-#else
 #define HAVE_MALLOC_H 1
-#endif
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -350,9 +346,10 @@
 
 /* Define to 1 if you have the `mmap' function. */
 /* #undef HAVE_MMAP */
+#define HAVE_MMAP 1
 
 /* Define to 1 if you have the `mprotect' function. */
-#define HAVE_MPROTECT 1
+// #undef HAVE_MPROTECT 1
 
 /* Define to 1 if you have the `nanosleep' function. */
 /* #undef HAVE_NANOSLEEP */
@@ -460,7 +457,7 @@
 #define HAVE_SOCKLEN_T 1
 
 /* Define to 1 if you have the `statvfs' function. */
-#define HAVE_STATVFS 1
+#undef HAVE_STATVFS
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
@@ -543,7 +540,7 @@
 /* #undef HAVE_SYS_STATVFS_H */
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
-/* #undef HAVE_SYS_STAT_H */
+#define HAVE_SYS_STAT_H 1
 
 /* Define to 1 if you have the <sys/stropts.h> header file. */
 /* #undef HAVE_SYS_STROPTS_H */
@@ -651,7 +648,7 @@
 #define PACKAGE_VERSION ""
 
 /* Define as the link to exe of process in /proc filesystem. */
-#define PROCFS_EXE_LINK "/proc/self/exe"
+#undef PROCFS_EXE_LINK
 
 /* Define to 1 if the `setpgrp' function takes no argument. */
 #define SETPGRP_VOID 1
@@ -690,7 +687,7 @@
 /* #undef USE_FFCALL */
 
 /* Define if using the libffi library for invocations */
-/* #undef USE_LIBFFI */
+#define USE_LIBFFI 1
 
 /* Define if vasprintf returns the length printed */
 #define VASPRINTF_RETURNS_LENGTH 1

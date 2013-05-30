@@ -24,14 +24,14 @@
 
    <title>NSDecimalNumber class reference</title>
    $Date: 2010-06-12 00:19:26 -0700 (Sat, 12 Jun 2010) $ $Revision: 30692 $
-   */
+ */
 
 #import "common.h"
 
 #include <math.h>
 
-#define	EXPOSE_NSDecimalNumber_IVARS	1
-#define	EXPOSE_NSDecimalNumberHandler_IVARS	1
+#define EXPOSE_NSDecimalNumber_IVARS    1
+#define EXPOSE_NSDecimalNumberHandler_IVARS 1
 #import "Foundation/NSCoder.h"
 #import "Foundation/NSDecimal.h"
 #import "Foundation/NSDecimalNumber.h"
@@ -54,101 +54,110 @@ static NSDecimalNumberHandler *handler;
 
 @implementation NSDecimalNumberHandler
 
-+ (id) defaultDecimalNumberHandler
++ (id)defaultDecimalNumberHandler
 {
-  if (handler == nil)
-    handler = [[self alloc] initWithRoundingMode: NSRoundPlain
-			    scale: 38
-			    raiseOnExactness: NO
-			    raiseOnOverflow: YES
-			    raiseOnUnderflow: YES
-			    raiseOnDivideByZero: YES];
-
-  return handler;
-}
-
-+ (id) decimalNumberHandlerWithRoundingMode: (NSRoundingMode)roundingMode
-				      scale: (short)scale
-			   raiseOnExactness: (BOOL)raiseOnExactness
-			    raiseOnOverflow: (BOOL)raiseOnOverflow
-			   raiseOnUnderflow: (BOOL)raiseOnUnderflow
-			raiseOnDivideByZero: (BOOL)raiseOnDivideByZero
-{
-  return AUTORELEASE([[self alloc] initWithRoundingMode: roundingMode
-				   scale: scale
-				   raiseOnExactness: raiseOnExactness
-				   raiseOnOverflow: raiseOnOverflow
-				   raiseOnUnderflow: raiseOnUnderflow
-				   raiseOnDivideByZero: raiseOnDivideByZero]);
-}
-
-- (id) initWithRoundingMode: (NSRoundingMode)roundingMode
-		      scale: (short)scale
-	   raiseOnExactness: (BOOL)raiseOnExactness
-	    raiseOnOverflow: (BOOL)raiseOnOverflow
-	   raiseOnUnderflow: (BOOL)raiseOnUnderflow
-	raiseOnDivideByZero: (BOOL)raiseOnDivideByZero
-{
-  _roundingMode = roundingMode;
-  _scale = scale;
-  _raiseOnExactness = raiseOnExactness;
-  _raiseOnOverflow = raiseOnOverflow;
-  _raiseOnUnderflow = raiseOnUnderflow;
-  _raiseOnDivideByZero = raiseOnDivideByZero;
-
-  return self;
-}
-
-- (NSDecimalNumber*) exceptionDuringOperation: (SEL)method
-					error: (NSCalculationError)error
-				  leftOperand: (NSDecimalNumber*)leftOperand
-				 rightOperand: (NSDecimalNumber*)rightOperand
-{
-  switch (error)
-    {
-      case NSCalculationNoError: return nil;
-      case NSCalculationUnderflow:
-	if (_raiseOnUnderflow)
-	  // FIXME: What exception to raise?
-	  [NSException raise: @"NSDecimalNumberException"
-		      format: @"Underflow"];
-	else
-	  return [NSDecimalNumber minimumDecimalNumber];
-	break;
-      case NSCalculationOverflow:
-	if (_raiseOnOverflow)
-	  [NSException raise: @"NSDecimalNumberException"
-		      format: @"Overflow"];
-	else
-	  return [NSDecimalNumber maximumDecimalNumber];
-	break;
-      case NSCalculationLossOfPrecision:
-	if (_raiseOnExactness)
-	  [NSException raise: @"NSDecimalNumberException"
-		      format: @"Loss of precision"];
-	else
-	  return nil;
-	break;
-      case NSCalculationDivideByZero:
-	if (_raiseOnDivideByZero)
-	  [NSException raise: @"NSDecimalNumberException"
-		      format: @"Divide by zero"];
-	else
-	  return [NSDecimalNumber notANumber];
-	break;
+    if (handler == nil) {
+        handler = [[self alloc] initWithRoundingMode:NSRoundPlain
+                   scale:38
+                   raiseOnExactness:NO
+                   raiseOnOverflow:YES
+                   raiseOnUnderflow:YES
+                   raiseOnDivideByZero:YES];
     }
 
-  return nil;
+    return handler;
 }
 
-- (NSRoundingMode) roundingMode
++ (id)decimalNumberHandlerWithRoundingMode:(NSRoundingMode)roundingMode
+    scale:(short)scale
+    raiseOnExactness:(BOOL)raiseOnExactness
+    raiseOnOverflow:(BOOL)raiseOnOverflow
+    raiseOnUnderflow:(BOOL)raiseOnUnderflow
+    raiseOnDivideByZero:(BOOL)raiseOnDivideByZero
 {
-  return _roundingMode;
+    return AUTORELEASE([[self alloc] initWithRoundingMode:roundingMode
+                        scale:scale
+                        raiseOnExactness:raiseOnExactness
+                        raiseOnOverflow:raiseOnOverflow
+                        raiseOnUnderflow:raiseOnUnderflow
+                        raiseOnDivideByZero:raiseOnDivideByZero]);
 }
 
-- (short) scale
+- (id)initWithRoundingMode:(NSRoundingMode)roundingMode
+    scale:(short)scale
+    raiseOnExactness:(BOOL)raiseOnExactness
+    raiseOnOverflow:(BOOL)raiseOnOverflow
+    raiseOnUnderflow:(BOOL)raiseOnUnderflow
+    raiseOnDivideByZero:(BOOL)raiseOnDivideByZero
 {
-  return _scale;
+    _roundingMode = roundingMode;
+    _scale = scale;
+    _raiseOnExactness = raiseOnExactness;
+    _raiseOnOverflow = raiseOnOverflow;
+    _raiseOnUnderflow = raiseOnUnderflow;
+    _raiseOnDivideByZero = raiseOnDivideByZero;
+
+    return self;
+}
+
+- (NSDecimalNumber*)exceptionDuringOperation:(SEL)method
+    error:(NSCalculationError)error
+    leftOperand:(NSDecimalNumber*)leftOperand
+    rightOperand:(NSDecimalNumber*)rightOperand
+{
+    switch (error)
+    {
+    case NSCalculationNoError: return nil;
+    case NSCalculationUnderflow:
+        if (_raiseOnUnderflow) {
+            // FIXME: What exception to raise?
+            [NSException raise:@"NSDecimalNumberException"
+             format:@"Underflow"];
+        }
+        else{
+            return [NSDecimalNumber minimumDecimalNumber];
+        }
+        break;
+    case NSCalculationOverflow:
+        if (_raiseOnOverflow) {
+            [NSException raise:@"NSDecimalNumberException"
+             format:@"Overflow"];
+        }
+        else{
+            return [NSDecimalNumber maximumDecimalNumber];
+        }
+        break;
+    case NSCalculationLossOfPrecision:
+        if (_raiseOnExactness) {
+            [NSException raise:@"NSDecimalNumberException"
+             format:@"Loss of precision"];
+        }
+        else{
+            return nil;
+        }
+        break;
+    case NSCalculationDivideByZero:
+        if (_raiseOnDivideByZero) {
+            [NSException raise:@"NSDecimalNumberException"
+             format:@"Divide by zero"];
+        }
+        else{
+            return [NSDecimalNumber notANumber];
+        }
+        break;
+    }
+
+    return nil;
+}
+
+- (NSRoundingMode)roundingMode
+{
+    return _roundingMode;
+}
+
+- (short)scale
+{
+    return _scale;
 }
 
 @end
@@ -172,805 +181,813 @@ void* kCFNumberPositiveInfinity;
 void* kCFNumberNegativeInfinity;
 void* kCFNumberNaN;
 
-+ (void) initialize
++ (void)initialize
 {
-  NSDecimal d;
+    NSDecimal d;
+    bzero(&d, sizeof(NSDecimal));
+    d.validNumber = NO;
 
-  d.validNumber = NO;
-  notANumber = [[self alloc] initWithDecimal: d];
-  kCFNumberNaN = notANumber;
-  kCFNumberPositiveInfinity = notANumber;
-  kCFNumberNegativeInfinity = notANumber;
-  NSDecimalMax(&d);
-  maxNumber = [[self alloc] initWithDecimal: d];
-  NSDecimalMin(&d);
-  minNumber = [[self alloc] initWithDecimal: d];
-  zero = [[self alloc] initWithMantissa: 0
-			       exponent: 0
-			     isNegative: NO];
-  one = [[self alloc] initWithMantissa: 1
-			      exponent: 0
-			    isNegative: NO];
-  NSDecimalNumberClass = [NSDecimalNumber class];
+    notANumber = [[self alloc] initWithDecimal:d];
+    kCFNumberNaN = notANumber;
+    kCFNumberPositiveInfinity = notANumber;
+    kCFNumberNegativeInfinity = notANumber;
+    NSDecimalMax(&d);
+    maxNumber = [[self alloc] initWithDecimal:d];
+    NSDecimalMin(&d);
+    minNumber = [[self alloc] initWithDecimal:d];
+    zero = [[self alloc] initWithMantissa:0
+            exponent:0
+            isNegative:NO];
+    one = [[self alloc] initWithMantissa:1
+           exponent:0
+           isNegative:NO];
+    NSDecimalNumberClass = [NSDecimalNumber class];
 }
 
-+ (id <NSDecimalNumberBehaviors>) defaultBehavior
++ (id <NSDecimalNumberBehaviors>)defaultBehavior
 {
-  // Reuse the handler from the class NSDecimalNumberHandler
-  return [NSDecimalNumberHandler defaultDecimalNumberHandler];
+    // Reuse the handler from the class NSDecimalNumberHandler
+    return [NSDecimalNumberHandler defaultDecimalNumberHandler];
 }
 
-+ (void) setDefaultBehavior: (id <NSDecimalNumberBehaviors>)behavior
++ (void)setDefaultBehavior:(id <NSDecimalNumberBehaviors>)behavior
 {
-  // Reuse the handler from the class NSDecimalNumberHandler
-  // Might give interessting result on this class as behavior may came
-  // from a different class
-  ASSIGN(handler, (id)behavior);
+    // Reuse the handler from the class NSDecimalNumberHandler
+    // Might give interessting result on this class as behavior may came
+    // from a different class
+    ASSIGN(handler, (id)behavior);
 }
 
-+ (NSDecimalNumber*) maximumDecimalNumber
++ (NSDecimalNumber*)maximumDecimalNumber
 {
-  return maxNumber;
+    return maxNumber;
 }
-+ (NSDecimalNumber*) minimumDecimalNumber
++ (NSDecimalNumber*)minimumDecimalNumber
 {
-  return minNumber;
-}
-
-+ (NSDecimalNumber*) notANumber
-{
-  return notANumber;
+    return minNumber;
 }
 
-+ (NSDecimalNumber*) zero
++ (NSDecimalNumber*)notANumber
 {
-  return zero;
+    return notANumber;
 }
 
-+ (NSDecimalNumber*) one
++ (NSDecimalNumber*)zero
 {
-  return one;
+    return zero;
 }
 
-+ (NSDecimalNumber*) decimalNumberWithDecimal: (NSDecimal)decimal
++ (NSDecimalNumber*)one
 {
-  return AUTORELEASE([[self alloc] initWithDecimal: decimal]);
+    return one;
 }
 
-+ (NSDecimalNumber*) decimalNumberWithMantissa: (unsigned long long)mantissa
-				      exponent: (short)exponent
-				    isNegative: (BOOL)isNegative
++ (NSDecimalNumber*)decimalNumberWithDecimal:(NSDecimal)decimal
 {
-  return AUTORELEASE([[self alloc] initWithMantissa: mantissa
-					   exponent: exponent
-					 isNegative: isNegative]);
+    return AUTORELEASE([[self alloc] initWithDecimal:decimal]);
 }
 
-+ (NSDecimalNumber*) decimalNumberWithString: (NSString*)numericString
++ (NSDecimalNumber*)decimalNumberWithMantissa:(unsigned long long)mantissa
+    exponent:(short)exponent
+    isNegative:(BOOL)isNegative
 {
-  return AUTORELEASE([[self alloc] initWithString: numericString]);
+    return AUTORELEASE([[self alloc] initWithMantissa:mantissa
+                        exponent:exponent
+                        isNegative:isNegative]);
 }
 
-+ (NSDecimalNumber*) decimalNumberWithString: (NSString*)numericString
-				      locale: (NSDictionary*)locale
++ (NSDecimalNumber*)decimalNumberWithString:(NSString*)numericString
 {
-  return AUTORELEASE([[self alloc] initWithString: numericString
-					   locale: locale]);
+    return AUTORELEASE([[self alloc] initWithString:numericString]);
+}
+
++ (NSDecimalNumber*)decimalNumberWithString:(NSString*)numericString
+    locale:(NSDictionary*)locale
+{
+    return AUTORELEASE([[self alloc] initWithString:numericString
+                        locale:locale]);
 }
 
 /**
  * Inefficient ... quick hack by converting double value to string,
  * then initialising from string.
  */
-- (id) initWithBytes: (const void*)value objCType: (const char*)type
+- (id)initWithBytes:(const void*)value objCType:(const char*)type
 {
-  unsigned long long val = 0ll;
-  long long llval = 0ll;
-  NSDecimal decimal;
-  BOOL negative, llvalSet;
+    unsigned long long val = 0ll;
+    long long llval = 0ll;
+    NSDecimal decimal;
+    BOOL negative, llvalSet;
 
-  if (strlen(type) != 1)
+    if (strlen(type) != 1)
     {
-      DESTROY(self);
-      return nil;
+        DESTROY(self);
+        return nil;
     }
 
-  llvalSet = YES;
-  negative = NO;
+    llvalSet = YES;
+    negative = NO;
 
-  switch (*type)
+    switch (*type)
     {
     case _C_CHR:
-      {
-	signed char v = *(signed char *)value;
-	llval = (long long)v;
-	break;
-      }
+    {
+        signed char v = *(signed char *)value;
+        llval = (long long)v;
+        break;
+    }
     case _C_UCHR:
-      {
-	unsigned char v = *(unsigned char *)value;
-	llval = (long long)v;
-	break;
-      }
+    {
+        unsigned char v = *(unsigned char *)value;
+        llval = (long long)v;
+        break;
+    }
     case _C_SHT:
-      {
-	short v = *(short *)value;
-	llval = (long long)v;
-	break;
-      }
+    {
+        short v = *(short *)value;
+        llval = (long long)v;
+        break;
+    }
     case _C_USHT:
-      {
-	unsigned short v = *(unsigned short *)value;
-	llval = (long long)v;
-	break;
-      }
+    {
+        unsigned short v = *(unsigned short *)value;
+        llval = (long long)v;
+        break;
+    }
     case _C_INT:
-      {
-	int v = *(int *)value;
-	llval = (long long)v;
-	break;
-      }
+    {
+        int v = *(int *)value;
+        llval = (long long)v;
+        break;
+    }
     case _C_UINT:
-      {
-	unsigned int v = *(unsigned int *)value;
-	llval = (long long)v;
-	break;
-      }
+    {
+        unsigned int v = *(unsigned int *)value;
+        llval = (long long)v;
+        break;
+    }
     case _C_LNG:
-      {
-	long v = *(long *)value;
-	llval = (long long)v;
-	break;
-      }
+    {
+        long v = *(long *)value;
+        llval = (long long)v;
+        break;
+    }
     case _C_ULNG:
-      {
-	unsigned long v = *(unsigned long *)value;
-	llval = (long long)v;
-	break;
-      }
+    {
+        unsigned long v = *(unsigned long *)value;
+        llval = (long long)v;
+        break;
+    }
 #ifdef _C_LNGLNG
     case _C_LNGLNG:
 #else
     case 'q':
 #endif
-      {
-	long long v = *(long long *)value;
-	llval = (long long)v;
-	break;
-      }
-#ifdef	_C_ULNGLNG
+        {
+            long long v = *(long long *)value;
+            llval = (long long)v;
+            break;
+        }
+#ifdef  _C_ULNGLNG
     case _C_ULNGLNG:
 #else
     case 'Q':
 #endif
     default:
-      {
-	llvalSet = NO;
-	break;
-
-      }
-    }
-  if (llvalSet)
     {
-      if (llval<0)
-	{
-	  negative = YES;
-	  llval *= -1;
-	}
-      val = llval;
+        llvalSet = NO;
+        break;
     }
-  else
+    }
+    if (llvalSet)
     {
-      switch (*type)
-	{
-	case _C_FLT:
-	  /* FIXME: This is better implemented with GMP where available.  */
-	  {
-	    NSString *s;
-	    float v = *(float *)value;
-	    if (GSIsNAN(v))
-	      {
-		DESTROY(self);
-		return RETAIN(notANumber);
-	      }
-	    if (GSIsInf(v))
-	      {
-		DESTROY(self);
-		return (v < 0.0) ? RETAIN(minNumber) : RETAIN(maxNumber);
-	      }
-	    s = [[NSString alloc] initWithFormat: @"%g"
-				  locale: GSPrivateDefaultLocale(), (double)v];
-	    self = [self initWithString: s];
-	    RELEASE(s);
-	    return self;
-	    break;
-	  }
-	case _C_DBL:
-	  /* FIXME: This is better implemented with GMP where available.  */
-	  {
-	    NSString *s;
-	    double v = *(double *)value;
-	    if (GSIsNAN(v))
-	      {
-		DESTROY(self);
-		return RETAIN(notANumber);
-	      }
-	    if (GSIsInf(v))
-	      {
-		DESTROY(self);
-		return (v < 0.0) ? RETAIN(minNumber) : RETAIN(maxNumber);
-	      }
-	    s = [[NSString alloc] initWithFormat: @"%g"
-				  locale: GSPrivateDefaultLocale(), v];
-	    self = [self initWithString: s];
-	    RELEASE(s);
-	    return self;
-	    break;
-	  }
+        if (llval < 0)
+        {
+            negative = YES;
+            llval *= -1;
+        }
+        val = llval;
+    }
+    else
+    {
+        switch (*type)
+        {
+        case _C_FLT:
+            /* FIXME: This is better implemented with GMP where available.  */
+        {
+            NSString *s;
+            float v = *(float *)value;
+            if (GSIsNAN(v))
+            {
+                DESTROY(self);
+                return RETAIN(notANumber);
+            }
+            if (GSIsInf(v))
+            {
+                DESTROY(self);
+                return (v < 0.0) ? RETAIN(minNumber) : RETAIN(maxNumber);
+            }
+            s = [[NSString alloc] initWithFormat:@"%g"
+                 locale:GSPrivateDefaultLocale(), (double)v];
+            self = [self initWithString:s];
+            RELEASE(s);
+            return self;
+            break;
+        }
+        case _C_DBL:
+            /* FIXME: This is better implemented with GMP where available.  */
+        {
+            NSString *s;
+            double v = *(double *)value;
+            if (GSIsNAN(v))
+            {
+                DESTROY(self);
+                return RETAIN(notANumber);
+            }
+            if (GSIsInf(v))
+            {
+                DESTROY(self);
+                return (v < 0.0) ? RETAIN(minNumber) : RETAIN(maxNumber);
+            }
+            s = [[NSString alloc] initWithFormat:@"%g"
+                 locale:GSPrivateDefaultLocale(), v];
+            self = [self initWithString:s];
+            RELEASE(s);
+            return self;
+            break;
+        }
 #ifdef  _C_ULNGLNG
-	case _C_ULNGLNG: 
+        case _C_ULNGLNG:
 #else
-	case 'Q':
+        case 'Q':
 #endif
-	  {
-	    val = *(unsigned long long *)value;
-	    break;
-	  }
-	}
+            {
+                val = *(unsigned long long *)value;
+                break;
+            }
+        }
     }
 
-  NSDecimalFromComponents(&decimal, val,
-			  0, negative);
-  return [self initWithDecimal: decimal];
+    NSDecimalFromComponents(&decimal, val,
+                            0, negative);
+    return [self initWithDecimal:decimal];
 }
 
-- (id) initWithDecimal: (NSDecimal)decimal
+- (id)initWithDecimal:(NSDecimal)decimal
 {
-  NSDecimalCopy(&data, &decimal);
-  return self;
+    NSDecimalCopy(&data, &decimal);
+    return self;
 }
 
-- (id) initWithMantissa: (unsigned long long)mantissa
-	       exponent: (short)exponent
-	     isNegative: (BOOL)flag
+- (id)initWithMantissa:(unsigned long long)mantissa
+    exponent:(short)exponent
+    isNegative:(BOOL)flag
 {
-  NSDecimal decimal;
+    NSDecimal decimal;
 
-  NSDecimalFromComponents(&decimal, mantissa, exponent, flag);
-  return [self initWithDecimal: decimal];
+    NSDecimalFromComponents(&decimal, mantissa, exponent, flag);
+    return [self initWithDecimal:decimal];
 }
 
-- (id) initWithString: (NSString*)numberValue
+- (id)initWithString:(NSString*)numberValue
 {
-  return [self initWithString: numberValue
-    locale: GSPrivateDefaultLocale()];
+    return [self initWithString:numberValue
+            locale:GSPrivateDefaultLocale()];
 }
 
-- (id) initWithString: (NSString*)numberValue
-	       locale: (NSDictionary*)locale
+- (id)initWithString:(NSString*)numberValue
+    locale:(NSDictionary*)locale
 {
-  NSDecimal decimal;
+    NSDecimal decimal;
 
-  NSDecimalFromString(&decimal, numberValue, locale);
-  // Apportable change: return nil if not a valid number
-  if (decimal.validNumber) {
-    return [self initWithDecimal: decimal];
-  } else {
-    return nil;
-  }
+    NSDecimalFromString(&decimal, numberValue, locale);
+    // Apportable change: return nil if not a valid number
+    if (decimal.validNumber) {
+        return [self initWithDecimal:decimal];
+    } else {
+        return nil;
+    }
 }
 
-- (id) initWithBool: (BOOL)value
+- (id)initWithBool:(BOOL)value
 {
-  return [self initWithMantissa: (value == YES) ? 1 : 0
-		       exponent: 0
-		     isNegative: NO];
+    return [self initWithMantissa:(value == YES) ? 1:0
+            exponent:0
+            isNegative:NO];
 }
 
-- (id) initWithChar: (signed char)value
+- (id)initWithChar:(signed char)value
 {
-  if (value < 0)
+    if (value < 0)
     {
-      return [self initWithMantissa: -value
-			   exponent: 0
-			 isNegative: YES];
+        return [self initWithMantissa:-value
+                exponent:0
+                isNegative:YES];
     }
-  else
+    else
     {
-      return [self initWithMantissa: value
-			   exponent: 0
-			 isNegative: NO];
+        return [self initWithMantissa:value
+                exponent:0
+                isNegative:NO];
     }
 }
 
-- (id) initWithDouble: (double)value
+- (id)initWithDouble:(double)value
 {
-  return [self initWithBytes: &value objCType: "d"];
+    return [self initWithBytes:&value objCType:"d"];
 }
 
-- (id) initWithFloat: (float)value
+- (id)initWithFloat:(float)value
 {
-  double	d = (double)value;
+    double d = (double)value;
 
-  return [self initWithBytes: &d objCType: "d"];
+    return [self initWithBytes:&d objCType:"d"];
 }
 
-- (id) initWithInt: (int)value
+- (id)initWithInt:(int)value
 {
-  if (value < 0)
+    if (value < 0)
     {
-      return [self initWithMantissa: -value
-			   exponent: 0
-			 isNegative: YES];
+        return [self initWithMantissa:-value
+                exponent:0
+                isNegative:YES];
     }
-  else
+    else
     {
-      return [self initWithMantissa: value
-			   exponent: 0
-			 isNegative: NO];
+        return [self initWithMantissa:value
+                exponent:0
+                isNegative:NO];
     }
 }
 
-- (id) initWithInteger: (NSInteger)value
+- (id)initWithInteger:(NSInteger)value
 {
-  if (value < 0)
+    if (value < 0)
     {
-      return [self initWithMantissa: -value
-			   exponent: 0
-			 isNegative: YES];
+        return [self initWithMantissa:-value
+                exponent:0
+                isNegative:YES];
     }
-  else
+    else
     {
-      return [self initWithMantissa: value
-			   exponent: 0
-			 isNegative: NO];
+        return [self initWithMantissa:value
+                exponent:0
+                isNegative:NO];
     }
 }
 
-- (id) initWithLong: (signed long)value
+- (id)initWithLong:(signed long)value
 {
-  if (value < 0)
+    if (value < 0)
     {
-      return [self initWithMantissa: -value
-			   exponent: 0
-			 isNegative: YES];
+        return [self initWithMantissa:-value
+                exponent:0
+                isNegative:YES];
     }
-  else
+    else
     {
-      return [self initWithMantissa: value
-			   exponent: 0
-			 isNegative: NO];
+        return [self initWithMantissa:value
+                exponent:0
+                isNegative:NO];
     }
 }
 
-- (id) initWithLongLong: (signed long long)value
+- (id)initWithLongLong:(signed long long)value
 {
-  if (value < 0)
+    if (value < 0)
     {
-      return [self initWithMantissa: -value
-			   exponent: 0
-			 isNegative: YES];
+        return [self initWithMantissa:-value
+                exponent:0
+                isNegative:YES];
     }
-  else
+    else
     {
-      return [self initWithMantissa: value
-			   exponent: 0
-			 isNegative: NO];
+        return [self initWithMantissa:value
+                exponent:0
+                isNegative:NO];
     }
 }
 
-- (id) initWithShort: (signed short)value
+- (id)initWithShort:(signed short)value
 {
-  if (value < 0)
+    if (value < 0)
     {
-      return [self initWithMantissa: -value
-			   exponent: 0
-			 isNegative: YES];
+        return [self initWithMantissa:-value
+                exponent:0
+                isNegative:YES];
     }
-  else
+    else
     {
-      return [self initWithMantissa: value
-			   exponent: 0
-			 isNegative: NO];
+        return [self initWithMantissa:value
+                exponent:0
+                isNegative:NO];
     }
 }
 
-- (id) initWithUnsignedChar: (unsigned char)value
+- (id)initWithUnsignedChar:(unsigned char)value
 {
-  return [self initWithMantissa: value
-		       exponent: 0
-		     isNegative: NO];
+    return [self initWithMantissa:value
+            exponent:0
+            isNegative:NO];
 }
 
-- (id) initWithUnsignedInt: (unsigned int)value
+- (id)initWithUnsignedInt:(unsigned int)value
 {
-  return [self initWithMantissa: value
-		       exponent: 0
-		     isNegative: NO];
+    return [self initWithMantissa:value
+            exponent:0
+            isNegative:NO];
 }
 
-- (id) initWithUnsignedInteger: (NSUInteger)value
+- (id)initWithUnsignedInteger:(NSUInteger)value
 {
-  return [self initWithMantissa: value
-		       exponent: 0
-		     isNegative: NO];
+    return [self initWithMantissa:value
+            exponent:0
+            isNegative:NO];
 }
 
-- (id) initWithUnsignedLong: (unsigned long)value
+- (id)initWithUnsignedLong:(unsigned long)value
 {
-  return [self initWithMantissa: value
-		       exponent: 0
-		     isNegative: NO];
+    return [self initWithMantissa:value
+            exponent:0
+            isNegative:NO];
 }
 
-- (id) initWithUnsignedLongLong: (unsigned long long)value
+- (id)initWithUnsignedLongLong:(unsigned long long)value
 {
-  return [self initWithMantissa: value
-		       exponent: 0
-		     isNegative: NO];
+    return [self initWithMantissa:value
+            exponent:0
+            isNegative:NO];
 }
 
-- (id) initWithUnsignedShort: (unsigned short)value
+- (id)initWithUnsignedShort:(unsigned short)value
 {
-  return [self initWithMantissa: value
-		       exponent: 0
-		     isNegative: NO];
+    return [self initWithMantissa:value
+            exponent:0
+            isNegative:NO];
 }
 
-- (NSString*) descriptionWithLocale: (NSDictionary*)locale
+- (NSString*)descriptionWithLocale:(NSDictionary*)locale
 {
-  return NSDecimalString(&data, locale);
+    return NSDecimalString(&data, locale);
 }
 
-- (const char*) objCType
+- (const char*)objCType
 {
-  return "d";
+    return "d";
 }
 
-- (NSDecimal) decimalValue
+- (NSDecimal)decimalValue
 {
-  NSDecimal decimal;
+    NSDecimal decimal;
 
-  NSDecimalCopy(&decimal, &data);
-  return decimal;
+    NSDecimalCopy(&decimal, &data);
+    return decimal;
 }
 
-- (BOOL) boolValue
+- (BOOL)boolValue
 {
-  return NSDecimalDouble(&data) == 0.0 ? NO : YES;
+    return NSDecimalDouble(&data) == 0.0 ? NO : YES;
 }
 
-- (double) doubleValue
+- (double)doubleValue
 {
-  return NSDecimalDouble(&data);
+    return NSDecimalDouble(&data);
 }
 
-- (float) floatValue
+- (float)floatValue
 {
-  return (float)NSDecimalDouble(&data);
+    return (float)NSDecimalDouble(&data);
 }
 
-- (signed char) charValue
+- (signed char)charValue
 {
-  return (char)NSDecimalDouble(&data);
+    return (char)NSDecimalDouble(&data);
 }
 
-- (int) intValue
+- (int)intValue
 {
-  return (int)NSDecimalDouble(&data);
+    return (int)NSDecimalDouble(&data);
 }
 
-- (NSInteger) integerValue
+- (NSInteger)integerValue
 {
-  return (NSInteger)NSDecimalDouble(&data);
+    return (NSInteger)NSDecimalDouble(&data);
 }
 
-- (long) longValue
+- (long)longValue
 {
-  return (long)NSDecimalDouble(&data);
+    return (long)NSDecimalDouble(&data);
 }
 
-- (long long) longLongValue
+- (long long)longLongValue
 {
-  return (long long)NSDecimalDouble(&data);
+    return (long long)NSDecimalDouble(&data);
 }
 
-- (short) shortValue
+- (short)shortValue
 {
-  return (short)NSDecimalDouble(&data);
+    return (short)NSDecimalDouble(&data);
 }
 
-- (unsigned char) unsignedCharValue
+- (unsigned char)unsignedCharValue
 {
-  return (unsigned char)NSDecimalDouble(&data);
+    return (unsigned char)NSDecimalDouble(&data);
 }
 
-- (unsigned int) unsignedIntValue
+- (unsigned int)unsignedIntValue
 {
-  return (unsigned int)NSDecimalDouble(&data);
+    return (unsigned int)NSDecimalDouble(&data);
 }
 
-- (NSUInteger) unsignedIntegerValue
+- (NSUInteger)unsignedIntegerValue
 {
-  return (NSUInteger)NSDecimalDouble(&data);
+    return (NSUInteger)NSDecimalDouble(&data);
 }
 
-- (unsigned long) unsignedLongValue
+- (unsigned long)unsignedLongValue
 {
-  return (unsigned long)NSDecimalDouble(&data);
+    return (unsigned long)NSDecimalDouble(&data);
 }
 
-- (unsigned long long) unsignedLongLongValue
+- (unsigned long long)unsignedLongLongValue
 {
-  return (unsigned long long)NSDecimalDouble(&data);
+    return (unsigned long long)NSDecimalDouble(&data);
 }
 
-- (unsigned short) unsignedShortValue
+- (unsigned short)unsignedShortValue
 {
-  return (unsigned short)NSDecimalDouble(&data);
+    return (unsigned short)NSDecimalDouble(&data);
 }
 
 /**
  * Get the approximate value of the decimal number into a buffer
  * as a double.
  */
-- (void) getValue: (void*)buffer
+- (void)getValue:(void*)buffer
 {
-  double	tmp = NSDecimalDouble(&data);
+    double tmp = NSDecimalDouble(&data);
 
-  memcpy(buffer, &tmp, sizeof(tmp));
+    memcpy(buffer, &tmp, sizeof(tmp));
 }
 
-- (NSComparisonResult) compare: (NSNumber*)decimalNumber
+- (NSComparisonResult)compare:(NSNumber*)decimalNumber
 {
-  if (self == decimalNumber)
+    if (self == decimalNumber)
     {
-      return NSOrderedSame;
+        return NSOrderedSame;
     }
-  if ([decimalNumber respondsToSelector:@selector(decimalValue)])
+    if ([decimalNumber respondsToSelector:@selector(decimalValue)])
     {
-      NSDecimal d1 = [self decimalValue];
-      NSDecimal d2 = [(NSDecimalNumber*)decimalNumber decimalValue];
+        NSDecimal d1 = [self decimalValue];
+        NSDecimal d2 = [(NSDecimalNumber*)decimalNumber decimalValue];
 
-      return NSDecimalCompare(&d1, &d2);
+        return NSDecimalCompare(&d1, &d2);
     }
-  else
-    return [super compare: decimalNumber];
-}
-
-- (NSDecimalNumber*) decimalNumberByAdding: (NSDecimalNumber*)decimalNumber
-{
-  return [self decimalNumberByAdding: decimalNumber
-			withBehavior: [isa defaultBehavior]];
-}
-
-- (NSDecimalNumber*) decimalNumberByAdding: (NSDecimalNumber*)decimalNumber
-  withBehavior: (id<NSDecimalNumberBehaviors>)behavior
-{
-  NSDecimal result;
-  NSDecimal d1 = [self decimalValue];
-  NSDecimal d2 = [decimalNumber decimalValue];
-  NSCalculationError error;
-  NSDecimalNumber *res;
-
-  error = NSDecimalAdd(&result, &d1, &d2, [behavior roundingMode]);
-  if (error)
-    {
-      res = [behavior exceptionDuringOperation: _cmd
-					 error: error
-				   leftOperand: self
-				  rightOperand: decimalNumber];
-      if (res != nil)
-	return res;
+    else{
+        return [super compare:decimalNumber];
     }
-
-  return [NSDecimalNumber decimalNumberWithDecimal: result];
 }
 
-- (NSDecimalNumber*) decimalNumberBySubtracting: (NSDecimalNumber*)decimalNumber
+- (NSDecimalNumber*)decimalNumberByAdding:(NSDecimalNumber*)decimalNumber
 {
-  return [self decimalNumberBySubtracting: decimalNumber
-			     withBehavior: [isa defaultBehavior]];
+    return [self decimalNumberByAdding:decimalNumber
+            withBehavior:[object_getClass(self) defaultBehavior]];
 }
 
-- (NSDecimalNumber*) decimalNumberBySubtracting: (NSDecimalNumber*)decimalNumber
-  withBehavior: (id <NSDecimalNumberBehaviors>)behavior
+- (NSDecimalNumber*)decimalNumberByAdding:(NSDecimalNumber*)decimalNumber
+    withBehavior:(id<NSDecimalNumberBehaviors>)behavior
 {
-  NSDecimal result;
-  NSDecimal d1 = [self decimalValue];
-  NSDecimal d2 = [decimalNumber decimalValue];
-  NSCalculationError error;
-  NSDecimalNumber *res;
+    NSDecimal result;
+    NSDecimal d1 = [self decimalValue];
+    NSDecimal d2 = [decimalNumber decimalValue];
+    NSCalculationError error;
+    NSDecimalNumber *res;
 
-  error = NSDecimalSubtract(&result, &d1, &d2, [behavior roundingMode]);
-  if (error)
+    error = NSDecimalAdd(&result, &d1, &d2, [behavior roundingMode]);
+    if (error)
     {
-      res = [behavior exceptionDuringOperation: _cmd
-					 error: error
-				   leftOperand: self
-				  rightOperand: decimalNumber];
-      if (res != nil)
-	return res;
+        res = [behavior exceptionDuringOperation:_cmd
+               error:error
+               leftOperand:self
+               rightOperand:decimalNumber];
+        if (res != nil) {
+            return res;
+        }
     }
 
-  return [NSDecimalNumber decimalNumberWithDecimal: result];
+    return [NSDecimalNumber decimalNumberWithDecimal:result];
 }
 
-- (NSDecimalNumber*) decimalNumberByMultiplyingBy:
-  (NSDecimalNumber*)decimalNumber
+- (NSDecimalNumber*)decimalNumberBySubtracting:(NSDecimalNumber*)decimalNumber
 {
-  return [self decimalNumberByMultiplyingBy: decimalNumber
-			       withBehavior: [isa defaultBehavior]];
+    return [self decimalNumberBySubtracting:decimalNumber
+            withBehavior:[object_getClass(self) defaultBehavior]];
 }
 
-- (NSDecimalNumber*) decimalNumberByMultiplyingBy:
-  (NSDecimalNumber*)decimalNumber
-  withBehavior: (id <NSDecimalNumberBehaviors>)behavior
+- (NSDecimalNumber*)decimalNumberBySubtracting:(NSDecimalNumber*)decimalNumber
+    withBehavior:(id <NSDecimalNumberBehaviors>)behavior
 {
-  NSDecimal result;
-  NSDecimal d1 = [self decimalValue];
-  NSDecimal d2 = [decimalNumber decimalValue];
-  NSCalculationError error;
-  NSDecimalNumber *res;
+    NSDecimal result;
+    NSDecimal d1 = [self decimalValue];
+    NSDecimal d2 = [decimalNumber decimalValue];
+    NSCalculationError error;
+    NSDecimalNumber *res;
 
-  error = NSDecimalMultiply(&result, &d1, &d2, [behavior roundingMode]);
-  if (error)
+    error = NSDecimalSubtract(&result, &d1, &d2, [behavior roundingMode]);
+    if (error)
     {
-      res = [behavior exceptionDuringOperation: _cmd
-					 error: error
-				   leftOperand: self
-				  rightOperand: decimalNumber];
-      if (res != nil)
-	return res;
+        res = [behavior exceptionDuringOperation:_cmd
+               error:error
+               leftOperand:self
+               rightOperand:decimalNumber];
+        if (res != nil) {
+            return res;
+        }
     }
 
-  return [NSDecimalNumber decimalNumberWithDecimal: result];
+    return [NSDecimalNumber decimalNumberWithDecimal:result];
 }
 
-- (NSDecimalNumber*) decimalNumberByDividingBy: (NSDecimalNumber*)decimalNumber
+- (NSDecimalNumber*)decimalNumberByMultiplyingBy:
+    (NSDecimalNumber*)decimalNumber
 {
-  return [self decimalNumberByDividingBy: decimalNumber
-			    withBehavior: [isa defaultBehavior]];
+    return [self decimalNumberByMultiplyingBy:decimalNumber
+            withBehavior:[object_getClass(self) defaultBehavior]];
 }
 
-- (NSDecimalNumber*) decimalNumberByDividingBy: (NSDecimalNumber*)decimalNumber
-  withBehavior: (id <NSDecimalNumberBehaviors>)behavior
+- (NSDecimalNumber*)decimalNumberByMultiplyingBy:
+    (NSDecimalNumber*)decimalNumber
+    withBehavior:(id <NSDecimalNumberBehaviors>)behavior
 {
-  NSDecimal result;
-  NSDecimal d1 = [self decimalValue];
-  NSDecimal d2 = [decimalNumber decimalValue];
-  NSCalculationError error;
-  NSDecimalNumber *res;
+    NSDecimal result;
+    NSDecimal d1 = [self decimalValue];
+    NSDecimal d2 = [decimalNumber decimalValue];
+    NSCalculationError error;
+    NSDecimalNumber *res;
 
-  error = NSDecimalDivide(&result, &d1, &d2, [behavior roundingMode]);
-  if (error)
+    error = NSDecimalMultiply(&result, &d1, &d2, [behavior roundingMode]);
+    if (error)
     {
-      res = [behavior exceptionDuringOperation: _cmd
-					 error: error
-				   leftOperand: self
-				  rightOperand: decimalNumber];
-      if (res != nil)
-	return res;
+        res = [behavior exceptionDuringOperation:_cmd
+               error:error
+               leftOperand:self
+               rightOperand:decimalNumber];
+        if (res != nil) {
+            return res;
+        }
     }
 
-  return [NSDecimalNumber decimalNumberWithDecimal: result];
+    return [NSDecimalNumber decimalNumberWithDecimal:result];
 }
 
-- (NSDecimalNumber*) decimalNumberByMultiplyingByPowerOf10: (short)power
+- (NSDecimalNumber*)decimalNumberByDividingBy:(NSDecimalNumber*)decimalNumber
 {
-  return [self decimalNumberByMultiplyingByPowerOf10: power
-					withBehavior: [isa defaultBehavior]];
+    return [self decimalNumberByDividingBy:decimalNumber
+            withBehavior:[object_getClass(self) defaultBehavior]];
 }
 
-- (NSDecimalNumber*) decimalNumberByMultiplyingByPowerOf10: (short)power
-  withBehavior: (id <NSDecimalNumberBehaviors>)behavior
+- (NSDecimalNumber*)decimalNumberByDividingBy:(NSDecimalNumber*)decimalNumber
+    withBehavior:(id <NSDecimalNumberBehaviors>)behavior
 {
-  NSDecimal result;
-  NSDecimal d1 = [self decimalValue];
-  NSCalculationError error;
-  NSDecimalNumber *res;
+    NSDecimal result;
+    NSDecimal d1 = [self decimalValue];
+    NSDecimal d2 = [decimalNumber decimalValue];
+    NSCalculationError error;
+    NSDecimalNumber *res;
 
-  error = NSDecimalMultiplyByPowerOf10(&result, &d1,
-    power, [behavior roundingMode]);
-  if (error)
+    error = NSDecimalDivide(&result, &d1, &d2, [behavior roundingMode]);
+    if (error)
     {
-      res = [behavior exceptionDuringOperation: _cmd
-					 error: error
-				   leftOperand: self
-				  rightOperand: nil];
-      if (res != nil)
-	return res;
+        res = [behavior exceptionDuringOperation:_cmd
+               error:error
+               leftOperand:self
+               rightOperand:decimalNumber];
+        if (res != nil) {
+            return res;
+        }
     }
 
-  return [NSDecimalNumber decimalNumberWithDecimal: result];
+    return [NSDecimalNumber decimalNumberWithDecimal:result];
 }
 
-- (NSDecimalNumber*) decimalNumberByRaisingToPower: (NSUInteger)power
+- (NSDecimalNumber*)decimalNumberByMultiplyingByPowerOf10:(short)power
 {
-  return [self decimalNumberByRaisingToPower: power
-				withBehavior: [isa defaultBehavior]];
+    return [self decimalNumberByMultiplyingByPowerOf10:power
+            withBehavior:[object_getClass(self) defaultBehavior]];
 }
 
-- (NSDecimalNumber*) decimalNumberByRaisingToPower: (NSUInteger)power
-  withBehavior: (id <NSDecimalNumberBehaviors>)behavior
+- (NSDecimalNumber*)decimalNumberByMultiplyingByPowerOf10:(short)power
+    withBehavior:(id <NSDecimalNumberBehaviors>)behavior
 {
-  NSDecimal result;
-  NSDecimal d1 = [self decimalValue];
-  NSCalculationError error;
-  NSDecimalNumber *res;
+    NSDecimal result;
+    NSDecimal d1 = [self decimalValue];
+    NSCalculationError error;
+    NSDecimalNumber *res;
 
-  error = NSDecimalPower(&result, &d1,
-    power, [behavior roundingMode]);
-  if (error)
+    error = NSDecimalMultiplyByPowerOf10(&result, &d1,
+                                         power, [behavior roundingMode]);
+    if (error)
     {
-      res = [behavior exceptionDuringOperation: _cmd
-					 error: error
-				   leftOperand: self
-				  rightOperand: nil];
-      if (res != nil)
-	return res;
+        res = [behavior exceptionDuringOperation:_cmd
+               error:error
+               leftOperand:self
+               rightOperand:nil];
+        if (res != nil) {
+            return res;
+        }
     }
 
-  return [NSDecimalNumber decimalNumberWithDecimal: result];
+    return [NSDecimalNumber decimalNumberWithDecimal:result];
 }
 
-- (NSDecimalNumber*) decimalNumberByRoundingAccordingToBehavior:
-  (id <NSDecimalNumberBehaviors>)behavior
+- (NSDecimalNumber*)decimalNumberByRaisingToPower:(NSUInteger)power
 {
-  NSDecimal result;
-  NSDecimal d1 = [self decimalValue];
+    return [self decimalNumberByRaisingToPower:power
+            withBehavior:[object_getClass(self) defaultBehavior]];
+}
 
-  NSDecimalRound(&result, &d1, [behavior scale], [behavior roundingMode]);
-  return [NSDecimalNumber decimalNumberWithDecimal: result];
+- (NSDecimalNumber*)decimalNumberByRaisingToPower:(NSUInteger)power
+    withBehavior:(id <NSDecimalNumberBehaviors>)behavior
+{
+    NSDecimal result;
+    NSDecimal d1 = [self decimalValue];
+    NSCalculationError error;
+    NSDecimalNumber *res;
+
+    error = NSDecimalPower(&result, &d1,
+                           power, [behavior roundingMode]);
+    if (error)
+    {
+        res = [behavior exceptionDuringOperation:_cmd
+               error:error
+               leftOperand:self
+               rightOperand:nil];
+        if (res != nil) {
+            return res;
+        }
+    }
+
+    return [NSDecimalNumber decimalNumberWithDecimal:result];
+}
+
+- (NSDecimalNumber*)decimalNumberByRoundingAccordingToBehavior:
+    (id <NSDecimalNumberBehaviors>)behavior
+{
+    NSDecimal result;
+    NSDecimal d1 = [self decimalValue];
+
+    NSDecimalRound(&result, &d1, [behavior scale], [behavior roundingMode]);
+    return [NSDecimalNumber decimalNumberWithDecimal:result];
 }
 
 
 // Methods for NSDecimalNumberBehaviors
-- (NSDecimalNumber*) exceptionDuringOperation: (SEL)method
-					error: (NSCalculationError)error
-				  leftOperand: (NSDecimalNumber*)leftOperand
-				 rightOperand: (NSDecimalNumber*)rightOperand
+- (NSDecimalNumber*)exceptionDuringOperation:(SEL)method
+    error:(NSCalculationError)error
+    leftOperand:(NSDecimalNumber*)leftOperand
+    rightOperand:(NSDecimalNumber*)rightOperand
 {
-  return [[isa defaultBehavior] exceptionDuringOperation: method
-						   error: error
-					     leftOperand: leftOperand
-					    rightOperand: rightOperand];
+    return [[object_getClass(self) defaultBehavior] exceptionDuringOperation:method
+            error:error
+            leftOperand:leftOperand
+            rightOperand:rightOperand];
 }
 
-- (NSRoundingMode) roundingMode
+- (NSRoundingMode)roundingMode
 {
-  return [[isa defaultBehavior] roundingMode];
+    return [[object_getClass(self) defaultBehavior] roundingMode];
 }
 
-- (short) scale
+- (short)scale
 {
-  return [[isa defaultBehavior] scale];
+    return [[object_getClass(self) defaultBehavior] scale];
 }
 
-- (Class) classForCoder
+- (Class)classForCoder
 {
-  return [NSDecimalNumber class];
+    return [NSDecimalNumber class];
 }
 
-- (id) replacementObjectForPortCoder: (NSPortCoder*)aCoder
+- (id)replacementObjectForPortCoder:(NSPortCoder*)aCoder
 {
-  if ([aCoder isByref] == NO)
-    return self;
-  return [super replacementObjectForPortCoder: aCoder];
+    if ([aCoder isByref] == NO) {
+        return self;
+    }
+    return [super replacementObjectForPortCoder:aCoder];
 }
 
-- (void) encodeWithCoder: (NSCoder*)coder
+- (void)encodeWithCoder:(NSCoder*)coder
 {
-  NSString	*s = [self descriptionWithLocale: nil];
+    NSString  *s = [self descriptionWithLocale:nil];
 
-  [coder encodeObject: s];
+    [coder encodeObject:s];
 }
 
-- (id) initWithCoder: (NSCoder*)coder
+- (id)initWithCoder:(NSCoder*)coder
 {
-  NSString	*s = [coder decodeObject];
+    NSString  *s = [coder decodeObject];
 
-  return [self initWithString: s locale: nil];
+    return [self initWithString:s locale:nil];
 }
 
 @end
@@ -978,14 +995,14 @@ void* kCFNumberNaN;
 @implementation NSNumber (NSDecimalNumber)
 /** Returns an NSDecimal representation of the number. Float and double
     values may not be converted exactly */
-- (NSDecimal) decimalValue
+- (NSDecimal)decimalValue
 {
-  double num;
-  NSDecimalNumber *dnum;
-  num = [self doubleValue];
-  dnum
-    = AUTORELEASE([[NSDecimalNumber alloc] initWithBytes: &num objCType: "d"]);
-  return [dnum decimalValue];
+    double num;
+    NSDecimalNumber *dnum;
+    num = [self doubleValue];
+    dnum
+        = AUTORELEASE([[NSDecimalNumber alloc] initWithBytes:&num objCType:"d"]);
+    return [dnum decimalValue];
 }
 @end
 

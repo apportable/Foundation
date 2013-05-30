@@ -23,7 +23,7 @@
 
    <title>NSAssertionHandler class reference</title>
    $Date: 2010-11-07 07:37:19 -0800 (Sun, 07 Nov 2010) $ $Revision: 31593 $
-   */
+ */
 
 #import "common.h"
 #import "Foundation/NSException.h"
@@ -64,20 +64,20 @@ NSString *const NSAssertionHandlerKey = @"NSAssertionHandler";
  * Returns the assertion handler object for the current thread.<br />
  * If none exists, creates one and returns it.
  */
-+ (NSAssertionHandler*) currentHandler
++ (NSAssertionHandler*)currentHandler
 {
-  NSMutableDictionary	*dict;
-  NSAssertionHandler	*handler;
+    NSMutableDictionary   *dict;
+    NSAssertionHandler    *handler;
 
-  dict = GSCurrentThreadDictionary();
-  handler = [dict objectForKey: NSAssertionHandlerKey];
-  if (handler == nil)
+    dict = GSCurrentThreadDictionary();
+    handler = [dict objectForKey:NSAssertionHandlerKey];
+    if (handler == nil)
     {
-      handler = [[NSAssertionHandler alloc] init];
-      [dict setObject: handler forKey: NSAssertionHandlerKey];
-      RELEASE(handler);
+        handler = [[NSAssertionHandler alloc] init];
+        [dict setObject:handler forKey:NSAssertionHandlerKey];
+        RELEASE(handler);
     }
-  return handler;
+    return handler;
 }
 
 /**
@@ -85,25 +85,25 @@ NSString *const NSAssertionHandlerKey = @"NSAssertionHandler";
  * message built from the supplied arguments, and then raising an
  * NSInternalInconsistencyException
  */
-- (void) handleFailureInFunction: (NSString*)functionName
-			    file: (NSString*)fileName
-		      lineNumber: (NSInteger)line
-		     description: (NSString*)format,...
+- (void)handleFailureInFunction:(NSString*)functionName
+    file:(NSString*)fileName
+    lineNumber:(NSInteger)line
+    description:(NSString*)format,...
 {
-  id		message;
-  va_list	ap;
+    id message;
+    va_list ap;
 
-  va_start(ap, format);
-  message =
-    [NSString
-      stringWithFormat: @"%@:%d  Assertion failed in %@.  \x1b[1;35;40m%@\x1b[0m",
-      fileName, line, functionName, format];
-  NSLogv(message, ap);
+    va_start(ap, format);
+    message =
+        [NSString
+         stringWithFormat:@"%@:%d  Assertion failed in %@.  \x1b[1;35;40m%@\x1b[0m",
+         fileName, line, functionName, format];
+    NSLogv(message, ap);
 
-  [NSException raise: NSInternalInconsistencyException
-	      format: message arguments: ap];
-  va_end(ap);
-  /* NOT REACHED */
+    [NSException raise:NSInternalInconsistencyException
+     format:message arguments:ap];
+    va_end(ap);
+    /* NOT REACHED */
 }
 
 /**
@@ -111,28 +111,28 @@ NSString *const NSAssertionHandlerKey = @"NSAssertionHandler";
  * message built from the supplied arguments, and then raising an
  * NSInternalInconsistencyException
  */
-- (void) handleFailureInMethod: (SEL) aSelector
-                        object: object
-                          file: (NSString *) fileName
-                    lineNumber: (NSInteger) line
-                   description: (NSString *) format,...
+- (void)handleFailureInMethod:(SEL)aSelector
+    object:object
+        file:(NSString *) fileName
+    lineNumber:(NSInteger) line
+    description:(NSString *) format,...
 {
-  id		message;
-  va_list	ap;
+    id message;
+    va_list ap;
 
-  va_start(ap, format);
-  message =
-    [NSString
-      stringWithFormat: @"%@:%d  Assertion failed in %@(%@), method %@.  \x1b[1;35;40m%@\x1b[0m",
-      fileName, line, NSStringFromClass([object class]),
-      class_isMetaClass([object class]) ? @"class" : @"instance",
-      NSStringFromSelector(aSelector), format];
-  NSLogv(message, ap);
+    va_start(ap, format);
+    message =
+        [NSString
+         stringWithFormat:@"%@:%d  Assertion failed in %@(%@), method %@.  \x1b[1;35;40m%@\x1b[0m",
+         fileName, line, NSStringFromClass([object class]),
+         class_isMetaClass([object class]) ? @"class":@"instance",
+         NSStringFromSelector(aSelector), format];
+    NSLogv(message, ap);
 
-  [NSException raise: NSInternalInconsistencyException
-	      format: message arguments: ap];
-  va_end(ap);
-  /* NOT REACHED */
+    [NSException raise:NSInternalInconsistencyException
+     format:message arguments:ap];
+    va_end(ap);
+    /* NOT REACHED */
 }
 
 @end

@@ -1,0 +1,259 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BC25BA090DA42D1100B702AC /* runtime.c in Sources */ = {isa = PBXBuildFile; fileRef = BC00CFE80D63A4EB00A2E26A /* runtime.c */; };
+		BC27DCF70D85B65B0019CBF0 /* objc.m in Sources */ = {isa = PBXBuildFile; fileRef = BC27DCF60D85B65B0019CBF0 /* objc.m */; };
+		BC285C0B0D64FE090074A878 /* closure_return.c in Sources */ = {isa = PBXBuildFile; fileRef = BC285C040D64FE090074A878 /* closure_return.c */; };
+		BC285C0C0D64FE090074A878 /* driver.c in Sources */ = {isa = PBXBuildFile; fileRef = BC285C050D64FE090074A878 /* driver.c */; };
+		BC285C0D0D64FE090074A878 /* import_byref.c in Sources */ = {isa = PBXBuildFile; fileRef = BC285C070D64FE090074A878 /* import_byref.c */; };
+		BC285C0E0D64FE090074A878 /* import_const.c in Sources */ = {isa = PBXBuildFile; fileRef = BC285C080D64FE090074A878 /* import_const.c */; };
+		BC285C0F0D64FE090074A878 /* import_interim_byref.c in Sources */ = {isa = PBXBuildFile; fileRef = BC285C090D64FE090074A878 /* import_interim_byref.c */; };
+		BC285C100D64FE090074A878 /* parameters.c in Sources */ = {isa = PBXBuildFile; fileRef = BC285C0A0D64FE090074A878 /* parameters.c */; };
+		BCA13C710D7CC451004157B1 /* block_examples.c in Sources */ = {isa = PBXBuildFile; fileRef = BCA13C700D7CC451004157B1 /* block_examples.c */; };
+		BCD33FB70D6B68D3002F2BDF /* NSFuture.m in Sources */ = {isa = PBXBuildFile; fileRef = BCD33FB60D6B68D3002F2BDF /* NSFuture.m */; };
+		BCD3402D0D6BAD41002F2BDF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BCD3402C0D6BAD41002F2BDF /* Foundation.framework */; };
+		BCFF82F10D737E9700515FEF /* import_global.c in Sources */ = {isa = PBXBuildFile; fileRef = BCFF82F00D737E9700515FEF /* import_global.c */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		BCA13C930D7CC7EA004157B1 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.gcc;
+			fileType = sourcecode.c;
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILES_DIR)/$(INPUT_FILE_BASE).o",
+			);
+			script = "/usr/bin/gcc-4.2 -c ";
+		};
+/* End PBXBuildRule section */
+
+/* Begin PBXFileReference section */
+		BC00CFE80D63A4EB00A2E26A /* runtime.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = runtime.c; path = ../runtime.c; sourceTree = "<group>"; };
+		BC00CFEB0D63A4F600A2E26A /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../Makefile; sourceTree = "<group>"; };
+		BC211CD70D6FA33500256A46 /* Block.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Block.h; path = ../Block.h; sourceTree = SOURCE_ROOT; };
+		BC211CDA0D6FA48E00256A46 /* Block_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Block_private.h; path = ../Block_private.h; sourceTree = SOURCE_ROOT; };
+		BC25BA580DA5845500B702AC /* data.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = data.c; path = ../data.c; sourceTree = SOURCE_ROOT; };
+		BC27DCF60D85B65B0019CBF0 /* objc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = objc.m; sourceTree = "<group>"; };
+		BC285BF60D64FD080074A878 /* expansionTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = expansionTest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BC285C040D64FE090074A878 /* closure_return.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = closure_return.c; sourceTree = "<group>"; };
+		BC285C050D64FE090074A878 /* driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = driver.c; sourceTree = "<group>"; };
+		BC285C060D64FE090074A878 /* driver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = driver.h; sourceTree = "<group>"; };
+		BC285C070D64FE090074A878 /* import_byref.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = import_byref.c; sourceTree = "<group>"; };
+		BC285C080D64FE090074A878 /* import_const.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = import_const.c; sourceTree = "<group>"; };
+		BC285C090D64FE090074A878 /* import_interim_byref.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = import_interim_byref.c; sourceTree = "<group>"; };
+		BC285C0A0D64FE090074A878 /* parameters.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = parameters.c; sourceTree = "<group>"; };
+		BCA13C700D7CC451004157B1 /* block_examples.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = block_examples.c; sourceTree = "<group>"; };
+		BCD33FB50D6B68D3002F2BDF /* NSFuture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSFuture.h; sourceTree = "<group>"; };
+		BCD33FB60D6B68D3002F2BDF /* NSFuture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSFuture.m; sourceTree = "<group>"; };
+		BCD3402C0D6BAD41002F2BDF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		BCFF82F00D737E9700515FEF /* import_global.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = import_global.c; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BC285BF40D64FD080074A878 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BCD3402D0D6BAD41002F2BDF /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		BC00CFDC0D63A4CE00A2E26A = {
+			isa = PBXGroup;
+			children = (
+				BC666EC80D8B209A000D9F48 /* Foundation stuff */,
+				BC285C130D64FE2A0074A878 /* expansionTest src */,
+				BC285BF00D64FC6B0074A878 /* libclosure src */,
+				BCD3402C0D6BAD41002F2BDF /* Foundation.framework */,
+				BC285BF70D64FD080074A878 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BC285BF00D64FC6B0074A878 /* libclosure src */ = {
+			isa = PBXGroup;
+			children = (
+				BC25BA580DA5845500B702AC /* data.c */,
+				BC211CD70D6FA33500256A46 /* Block.h */,
+				BC211CDA0D6FA48E00256A46 /* Block_private.h */,
+				BC00CFEB0D63A4F600A2E26A /* Makefile */,
+				BC00CFE80D63A4EB00A2E26A /* runtime.c */,
+			);
+			name = "libclosure src";
+			sourceTree = "<group>";
+		};
+		BC285BF70D64FD080074A878 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BC285BF60D64FD080074A878 /* expansionTest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BC285C130D64FE2A0074A878 /* expansionTest src */ = {
+			isa = PBXGroup;
+			children = (
+				BC285C040D64FE090074A878 /* closure_return.c */,
+				BC285C050D64FE090074A878 /* driver.c */,
+				BC285C060D64FE090074A878 /* driver.h */,
+				BC285C070D64FE090074A878 /* import_byref.c */,
+				BC285C080D64FE090074A878 /* import_const.c */,
+				BCA13C700D7CC451004157B1 /* block_examples.c */,
+				BC285C090D64FE090074A878 /* import_interim_byref.c */,
+				BC27DCF60D85B65B0019CBF0 /* objc.m */,
+				BC285C0A0D64FE090074A878 /* parameters.c */,
+			);
+			name = "expansionTest src";
+			sourceTree = "<group>";
+		};
+		BC666EC80D8B209A000D9F48 /* Foundation stuff */ = {
+			isa = PBXGroup;
+			children = (
+				BCD33FB50D6B68D3002F2BDF /* NSFuture.h */,
+				BCD33FB60D6B68D3002F2BDF /* NSFuture.m */,
+				BCFF82F00D737E9700515FEF /* import_global.c */,
+			);
+			name = "Foundation stuff";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BC285BF50D64FD080074A878 /* expansionTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BC285BFB0D64FD080074A878 /* Build configuration list for PBXNativeTarget "expansionTest" */;
+			buildPhases = (
+				BC285BF30D64FD080074A878 /* Sources */,
+				BC285BF40D64FD080074A878 /* Frameworks */,
+			);
+			buildRules = (
+				BCA13C930D7CC7EA004157B1 /* PBXBuildRule */,
+			);
+			dependencies = (
+			);
+			name = expansionTest;
+			productName = expansionTest;
+			productReference = BC285BF60D64FD080074A878 /* expansionTest */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BC00CFDE0D63A4CE00A2E26A /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = BC00CFE10D63A4CE00A2E26A /* Build configuration list for PBXProject "libclosure" */;
+			compatibilityVersion = "Xcode 2.4";
+			hasScannedForEncodings = 0;
+			mainGroup = BC00CFDC0D63A4CE00A2E26A;
+			productRefGroup = BC285BF70D64FD080074A878 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BC285BF50D64FD080074A878 /* expansionTest */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BC285BF30D64FD080074A878 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BC285C0B0D64FE090074A878 /* closure_return.c in Sources */,
+				BC285C0C0D64FE090074A878 /* driver.c in Sources */,
+				BC25BA090DA42D1100B702AC /* runtime.c in Sources */,
+				BC285C0D0D64FE090074A878 /* import_byref.c in Sources */,
+				BC285C0E0D64FE090074A878 /* import_const.c in Sources */,
+				BC285C0F0D64FE090074A878 /* import_interim_byref.c in Sources */,
+				BC285C100D64FE090074A878 /* parameters.c in Sources */,
+				BCD33FB70D6B68D3002F2BDF /* NSFuture.m in Sources */,
+				BCFF82F10D737E9700515FEF /* import_global.c in Sources */,
+				BCA13C710D7CC451004157B1 /* block_examples.c in Sources */,
+				BC27DCF70D85B65B0019CBF0 /* objc.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		BC00CFDF0D63A4CE00A2E26A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				OTHER_CFLAGS = "";
+			};
+			name = Debug;
+		};
+		BC00CFE00D63A4CE00A2E26A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				OTHER_CFLAGS = "";
+			};
+			name = Release;
+		};
+		BC285BF90D64FD080074A878 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/bin;
+				OTHER_CFLAGS = "-fblocks";
+				PREBINDING = NO;
+				PRODUCT_NAME = expansionTest;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		BC285BFA0D64FD080074A878 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				OTHER_CFLAGS = "-fblocks";
+				PREBINDING = NO;
+				PRODUCT_NAME = expansionTest;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BC00CFE10D63A4CE00A2E26A /* Build configuration list for PBXProject "libclosure" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC00CFDF0D63A4CE00A2E26A /* Debug */,
+				BC00CFE00D63A4CE00A2E26A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BC285BFB0D64FD080074A878 /* Build configuration list for PBXNativeTarget "expansionTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC285BF90D64FD080074A878 /* Debug */,
+				BC285BFA0D64FD080074A878 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BC00CFDE0D63A4CE00A2E26A /* Project object */;
+}

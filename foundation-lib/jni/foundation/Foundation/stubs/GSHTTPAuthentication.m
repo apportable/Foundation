@@ -1,4 +1,4 @@
 #include "common.h"
 
-@implementation GSHTTPAuthentication
+@implementation GSHTTPAuthentication : NSObject
 @end

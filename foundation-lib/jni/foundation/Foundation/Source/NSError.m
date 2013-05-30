@@ -20,13 +20,13 @@
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
-   */
+ */
 
 #import "common.h"
-#define	EXPOSE_NSError_IVARS	1
-#import	"Foundation/NSDictionary.h"
-#import	"Foundation/NSError.h"
-#import	"Foundation/NSCoder.h"
+#define EXPOSE_NSError_IVARS    1
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSError.h"
+#import "Foundation/NSCoder.h"
 
 NSString* const NSFilePathErrorKey = @"NSFilePathErrorKey";
 NSString* const NSLocalizedDescriptionKey = @"NSLocalizedDescriptionKey";
@@ -35,157 +35,158 @@ NSString* const NSURLErrorKey = @"NSURLErrorKey";
 NSString* const NSUnderlyingErrorKey = @"NSUnderlyingErrorKey";
 
 NSString* const NSLocalizedFailureReasonErrorKey
-  = @"NSLocalizedFailureReasonErrorKey";
+    = @"NSLocalizedFailureReasonErrorKey";
 NSString* const NSLocalizedRecoveryOptionsErrorKey
-  = @"NSLocalizedRecoveryOptionsErrorKey";
+    = @"NSLocalizedRecoveryOptionsErrorKey";
 NSString* const NSLocalizedRecoverySuggestionErrorKey
-  = @"NSLocalizedRecoverySuggestionErrorKey";
+    = @"NSLocalizedRecoverySuggestionErrorKey";
 NSString* const NSRecoveryAttempterErrorKey
-  = @"NSRecoveryAttempterErrorKey";
+    = @"NSRecoveryAttempterErrorKey";
 
 NSString* const NSMACHErrorDomain = @"NSMACHErrorDomain";
+NSString* const NSMachErrorDomain = @"NSMachErrorDomain";
 NSString* const NSOSStatusErrorDomain = @"NSOSStatusErrorDomain";
 NSString* const NSPOSIXErrorDomain = @"NSPOSIXErrorDomain";
 NSString* const NSCocoaErrorDomain = @"NSCocoaErrorDomain";
 
-@implementation	NSError
+@implementation NSError
 
-+ (id) errorWithDomain: (NSString*)aDomain
-		  code: (NSInteger)aCode
-	      userInfo: (NSDictionary*)aDictionary
++ (id)errorWithDomain:(NSString*)aDomain
+    code:(NSInteger)aCode
+    userInfo:(NSDictionary*)aDictionary
 {
-  NSError	*e = [self allocWithZone: NSDefaultMallocZone()];
+    NSError   *e = [self allocWithZone:NSDefaultMallocZone()];
 
-  e = [e initWithDomain: aDomain code: aCode userInfo: aDictionary];
-  return AUTORELEASE(e);
+    e = [e initWithDomain:aDomain code:aCode userInfo:aDictionary];
+    return AUTORELEASE(e);
 }
 
-- (NSInteger) code
+- (NSInteger)code
 {
-  return _code;
+    return _code;
 }
 
-- (id) copyWithZone: (NSZone*)z
+- (id)copyWithZone:(NSZone*)z
 {
-  NSError	*e = [[self class] allocWithZone: z];
+    NSError   *e = [[self class] allocWithZone:z];
 
-  e = [e initWithDomain: _domain code: _code userInfo: _userInfo];
-  return e;
+    e = [e initWithDomain:_domain code:_code userInfo:_userInfo];
+    return e;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  DESTROY(_domain);
-  DESTROY(_userInfo);
-  [super dealloc];
+    DESTROY(_domain);
+    DESTROY(_userInfo);
+    [super dealloc];
 }
 
-- (NSString*) description
+- (NSString*)description
 {
-  return [self localizedDescription];
+    return [self localizedDescription];
 }
 
-- (NSString*) domain
+- (NSString*)domain
 {
-  return _domain;
+    return _domain;
 }
 
-- (void) encodeWithCoder: (NSCoder*)aCoder
+- (void)encodeWithCoder:(NSCoder*)aCoder
 {
-  if ([aCoder allowsKeyedCoding])
+    if ([aCoder allowsKeyedCoding])
     {
-      [aCoder encodeInt: _code forKey: @"NSCode"];
-      [aCoder encodeObject: _domain forKey: @"NSDomain"];
-      [aCoder encodeObject: _userInfo forKey: @"NSUserInfo"];
+        [aCoder encodeInt:_code forKey:@"NSCode"];
+        [aCoder encodeObject:_domain forKey:@"NSDomain"];
+        [aCoder encodeObject:_userInfo forKey:@"NSUserInfo"];
     }
-  else
+    else
     {
-      [aCoder encodeValueOfObjCType: @encode(int) at: &_code];
-      [aCoder encodeValueOfObjCType: @encode(id) at: &_domain];
-      [aCoder encodeValueOfObjCType: @encode(id) at: &_userInfo];
+        [aCoder encodeValueOfObjCType:@encode(int) at:&_code];
+        [aCoder encodeValueOfObjCType:@encode(id) at:&_domain];
+        [aCoder encodeValueOfObjCType:@encode(id) at:&_userInfo];
     }
 }
 
-- (id) init
+- (id)init
 {
-  return [self initWithDomain: nil code: 0 userInfo: nil];
+    return [self initWithDomain:nil code:0 userInfo:nil];
 }
 
-- (id) initWithCoder: (NSCoder*)aCoder
+- (id)initWithCoder:(NSCoder*)aCoder
 {
-  if ([aCoder allowsKeyedCoding])
+    if ([aCoder allowsKeyedCoding])
     {
-      int	c;
-      id	d;
-      id	u;
+        int c;
+        id d;
+        id u;
 
-      c = [aCoder decodeIntForKey: @"NSCode"];
-      d = [aCoder decodeObjectForKey: @"NSDomain"];
-      u = [aCoder decodeObjectForKey: @"NSUserInfo"];
-      self = [self initWithDomain: d code: c userInfo: u];
+        c = [aCoder decodeIntForKey:@"NSCode"];
+        d = [aCoder decodeObjectForKey:@"NSDomain"];
+        u = [aCoder decodeObjectForKey:@"NSUserInfo"];
+        self = [self initWithDomain:d code:c userInfo:u];
     }
-  else
+    else
     {
-      [aCoder decodeValueOfObjCType: @encode(int) at: &_code];
-      [aCoder decodeValueOfObjCType: @encode(id) at: &_domain];
-      [aCoder decodeValueOfObjCType: @encode(id) at: &_userInfo];
+        [aCoder decodeValueOfObjCType:@encode(int) at:&_code];
+        [aCoder decodeValueOfObjCType:@encode(id) at:&_domain];
+        [aCoder decodeValueOfObjCType:@encode(id) at:&_userInfo];
     }
-  return self;
+    return self;
 }
 
-- (id) initWithDomain: (NSString*)aDomain
-		 code: (NSInteger)aCode
-	     userInfo: (NSDictionary*)aDictionary
+- (id)initWithDomain:(NSString*)aDomain
+    code:(NSInteger)aCode
+    userInfo:(NSDictionary*)aDictionary
 {
-  if (aDomain == nil)
+    if (aDomain == nil)
     {
-      NSLog(@"[%@-%@] with nil domain",
-	NSStringFromClass([self class]), NSStringFromSelector(_cmd));
-      DESTROY(self);
+        NSLog(@"[%@-%@] with nil domain",
+              NSStringFromClass([self class]), NSStringFromSelector(_cmd));
+        DESTROY(self);
     }
-  else if ((self = [super init]) != nil)
+    else if ((self = [super init]) != nil)
     {
-      ASSIGN(_domain, aDomain);
-      _code = aCode;
-      ASSIGN(_userInfo, aDictionary);
+        ASSIGN(_domain, aDomain);
+        _code = aCode;
+        ASSIGN(_userInfo, aDictionary);
     }
-  return self;
+    return self;
 }
 
-- (NSString *) localizedDescription
+- (NSString *)localizedDescription
 {
-  NSString	*desc = [_userInfo objectForKey: NSLocalizedDescriptionKey];
+    NSString  *desc = [_userInfo objectForKey:NSLocalizedDescriptionKey];
 
-  if (desc == nil)
+    if (desc == nil)
     {
-      desc = [NSString stringWithFormat: @"%@ %d", _domain, _code];
+        desc = [NSString stringWithFormat:@"%@ %d", _domain, _code];
     }
-  return desc;
+    return desc;
 }
 
-- (NSString *) localizedFailureReason
+- (NSString *)localizedFailureReason
 {
-  return [_userInfo objectForKey: NSLocalizedFailureReasonErrorKey];
+    return [_userInfo objectForKey:NSLocalizedFailureReasonErrorKey];
 }
 
-- (NSArray *) localizedRecoveryOptions
+- (NSArray *)localizedRecoveryOptions
 {
-  return [_userInfo objectForKey: NSLocalizedRecoveryOptionsErrorKey];
+    return [_userInfo objectForKey:NSLocalizedRecoveryOptionsErrorKey];
 }
 
-- (NSString *) localizedRecoverySuggestion
+- (NSString *)localizedRecoverySuggestion
 {
-  return [_userInfo objectForKey: NSLocalizedRecoverySuggestionErrorKey];
+    return [_userInfo objectForKey:NSLocalizedRecoverySuggestionErrorKey];
 }
 
-- (id) recoveryAttempter
+- (id)recoveryAttempter
 {
-  return [_userInfo objectForKey: NSRecoveryAttempterErrorKey];
+    return [_userInfo objectForKey:NSRecoveryAttempterErrorKey];
 }
 
-- (NSDictionary*) userInfo
+- (NSDictionary*)userInfo
 {
-  return _userInfo;
+    return _userInfo;
 }
 @end
 

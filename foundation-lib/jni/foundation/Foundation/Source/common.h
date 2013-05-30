@@ -48,7 +48,7 @@
 #endif
 
 // Semi-private GNU[step] runtime function.  
-IMP get_imp(Class, SEL);
+IMP class_getMethodImplementation(Class, SEL);
 
 #import "Foundation/NSPlatform.h"
 

@@ -21,7 +21,7 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-*/
+ */
 #import "common.h"
 #import "Foundation/NSAutoreleasePool.h"
 #import "Foundation/NSByteOrder.h"
@@ -52,31 +52,31 @@
  *     dataUsingEncoding: NSASCIIStringEncoding];
  * </example>
  */
-- (NSString*) hexadecimalRepresentation
+- (NSString*)hexadecimalRepresentation
 {
-  static const char	*hexChars = "0123456789ABCDEF";
-  unsigned		slen = [self length];
-  unsigned		dlen = slen * 2;
-  const unsigned char	*src = (const unsigned char *)[self bytes];
-  char			*dst = (char*)NSZoneMalloc(NSDefaultMallocZone(), dlen);
-  unsigned		spos = 0;
-  unsigned		dpos = 0;
-  NSData		*data;
-  NSString		*string;
+    static const char *hexChars = "0123456789ABCDEF";
+    unsigned slen = [self length];
+    unsigned dlen = slen * 2;
+    const unsigned char   *src = (const unsigned char *)[self bytes];
+    char          *dst = (char*)NSZoneMalloc(NSDefaultMallocZone(), dlen);
+    unsigned spos = 0;
+    unsigned dpos = 0;
+    NSData        *data;
+    NSString      *string;
 
-  while (spos < slen)
+    while (spos < slen)
     {
-      unsigned char	c = src[spos++];
+        unsigned char c = src[spos++];
 
-      dst[dpos++] = hexChars[(c >> 4) & 0x0f];
-      dst[dpos++] = hexChars[c & 0x0f];
+        dst[dpos++] = hexChars[(c >> 4) & 0x0f];
+        dst[dpos++] = hexChars[c & 0x0f];
     }
-  data = [NSData allocWithZone: NSDefaultMallocZone()];
-  data = [data initWithBytesNoCopy: dst length: dlen];
-  string = [[NSString alloc] initWithData: data
-				 encoding: NSASCIIStringEncoding];
-  RELEASE(data);
-  return AUTORELEASE(string);
+    data = [NSData allocWithZone:NSDefaultMallocZone()];
+    data = [data initWithBytesNoCopy:dst length:dlen];
+    string = [[NSString alloc] initWithData:data
+              encoding:NSASCIIStringEncoding];
+    RELEASE(data);
+    return AUTORELEASE(string);
 }
 
 /**
@@ -88,89 +88,89 @@
  * If the string does not contain one or more pairs of hexadecimal digits
  * then an exception is raised.
  */
-- (id) initWithHexadecimalRepresentation: (NSString*)string
+- (id)initWithHexadecimalRepresentation:(NSString*)string
 {
-  CREATE_AUTORELEASE_POOL(arp);
-  NSData	*d;
-  const char	*src;
-  const char	*end;
-  unsigned char	*dst;
-  unsigned int	pos = 0;
-  unsigned char	byte = 0;
-  BOOL		high = NO;
+    CREATE_AUTORELEASE_POOL(arp);
+    NSData    *d;
+    const char    *src;
+    const char    *end;
+    unsigned char *dst;
+    unsigned int pos = 0;
+    unsigned char byte = 0;
+    BOOL high = NO;
 
-  d = [string dataUsingEncoding: NSASCIIStringEncoding
-	   allowLossyConversion: YES];
-  src = (const char*)[d bytes];
-  end = src + [d length];
-  dst = NSZoneMalloc(NSDefaultMallocZone(), [d length]/2 + 1);
+    d = [string dataUsingEncoding:NSASCIIStringEncoding
+         allowLossyConversion:YES];
+    src = (const char*)[d bytes];
+    end = src + [d length];
+    dst = NSZoneMalloc(NSDefaultMallocZone(), [d length]/2 + 1);
 
-  while (src < end)
+    while (src < end)
     {
-      char		c = *src++;
-      unsigned char	v;
+        char c = *src++;
+        unsigned char v;
 
-      if (isspace(c))
-	{
-	  continue;
-	}
-      if (c >= '0' && c <= '9')
-	{
-	  v = c - '0';
-	}
-      else if (c >= 'A' && c <= 'F')
-	{
-	  v = c - 'A' + 10;
-	}
-      else if (c >= 'a' && c <= 'f')
-	{
-	  v = c - 'a' + 10;
-	}
-      else
-	{
-	  pos = 0;
-	  break;
-	}
-      if (high == NO)
-	{
-	  byte = v << 4;
-	  high = YES;
-	}
-      else
-	{
-	  byte |= v;
-	  high = NO;
-	  dst[pos++] = byte;
-	}
+        if (isspace(c))
+        {
+            continue;
+        }
+        if (c >= '0' && c <= '9')
+        {
+            v = c - '0';
+        }
+        else if (c >= 'A' && c <= 'F')
+        {
+            v = c - 'A' + 10;
+        }
+        else if (c >= 'a' && c <= 'f')
+        {
+            v = c - 'a' + 10;
+        }
+        else
+        {
+            pos = 0;
+            break;
+        }
+        if (high == NO)
+        {
+            byte = v << 4;
+            high = YES;
+        }
+        else
+        {
+            byte |= v;
+            high = NO;
+            dst[pos++] = byte;
+        }
     }
-  if (pos > 0 && high == NO)
+    if (pos > 0 && high == NO)
     {
-      self = [self initWithBytes: dst length: pos];
+        self = [self initWithBytes:dst length:pos];
     }
-  else
+    else
     {
-      DESTROY(self);
+        DESTROY(self);
     }
-  NSZoneFree(NSDefaultMallocZone(), dst);
-  RELEASE(arp);
-  if (self == nil)
+    NSZoneFree(NSDefaultMallocZone(), dst);
+    RELEASE(arp);
+    if (self == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"%@: invalid hexadeciaml string data",
-	NSStringFromSelector(_cmd)];
+        [NSException raise:NSInvalidArgumentException
+         format:@"%@: invalid hexadeciaml string data",
+         NSStringFromSelector(_cmd)];
     }
-  return self;
+    return self;
 }
 
 struct MD5Context
 {
-  uint32_t	buf[4];
-  uint32_t	bits[2];
-  uint8_t	in[64];
+    uint32_t buf[4];
+    uint32_t bits[2];
+    uint8_t in[64];
 };
 static void MD5Init (struct MD5Context *context);
 static void MD5Update (struct MD5Context *context, unsigned char const *buf,
-unsigned len);
+                       unsigned len);
 static void MD5Final (unsigned char digest[16], struct MD5Context *context);
 static void MD5Transform (uint32_t buf[4], uint32_t const in[16]);
 
@@ -196,25 +196,25 @@ static void MD5Transform (uint32_t buf[4], uint32_t const in[16]);
  */
 static void littleEndian (void *buf, unsigned words)
 {
-  if (NSHostByteOrder() == NS_BigEndian)
+    if (NSHostByteOrder() == NS_BigEndian)
     {
-      while (words-- > 0)
+        while (words-- > 0)
         {
-          union swap {
-            uint32_t    num;
-            uint8_t     byt[4];
-          } tmp;
-          uint8_t       b0;
-          uint8_t       b1;
+            union swap {
+                uint32_t num;
+                uint8_t byt[4];
+            } tmp;
+            uint8_t b0;
+            uint8_t b1;
 
-          tmp.num = ((uint32_t*)buf)[words];
-          b0 = tmp.byt[0];
-          b1 = tmp.byt[1];
-          tmp.byt[0] = tmp.byt[3];
-          tmp.byt[1] = tmp.byt[2];
-          tmp.byt[2] = b1;
-          tmp.byt[3] = b0;
-          ((uint32_t*)buf)[words] = tmp.num;
+            tmp.num = ((uint32_t*)buf)[words];
+            b0 = tmp.byt[0];
+            b1 = tmp.byt[1];
+            tmp.byt[0] = tmp.byt[3];
+            tmp.byt[1] = tmp.byt[2];
+            tmp.byt[2] = b1;
+            tmp.byt[3] = b0;
+            ((uint32_t*)buf)[words] = tmp.num;
         }
     }
 }
@@ -225,13 +225,13 @@ static void littleEndian (void *buf, unsigned words)
  */
 static void MD5Init (struct MD5Context *ctx)
 {
-  ctx->buf[0] = 0x67452301;
-  ctx->buf[1] = 0xefcdab89;
-  ctx->buf[2] = 0x98badcfe;
-  ctx->buf[3] = 0x10325476;
+    ctx->buf[0] = 0x67452301;
+    ctx->buf[1] = 0xefcdab89;
+    ctx->buf[2] = 0x98badcfe;
+    ctx->buf[3] = 0x10325476;
 
-  ctx->bits[0] = 0;
-  ctx->bits[1] = 0;
+    ctx->bits[0] = 0;
+    ctx->bits[1] = 0;
 }
 
 /*
@@ -239,51 +239,52 @@ static void MD5Init (struct MD5Context *ctx)
  * of bytes.
  */
 static void MD5Update (struct MD5Context *ctx, unsigned char const *buf,
-  unsigned len)
+                       unsigned len)
 {
-  uint32_t t;
+    uint32_t t;
 
-  /* Update bitcount */
+    /* Update bitcount */
 
-  t = ctx->bits[0];
-  if ((ctx->bits[0] = t + ((uint32_t) len << 3)) < t)
-    ctx->bits[1]++;		/* Carry from low to high */
-  ctx->bits[1] += len >> 29;
-
-  t = (t >> 3) & 0x3f;	/* Bytes already in shsInfo->data */
-
-  /* Handle any leading odd-sized chunks */
-
-  if (t)
-    {
-      unsigned char *p = (unsigned char *) ctx->in + t;
-
-      t = 64 - t;
-      if (len < t)
-	{
-	  memcpy (p, buf, len);
-	  return;
-	}
-      memcpy (p, buf, t);
-      littleEndian (ctx->in, 16);
-      MD5Transform (ctx->buf, (uint32_t *) ctx->in);
-      buf += t;
-      len -= t;
+    t = ctx->bits[0];
+    if ((ctx->bits[0] = t + ((uint32_t) len << 3)) < t) {
+        ctx->bits[1]++; /* Carry from low to high */
     }
-  /* Process data in 64-byte chunks */
+    ctx->bits[1] += len >> 29;
 
-  while (len >= 64)
+    t = (t >> 3) & 0x3f; /* Bytes already in shsInfo->data */
+
+    /* Handle any leading odd-sized chunks */
+
+    if (t)
     {
-      memcpy (ctx->in, buf, 64);
-      littleEndian (ctx->in, 16);
-      MD5Transform (ctx->buf, (uint32_t *) ctx->in);
-      buf += 64;
-      len -= 64;
+        unsigned char *p = (unsigned char *) ctx->in + t;
+
+        t = 64 - t;
+        if (len < t)
+        {
+            memcpy (p, buf, len);
+            return;
+        }
+        memcpy (p, buf, t);
+        littleEndian (ctx->in, 16);
+        MD5Transform (ctx->buf, (uint32_t *) ctx->in);
+        buf += t;
+        len -= t;
+    }
+    /* Process data in 64-byte chunks */
+
+    while (len >= 64)
+    {
+        memcpy (ctx->in, buf, 64);
+        littleEndian (ctx->in, 16);
+        MD5Transform (ctx->buf, (uint32_t *) ctx->in);
+        buf += 64;
+        len -= 64;
     }
 
-  /* Handle any remaining bytes of data. */
+    /* Handle any remaining bytes of data. */
 
-  memcpy (ctx->in, buf, len);
+    memcpy (ctx->in, buf, len);
 }
 
 /*
@@ -292,46 +293,46 @@ static void MD5Update (struct MD5Context *ctx, unsigned char const *buf,
  */
 static void MD5Final (unsigned char digest[16], struct MD5Context *ctx)
 {
-  unsigned count;
-  unsigned char *p;
+    unsigned count;
+    unsigned char *p;
 
-  /* Compute number of bytes mod 64 */
-  count = (ctx->bits[0] >> 3) & 0x3F;
+    /* Compute number of bytes mod 64 */
+    count = (ctx->bits[0] >> 3) & 0x3F;
 
-  /* Set the first char of padding to 0x80.  This is safe since there is
-     always at least one byte free */
-  p = ctx->in + count;
-  *p++ = 0x80;
+    /* Set the first char of padding to 0x80.  This is safe since there is
+       always at least one byte free */
+    p = ctx->in + count;
+    *p++ = 0x80;
 
-  /* Bytes of padding needed to make 64 bytes */
-  count = 64 - 1 - count;
+    /* Bytes of padding needed to make 64 bytes */
+    count = 64 - 1 - count;
 
-  /* Pad out to 56 mod 64 */
-  if (count < 8)
+    /* Pad out to 56 mod 64 */
+    if (count < 8)
     {
-      /* Two lots of padding:  Pad the first block to 64 bytes */
-      memset (p, 0, count);
-      littleEndian (ctx->in, 16);
-      MD5Transform (ctx->buf, (uint32_t *) ctx->in);
+        /* Two lots of padding:  Pad the first block to 64 bytes */
+        memset (p, 0, count);
+        littleEndian (ctx->in, 16);
+        MD5Transform (ctx->buf, (uint32_t *) ctx->in);
 
-      /* Now fill the next block with 56 bytes */
-      memset (ctx->in, 0, 56);
+        /* Now fill the next block with 56 bytes */
+        memset (ctx->in, 0, 56);
     }
-  else
+    else
     {
-      /* Pad block to 56 bytes */
-      memset (p, 0, count - 8);
+        /* Pad block to 56 bytes */
+        memset (p, 0, count - 8);
     }
-  littleEndian (ctx->in, 14);
+    littleEndian (ctx->in, 14);
 
-  /* Append length in bits and transform */
-  ((uint32_t *) ctx->in)[14] = ctx->bits[0];
-  ((uint32_t *) ctx->in)[15] = ctx->bits[1];
+    /* Append length in bits and transform */
+    ((uint32_t *) ctx->in)[14] = ctx->bits[0];
+    ((uint32_t *) ctx->in)[15] = ctx->bits[1];
 
-  MD5Transform (ctx->buf, (uint32_t *) ctx->in);
-  littleEndian ((unsigned char *) ctx->buf, 4);
-  memcpy (digest, ctx->buf, 16);
-  memset (ctx, 0, sizeof (ctx));	/* In case it's sensitive */
+    MD5Transform (ctx->buf, (uint32_t *) ctx->in);
+    littleEndian ((unsigned char *) ctx->buf, 4);
+    memcpy (digest, ctx->buf, 16);
+    memset (ctx, 0, sizeof (struct MD5Context)); /* In case it's sensitive */
 }
 
 /* The four core functions - F1 is optimized somewhat */
@@ -344,7 +345,7 @@ static void MD5Final (unsigned char digest[16], struct MD5Context *ctx)
 
 /* This is the central step in the MD5 algorithm. */
 #define MD5STEP(f, w, x, y, z, data, s) \
-  (w += f(x, y, z) + data,  w = w<<s | w>>(32-s),  w += x)
+    (w += f(x, y, z) + data,  w = w<<s | w>>(32-s),  w += x)
 
 /*
  * The core of the MD5 algorithm, this alters an existing MD5 hash to
@@ -353,85 +354,85 @@ static void MD5Final (unsigned char digest[16], struct MD5Context *ctx)
  */
 static void MD5Transform (uint32_t buf[4], uint32_t const in[16])
 {
-  register uint32_t a, b, c, d;
+    register uint32_t a, b, c, d;
 
-  a = buf[0];
-  b = buf[1];
-  c = buf[2];
-  d = buf[3];
+    a = buf[0];
+    b = buf[1];
+    c = buf[2];
+    d = buf[3];
 
-  MD5STEP (F1, a, b, c, d, in[0] + 0xd76aa478, 7);
-  MD5STEP (F1, d, a, b, c, in[1] + 0xe8c7b756, 12);
-  MD5STEP (F1, c, d, a, b, in[2] + 0x242070db, 17);
-  MD5STEP (F1, b, c, d, a, in[3] + 0xc1bdceee, 22);
-  MD5STEP (F1, a, b, c, d, in[4] + 0xf57c0faf, 7);
-  MD5STEP (F1, d, a, b, c, in[5] + 0x4787c62a, 12);
-  MD5STEP (F1, c, d, a, b, in[6] + 0xa8304613, 17);
-  MD5STEP (F1, b, c, d, a, in[7] + 0xfd469501, 22);
-  MD5STEP (F1, a, b, c, d, in[8] + 0x698098d8, 7);
-  MD5STEP (F1, d, a, b, c, in[9] + 0x8b44f7af, 12);
-  MD5STEP (F1, c, d, a, b, in[10] + 0xffff5bb1, 17);
-  MD5STEP (F1, b, c, d, a, in[11] + 0x895cd7be, 22);
-  MD5STEP (F1, a, b, c, d, in[12] + 0x6b901122, 7);
-  MD5STEP (F1, d, a, b, c, in[13] + 0xfd987193, 12);
-  MD5STEP (F1, c, d, a, b, in[14] + 0xa679438e, 17);
-  MD5STEP (F1, b, c, d, a, in[15] + 0x49b40821, 22);
+    MD5STEP (F1, a, b, c, d, in[0] + 0xd76aa478, 7);
+    MD5STEP (F1, d, a, b, c, in[1] + 0xe8c7b756, 12);
+    MD5STEP (F1, c, d, a, b, in[2] + 0x242070db, 17);
+    MD5STEP (F1, b, c, d, a, in[3] + 0xc1bdceee, 22);
+    MD5STEP (F1, a, b, c, d, in[4] + 0xf57c0faf, 7);
+    MD5STEP (F1, d, a, b, c, in[5] + 0x4787c62a, 12);
+    MD5STEP (F1, c, d, a, b, in[6] + 0xa8304613, 17);
+    MD5STEP (F1, b, c, d, a, in[7] + 0xfd469501, 22);
+    MD5STEP (F1, a, b, c, d, in[8] + 0x698098d8, 7);
+    MD5STEP (F1, d, a, b, c, in[9] + 0x8b44f7af, 12);
+    MD5STEP (F1, c, d, a, b, in[10] + 0xffff5bb1, 17);
+    MD5STEP (F1, b, c, d, a, in[11] + 0x895cd7be, 22);
+    MD5STEP (F1, a, b, c, d, in[12] + 0x6b901122, 7);
+    MD5STEP (F1, d, a, b, c, in[13] + 0xfd987193, 12);
+    MD5STEP (F1, c, d, a, b, in[14] + 0xa679438e, 17);
+    MD5STEP (F1, b, c, d, a, in[15] + 0x49b40821, 22);
 
-  MD5STEP (F2, a, b, c, d, in[1] + 0xf61e2562, 5);
-  MD5STEP (F2, d, a, b, c, in[6] + 0xc040b340, 9);
-  MD5STEP (F2, c, d, a, b, in[11] + 0x265e5a51, 14);
-  MD5STEP (F2, b, c, d, a, in[0] + 0xe9b6c7aa, 20);
-  MD5STEP (F2, a, b, c, d, in[5] + 0xd62f105d, 5);
-  MD5STEP (F2, d, a, b, c, in[10] + 0x02441453, 9);
-  MD5STEP (F2, c, d, a, b, in[15] + 0xd8a1e681, 14);
-  MD5STEP (F2, b, c, d, a, in[4] + 0xe7d3fbc8, 20);
-  MD5STEP (F2, a, b, c, d, in[9] + 0x21e1cde6, 5);
-  MD5STEP (F2, d, a, b, c, in[14] + 0xc33707d6, 9);
-  MD5STEP (F2, c, d, a, b, in[3] + 0xf4d50d87, 14);
-  MD5STEP (F2, b, c, d, a, in[8] + 0x455a14ed, 20);
-  MD5STEP (F2, a, b, c, d, in[13] + 0xa9e3e905, 5);
-  MD5STEP (F2, d, a, b, c, in[2] + 0xfcefa3f8, 9);
-  MD5STEP (F2, c, d, a, b, in[7] + 0x676f02d9, 14);
-  MD5STEP (F2, b, c, d, a, in[12] + 0x8d2a4c8a, 20);
+    MD5STEP (F2, a, b, c, d, in[1] + 0xf61e2562, 5);
+    MD5STEP (F2, d, a, b, c, in[6] + 0xc040b340, 9);
+    MD5STEP (F2, c, d, a, b, in[11] + 0x265e5a51, 14);
+    MD5STEP (F2, b, c, d, a, in[0] + 0xe9b6c7aa, 20);
+    MD5STEP (F2, a, b, c, d, in[5] + 0xd62f105d, 5);
+    MD5STEP (F2, d, a, b, c, in[10] + 0x02441453, 9);
+    MD5STEP (F2, c, d, a, b, in[15] + 0xd8a1e681, 14);
+    MD5STEP (F2, b, c, d, a, in[4] + 0xe7d3fbc8, 20);
+    MD5STEP (F2, a, b, c, d, in[9] + 0x21e1cde6, 5);
+    MD5STEP (F2, d, a, b, c, in[14] + 0xc33707d6, 9);
+    MD5STEP (F2, c, d, a, b, in[3] + 0xf4d50d87, 14);
+    MD5STEP (F2, b, c, d, a, in[8] + 0x455a14ed, 20);
+    MD5STEP (F2, a, b, c, d, in[13] + 0xa9e3e905, 5);
+    MD5STEP (F2, d, a, b, c, in[2] + 0xfcefa3f8, 9);
+    MD5STEP (F2, c, d, a, b, in[7] + 0x676f02d9, 14);
+    MD5STEP (F2, b, c, d, a, in[12] + 0x8d2a4c8a, 20);
 
-  MD5STEP (F3, a, b, c, d, in[5] + 0xfffa3942, 4);
-  MD5STEP (F3, d, a, b, c, in[8] + 0x8771f681, 11);
-  MD5STEP (F3, c, d, a, b, in[11] + 0x6d9d6122, 16);
-  MD5STEP (F3, b, c, d, a, in[14] + 0xfde5380c, 23);
-  MD5STEP (F3, a, b, c, d, in[1] + 0xa4beea44, 4);
-  MD5STEP (F3, d, a, b, c, in[4] + 0x4bdecfa9, 11);
-  MD5STEP (F3, c, d, a, b, in[7] + 0xf6bb4b60, 16);
-  MD5STEP (F3, b, c, d, a, in[10] + 0xbebfbc70, 23);
-  MD5STEP (F3, a, b, c, d, in[13] + 0x289b7ec6, 4);
-  MD5STEP (F3, d, a, b, c, in[0] + 0xeaa127fa, 11);
-  MD5STEP (F3, c, d, a, b, in[3] + 0xd4ef3085, 16);
-  MD5STEP (F3, b, c, d, a, in[6] + 0x04881d05, 23);
-  MD5STEP (F3, a, b, c, d, in[9] + 0xd9d4d039, 4);
-  MD5STEP (F3, d, a, b, c, in[12] + 0xe6db99e5, 11);
-  MD5STEP (F3, c, d, a, b, in[15] + 0x1fa27cf8, 16);
-  MD5STEP (F3, b, c, d, a, in[2] + 0xc4ac5665, 23);
+    MD5STEP (F3, a, b, c, d, in[5] + 0xfffa3942, 4);
+    MD5STEP (F3, d, a, b, c, in[8] + 0x8771f681, 11);
+    MD5STEP (F3, c, d, a, b, in[11] + 0x6d9d6122, 16);
+    MD5STEP (F3, b, c, d, a, in[14] + 0xfde5380c, 23);
+    MD5STEP (F3, a, b, c, d, in[1] + 0xa4beea44, 4);
+    MD5STEP (F3, d, a, b, c, in[4] + 0x4bdecfa9, 11);
+    MD5STEP (F3, c, d, a, b, in[7] + 0xf6bb4b60, 16);
+    MD5STEP (F3, b, c, d, a, in[10] + 0xbebfbc70, 23);
+    MD5STEP (F3, a, b, c, d, in[13] + 0x289b7ec6, 4);
+    MD5STEP (F3, d, a, b, c, in[0] + 0xeaa127fa, 11);
+    MD5STEP (F3, c, d, a, b, in[3] + 0xd4ef3085, 16);
+    MD5STEP (F3, b, c, d, a, in[6] + 0x04881d05, 23);
+    MD5STEP (F3, a, b, c, d, in[9] + 0xd9d4d039, 4);
+    MD5STEP (F3, d, a, b, c, in[12] + 0xe6db99e5, 11);
+    MD5STEP (F3, c, d, a, b, in[15] + 0x1fa27cf8, 16);
+    MD5STEP (F3, b, c, d, a, in[2] + 0xc4ac5665, 23);
 
-  MD5STEP (F4, a, b, c, d, in[0] + 0xf4292244, 6);
-  MD5STEP (F4, d, a, b, c, in[7] + 0x432aff97, 10);
-  MD5STEP (F4, c, d, a, b, in[14] + 0xab9423a7, 15);
-  MD5STEP (F4, b, c, d, a, in[5] + 0xfc93a039, 21);
-  MD5STEP (F4, a, b, c, d, in[12] + 0x655b59c3, 6);
-  MD5STEP (F4, d, a, b, c, in[3] + 0x8f0ccc92, 10);
-  MD5STEP (F4, c, d, a, b, in[10] + 0xffeff47d, 15);
-  MD5STEP (F4, b, c, d, a, in[1] + 0x85845dd1, 21);
-  MD5STEP (F4, a, b, c, d, in[8] + 0x6fa87e4f, 6);
-  MD5STEP (F4, d, a, b, c, in[15] + 0xfe2ce6e0, 10);
-  MD5STEP (F4, c, d, a, b, in[6] + 0xa3014314, 15);
-  MD5STEP (F4, b, c, d, a, in[13] + 0x4e0811a1, 21);
-  MD5STEP (F4, a, b, c, d, in[4] + 0xf7537e82, 6);
-  MD5STEP (F4, d, a, b, c, in[11] + 0xbd3af235, 10);
-  MD5STEP (F4, c, d, a, b, in[2] + 0x2ad7d2bb, 15);
-  MD5STEP (F4, b, c, d, a, in[9] + 0xeb86d391, 21);
+    MD5STEP (F4, a, b, c, d, in[0] + 0xf4292244, 6);
+    MD5STEP (F4, d, a, b, c, in[7] + 0x432aff97, 10);
+    MD5STEP (F4, c, d, a, b, in[14] + 0xab9423a7, 15);
+    MD5STEP (F4, b, c, d, a, in[5] + 0xfc93a039, 21);
+    MD5STEP (F4, a, b, c, d, in[12] + 0x655b59c3, 6);
+    MD5STEP (F4, d, a, b, c, in[3] + 0x8f0ccc92, 10);
+    MD5STEP (F4, c, d, a, b, in[10] + 0xffeff47d, 15);
+    MD5STEP (F4, b, c, d, a, in[1] + 0x85845dd1, 21);
+    MD5STEP (F4, a, b, c, d, in[8] + 0x6fa87e4f, 6);
+    MD5STEP (F4, d, a, b, c, in[15] + 0xfe2ce6e0, 10);
+    MD5STEP (F4, c, d, a, b, in[6] + 0xa3014314, 15);
+    MD5STEP (F4, b, c, d, a, in[13] + 0x4e0811a1, 21);
+    MD5STEP (F4, a, b, c, d, in[4] + 0xf7537e82, 6);
+    MD5STEP (F4, d, a, b, c, in[11] + 0xbd3af235, 10);
+    MD5STEP (F4, c, d, a, b, in[2] + 0x2ad7d2bb, 15);
+    MD5STEP (F4, b, c, d, a, in[9] + 0xeb86d391, 21);
 
-  buf[0] += a;
-  buf[1] += b;
-  buf[2] += c;
-  buf[3] += d;
+    buf[0] += a;
+    buf[1] += b;
+    buf[2] += c;
+    buf[3] += d;
 }
 
 /**
@@ -448,15 +449,15 @@ static void MD5Transform (uint32_t buf[4], uint32_t const in[16])
  * probably want it to be seen as 32 hexadecimal digits, and can do that
  * using the -hexadecimalRepresentation method.
  */
-- (NSData*) md5Digest
+- (NSData*)md5Digest
 {
-  struct MD5Context	ctx;
-  unsigned char		digest[16];
+    struct MD5Context ctx;
+    unsigned char digest[16];
 
-  MD5Init(&ctx);
-  MD5Update(&ctx, [self bytes], [self length]);
-  MD5Final(digest, &ctx);
-  return [NSData dataWithBytes: digest length: 16];
+    MD5Init(&ctx);
+    MD5Update(&ctx, [self bytes], [self length]);
+    MD5Final(digest, &ctx);
+    return [NSData dataWithBytes:digest length:16];
 }
 
 /**
@@ -464,146 +465,146 @@ static void MD5Transform (uint32_t buf[4], uint32_t const in[16])
  * Returns the encoded file name in namePtr if it is not null.
  * Returns the encoded file mode in modePtr if it is not null.
  */
-- (BOOL) uudecodeInto: (NSMutableData*)decoded
-		 name: (NSString**)namePtr
-		 mode: (NSInteger*)modePtr
+- (BOOL)uudecodeInto:(NSMutableData*)decoded
+    name:(NSString**)namePtr
+    mode:(NSInteger*)modePtr
 {
-  const unsigned char	*bytes = (const unsigned char*)[self bytes];
-  unsigned		length = [self length];
-  unsigned		decLength = [decoded length];
-  unsigned		pos = 0;
-  NSString		*name = nil;
+    const unsigned char   *bytes = (const unsigned char*)[self bytes];
+    unsigned length = [self length];
+    unsigned decLength = [decoded length];
+    unsigned pos = 0;
+    NSString      *name = nil;
 
-  if (namePtr != 0)
+    if (namePtr != 0)
     {
-      *namePtr = nil;
+        *namePtr = nil;
     }
-  if (modePtr != 0)
+    if (modePtr != 0)
     {
-      *modePtr = 0;
+        *modePtr = 0;
     }
 
-#define DEC(c)	(((c) - ' ') & 077)
+#define DEC(c)  (((c) - ' ') & 077)
 
-  for (pos = 0; pos < length; pos++)
+    for (pos = 0; pos < length; pos++)
     {
-      if (bytes[pos] == '\n')
-	{
-	  if (name != nil)
-	    {
-	      unsigned		i = 0;
-	      int		lineLength;
-	      unsigned char	*decPtr;
+        if (bytes[pos] == '\n')
+        {
+            if (name != nil)
+            {
+                unsigned i = 0;
+                int lineLength;
+                unsigned char *decPtr;
 
-	      lineLength = DEC(bytes[i++]);
-	      if (lineLength <= 0)
-		{
-		  break;	// Got line length zero or less.
-		}
+                lineLength = DEC(bytes[i++]);
+                if (lineLength <= 0)
+                {
+                    break; // Got line length zero or less.
+                }
 
-	      [decoded setLength: decLength + lineLength];
-	      decPtr = [decoded mutableBytes];
+                [decoded setLength:decLength + lineLength];
+                decPtr = [decoded mutableBytes];
 
-	      while (lineLength > 0)
-		{
-		  unsigned char	tmp[4];
-		  int	c;
+                while (lineLength > 0)
+                {
+                    unsigned char tmp[4];
+                    int c;
 
-		  /*
-		   * In case the data is corrupt, we need to copy into
-		   * a temporary buffer avoiding buffer overrun in the
-		   * main buffer.
-		   */
-		  tmp[0] = bytes[i++];
-		  if (i < pos)
-		    {
-		      tmp[1] = bytes[i++];
-		      if (i < pos)
-			{
-			  tmp[2] = bytes[i++];
-			  if (i < pos)
-			    {
-			      tmp[3] = bytes[i++];
-			    }
-			  else
-			    {
-			      tmp[3] = 0;
-			    }
-			}
-		      else
-			{
-			  tmp[2] = 0;
-			  tmp[3] = 0;
-			}
-		    }
-		  else
-		    {
-		      tmp[1] = 0;
-		      tmp[2] = 0;
-		      tmp[3] = 0;
-		    }
-		  if (lineLength >= 1)
-		    {
-		      c = DEC(tmp[0]) << 2 | DEC(tmp[1]) >> 4;
-		      decPtr[decLength++] = (unsigned char)c;
-		    }
-		  if (lineLength >= 2)
-		    {
-		      c = DEC(tmp[1]) << 4 | DEC(tmp[2]) >> 2;
-		      decPtr[decLength++] = (unsigned char)c;
-		    }
-		  if (lineLength >= 3)
-		    {
-		      c = DEC(tmp[2]) << 6 | DEC(tmp[3]);
-		      decPtr[decLength++] = (unsigned char)c;
-		    }
-		  lineLength -= 3;
-		}
-	    }
-	  else if (pos > 6 && strncmp((const char*)bytes, "begin ", 6) == 0)
-	    {
-	      unsigned	off = 6;
-	      unsigned	end = pos;
-	      int	mode = 0;
-	      NSData	*d;
+                    /*
+                     * In case the data is corrupt, we need to copy into
+                     * a temporary buffer avoiding buffer overrun in the
+                     * main buffer.
+                     */
+                    tmp[0] = bytes[i++];
+                    if (i < pos)
+                    {
+                        tmp[1] = bytes[i++];
+                        if (i < pos)
+                        {
+                            tmp[2] = bytes[i++];
+                            if (i < pos)
+                            {
+                                tmp[3] = bytes[i++];
+                            }
+                            else
+                            {
+                                tmp[3] = 0;
+                            }
+                        }
+                        else
+                        {
+                            tmp[2] = 0;
+                            tmp[3] = 0;
+                        }
+                    }
+                    else
+                    {
+                        tmp[1] = 0;
+                        tmp[2] = 0;
+                        tmp[3] = 0;
+                    }
+                    if (lineLength >= 1)
+                    {
+                        c = DEC(tmp[0]) << 2 | DEC(tmp[1]) >> 4;
+                        decPtr[decLength++] = (unsigned char)c;
+                    }
+                    if (lineLength >= 2)
+                    {
+                        c = DEC(tmp[1]) << 4 | DEC(tmp[2]) >> 2;
+                        decPtr[decLength++] = (unsigned char)c;
+                    }
+                    if (lineLength >= 3)
+                    {
+                        c = DEC(tmp[2]) << 6 | DEC(tmp[3]);
+                        decPtr[decLength++] = (unsigned char)c;
+                    }
+                    lineLength -= 3;
+                }
+            }
+            else if (pos > 6 && strncmp((const char*)bytes, "begin ", 6) == 0)
+            {
+                unsigned off = 6;
+                unsigned end = pos;
+                int mode = 0;
+                NSData    *d;
 
-	      if (end > off && bytes[end-1] == '\r')
-		{
-		  end--;
-		}
-	      while (off < end && bytes[off] >= '0' && bytes[off] <= '7')
-		{
-		  mode *= 8;
-		  mode += bytes[off] - '0';
-		  off++;
-		}
-	      if (modePtr != 0)
-		{
-		  *modePtr = mode;
-		}
-	      while (off < end && bytes[off] == ' ')
-		{
-		  off++;
-		}
-	      d = [NSData dataWithBytes: &bytes[off] length: end - off];
-	      name = [[NSString alloc] initWithData: d
-					   encoding: NSASCIIStringEncoding];
-	      IF_NO_GC(AUTORELEASE(name);)
-	      if (namePtr != 0)
-		{
-		  *namePtr = name;
-		}
-	    }
-	  pos++;
-	  bytes += pos;
-	  length -= pos;
-	}
+                if (end > off && bytes[end-1] == '\r')
+                {
+                    end--;
+                }
+                while (off < end && bytes[off] >= '0' && bytes[off] <= '7')
+                {
+                    mode *= 8;
+                    mode += bytes[off] - '0';
+                    off++;
+                }
+                if (modePtr != 0)
+                {
+                    *modePtr = mode;
+                }
+                while (off < end && bytes[off] == ' ')
+                {
+                    off++;
+                }
+                d = [NSData dataWithBytes:&bytes[off] length:end - off];
+                name = [[NSString alloc] initWithData:d
+                        encoding:NSASCIIStringEncoding];
+                IF_NO_GC(AUTORELEASE(name); )
+                if (namePtr != 0)
+                {
+                    *namePtr = name;
+                }
+            }
+            pos++;
+            bytes += pos;
+            length -= pos;
+        }
     }
-  if (name == nil)
+    if (name == nil)
     {
-      return NO;
+        return NO;
     }
-  return YES;
+    return YES;
 }
 
 /**
@@ -612,98 +613,98 @@ static void MD5Transform (uint32_t buf[4], uint32_t const in[16])
  * and says that the file mode is as specified.<br />
  * If no name is supplied, uses <code>untitled</code> as the name.
  */
-- (BOOL) uuencodeInto: (NSMutableData*)encoded
-		 name: (NSString*)name
-		 mode: (NSInteger)mode
+- (BOOL)uuencodeInto:(NSMutableData*)encoded
+    name:(NSString*)name
+    mode:(NSInteger)mode
 {
-  const unsigned char	*bytes = (const unsigned char*)[self bytes];
-  int			length = [self length];
-  unsigned char		buf[64];
-  unsigned		i;
+    const unsigned char   *bytes = (const unsigned char*)[self bytes];
+    int length = [self length];
+    unsigned char buf[64];
+    unsigned i;
 
-  name = [name stringByTrimmingSpaces];
-  if ([name length] == 0)
+    name = [name stringByTrimmingSpaces];
+    if ([name length] == 0)
     {
-      name = @"untitled";
+        name = @"untitled";
     }
-  /*
-   * The header is a line of the form 'begin mode filename'
-   */
-  sprintf((char*)buf, "begin %03o ", (int)mode);
-  [encoded appendBytes: buf length: strlen((const char*)buf)];
-  [encoded appendData: [name dataUsingEncoding: NSASCIIStringEncoding]];
-  [encoded appendBytes: "\n" length: 1];
+    /*
+     * The header is a line of the form 'begin mode filename'
+     */
+    sprintf((char*)buf, "begin %03o ", (int)mode);
+    [encoded appendBytes:buf length:strlen((const char*)buf)];
+    [encoded appendData:[name dataUsingEncoding:NSASCIIStringEncoding]];
+    [encoded appendBytes:"\n" length:1];
 
-#define ENC(c) ((c) > 0 ? ((c) & 077) + ' ': '`')
+#define ENC(c) ((c) > 0 ? ((c) & 077) + ' ' : '`')
 
-  while (length > 0)
+    while (length > 0)
     {
-      int	count;
-      unsigned	pos;
+        int count;
+        unsigned pos;
 
-      /*
-       * We want up to 45 bytes in a line ... and we record the
-       * number of bytes as the initial output character.
-       */
-      count = length;
-      if (count > 45)
-	{
-	  count = 45;
-	}
-      i = 0;
-      buf[i++] = ENC(count);
+        /*
+         * We want up to 45 bytes in a line ... and we record the
+         * number of bytes as the initial output character.
+         */
+        count = length;
+        if (count > 45)
+        {
+            count = 45;
+        }
+        i = 0;
+        buf[i++] = ENC(count);
 
-      /*
-       * Now we encode the actual data for the line.
-       */
-      for (pos = 0; count > 0; count -= 3)
-	{
-	  unsigned char	tmp[3];
-	  int		c;
+        /*
+         * Now we encode the actual data for the line.
+         */
+        for (pos = 0; count > 0; count -= 3)
+        {
+            unsigned char tmp[3];
+            int c;
 
-	  /*
-	   * Copy data into a temporary buffer ensuring we don't
-	   * overrun the end of the original buffer risking access
-	   * violation.
-	   */
-	  tmp[0] = bytes[pos++];
-	  if (pos < length)
-	    {
-	      tmp[1] = bytes[pos++];
-	      if (pos < length)
-		{
-		  tmp[2] = bytes[pos++];
-		}
-	      else
-		{
-		  tmp[2] = 0;
-		}
-	    }
-	  else
-	    {
-	      tmp[1] = 0;
-	      tmp[2] = 0;
-	    }
+            /*
+             * Copy data into a temporary buffer ensuring we don't
+             * overrun the end of the original buffer risking access
+             * violation.
+             */
+            tmp[0] = bytes[pos++];
+            if (pos < length)
+            {
+                tmp[1] = bytes[pos++];
+                if (pos < length)
+                {
+                    tmp[2] = bytes[pos++];
+                }
+                else
+                {
+                    tmp[2] = 0;
+                }
+            }
+            else
+            {
+                tmp[1] = 0;
+                tmp[2] = 0;
+            }
 
-	  c = tmp[0] >> 2;
-	  buf[i++] = ENC(c);
-	  c = ((tmp[0] << 4) & 060) | ((tmp[1] >> 4) & 017);
-	  buf[i++] = ENC(c);
-	  c = ((tmp[1] << 2) & 074) | ((tmp[2] >> 6) & 03);
-	  buf[i++] = ENC(c);
-	  c = tmp[2] & 077;
-	  buf[i++] = ENC(c);
-	}
-      bytes += pos;
-      length -= pos;
-      buf[i++] = '\n';
-      [encoded appendBytes: buf length: i];
+            c = tmp[0] >> 2;
+            buf[i++] = ENC(c);
+            c = ((tmp[0] << 4) & 060) | ((tmp[1] >> 4) & 017);
+            buf[i++] = ENC(c);
+            c = ((tmp[1] << 2) & 074) | ((tmp[2] >> 6) & 03);
+            buf[i++] = ENC(c);
+            c = tmp[2] & 077;
+            buf[i++] = ENC(c);
+        }
+        bytes += pos;
+        length -= pos;
+        buf[i++] = '\n';
+        [encoded appendBytes:buf length:i];
     }
 
-  /*
-   * Encode a line of length zero followed by 'end' as the terminator.
-   */
-  [encoded appendBytes: "`\nend\n" length: 6];
-  return YES;
+    /*
+     * Encode a line of length zero followed by 'end' as the terminator.
+     */
+    [encoded appendBytes:"`\nend\n" length:6];
+    return YES;
 }
 @end

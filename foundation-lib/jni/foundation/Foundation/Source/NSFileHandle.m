@@ -23,10 +23,10 @@
 
    <title>NSFileHandle class reference</title>
    $Date: 2010-02-19 00:12:46 -0800 (Fri, 19 Feb 2010) $ $Revision: 29669 $
-   */
+ */
 
 #import "common.h"
-#define	EXPOSE_NSFileHandle_IVARS	1
+#define EXPOSE_NSFileHandle_IVARS   1
 #import "Foundation/NSData.h"
 #import "Foundation/NSFileHandle.h"
 #import "Foundation/NSPathUtilities.h"
@@ -37,14 +37,14 @@
 // GNUstep Notification names
 
 NSString * const GSFileHandleConnectCompletionNotification
-  = @"GSFileHandleConnectCompletionNotification";
+    = @"GSFileHandleConnectCompletionNotification";
 NSString * const GSFileHandleWriteCompletionNotification
-  = @"GSFileHandleWriteCompletionNotification";
+    = @"GSFileHandleWriteCompletionNotification";
 
 // GNUstep key for getting error message.
 
 NSString * const GSFileHandleNotificationError
-  = @"GSFileHandleNotificationError";
+    = @"GSFileHandleNotificationError";
 
 static Class NSFileHandle_abstract_class = nil;
 static Class NSFileHandle_concrete_class = nil;
@@ -65,24 +65,24 @@ static Class NSFileHandle_ssl_class = nil;
  */
 @implementation NSFileHandle
 
-+ (void) initialize
++ (void)initialize
 {
-  if (self == [NSFileHandle class])
+    if (self == [NSFileHandle class])
     {
-      NSFileHandle_abstract_class = self;
-      NSFileHandle_concrete_class = [GSFileHandle class];
+        NSFileHandle_abstract_class = self;
+        NSFileHandle_concrete_class = [GSFileHandle class];
     }
 }
 
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
-  if (self == NSFileHandle_abstract_class)
+    if (self == NSFileHandle_abstract_class)
     {
-      return NSAllocateObject (NSFileHandle_concrete_class, 0, z);
+        return NSAllocateObject (NSFileHandle_concrete_class, 0, z);
     }
-  else
+    else
     {
-      return NSAllocateObject (self, 0, z);
+        return NSAllocateObject (self, 0, z);
     }
 }
 
@@ -92,11 +92,11 @@ static Class NSFileHandle_ssl_class = nil;
  * file listed at path. If the file does not exist or cannot
  * be opened for some other reason, nil is returned.
  */
-+ (id) fileHandleForReadingAtPath: (NSString*)path
++ (id)fileHandleForReadingAtPath:(NSString*)path
 {
-  id	o = [self allocWithZone: NSDefaultMallocZone()];
+    id o = [self allocWithZone:NSDefaultMallocZone()];
 
-  return AUTORELEASE([o initForReadingAtPath: path]);
+    return AUTORELEASE([o initForReadingAtPath:path]);
 }
 
 /**
@@ -104,11 +104,11 @@ static Class NSFileHandle_ssl_class = nil;
  * file listed at path. If the file does not exist or cannot
  * be opened for some other reason, nil is returned.
  */
-+ (id) fileHandleForWritingAtPath: (NSString*)path
++ (id)fileHandleForWritingAtPath:(NSString*)path
 {
-  id	o = [self allocWithZone: NSDefaultMallocZone()];
+    id o = [self allocWithZone:NSDefaultMallocZone()];
 
-  return AUTORELEASE([o initForWritingAtPath: path]);
+    return AUTORELEASE([o initForWritingAtPath:path]);
 }
 
 /**
@@ -116,11 +116,11 @@ static Class NSFileHandle_ssl_class = nil;
  * writing) from the file listed at path. If the file does not exist
  * or cannot be opened for some other reason, nil is returned.
  */
-+ (id) fileHandleForUpdatingAtPath: (NSString*)path
++ (id)fileHandleForUpdatingAtPath:(NSString*)path
 {
-  id	o = [self allocWithZone: NSDefaultMallocZone()];
+    id o = [self allocWithZone:NSDefaultMallocZone()];
 
-  return AUTORELEASE([o initForUpdatingAtPath: path]);
+    return AUTORELEASE([o initForUpdatingAtPath:path]);
 }
 
 /**
@@ -128,11 +128,11 @@ static Class NSFileHandle_ssl_class = nil;
  * descriptor.  The returned object is a shared instance as there can only be
  * one standard error per process.
  */
-+ (id) fileHandleWithStandardError
++ (id)fileHandleWithStandardError
 {
-  id	o = [self allocWithZone: NSDefaultMallocZone()];
+    id o = [self allocWithZone:NSDefaultMallocZone()];
 
-  return AUTORELEASE([o initWithStandardError]);
+    return AUTORELEASE([o initWithStandardError]);
 }
 
 /**
@@ -140,11 +140,11 @@ static Class NSFileHandle_ssl_class = nil;
  * descriptor.  The returned object is a shared instance as there can only be
  * one standard input per process.
  */
-+ (id) fileHandleWithStandardInput
++ (id)fileHandleWithStandardInput
 {
-  id	o = [self allocWithZone: NSDefaultMallocZone()];
+    id o = [self allocWithZone:NSDefaultMallocZone()];
 
-  return AUTORELEASE([o initWithStandardInput]);
+    return AUTORELEASE([o initWithStandardInput]);
 }
 
 /**
@@ -152,11 +152,11 @@ static Class NSFileHandle_ssl_class = nil;
  * descriptor.  The returned object is a shared instance as there can only be
  * one standard output per process.
  */
-+ (id) fileHandleWithStandardOutput
++ (id)fileHandleWithStandardOutput
 {
-  id	o = [self allocWithZone: NSDefaultMallocZone()];
+    id o = [self allocWithZone:NSDefaultMallocZone()];
 
-  return AUTORELEASE([o initWithStandardOutput]);
+    return AUTORELEASE([o initWithStandardOutput]);
 }
 
 /**
@@ -166,20 +166,20 @@ static Class NSFileHandle_ssl_class = nil;
  * (null) object, so that all objects can respond to the same
  * messages.
  */
-+ (id) fileHandleWithNullDevice
++ (id)fileHandleWithNullDevice
 {
-  id	o = [self allocWithZone: NSDefaultMallocZone()];
+    id o = [self allocWithZone:NSDefaultMallocZone()];
 
-  return AUTORELEASE([o initWithNullDevice]);
+    return AUTORELEASE([o initWithNullDevice]);
 }
 
 /**
  *  Initialize with desc, which can point to either a regular file or
  *  socket connection.
  */
-- (id) initWithFileDescriptor: (int)desc
+- (id)initWithFileDescriptor:(int)desc
 {
-  return [self initWithFileDescriptor: desc closeOnDealloc: NO];
+    return [self initWithFileDescriptor:desc closeOnDealloc:NO];
 }
 
 /**
@@ -187,18 +187,18 @@ static Class NSFileHandle_ssl_class = nil;
  *  socket connection.  Close desc when this instance is deallocated if
  *  flag is YES.
  */
-- (id) initWithFileDescriptor: (int)desc closeOnDealloc: (BOOL)flag
+- (id)initWithFileDescriptor:(int)desc closeOnDealloc:(BOOL)flag
 {
-  [self subclassResponsibility: _cmd];
-  return nil;
+    [self subclassResponsibility:_cmd];
+    return nil;
 }
 
 /**
  *  Windows-Unix compatibility support.
  */
-- (id) initWithNativeHandle: (void*)hdl
+- (id)initWithNativeHandle:(void*)hdl
 {
-  return [self initWithNativeHandle: hdl closeOnDealloc: NO];
+    return [self initWithNativeHandle:hdl closeOnDealloc:NO];
 }
 
 // This is the designated initializer.
@@ -207,10 +207,10 @@ static Class NSFileHandle_ssl_class = nil;
  *  <init/>
  *  Windows-Unix compatibility support.
  */
-- (id) initWithNativeHandle: (void*)hdl closeOnDealloc: (BOOL)flag
+- (id)initWithNativeHandle:(void*)hdl closeOnDealloc:(BOOL)flag
 {
-  [self subclassResponsibility: _cmd];
-  return nil;
+    [self subclassResponsibility:_cmd];
+    return nil;
 }
 
 // Returning file handles
@@ -218,19 +218,19 @@ static Class NSFileHandle_ssl_class = nil;
 /**
  *  Return the underlying file descriptor for this instance.
  */
-- (int) fileDescriptor
+- (int)fileDescriptor
 {
-  [self subclassResponsibility: _cmd];
-  return -1;
+    [self subclassResponsibility:_cmd];
+    return -1;
 }
 
 /**
  *  Windows-Unix compatibility support.
  */
-- (void*) nativeHandle
+- (void*)nativeHandle
 {
-  [self subclassResponsibility: _cmd];
-  return 0;
+    [self subclassResponsibility:_cmd];
+    return 0;
 }
 
 // Synchronous I/O operations
@@ -242,10 +242,10 @@ static Class NSFileHandle_ssl_class = nil;
  *  what is available, blocking if nothing is available.  Raises
  *  <code>NSFileHandleOperationException</code> if problem encountered.
  */
-- (NSData*) availableData
+- (NSData*)availableData
 {
-  [self subclassResponsibility: _cmd];
-  return nil;
+    [self subclassResponsibility:_cmd];
+    return nil;
 }
 
 /**
@@ -253,27 +253,27 @@ static Class NSFileHandle_ssl_class = nil;
  * channel into return data.<br />
  * If the file is empty, returns an empty data item.
  */
-- (NSData*) readDataToEndOfFile
+- (NSData*)readDataToEndOfFile
 {
-  [self subclassResponsibility: _cmd];
-  return nil;
+    [self subclassResponsibility:_cmd];
+    return nil;
 }
 
 /**
  *  Reads up to len bytes from file or communications channel into return data.
  */
-- (NSData*) readDataOfLength: (unsigned int)len
+- (NSData*)readDataOfLength:(unsigned int)len
 {
-  [self subclassResponsibility: _cmd];
-  return nil;
+    [self subclassResponsibility:_cmd];
+    return nil;
 }
 
 /**
  *  Synchronously writes given data item to file or connection.
  */
-- (void) writeData: (NSData*)item
+- (void)writeData:(NSData*)item
 {
-  [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
 }
 
 
@@ -288,9 +288,9 @@ static Class NSFileHandle_ssl_class = nil;
  *  initiated, returning an <code>NSFileHandle</code> for the client side with
  *  that notification.
  */
-- (void) acceptConnectionInBackgroundAndNotify
+- (void)acceptConnectionInBackgroundAndNotify
 {
-  [self acceptConnectionInBackgroundAndNotifyForModes: nil];
+    [self acceptConnectionInBackgroundAndNotifyForModes:nil];
 }
 
 /**
@@ -305,17 +305,17 @@ static Class NSFileHandle_ssl_class = nil;
  *  <p>The modes array specifies [NSRunLoop] modes that the notification can
  *  be posted in.</p>
  */
-- (void) acceptConnectionInBackgroundAndNotifyForModes: (NSArray*)modes
+- (void)acceptConnectionInBackgroundAndNotifyForModes:(NSArray*)modes
 {
-  [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
 }
 
 /**
  * Call -readInBackgroundAndNotifyForModes: with nil modes.
  */
-- (void) readInBackgroundAndNotify
+- (void)readInBackgroundAndNotify
 {
-  [self readInBackgroundAndNotifyForModes: nil];
+    [self readInBackgroundAndNotifyForModes:nil];
 }
 
 /**
@@ -325,42 +325,42 @@ static Class NSFileHandle_ssl_class = nil;
  * is available. If you want to continue to receive notifications, you
  * need to send this message again after receiving a notification.
  */
-- (void) readInBackgroundAndNotifyForModes: (NSArray*)modes
+- (void)readInBackgroundAndNotifyForModes:(NSArray*)modes
 {
-  [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
 }
 
 /**
  * Call -readToEndOfFileInBackgroundAndNotifyForModes: with nil modes.
  */
-- (void) readToEndOfFileInBackgroundAndNotify
+- (void)readToEndOfFileInBackgroundAndNotify
 {
-  [self readToEndOfFileInBackgroundAndNotifyForModes: nil];
+    [self readToEndOfFileInBackgroundAndNotifyForModes:nil];
 }
 
 /**
  * Set up an asynchronous read operation which will cause a notification to
  * be sent when end of file is read.
  */
-- (void) readToEndOfFileInBackgroundAndNotifyForModes: (NSArray*)modes
+- (void)readToEndOfFileInBackgroundAndNotifyForModes:(NSArray*)modes
 {
-  [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
 }
 
 /**
  * Call -waitForDataInBackgroundAndNotifyForModes: with nil modes.
  */
-- (void) waitForDataInBackgroundAndNotify
+- (void)waitForDataInBackgroundAndNotify
 {
-  [self waitForDataInBackgroundAndNotifyForModes: nil];
+    [self waitForDataInBackgroundAndNotifyForModes:nil];
 }
 
 /**
  * Set up to provide a notification when data can be read from the handle.
  */
-- (void) waitForDataInBackgroundAndNotifyForModes: (NSArray*)modes
+- (void)waitForDataInBackgroundAndNotifyForModes:(NSArray*)modes
 {
-  [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
 }
 
 
@@ -370,29 +370,29 @@ static Class NSFileHandle_ssl_class = nil;
  *  Return current position in file, or raises exception if instance does
  *  not represent a regular file.
  */
-- (unsigned long long) offsetInFile
+- (unsigned long long)offsetInFile
 {
-  [self subclassResponsibility: _cmd];
-  return 0;
+    [self subclassResponsibility:_cmd];
+    return 0;
 }
 
 /**
  *  Position file pointer at end of file, raising exception if instance does
  *  not represent a regular file.
  */
-- (unsigned long long) seekToEndOfFile
+- (unsigned long long)seekToEndOfFile
 {
-  [self subclassResponsibility: _cmd];
-  return 0;
+    [self subclassResponsibility:_cmd];
+    return 0;
 }
 
 /**
  *  Position file pointer at pos, raising exception if instance does
  *  not represent a regular file.
  */
-- (void) seekToFileOffset: (unsigned long long)pos
+- (void)seekToFileOffset:(unsigned long long)pos
 {
-  [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
 }
 
 
@@ -403,25 +403,25 @@ static Class NSFileHandle_ssl_class = nil;
  *  EOF on write-access files or connections.  Descriptor is only
  *  <em>deleted</em> when this instance is deallocated.
  */
-- (void) closeFile
+- (void)closeFile
 {
-  [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
 }
 
 /**
  *  Flush in-memory buffer to file or connection, then return.
  */
-- (void) synchronizeFile
+- (void)synchronizeFile
 {
-  [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
 }
 
 /**
  *  Chops file beyond pos then sets file pointer to that point.
  */
-- (void) truncateFileAtOffset: (unsigned long long)pos
+- (void)truncateFileAtOffset:(unsigned long long)pos
 {
-  [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
 }
 
 
@@ -430,22 +430,22 @@ static Class NSFileHandle_ssl_class = nil;
 // Keys for accessing userInfo dictionary in notification handlers.
 
 NSString * const NSFileHandleNotificationDataItem
-  = @"NSFileHandleNotificationDataItem";
+    = @"NSFileHandleNotificationDataItem";
 NSString * const NSFileHandleNotificationFileHandleItem
-  = @"NSFileHandleNotificationFileHandleItem";
+    = @"NSFileHandleNotificationFileHandleItem";
 NSString * const NSFileHandleNotificationMonitorModes
-  = @"NSFileHandleNotificationMonitorModes";
+    = @"NSFileHandleNotificationMonitorModes";
 
 // Notification names
 
 NSString * const NSFileHandleConnectionAcceptedNotification
-  = @"NSFileHandleConnectionAcceptedNotification";
+    = @"NSFileHandleConnectionAcceptedNotification";
 NSString * const NSFileHandleDataAvailableNotification
-  = @"NSFileHandleDataAvailableNotification";
+    = @"NSFileHandleDataAvailableNotification";
 NSString * const NSFileHandleReadCompletionNotification
-  = @"NSFileHandleReadCompletionNotification";
+    = @"NSFileHandleReadCompletionNotification";
 NSString * const NSFileHandleReadToEndOfFileCompletionNotification
-  = @"NSFileHandleReadToEndOfFileCompletionNotification";
+    = @"NSFileHandleReadToEndOfFileCompletionNotification";
 
 // Exceptions
 
@@ -453,9 +453,8 @@ NSString * const NSFileHandleReadToEndOfFileCompletionNotification
  * An exception used when a file error occurs.
  */
 NSString * const NSFileHandleOperationException
-  = @"NSFileHandleOperationException";
+    = @"NSFileHandleOperationException";
 
-
 // GNUstep class extensions
 
 /**
@@ -470,31 +469,31 @@ NSString * const NSFileHandleOperationException
  * [+fileHandleAsClientInBackgroundAtAddress:service:protocol:forModes:])
  * and waiting for it to succeed, fail, or time out.
  */
-+ (id) fileHandleAsClientAtAddress: (NSString*)address
-			   service: (NSString*)service
-			  protocol: (NSString*)protocol
++ (id)fileHandleAsClientAtAddress:(NSString*)address
+    service:(NSString*)service
+    protocol:(NSString*)protocol
 {
-  id	o = [self allocWithZone: NSDefaultMallocZone()];
+    id o = [self allocWithZone:NSDefaultMallocZone()];
 
-  return AUTORELEASE([o initAsClientAtAddress: address
-				      service: service
-				     protocol: protocol]);
+    return AUTORELEASE([o initAsClientAtAddress:address
+                        service:service
+                        protocol:protocol]);
 }
 
 /**
  * Opens an outgoing network connection asynchronously using
  * [+fileHandleAsClientInBackgroundAtAddress:service:protocol:forModes:]
  */
-+ (id) fileHandleAsClientInBackgroundAtAddress: (NSString*)address
-				       service: (NSString*)service
-				      protocol: (NSString*)protocol
++ (id)fileHandleAsClientInBackgroundAtAddress:(NSString*)address
+    service:(NSString*)service
+    protocol:(NSString*)protocol
 {
-  id	o = [self allocWithZone: NSDefaultMallocZone()];
+    id o = [self allocWithZone:NSDefaultMallocZone()];
 
-  return AUTORELEASE([o initAsClientInBackgroundAtAddress: address
-						  service: service
-						 protocol: protocol
-						 forModes: nil]);
+    return AUTORELEASE([o initAsClientInBackgroundAtAddress:address
+                        service:service
+                        protocol:protocol
+                        forModes:nil]);
 }
 
 /**
@@ -538,17 +537,17 @@ NSString * const NSFileHandleOperationException
  *   connection will be made directly rather than through socks.
  * </p>
  */
-+ (id) fileHandleAsClientInBackgroundAtAddress: (NSString*)address
-				       service: (NSString*)service
-				      protocol: (NSString*)protocol
-				      forModes: (NSArray*)modes
++ (id)fileHandleAsClientInBackgroundAtAddress:(NSString*)address
+    service:(NSString*)service
+    protocol:(NSString*)protocol
+    forModes:(NSArray*)modes
 {
-  id	o = [self allocWithZone: NSDefaultMallocZone()];
+    id o = [self allocWithZone:NSDefaultMallocZone()];
 
-  return AUTORELEASE([o initAsClientInBackgroundAtAddress: address
-						  service: service
-						 protocol: protocol
-						 forModes: modes]);
+    return AUTORELEASE([o initAsClientInBackgroundAtAddress:address
+                        service:service
+                        protocol:protocol
+                        forModes:modes]);
 }
 
 /**
@@ -564,43 +563,43 @@ NSString * const NSFileHandleOperationException
  *   </item>
  * </list>
  */
-+ (id) fileHandleAsServerAtAddress: (NSString*)address
-			   service: (NSString*)service
-			  protocol: (NSString*)protocol
++ (id)fileHandleAsServerAtAddress:(NSString*)address
+    service:(NSString*)service
+    protocol:(NSString*)protocol
 {
-  id	o = [self allocWithZone: NSDefaultMallocZone()];
+    id o = [self allocWithZone:NSDefaultMallocZone()];
 
-  return AUTORELEASE([o initAsServerAtAddress: address
-				      service: service
-				     protocol: protocol]);
+    return AUTORELEASE([o initAsServerAtAddress:address
+                        service:service
+                        protocol:protocol]);
 }
 
 /**
  * Call -readDataInBackgroundAndNotifyLength:forModes: with nil modes.
  */
-- (void) readDataInBackgroundAndNotifyLength: (unsigned)len
+- (void)readDataInBackgroundAndNotifyLength:(unsigned)len
 {
-  [self readDataInBackgroundAndNotifyLength: len forModes: nil];
+    [self readDataInBackgroundAndNotifyLength:len forModes:nil];
 }
 
 /**
  * Set up an asynchronous read operation which will cause a notification to
  * be sent when the specified amount of data (or end of file) is read.
  */
-- (void) readDataInBackgroundAndNotifyLength: (unsigned)len
-				    forModes: (NSArray*)modes
+- (void)readDataInBackgroundAndNotifyLength:(unsigned)len
+    forModes:(NSArray*)modes
 {
-  [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
 }
 
 /**
  * Returns a boolean to indicate whether a read operation of any kind is
  * in progress on the handle.
  */
-- (BOOL) readInProgress
+- (BOOL)readInProgress
 {
-  [self subclassResponsibility: _cmd];
-  return NO;
+    [self subclassResponsibility:_cmd];
+    return NO;
 }
 
 /**
@@ -609,43 +608,43 @@ NSString * const NSFileHandleOperationException
  * was received by a local server handle, this is the name or address
  * of the client machine.
  */
-- (NSString*) socketAddress
+- (NSString*)socketAddress
 {
-  return nil;
+    return nil;
 }
 
 /**
  * Returns the local address of the network connection or nil.
  */
-- (NSString*) socketLocalAddress
+- (NSString*)socketLocalAddress
 {
-  return nil;
+    return nil;
 }
 
 /**
  * Returns the local service/port of the network connection or nil.
  */
-- (NSString*) socketLocalService
+- (NSString*)socketLocalService
 {
-  return nil;
+    return nil;
 }
 
 /**
  * Returns the name (or number) of the service (network port) in use for
  * the network connection represented by the file handle.
  */
-- (NSString*) socketService
+- (NSString*)socketService
 {
-  return nil;
+    return nil;
 }
 
 /**
  * Returns the name of the protocol in use for the network connection
  * represented by the file handle.
  */
-- (NSString*) socketProtocol
+- (NSString*)socketProtocol
 {
-  return nil;
+    return nil;
 }
 
 /**
@@ -668,25 +667,25 @@ NSString * const NSFileHandleOperationException
  *   <item>Failure in compression/decompression library</item>
  * </list>
  */
-- (BOOL) useCompression
+- (BOOL)useCompression
 {
-  return NO;
+    return NO;
 }
 
 /**
  * Call -writeInBackgroundAndNotify:forModes: with nil modes.
  */
-- (void) writeInBackgroundAndNotify: (NSData*)item
+- (void)writeInBackgroundAndNotify:(NSData*)item
 {
-  [self writeInBackgroundAndNotify: item forModes: nil];
+    [self writeInBackgroundAndNotify:item forModes:nil];
 }
 
 /**
  * Write the specified data asynchronously, and notify on completion.
  */
-- (void) writeInBackgroundAndNotify: (NSData*)item forModes: (NSArray*)modes
+- (void)writeInBackgroundAndNotify:(NSData*)item forModes:(NSArray*)modes
 {
-  [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
 }
 
 /**
@@ -694,10 +693,10 @@ NSString * const NSFileHandleOperationException
  * in progress on the handle.  An outgoing network connection attempt
  * (as a client) is considered to be a write operation.
  */
-- (BOOL) writeInProgress
+- (BOOL)writeInProgress
 {
-  [self subclassResponsibility: _cmd];
-  return NO;
+    [self subclassResponsibility:_cmd];
+    return NO;
 }
 
 @end
@@ -706,24 +705,24 @@ NSString * const NSFileHandleOperationException
 /**
  * returns the concrete class used to implement SSL connections.
  */
-+ (Class) sslClass
++ (Class)sslClass
 {
-  if (NSFileHandle_ssl_class == 0)
+    if (NSFileHandle_ssl_class == 0)
     {
-      NSString  *path;
-      NSBundle	*bundle;
+        NSString  *path;
+        NSBundle  *bundle;
 
-      path = [[NSBundle bundleForClass: [NSObject class]] bundlePath];
-      path = [path stringByAppendingPathComponent: @"SSL.bundle"];
+        path = [[NSBundle bundleForClass:[NSObject class]] bundlePath];
+        path = [path stringByAppendingPathComponent:@"SSL.bundle"];
 
-      bundle = [NSBundle bundleWithPath: path];
-      NSFileHandle_ssl_class = [bundle principalClass];
-      if (NSFileHandle_ssl_class == 0 && bundle != nil)
-	{
-	  NSLog(@"Failed to load principal class from bundle (%@)", path);
-	}
+        bundle = [NSBundle bundleWithPath:path];
+        NSFileHandle_ssl_class = [bundle principalClass];
+        if (NSFileHandle_ssl_class == 0 && bundle != nil)
+        {
+            NSLog(@"Failed to load principal class from bundle (%@)", path);
+        }
     }
-  return NSFileHandle_ssl_class;
+    return NSFileHandle_ssl_class;
 }
 
 /** <override-dummy />
@@ -732,9 +731,9 @@ NSString * const NSFileHandleOperationException
  * This is implented by an SSL handling subclass.<br />
  * The default implementation just returns NO.
  */
-- (BOOL) sslAccept
+- (BOOL)sslAccept
 {
-  return NO;
+    return NO;
 }
 
 /** <override-dummy />
@@ -743,15 +742,15 @@ NSString * const NSFileHandleOperationException
  * This is implented by an SSL handling subclass.<br />
  * The default implementation just returns NO.
  */
-- (BOOL) sslConnect
+- (BOOL)sslConnect
 {
-  return NO;
+    return NO;
 }
 
 /** <override-dummy />
  * Shuts down the SSL connection to the system that the handle is talking to.
  */
-- (void) sslDisconnect
+- (void)sslDisconnect
 {
 }
 
@@ -759,9 +758,9 @@ NSString * const NSFileHandleOperationException
  * Sets the certificate to be used to identify this process to the server
  * at the opposite end of the network connection.
  */
-- (void) sslSetCertificate: (NSString*)certFile
-                privateKey: (NSString*)privateKey
-                 PEMpasswd: (NSString*)PEMpasswd
+- (void)sslSetCertificate:(NSString*)certFile
+    privateKey:(NSString*)privateKey
+    PEMpasswd:(NSString*)PEMpasswd
 {
 }
 @end

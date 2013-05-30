@@ -1,224 +1,259 @@
 /* Implementation for NSURLConnection for GNUstep
- Copyright (C) 2006 Software Foundation, Inc.
- 
- Written by:  Richard Frith-Macdonald <rfm@gnu.org>
- Date: 2006
- 
- This file is part of the GNUstep Base Library.
- 
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public
- License as published by the Free Software Foundation; either
- version 2 of the License, or (at your option) any later version.
- 
- This library is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Library General Public License for more details.
- 
- You should have received a copy of the GNU Lesser General Public
- License along with this library; if not, write to the Free
- Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- Boston, MA 02111 USA.
- */ 
+   Copyright (C) 2006 Software Foundation, Inc.
+
+   Written by:  Richard Frith-Macdonald <rfm@gnu.org>
+   Date: 2006
+
+   This file is part of the GNUstep Base Library.
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2 of the License, or (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Library General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; if not, write to the Free
+   Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+   Boston, MA 02111 USA.
+ */
 
 #import "common.h"
 
 #define EXPOSE_NSURLConnection_IVARS  1
 #import "Foundation/NSRunLoop.h"
 #import "GSURLPrivate.h"
+#import "GSPrivate.h"
+#import "Foundation/NSInvocation.h"
+#import "Foundation/NSURLConnection.h"
+#import "Foundation/NSThread.h"
+#import "Foundation/NSOperation.h"
+#import <pthread.h>
 
+NSString* const _NSURLConnectionPrivateRunLoopMode = @"_NSURLConnectionPrivateRunLoopMode";
 
 @interface _NSURLConnectionDataCollector : NSObject
 {
-  NSURLConnection   *_connection;   // Not retained
-  NSMutableData     *_data;
-  NSError       *_error;
-  NSURLResponse     *_response;
-  BOOL          _done;
+    NSURLConnection   *_connection; // Not retained
+    NSMutableData     *_data;
+    NSError       *_error;
+    NSURLResponse     *_response;
+    BOOL _done;
 }
 
-- (NSData*) data;
-- (BOOL) done;
-- (NSError*) error;
-- (NSURLResponse*) response;
-- (void) setConnection: (NSURLConnection *)c;
+- (NSData*)data;
+- (BOOL)done;
+- (NSError*)error;
+- (NSURLResponse*)response;
+- (void)setConnection:(NSURLConnection *)c;
 
 @end
 
-@implementation NSRunLoop (NSURLConnectionInitializer)
-+ (void)initializeConnectionClasses
-{
-    [NSURLConnection load];
-    [NSURLProtocol load];
-}
+@interface NSURLProtocol (Private_NSURLConnection)
+- (void)startLoading:(NSRunLoop *)rl forMode:(NSString *)mode;
+- (void)setRequest:(NSURLRequest *)req;
 @end
 
 @implementation _NSURLConnectionDataCollector
 
-- (void) dealloc
+- (void)dealloc
 {
-  [_data release];
-  [_error release];
-  [_response release];
-  [super dealloc];
+    [_data release];
+    [_error release];
+    [_response release];
+    [super dealloc];
 }
 
-- (BOOL) done
+- (BOOL)done
 {
-  return _done;
+    return _done;
 }
 
-- (NSData*) data
+- (NSData*)data
 {
-  return _data;
+    return _data;
 }
 
-- (NSError*) error
+- (NSError*)error
 {
-  return _error;
+    return _error;
 }
 
-- (NSURLResponse*) response
+- (NSURLResponse*)response
 {
-  return _response;
+    return _response;
 }
 
-- (void) setConnection: (NSURLConnection*)c
+- (void)setConnection:(NSURLConnection*)c
 {
-  _connection = c;
+    _connection = c;
 }
 
-- (void) connection: (NSURLConnection *)connection
-   didFailWithError: (NSError *)error
+- (void)connection:(NSURLConnection *)connection
+    didFailWithError:(NSError *)error
 {
-  ASSIGN(_error, error);
-  _done = YES;
+    ASSIGN(_error, error);
+    _done = YES;
 }
 
-- (void) connection: (NSURLConnection *)connection
- didReceiveResponse: (NSURLResponse*)response
+- (void)connection:(NSURLConnection *)connection
+    didReceiveResponse:(NSURLResponse*)response
 {
-  ASSIGN(_response, response);
+    ASSIGN(_response, response);
 }
 
-- (void) connectionDidFinishLoading: (NSURLConnection *)connection
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-  _done = YES;
+    _done = YES;
 }
 
 
-- (void) connection: (NSURLConnection *)connection
-     didReceiveData: (NSData *)data
+- (void)connection:(NSURLConnection *)connection
+    didReceiveData:(NSData *)data
 {
-  if (nil == _data)
+    if (nil == _data)
     {
-      _data = [data mutableCopy];
+        _data = [data mutableCopy];
     }
-  else
+    else
     {
-      [_data appendData: data];
+        [_data appendData:data];
     }
 }
 
 @end
 
-typedef struct {
+@implementation NSURLConnection {
     NSURLRequest    *_request;
+    NSURLRequest    *_originalRequest;
     NSURLProtocol   *_protocol;
-    id              _delegate;  // Not retained
-    BOOL            _debug;
-    BOOL            _started;
+    id _delegate;               // Not retained
+    BOOL _debug;
+    BOOL _started;
     NSRunLoop       *_runloop;
     NSString        *_mode;
-} Internal;
-
-#define this  ((Internal*)(self->_NSURLConnectionInternal))
-#define inst  ((Internal*)(o->_NSURLConnectionInternal))
-
-@implementation NSURLConnection
+    pthread_mutex_t _delegateLock;
+    pthread_mutexattr_t _delegateLockAttr;
+    NSPort *_port;
+    NSUInteger _order;
+}
 
 + (BOOL)canHandleRequest:(NSURLRequest *)request
 {
-    return ([NSURLProtocol _classToHandleRequest: request] != nil);
+    return ([NSURLProtocol _classToHandleRequest:request] != nil);
 }
 
 + (NSURLConnection *)connectionWithRequest:(NSURLRequest *)request delegate:(id)delegate
 {
-    return [[[self alloc] initWithRequest: request delegate: delegate startImmediately:YES] autorelease];
+    return [[[self alloc] initWithRequest:request delegate:delegate startImmediately:YES] autorelease];
 }
 
 - (id)initWithRequest:(NSURLRequest *)request delegate:(id)delegate startImmediately:(BOOL)startImmediately
 {
     if ((self = [super init]) != nil)
     {
-#if GS_WITH_GC
-        _NSURLConnectionInternal = NSAllocateCollectable(sizeof(Internal), NSScannedOption);
-#else
-        _NSURLConnectionInternal = calloc(1, sizeof(Internal));
-#endif
-        this->_request = [request copy];
-        this->_delegate = delegate;
-        this->_protocol = [[NSURLProtocol alloc]
-                           initWithRequest: this->_request
-                           cachedResponse: nil
-                           client: (id<NSURLProtocolClient>)self];
+        pthread_mutexattr_init(&_delegateLockAttr);
+        pthread_mutexattr_settype(&_delegateLockAttr, PTHREAD_MUTEX_RECURSIVE);
+        pthread_mutex_init(&_delegateLock, &_delegateLockAttr);
+        _request = [request copy];
+        _originalRequest = [request copy];
+        _delegate = [delegate retain];
+        _protocol = [[NSURLProtocol alloc]
+                     initWithRequest:_request
+                     cachedResponse:nil
+                     client:(id<NSURLProtocolClient>)self];
+        _started = NO;
         if (startImmediately)
         {
-            [self start];
+            [self performSelector:@selector(start) withObject:nil afterDelay:0.0];
         }
-        this->_debug = YES; //GSDebugSet(@"NSURLConnection");
+        _debug = YES; //GSDebugSet(@"NSURLConnection");
     }
     return self;
 }
 
+- (void)setDelegate:(id)delegate
+{
+    if (_delegate != delegate)
+    {
+        [_delegate release];
+        _delegate = delegate;
+    }
+}
+
 - (void)start
 {
-    if (!this->_started)
+    if (!_started)
     {
-        this->_started = YES;
-        if (this->_runloop == NULL)
+        _started = YES;
+        if (_runloop == nil)
         {
-            this->_runloop = [NSRunLoop currentRunLoop];
+            _runloop = [NSRunLoop currentRunLoop];
         }
-        if (this->_mode == NULL)
+        if (_mode == nil)
         {
-            this->_mode = [NSRunLoopCommonModes copy];
+            _mode = [NSDefaultRunLoopMode copy];
         }
-        [this->_protocol startLoading:this->_runloop forMode:this->_mode];
+
+        if (_runloop->_thread == [NSThread currentThread]) {
+            [_protocol startLoading:_runloop forMode:_mode];
+        }
+        else {
+            NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[_protocol methodSignatureForSelector:@selector(startLoading:forMode:)]];
+            [invocation setSelector:@selector(startLoading:forMode:)];
+            [invocation setArgument:&_runloop atIndex:2];
+            [invocation setArgument:&_mode atIndex:3];
+            [invocation setTarget:_protocol];
+            [invocation performSelector:@selector(invoke) onThread:_runloop->_thread withObject:nil waitUntilDone:YES modes:[NSArray arrayWithObject:_mode]];
+        }
+    }
+}
+
+- (void)_finished
+{
+    if (_started)
+    {
+        _started = NO;
+        [_delegate release];
+        _delegate = nil;
     }
 }
 
 - (void)cancel
 {
-    if (this->_started)
+    _started = NO;
+    [_protocol stopLoading];
+    [_protocol release];
+    _protocol = nil;
+    pthread_mutex_lock(&_delegateLock);
+    if (_delegate)
     {
-        this->_started = NO;
-        [this->_protocol stopLoading];
-        DEBUG_LOG("DESTROY protocol!");
-        DESTROY(this->_protocol);
+        _delegate = nil;
     }
+    pthread_mutex_unlock(&_delegateLock);
 }
 
 - (void)dealloc
 {
-    if (this != 0)
+    [self cancel];
+    [_request release];
+    [_originalRequest release];
+    _request = nil;
+    _originalRequest = nil;
+    pthread_mutex_lock(&_delegateLock);
+    if (_delegate)
     {
-        [self cancel];
-        RELEASE(this->_request);
-        free(this);
-        _NSURLConnectionInternal = 0;
+        _delegate = nil;
     }
+    pthread_mutex_unlock(&_delegateLock);
+
     [super dealloc];
 }
 
-- (void)finalize
-{
-    if (this != 0)
-    {
-        [self cancel];
-    }
-}
 
 - (id)initWithRequest:(NSURLRequest *)request delegate:(id)delegate
 {
@@ -227,92 +262,65 @@ typedef struct {
 
 - (void)scheduleInRunLoop:(NSRunLoop *)aRunLoop forMode:(NSString *)mode
 {
-    this->_runloop = aRunLoop;
-    this->_mode = [mode copy];
+    _runloop = aRunLoop;
+    _mode = [mode copy];
+}
+
+- (NSInputStream *)_inputStream
+{
+    return [_protocol _inputStream];
+}
+
+- (NSURLRequest *)_request
+{
+    return _request;
+}
+
+- (NSURLRequest *)originalRequest
+{
+    return _originalRequest;
+}
+
+- (NSURLRequest *)currentRequest
+{
+    return _request;
 }
 
 @end
-
-
-
-@implementation NSObject (NSURLConnectionDelegate)
-
-- (void)connection:(NSURLConnection *)connection didCancelAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
-{
-    return;
-}
-
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
-{
-    return;
-}
-
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection
-{
-    return;
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
-{
-    [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
-{
-    return;
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
-{
-    return;
-}
-
-- (NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse
-{
-    return cachedResponse;
-}
-
-- (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)response
-{
-    return request;
-}
-
-@end
-
 
 
 @implementation NSURLConnection (NSURLConnectionSynchronousLoading)
 
 + (NSData *)sendSynchronousRequest:(NSURLRequest *)request returningResponse:(NSURLResponse **)response error:(NSError **)error
 {
-    NSData *data = NULL;
+    NSData *data = nil;
 
-    if (0 != response)
+    if (response && 0 != *response)
     {
-        *response = NULL;
+        *response = nil;
     }
-    if (0 != error)
+    // Only the error parameter is allowed to be NULL, according to Apple's
+    // docs.
+    if (error && 0 != *error)
     {
-        *error = NULL;
+        *error = nil;
     }
-    if ([self canHandleRequest: request] == YES)
+    if ([self canHandleRequest:request] == YES)
     {
-        _NSURLConnectionDataCollector *collector;
-        NSURLConnection *conn;
-        NSRunLoop *loop;
-
-        collector = [_NSURLConnectionDataCollector new];
-        conn = [[self alloc] initWithRequest: request delegate: [collector autorelease]];
-        [collector setConnection: conn];
-        loop = [NSRunLoop currentRunLoop];
+        _NSURLConnectionDataCollector *collector = [_NSURLConnectionDataCollector new];
+        NSURLConnection *conn = [[self alloc] initWithRequest:request delegate:[collector autorelease] startImmediately:NO];
+        NSRunLoop *loop = [NSRunLoop currentRunLoop];
+        [conn scheduleInRunLoop:loop forMode:_NSURLConnectionPrivateRunLoopMode];
+        [collector setConnection:conn];
+        [conn start];
         while ([collector done] == NO)
         {
-            NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow: 1.0];
-            [loop runMode: NSDefaultRunLoopMode beforeDate: limit];
+            NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:1.0];
+            [loop runMode:_NSURLConnectionPrivateRunLoopMode beforeDate:limit];
             [limit release];
         }
         data = [[[collector data] retain] autorelease];
-        if (0 != response)
+        if (response != nil)
         {
             *response = [[[collector response] retain] autorelease];
         }
@@ -327,33 +335,55 @@ typedef struct {
 
 @end
 
+@implementation NSURLConnection (NSURLConnectionQueuedLoading)
+
++ (void)sendAsynchronousRequest:(NSURLRequest *)request queue:(NSOperationQueue *)queue completionHandler:(void (^)(NSURLResponse*, NSData*, NSError*))handler
+{
+    [queue addOperationWithBlock:^{
+         NSURLResponse *response = nil;
+         NSError *error = nil;
+         NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+         handler(response, data, error);
+     }];
+}
+
+@end
+
 
 @implementation NSURLConnection (URLProtocolClient)
 
 - (void)URLProtocol:(NSURLProtocol *)protocol cachedResponseIsValid:(NSCachedURLResponse *)cachedResponse
 {
-    
 }
 
 - (void)URLProtocol:(NSURLProtocol *)protocol didFailWithError:(NSError *)error
 {
-    [this->_delegate connection:self didFailWithError:error];
+    pthread_mutex_lock(&_delegateLock);
+    [_delegate connection:self didFailWithError:error];
+    pthread_mutex_unlock(&_delegateLock);
+    [self _finished];
 }
 
-- (void)URLProtocol: (NSURLProtocol *)protocol didLoadData: (NSData *)data
+- (void)URLProtocol:(NSURLProtocol *)protocol didLoadData:(NSData *)data
 {
-    [this->_delegate connection:self didReceiveData:data];
+    pthread_mutex_lock(&_delegateLock);
+    [_delegate connection:self didReceiveData:data];
+    pthread_mutex_unlock(&_delegateLock);
 }
 
 - (void)URLProtocol:(NSURLProtocol *)protocol didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
 {
-    [this->_delegate connection:self didReceiveAuthenticationChallenge:challenge];
+    pthread_mutex_lock(&_delegateLock);
+    [_delegate connection:self didReceiveAuthenticationChallenge:challenge];
+    pthread_mutex_unlock(&_delegateLock);
 }
 
 - (void)URLProtocol:(NSURLProtocol *)protocol
-  didReceiveResponse: (NSURLResponse *)response cacheStoragePolicy: (NSURLCacheStoragePolicy)policy
+    didReceiveResponse:(NSURLResponse *)response cacheStoragePolicy:(NSURLCacheStoragePolicy)policy
 {
-    [this->_delegate connection:self didReceiveResponse:response];
+    pthread_mutex_lock(&_delegateLock);
+    [_delegate connection:self didReceiveResponse:response];
+    pthread_mutex_unlock(&_delegateLock);
     if (policy == NSURLCacheStorageAllowed || policy == NSURLCacheStorageAllowedInMemoryOnly)
     {
         // FIXME ... cache response here?
@@ -362,15 +392,19 @@ typedef struct {
 
 - (void)URLProtocol:(NSURLProtocol *)protoco wasRedirectedToRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse
 {
-    if (this->_debug)
+    if (_debug)
     {
         NSLog(@"%@ tell delegate %@ about redirect to %@ as a result of %@",
-              self, this->_delegate, request, redirectResponse);
+              self, _delegate, request, redirectResponse);
     }
-    request = [this->_delegate connection:self willSendRequest:request redirectResponse:redirectResponse];
-    if (this->_protocol == nil)
+    pthread_mutex_lock(&_delegateLock);
+    if (_delegate && [_delegate respondsToSelector:@selector(willSendRequest:redirectRequest:)]) {
+        request = [_delegate connection:self willSendRequest:request redirectResponse:redirectResponse];
+    }
+    pthread_mutex_unlock(&_delegateLock);
+    if (_protocol == nil)
     {
-        if (this->_debug)
+        if (_debug)
         {
             NSLog(@"%@ delegate cancelled request", self);
         }
@@ -380,21 +414,21 @@ typedef struct {
     }
     if (request != nil)
     {
-        if (this->_debug)
+        if (_debug)
         {
             NSLog(@"%@ delegate allowed redirect to %@", self, request);
         }
         /* Follow the redirect ... stop the old load and start a new one.
          */
-        [this->_protocol stopLoading];
-        ASSIGNCOPY(this->_request, request);
-        NSURLProtocol *redirect = [[NSURLProtocol alloc] initWithRequest:this->_request cachedResponse:nil client:(id<NSURLProtocolClient>)self];
-        [redirect setRequest:this->_request];
-        [redirect startLoading:this->_runloop forMode:this->_mode];
-        DESTROY(this->_protocol);
-        this->_protocol = redirect;
+        [_protocol stopLoading];
+        ASSIGNCOPY(_request, request);
+        NSURLProtocol *redirect = [[NSURLProtocol alloc] initWithRequest:_request cachedResponse:nil client:(id<NSURLProtocolClient>)self];
+        [redirect setRequest:_request];
+        [redirect startLoading:_runloop forMode:_mode];
+        DESTROY(_protocol);
+        _protocol = redirect;
     }
-    else if (this->_debug)
+    else if (_debug)
     {
         NSLog(@"%@ delegate cancelled redirect", self);
     }
@@ -402,12 +436,17 @@ typedef struct {
 
 - (void)URLProtocolDidFinishLoading:(NSURLProtocol *)protocol
 {
-    [this->_delegate connectionDidFinishLoading: self];
+    pthread_mutex_lock(&_delegateLock);
+    [_delegate connectionDidFinishLoading:self];
+    pthread_mutex_unlock(&_delegateLock);
+    [self _finished];
 }
 
-- (void)URLProtocol:(NSURLProtocol *)protocol didCancelAuthenticationChallenge: (NSURLAuthenticationChallenge *)challenge
+- (void)URLProtocol:(NSURLProtocol *)protocol didCancelAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
 {
-    [this->_delegate connection: self didCancelAuthenticationChallenge: challenge];
+    pthread_mutex_lock(&_delegateLock);
+    [_delegate connection:self didCancelAuthenticationChallenge:challenge];
+    pthread_mutex_unlock(&_delegateLock);
 }
 
 @end

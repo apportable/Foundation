@@ -25,7 +25,7 @@
 
    <title>NSDate class reference</title>
    $Date: 2010-09-12 10:05:30 -0700 (Sun, 12 Sep 2010) $ $Revision: 31338 $
-   */
+ */
 
 #import "common.h"
 #import "Foundation/NSArray.h"
@@ -47,74 +47,77 @@
 #include <math.h>
 
 /* These constants seem to be what MacOS-X uses */
-#define DISTANT_FUTURE	63113990400.0
-#define DISTANT_PAST	-63113817600.0
+#define DISTANT_FUTURE  63113990400.0
+#define DISTANT_PAST    -63113817600.0
 
 const NSTimeInterval NSTimeIntervalSince1970 = 978307200.0;
 
-
 
-extern NSTimeInterval	GSTimeNow();	// In NSCalendarDate.m
+extern NSTimeInterval   GSTimeNow();    // In NSCalendarDate.m
 
-static BOOL	debug = NO;
-static Class	abstractClass = nil;
-static Class	concreteClass = nil;
-static Class	calendarClass = nil;
+static BOOL debug = NO;
+static Class abstractClass = nil;
+static Class concreteClass = nil;
+static Class calendarClass = nil;
 
 /**
  * Our concrete base class - NSCalendar date must share the ivar layout.
  */
 @interface NSGDate : NSDate
 {
-@public
-  NSTimeInterval _seconds_since_ref;
+    @public
+    NSTimeInterval _seconds_since_ref;
 }
 @end
 
-@interface	GSDateSingle : NSGDate
+@interface  GSDateSingle : NSGDate
 @end
 
-@interface	GSDatePast : GSDateSingle
+@interface  GSDatePast : GSDateSingle
 @end
 
-@interface	GSDateFuture : GSDateSingle
+@interface  GSDateFuture : GSDateSingle
 @end
 
-static NSDate	*_distantPast = nil;
-static NSDate	*_distantFuture = nil;
+static NSDate   *_distantPast = nil;
+static NSDate   *_distantFuture = nil;
 
-
 static NSString*
 findInArray(NSArray *array, unsigned pos, NSString *str)
 {
-  unsigned	index;
-  unsigned	limit = [array count];
+    unsigned index;
+    unsigned limit = [array count];
 
-  for (index = pos; index < limit; index++)
+    for (index = pos; index < limit; index++)
     {
-      NSString	*item;
+        NSString  *item;
 
-      item = [array objectAtIndex: index];
-      if ([str caseInsensitiveCompare: item] == NSOrderedSame)
-	return item;
+        item = [array objectAtIndex:index];
+        if ([str caseInsensitiveCompare:item] == NSOrderedSame) {
+            return item;
+        }
     }
-  return nil;
+    return nil;
 }
 
 static inline NSTimeInterval
 otherTime(NSDate* other)
 {
-  Class	c;
+    Class c;
 
-  if (other == nil)
-    [NSException raise: NSInvalidArgumentException format: @"other time nil"];
-  if (GSObjCIsInstance(other) == NO)
-    [NSException raise: NSInvalidArgumentException format: @"other time bad"];
-  c = object_getClass(other);
-  if (c == concreteClass || c == calendarClass)
-    return ((NSGDate*)other)->_seconds_since_ref;
-  else
-    return [other timeIntervalSinceReferenceDate];
+    if (other == nil) {
+        [NSException raise:NSInvalidArgumentException format:@"other time nil"];
+    }
+    if (GSObjCIsInstance(other) == NO) {
+        [NSException raise:NSInvalidArgumentException format:@"other time bad"];
+    }
+    c = object_getClass(other);
+    if (c == concreteClass || c == calendarClass) {
+        return ((NSGDate*)other)->_seconds_since_ref;
+    }
+    else{
+        return [other timeIntervalSinceReferenceDate];
+    }
 }
 
 /**
@@ -127,49 +130,53 @@ otherTime(NSDate* other)
  */
 @implementation NSDate
 
-+ (void) initialize
++ (void)initialize
 {
-  if (self == [NSDate class])
+    if (self == [NSDate class])
     {
-      [self setVersion: 1];
-      abstractClass = self;
-      concreteClass = [NSGDate class];
-      calendarClass = [NSCalendarDate class];
+        [self setVersion:1];
+        abstractClass = self;
+        concreteClass = [NSGDate class];
+        calendarClass = [NSCalendarDate class];
     }
 }
 
-+ (id) alloc
++ (id)alloc
 {
-  if (self == abstractClass)
-    return NSAllocateObject(concreteClass, 0, NSDefaultMallocZone());
-  else
-    return NSAllocateObject(self, 0, NSDefaultMallocZone());
+    if (self == abstractClass) {
+        return NSAllocateObject(concreteClass, 0, NSDefaultMallocZone());
+    }
+    else{
+        return NSAllocateObject(self, 0, NSDefaultMallocZone());
+    }
 }
 
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
-  if (self == abstractClass)
-    return NSAllocateObject(concreteClass, 0, z);
-  else
-    return NSAllocateObject(self, 0, z);
+    if (self == abstractClass) {
+        return NSAllocateObject(concreteClass, 0, z);
+    }
+    else{
+        return NSAllocateObject(self, 0, z);
+    }
 }
 
 /**
  * Returns the time interval between the current date and the
  * reference date (1 January 2001, GMT).
  */
-+ (NSTimeInterval) timeIntervalSinceReferenceDate
++ (NSTimeInterval)timeIntervalSinceReferenceDate
 {
-  return GSTimeNow();
+    return GSTimeNow();
 }
 
 /**
  * Returns an autoreleased instance representing the current date/time.
  */
-+ (id) date
++ (id)date
 {
-  return AUTORELEASE([[self allocWithZone: NSDefaultMallocZone()]
-	initWithTimeIntervalSinceReferenceDate: GSTimeNow()]);
+    return AUTORELEASE([[self allocWithZone:NSDefaultMallocZone()]
+                        initWithTimeIntervalSinceReferenceDate:GSTimeNow()]);
 }
 
 /**
@@ -178,10 +185,10 @@ otherTime(NSDate* other)
  * specified by the preferences in the user defaults database, allowing
  * phrases like 'last tuesday'
  */
-+ (id) dateWithNaturalLanguageString: (NSString*)string
++ (id)dateWithNaturalLanguageString:(NSString*)string
 {
-  return [self dateWithNaturalLanguageString: string
-				      locale: nil];
+    return [self dateWithNaturalLanguageString:string
+            locale:nil];
 }
 
 /**
@@ -231,710 +238,720 @@ otherTime(NSDate* other)
  *   </desc>
  * </deflist>
  */
-+ (id) dateWithNaturalLanguageString: (NSString*)string
-                              locale: (NSDictionary*)locale
++ (id)dateWithNaturalLanguageString:(NSString*)string
+    locale:(NSDictionary*)locale
 {
-  NSCharacterSet	*ws;
-  NSCharacterSet	*digits;
-  NSScanner		*scanner;
-  NSString		*tmp;
-  NSString		*dto;
-  NSArray		*ymw;
-  NSMutableArray	*words;
-  unsigned		index;
-  unsigned		length;
-  NSCalendarDate	*theDate;
-  BOOL			hadHour = NO;
-  BOOL			hadMinute = NO;
-  BOOL			hadSecond = NO;
-  BOOL			hadDay = NO;
-  BOOL			hadMonth = NO;
-  BOOL			hadYear = NO;
-  BOOL			hadWeekDay = NO;
-  int			weekDay = 0;
-  int			dayOfWeek = 0;
-  int			modMonth = 0;
-  int			modYear = 0;
-  int			modDay = 0;
-  int			D, M, Y;
-  int			h = 12;
-  int			m = 0;
-  int			s = 0;
-  unsigned		dtoIndex;
+    NSCharacterSet    *ws;
+    NSCharacterSet    *digits;
+    NSScanner     *scanner;
+    NSString      *tmp;
+    NSString      *dto;
+    NSArray       *ymw;
+    NSMutableArray    *words;
+    unsigned index;
+    unsigned length;
+    NSCalendarDate    *theDate;
+    BOOL hadHour = NO;
+    BOOL hadMinute = NO;
+    BOOL hadSecond = NO;
+    BOOL hadDay = NO;
+    BOOL hadMonth = NO;
+    BOOL hadYear = NO;
+    BOOL hadWeekDay = NO;
+    int weekDay = 0;
+    int dayOfWeek = 0;
+    int modMonth = 0;
+    int modYear = 0;
+    int modDay = 0;
+    int D, M, Y;
+    int h = 12;
+    int m = 0;
+    int s = 0;
+    unsigned dtoIndex;
 
-  if (locale == nil)
+    if (locale == nil)
     {
-      locale = GSPrivateDefaultLocale();
+        locale = GSPrivateDefaultLocale();
     }
-  ws = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-  digits = [NSCharacterSet decimalDigitCharacterSet];
-  scanner = [NSScanner scannerWithString: string];
-  words = [NSMutableArray arrayWithCapacity: 10];
+    ws = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+    digits = [NSCharacterSet decimalDigitCharacterSet];
+    scanner = [NSScanner scannerWithString:string];
+    words = [NSMutableArray arrayWithCapacity:10];
 
-  theDate = (NSCalendarDate*)[calendarClass date];
-  Y = [theDate yearOfCommonEra];
-  M = [theDate monthOfYear];
-  D = [theDate dayOfMonth];
-  dayOfWeek = [theDate dayOfWeek];
+    theDate = (NSCalendarDate*)[calendarClass date];
+    Y = [theDate yearOfCommonEra];
+    M = [theDate monthOfYear];
+    D = [theDate dayOfMonth];
+    dayOfWeek = [theDate dayOfWeek];
 
-  [scanner scanCharactersFromSet: ws intoString: 0];
-  while ([scanner scanUpToCharactersFromSet: ws intoString: &tmp] == YES)
+    [scanner scanCharactersFromSet:ws intoString:0];
+    while ([scanner scanUpToCharactersFromSet:ws intoString:&tmp] == YES)
     {
-      [words addObject: tmp];
-      [scanner scanCharactersFromSet: ws intoString: 0];
-    }
-
-  /*
-   *	Scan the array for day specifications and remove them.
-   */
-  if (hadDay == NO)
-    {
-      NSArray	*tdd = [locale objectForKey: NSThisDayDesignations];
-      NSArray	*ndd = [locale objectForKey: NSNextDayDesignations];
-      NSArray	*pdd = [locale objectForKey: NSPriorDayDesignations];
-      NSArray	*nndd = [locale objectForKey: NSNextNextDayDesignations];
-
-      for (index = 0; hadDay == NO && index < [words count]; index++)
-	{
-	  tmp = [words objectAtIndex: index];
-
-	  if (findInArray(tdd, 0 ,tmp) != nil)
-	    {
-	      hadDay = YES;
-	    }
-	  else if (findInArray(ndd, 0 ,tmp) != nil)
-	    {
-	      modDay++;
-	      hadDay = YES;
-	    }
-	  else if (findInArray(nndd, 0 ,tmp) != nil)
-	    {
-	      modDay += 2;
-	      hadDay = YES;
-	    }
-	  else if (findInArray(pdd, 0 ,tmp) != nil)
-	    {
-	      modDay--;
-	      hadDay = YES;
-	    }
-	  if (hadDay)
-	    {
-	      hadMonth = YES;
-	      hadYear = YES;
-	      [words removeObjectAtIndex: index];
-	    }
-	}
+        [words addObject:tmp];
+        [scanner scanCharactersFromSet:ws intoString:0];
     }
 
-  /*
-   *	Scan the array for month specifications and remove them.
-   */
-  if (hadMonth == NO)
+    /*
+     *	Scan the array for day specifications and remove them.
+     */
+    if (hadDay == NO)
     {
-      NSArray	*lm = [locale objectForKey: NSMonthNameArray];
-      NSArray	*sm = [locale objectForKey: NSShortMonthNameArray];
+        NSArray   *tdd = [locale objectForKey:NSThisDayDesignations];
+        NSArray   *ndd = [locale objectForKey:NSNextDayDesignations];
+        NSArray   *pdd = [locale objectForKey:NSPriorDayDesignations];
+        NSArray   *nndd = [locale objectForKey:NSNextNextDayDesignations];
 
-      for (index = 0; hadMonth == NO && index < [words count]; index++)
-	{
-	  NSString	*mname;
+        for (index = 0; hadDay == NO && index < [words count]; index++)
+        {
+            tmp = [words objectAtIndex:index];
 
-	  tmp = [words objectAtIndex: index];
-
-	  if ((mname = findInArray(lm, 0, tmp)) != nil)
-	    {
-	      M = [lm indexOfObjectIdenticalTo: mname] + 1;
-	    }
-	  else if ((mname = findInArray(sm, 0, tmp)) != nil)
-	    {
-	      M = [sm indexOfObjectIdenticalTo: mname] + 1;
-	    }
-
-	  if (mname != nil)
-	    {
-	      hadMonth = YES;
-	      [words removeObjectAtIndex: index];
-	    }
-	}
+            if (findInArray(tdd, 0,tmp) != nil)
+            {
+                hadDay = YES;
+            }
+            else if (findInArray(ndd, 0,tmp) != nil)
+            {
+                modDay++;
+                hadDay = YES;
+            }
+            else if (findInArray(nndd, 0,tmp) != nil)
+            {
+                modDay += 2;
+                hadDay = YES;
+            }
+            else if (findInArray(pdd, 0,tmp) != nil)
+            {
+                modDay--;
+                hadDay = YES;
+            }
+            if (hadDay)
+            {
+                hadMonth = YES;
+                hadYear = YES;
+                [words removeObjectAtIndex:index];
+            }
+        }
     }
 
-  /*
-   *	Scan the array for weekday specifications and remove them.
-   */
-  if (hadWeekDay == NO)
+    /*
+     *	Scan the array for month specifications and remove them.
+     */
+    if (hadMonth == NO)
     {
-      NSArray	*lw = [locale objectForKey: NSWeekDayNameArray];
-      NSArray	*sw = [locale objectForKey: NSShortWeekDayNameArray];
+        NSArray   *lm = [locale objectForKey:NSMonthNameArray];
+        NSArray   *sm = [locale objectForKey:NSShortMonthNameArray];
 
-      for (index = 0; hadWeekDay == NO && index < [words count]; index++)
-	{
-	  NSString	*dname;
+        for (index = 0; hadMonth == NO && index < [words count]; index++)
+        {
+            NSString  *mname;
 
-	  tmp = [words objectAtIndex: index];
+            tmp = [words objectAtIndex:index];
 
-	  if ((dname = findInArray(lw, 0, tmp)) != nil)
-	    {
-	      weekDay = [lw indexOfObjectIdenticalTo: dname];
-	    }
-	  else if ((dname = findInArray(sw, 0, tmp)) != nil)
-	    {
-	      weekDay = [sw indexOfObjectIdenticalTo: dname];
-	    }
+            if ((mname = findInArray(lm, 0, tmp)) != nil)
+            {
+                M = [lm indexOfObjectIdenticalTo:mname] + 1;
+            }
+            else if ((mname = findInArray(sm, 0, tmp)) != nil)
+            {
+                M = [sm indexOfObjectIdenticalTo:mname] + 1;
+            }
 
-	  if (dname != nil)
-	    {
-	      hadWeekDay = YES;
-	      [words removeObjectAtIndex: index];
-	    }
-	}
+            if (mname != nil)
+            {
+                hadMonth = YES;
+                [words removeObjectAtIndex:index];
+            }
+        }
     }
 
-  /*
-   *	Scan the array for year month week modifiers and remove them.
-   *	Going by the documentation, these modifiers adjust the date by
-   *	plus or minus a week, month, or year.
-   */
-  ymw = [locale objectForKey: NSYearMonthWeekDesignations];
-  if (ymw != nil && [ymw count] > 0)
+    /*
+     *	Scan the array for weekday specifications and remove them.
+     */
+    if (hadWeekDay == NO)
     {
-      unsigned	c = [ymw count];
-      NSString	*yname = [ymw objectAtIndex: 0];
-      NSString	*mname = c > 1 ? [ymw objectAtIndex: 1] : nil;
-      NSArray	*early = [locale objectForKey: NSEarlierTimeDesignations];
-      NSArray	*later = [locale objectForKey: NSLaterTimeDesignations];
+        NSArray   *lw = [locale objectForKey:NSWeekDayNameArray];
+        NSArray   *sw = [locale objectForKey:NSShortWeekDayNameArray];
 
-      for (index = 0; index < [words count]; index++)
-	{
-	  tmp = [words objectAtIndex: index];
+        for (index = 0; hadWeekDay == NO && index < [words count]; index++)
+        {
+            NSString  *dname;
 
-	  /*
-           *	See if the current word is a year, month, or week.
-	   */
-	  if (findInArray(ymw, 0, tmp))
-	    {
-	      BOOL	hadAdjective = NO;
-	      int	adjective = 0;
-	      NSString	*adj = nil;
+            tmp = [words objectAtIndex:index];
 
-	      /*
-	       *	See if there is a prefix adjective
-	       */
-	      if (index > 0)
-		{
-		  adj = [words objectAtIndex: index - 1];
+            if ((dname = findInArray(lw, 0, tmp)) != nil)
+            {
+                weekDay = [lw indexOfObjectIdenticalTo:dname];
+            }
+            else if ((dname = findInArray(sw, 0, tmp)) != nil)
+            {
+                weekDay = [sw indexOfObjectIdenticalTo:dname];
+            }
 
-		  if (findInArray(early, 0, adj))
-		    {
-		      hadAdjective = YES;
-		      adjective = -1;
-		    }
-		  else if (findInArray(later, 0, adj))
-		    {
-		      hadAdjective = YES;
-		      adjective = 1;
-		    }
-		  if (hadAdjective)
-		    {
-		      [words removeObjectAtIndex: --index];
-		    }
-		}
-	      /*
-	       *	See if there is a prefix adjective
-	       */
-	      if (hadAdjective == NO && index < [words count] - 1)
-		{
-		  NSString	*adj = [words objectAtIndex: index + 1];
-
-		  if (findInArray(early, 0, adj))
-		    {
-		      hadAdjective = YES;
-		      adjective = -1;
-		    }
-		  else if (findInArray(later, 0, adj))
-		    {
-		      hadAdjective = YES;
-		      adjective = 1;
-		    }
-		  if (hadAdjective)
-		    {
-		      [words removeObjectAtIndex: index];
-		    }
-		}
-	      /*
-	       *	Record the adjective information.
-	       */
-	      if (hadAdjective)
-		{
-		  if ([tmp caseInsensitiveCompare: yname] == NSOrderedSame)
-		    {
-		      modYear += adjective;
-		      hadYear = YES;
-		    }
-		  else if (mname != nil
-		    && [tmp caseInsensitiveCompare: mname] == NSOrderedSame)
-		    {
-		      modMonth += adjective;
-		      hadMonth = YES;
-		    }
-		  else
-		    {
-		      if (hadWeekDay)
-			{
-			  modDay += weekDay - dayOfWeek;
-			}
-		      modDay += 7*adjective;
-		      hadDay = YES;
-		      hadMonth = YES;
-		      hadYear = YES;
-		    }
-		}
-	      /*
-	       *	Remove from list of words.
-	       */
-	      [words removeObjectAtIndex: index];
-	    }
-	}
+            if (dname != nil)
+            {
+                hadWeekDay = YES;
+                [words removeObjectAtIndex:index];
+            }
+        }
     }
 
-  /* Scan for hour of the day */
-  if (hadHour == NO)
+    /*
+     *	Scan the array for year month week modifiers and remove them.
+     *	Going by the documentation, these modifiers adjust the date by
+     *	plus or minus a week, month, or year.
+     */
+    ymw = [locale objectForKey:NSYearMonthWeekDesignations];
+    if (ymw != nil && [ymw count] > 0)
     {
-      NSArray	*hours = [locale objectForKey: NSHourNameDesignations];
-      unsigned	hLimit = [hours count];
-      unsigned	hIndex;
+        unsigned c = [ymw count];
+        NSString  *yname = [ymw objectAtIndex:0];
+        NSString  *mname = c > 1 ?[ymw objectAtIndex:1] : nil;
+        NSArray   *early = [locale objectForKey:NSEarlierTimeDesignations];
+        NSArray   *later = [locale objectForKey:NSLaterTimeDesignations];
 
-      for (index = 0; hadHour == NO && index < [words count]; index++)
-	{
-	  tmp = [words objectAtIndex: index];
+        for (index = 0; index < [words count]; index++)
+        {
+            tmp = [words objectAtIndex:index];
 
-	  for (hIndex = 0; hadHour == NO && hIndex < hLimit; hIndex++)
-	    {
-	      NSArray	*names;
+            /*
+             *	See if the current word is a year, month, or week.
+             */
+            if (findInArray(ymw, 0, tmp))
+            {
+                BOOL hadAdjective = NO;
+                int adjective = 0;
+                NSString  *adj = nil;
 
-	      names = [hours objectAtIndex: hIndex];
-	      if (findInArray(names, 1, tmp) != nil)
-		{
-		  h = [[names objectAtIndex: 0] intValue];
-		  hadHour = YES;
-		  hadMinute = YES;
-		  hadSecond = YES;
-		}
-	    }
-	}
+                /*
+                 *	See if there is a prefix adjective
+                 */
+                if (index > 0)
+                {
+                    adj = [words objectAtIndex:index - 1];
+
+                    if (findInArray(early, 0, adj))
+                    {
+                        hadAdjective = YES;
+                        adjective = -1;
+                    }
+                    else if (findInArray(later, 0, adj))
+                    {
+                        hadAdjective = YES;
+                        adjective = 1;
+                    }
+                    if (hadAdjective)
+                    {
+                        [words removeObjectAtIndex:--index];
+                    }
+                }
+                /*
+                 *	See if there is a prefix adjective
+                 */
+                if (hadAdjective == NO && index < [words count] - 1)
+                {
+                    adj = [words objectAtIndex:index + 1];
+
+                    if (findInArray(early, 0, adj))
+                    {
+                        hadAdjective = YES;
+                        adjective = -1;
+                    }
+                    else if (findInArray(later, 0, adj))
+                    {
+                        hadAdjective = YES;
+                        adjective = 1;
+                    }
+                    if (hadAdjective)
+                    {
+                        [words removeObjectAtIndex:index];
+                    }
+                }
+                /*
+                 *	Record the adjective information.
+                 */
+                if (hadAdjective)
+                {
+                    if ([tmp caseInsensitiveCompare:yname] == NSOrderedSame)
+                    {
+                        modYear += adjective;
+                        hadYear = YES;
+                    }
+                    else if (mname != nil
+                             && [tmp caseInsensitiveCompare:mname] == NSOrderedSame)
+                    {
+                        modMonth += adjective;
+                        hadMonth = YES;
+                    }
+                    else
+                    {
+                        if (hadWeekDay)
+                        {
+                            modDay += weekDay - dayOfWeek;
+                        }
+                        modDay += 7*adjective;
+                        hadDay = YES;
+                        hadMonth = YES;
+                        hadYear = YES;
+                    }
+                }
+                /*
+                 *	Remove from list of words.
+                 */
+                [words removeObjectAtIndex:index];
+            }
+        }
     }
 
-  /*
-   *	Now re-scan the string for numeric information.
-   */
-
-  dto = [locale objectForKey: NSDateTimeOrdering];
-  if (dto == nil)
+    /* Scan for hour of the day */
+    if (hadHour == NO)
     {
-      if (debug)
-	{
-	  NSLog(@"no NSDateTimeOrdering - default to DMYH.");
-	}
-      dto = @"DMYH";
-    }
-  length = [dto length];
-  if (length > 4)
-    {
-      if (debug)
-	{
-	  NSLog(@"too many characters in NSDateTimeOrdering - truncating.");
-	}
-      length = 4;
-    }
+        NSArray   *hours = [locale objectForKey:NSHourNameDesignations];
+        unsigned hLimit = [hours count];
+        unsigned hIndex;
 
-  dtoIndex = 0;
-  scanner = [NSScanner scannerWithString: string];
-  [scanner setCaseSensitive: NO];
-  [scanner scanUpToCharactersFromSet: digits intoString: 0];
-  while ([scanner scanCharactersFromSet: digits intoString: &tmp] == YES)
-    {
-      int	num = [tmp intValue];
+        for (index = 0; hadHour == NO && index < [words count]; index++)
+        {
+            tmp = [words objectAtIndex:index];
 
-      if ([scanner scanUpToCharactersFromSet: digits intoString: &tmp] == NO)
-	{
-	  tmp = nil;
-	}
-      /*
-       *	Numbers separated by colons are a time specification.
-       */
-      if (tmp && ([tmp characterAtIndex: 0] == (unichar)':'))
-	{
-	  BOOL	done = NO;
-	  BOOL	checkForAMPM = NO;
+            for (hIndex = 0; hadHour == NO && hIndex < hLimit; hIndex++)
+            {
+                NSArray   *names;
 
-	  do
-	    {
-	      if (hadHour == NO)
-		{
-		  if (num > 23)
-		    {
-		      if (debug)
-			{
-			  NSLog(@"hour (%d) too large - ignored.", num);
-			}
-		      else
-			{
-			  return nil;
-			}
-		    }
-		  else
-		    {
-		      h = num;
-		      m = 0;
-		      s = 0;
-		      hadHour = YES;
-		      checkForAMPM = YES;
-		    }
-		}
-	      else if (hadMinute == NO)
-		{
-		  if (num > 59)
-		    {
-		      if (debug)
-			{
-			  NSLog(@"minute (%d) too large - ignored.", num);
-			}
-		      else
-			{
-			  return nil;
-			}
-		    }
-		  else
-		    {
-		      m = num;
-		      s = 0;
-		      hadMinute = YES;
-		    }
-		}
-	      else if (hadSecond == NO)
-		{
-		  if (num > 59)
-		    {
-		      if (debug)
-			{
-			  NSLog(@"second (%d) too large - ignored.", num);
-			}
-		      else
-			{
-			  return nil;
-			}
-		    }
-		  else
-		    {
-		      s = num;
-		      hadSecond = YES;
-		    }
-		}
-	      else
-		{
-		  if (debug)
-		    {
-		      NSLog(@"odd time spec - excess numbers ignored.");
-		    }
-		}
-
-	      done = YES;
-	      if (tmp && ([tmp characterAtIndex: 0] == (unichar)':'))
-		{
-		  if ([scanner scanCharactersFromSet: digits intoString: &tmp])
-		    {
-		      num = [tmp intValue];
-		      done = NO;
-		      if ([scanner scanString: @":" intoString: &tmp] == NO)
-			{
-			  tmp = nil;
-			}
-		    }
-		}
-	    }
-	  while (done == NO);
-
-	  if (checkForAMPM)
-	    {
-	      NSArray	*ampm;
-
-	      ampm = [locale objectForKey: NSAMPMDesignation];
-	      if ([scanner scanString: [ampm objectAtIndex: 0]
-			   intoString: NULL])
-		{
-		  if (h == 12) // 12 AM means midnight
-		    h = 0;
-		}
-	      else if ([scanner scanString: [ampm objectAtIndex: 1]
-				intoString: NULL])
-		{
-		  if (h < 12) // if PM add 12 to any hour less than 12
-		    h += 12;
-		}	  
-	    }
-	}
-      else
-	{
-	  BOOL	mustSkip = YES;
-
-	  while ((dtoIndex < [dto length]) && (mustSkip == YES))
-	    {
-	      switch ([dto characterAtIndex: dtoIndex])
-		{
-		  case 'D':
-		    if (hadDay)
-		      dtoIndex++;
-		    else
-		      mustSkip = NO;
-		    break;
-
-		  case 'M':
-		    if (hadMonth)
-		      dtoIndex++;
-		    else
-		      mustSkip = NO;
-		    break;
-
-		  case 'Y':
-		    if (hadYear)
-		      dtoIndex++;
-		    else
-		      mustSkip = NO;
-		    break;
-
-		  case 'H':
-		    if (hadHour)
-		      dtoIndex++;
-		    else
-		      mustSkip = NO;
-		    break;
-
-		  default:
-		    if (debug)
-		      {
-			NSLog(@"odd char (unicode %d) in NSDateTimeOrdering.",
-			  [dto characterAtIndex: dtoIndex]);
-		      }
-		    dtoIndex++;
-		    break;
-		}
-	    }
-	  if (dtoIndex >= [dto length])
-	    {
-	      if (debug)
-		{
-		  NSLog(@"odd date specification - excess numbers ignored.");
-		}
-	      break;
-	    }
-	  switch ([dto characterAtIndex: dtoIndex])
-	    {
-	      case 'D':
-		if (num < 1)
-		  {
-		    if (debug)
-		      {
-			NSLog(@"day (0) too small - ignored.");
-		      }
-		    else
-		      {
-			return nil;
-		      }
-		  }
-		else if (num > 31)
-		  {
-		    if (debug)
-		      {
-			NSLog(@"day (%d) too large - ignored.", num);
-		      }
-		    else
-		      {
-			return nil;
-		      }
-		  }
-		else
-		  {
-		    D = num;
-		    hadDay = YES;
-		  }
-		break;
-	      case 'M':
-		if (num < 1)
-		  {
-		    if (debug)
-		      {
-			NSLog(@"month (0) too small - ignored.");
-		      }
-		    else
-		      {
-			return nil;
-		      }
-		  }
-		else if (num > 12)
-		  {
-		    if (debug)
-		      {
-			NSLog(@"month (%d) too large - ignored.", num);
-		      }
-		    else
-		      {
-			return nil;
-		      }
-		  }
-		else
-		  {
-		    M = num;
-		    hadMonth = YES;
-		  }
-		break;
-	      case 'Y':
-		if (num < 100)
-		  {
-		    if (num < 70)
-		      {
-			Y = num + 2000;
-		      }
-		    else
-		      {
-			Y = num + 1900;
-		      }
-		    if (debug)
-		      {
-			NSLog(@"year (%d) adjusted to %d.", num, Y);
-		      }
-		  }
-		else
-		  {
-		    Y = num;
-		  }
-		hadYear = YES;
-		break;
-	      case 'H':
-		{
-		  BOOL	shouldIgnore = NO;
-
-		  /*
-		   *	Check the next text to see if it is an am/pm
-		   *	designation.
-		   */
-		  if (tmp)
-		    {
-		      NSArray	*ampm;
-		      NSString	*mod;
-
-		      ampm = [locale objectForKey: NSAMPMDesignation];
-		      mod = findInArray(ampm, 0, tmp);
-		      if (mod)
-			{
-			  if (num > 11)
-			    {
-			      if (debug)
-				{
-				  NSLog(@"hour (%d) too large - ignored.", num);
-				}
-			      else
-				{
-				  return nil;
-				}
-			      shouldIgnore = YES;
-			    }
-			  else if (mod == [ampm objectAtIndex: 1])
-			    {
-			      num += 12;
-			    }
-			}
-		    }
-		  if (shouldIgnore == NO)
-		    {
-		      if (num > 23)
-			{
-			  if (debug)
-			    {
-			      NSLog(@"hour (%d) too large - ignored.", num);
-			    }
-			  else
-			    {
-			      return nil;
-			    }
-			}
-		      else
-			{
-			  hadHour = YES;
-			  h = num;
-			}
-		    }
-		  break;
-		}
-	      default:
-		if (debug)
-		  {
-		    NSLog(@"unexpected char (unicode%d) in NSDateTimeOrdering.",
-		      [dto characterAtIndex: dtoIndex]);
-		  }
-		break;
-	    }
-	}
+                names = [hours objectAtIndex:hIndex];
+                if (findInArray(names, 1, tmp) != nil)
+                {
+                    h = [[names objectAtIndex:0] intValue];
+                    hadHour = YES;
+                    hadMinute = YES;
+                    hadSecond = YES;
+                }
+            }
+        }
     }
 
-  /*
-   *	If we had no date or time information - we give up, otherwise
-   *	we can use reasonable defaults for any missing info.
-   *	Missing date => today
-   *	Missing time => 12: 00
-   *	If we had a week/month/year modifier without a day, we assume today.
-   *	If we had a day name without any more day detail - adjust to that
-   *	day this week.
-   */
-  if (hadDay == NO && hadWeekDay == YES)
+    /*
+     *	Now re-scan the string for numeric information.
+     */
+
+    dto = [locale objectForKey:NSDateTimeOrdering];
+    if (dto == nil)
     {
-      modDay += weekDay - dayOfWeek;
-      hadDay = YES;
+        if (debug)
+        {
+            NSLog(@"no NSDateTimeOrdering - default to DMYH.");
+        }
+        dto = @"DMYH";
     }
-  if (hadDay == NO && hadHour == NO)
+    length = [dto length];
+    if (length > 4)
     {
-      if (modDay == NO && modMonth == NO && modYear == NO)
-	{
-	  return nil;
-	}
+        if (debug)
+        {
+            NSLog(@"too many characters in NSDateTimeOrdering - truncating.");
+        }
+        length = 4;
     }
 
-  /*
-   *	Build a calendar date we can adjust easily.
-   */
-  theDate = [calendarClass dateWithYear: Y
-				   month: M
-				     day: D
-				    hour: h
-				  minute: m
-				  second: s
-				timeZone: [NSTimeZone defaultTimeZone]];
+    dtoIndex = 0;
+    scanner = [NSScanner scannerWithString:string];
+    [scanner setCaseSensitive:NO];
+    [scanner scanUpToCharactersFromSet:digits intoString:0];
+    while ([scanner scanCharactersFromSet:digits intoString:&tmp] == YES)
+    {
+        int num = [tmp intValue];
 
-  /*
-   *	Adjust the date by year month or days if necessary.
-   */
-  if (modYear || modMonth || modDay)
-    {
-      theDate = [theDate dateByAddingYears: modYear
-				    months: modMonth
-				      days: modDay
-				     hours: 0
-				   minutes: 0
-				   seconds: 0];
+        if ([scanner scanUpToCharactersFromSet:digits intoString:&tmp] == NO)
+        {
+            tmp = nil;
+        }
+        /*
+         *	Numbers separated by colons are a time specification.
+         */
+        if (tmp && ([tmp characterAtIndex:0] == (unichar)':'))
+        {
+            BOOL done = NO;
+            BOOL checkForAMPM = NO;
+
+            do
+            {
+                if (hadHour == NO)
+                {
+                    if (num > 23)
+                    {
+                        if (debug)
+                        {
+                            NSLog(@"hour (%d) too large - ignored.", num);
+                        }
+                        else
+                        {
+                            return nil;
+                        }
+                    }
+                    else
+                    {
+                        h = num;
+                        m = 0;
+                        s = 0;
+                        hadHour = YES;
+                        checkForAMPM = YES;
+                    }
+                }
+                else if (hadMinute == NO)
+                {
+                    if (num > 59)
+                    {
+                        if (debug)
+                        {
+                            NSLog(@"minute (%d) too large - ignored.", num);
+                        }
+                        else
+                        {
+                            return nil;
+                        }
+                    }
+                    else
+                    {
+                        m = num;
+                        s = 0;
+                        hadMinute = YES;
+                    }
+                }
+                else if (hadSecond == NO)
+                {
+                    if (num > 59)
+                    {
+                        if (debug)
+                        {
+                            NSLog(@"second (%d) too large - ignored.", num);
+                        }
+                        else
+                        {
+                            return nil;
+                        }
+                    }
+                    else
+                    {
+                        s = num;
+                        hadSecond = YES;
+                    }
+                }
+                else
+                {
+                    if (debug)
+                    {
+                        NSLog(@"odd time spec - excess numbers ignored.");
+                    }
+                }
+
+                done = YES;
+                if (tmp && ([tmp characterAtIndex:0] == (unichar)':'))
+                {
+                    if ([scanner scanCharactersFromSet:digits intoString:&tmp])
+                    {
+                        num = [tmp intValue];
+                        done = NO;
+                        if ([scanner scanString:@":" intoString:&tmp] == NO)
+                        {
+                            tmp = nil;
+                        }
+                    }
+                }
+            }
+            while (done == NO);
+
+            if (checkForAMPM)
+            {
+                NSArray   *ampm;
+
+                ampm = [locale objectForKey:NSAMPMDesignation];
+                if ([scanner scanString:[ampm objectAtIndex:0]
+                     intoString:NULL])
+                {
+                    if (h == 12) { // 12 AM means midnight
+                        h = 0;
+                    }
+                }
+                else if ([scanner scanString:[ampm objectAtIndex:1]
+                          intoString:NULL])
+                {
+                    if (h < 12) { // if PM add 12 to any hour less than 12
+                        h += 12;
+                    }
+                }
+            }
+        }
+        else
+        {
+            BOOL mustSkip = YES;
+
+            while ((dtoIndex < [dto length]) && (mustSkip == YES))
+            {
+                switch ([dto characterAtIndex:dtoIndex])
+                {
+                case 'D':
+                    if (hadDay) {
+                        dtoIndex++;
+                    }
+                    else{
+                        mustSkip = NO;
+                    }
+                    break;
+
+                case 'M':
+                    if (hadMonth) {
+                        dtoIndex++;
+                    }
+                    else{
+                        mustSkip = NO;
+                    }
+                    break;
+
+                case 'Y':
+                    if (hadYear) {
+                        dtoIndex++;
+                    }
+                    else{
+                        mustSkip = NO;
+                    }
+                    break;
+
+                case 'H':
+                    if (hadHour) {
+                        dtoIndex++;
+                    }
+                    else{
+                        mustSkip = NO;
+                    }
+                    break;
+
+                default:
+                    if (debug)
+                    {
+                        NSLog(@"odd char (unicode %d) in NSDateTimeOrdering.",
+                              [dto characterAtIndex:dtoIndex]);
+                    }
+                    dtoIndex++;
+                    break;
+                }
+            }
+            if (dtoIndex >= [dto length])
+            {
+                if (debug)
+                {
+                    NSLog(@"odd date specification - excess numbers ignored.");
+                }
+                break;
+            }
+            switch ([dto characterAtIndex:dtoIndex])
+            {
+            case 'D':
+                if (num < 1)
+                {
+                    if (debug)
+                    {
+                        NSLog(@"day (0) too small - ignored.");
+                    }
+                    else
+                    {
+                        return nil;
+                    }
+                }
+                else if (num > 31)
+                {
+                    if (debug)
+                    {
+                        NSLog(@"day (%d) too large - ignored.", num);
+                    }
+                    else
+                    {
+                        return nil;
+                    }
+                }
+                else
+                {
+                    D = num;
+                    hadDay = YES;
+                }
+                break;
+            case 'M':
+                if (num < 1)
+                {
+                    if (debug)
+                    {
+                        NSLog(@"month (0) too small - ignored.");
+                    }
+                    else
+                    {
+                        return nil;
+                    }
+                }
+                else if (num > 12)
+                {
+                    if (debug)
+                    {
+                        NSLog(@"month (%d) too large - ignored.", num);
+                    }
+                    else
+                    {
+                        return nil;
+                    }
+                }
+                else
+                {
+                    M = num;
+                    hadMonth = YES;
+                }
+                break;
+            case 'Y':
+                if (num < 100)
+                {
+                    if (num < 70)
+                    {
+                        Y = num + 2000;
+                    }
+                    else
+                    {
+                        Y = num + 1900;
+                    }
+                    if (debug)
+                    {
+                        NSLog(@"year (%d) adjusted to %d.", num, Y);
+                    }
+                }
+                else
+                {
+                    Y = num;
+                }
+                hadYear = YES;
+                break;
+            case 'H':
+            {
+                BOOL shouldIgnore = NO;
+
+                /*
+                 *	Check the next text to see if it is an am/pm
+                 *	designation.
+                 */
+                if (tmp)
+                {
+                    NSArray   *ampm;
+                    NSString  *mod;
+
+                    ampm = [locale objectForKey:NSAMPMDesignation];
+                    mod = findInArray(ampm, 0, tmp);
+                    if (mod)
+                    {
+                        if (num > 11)
+                        {
+                            if (debug)
+                            {
+                                NSLog(@"hour (%d) too large - ignored.", num);
+                            }
+                            else
+                            {
+                                return nil;
+                            }
+                            shouldIgnore = YES;
+                        }
+                        else if (mod == [ampm objectAtIndex:1])
+                        {
+                            num += 12;
+                        }
+                    }
+                }
+                if (shouldIgnore == NO)
+                {
+                    if (num > 23)
+                    {
+                        if (debug)
+                        {
+                            NSLog(@"hour (%d) too large - ignored.", num);
+                        }
+                        else
+                        {
+                            return nil;
+                        }
+                    }
+                    else
+                    {
+                        hadHour = YES;
+                        h = num;
+                    }
+                }
+                break;
+            }
+            default:
+                if (debug)
+                {
+                    NSLog(@"unexpected char (unicode%d) in NSDateTimeOrdering.",
+                          [dto characterAtIndex:dtoIndex]);
+                }
+                break;
+            }
+        }
     }
-  if (hadWeekDay && [theDate dayOfWeek] != weekDay)
+
+    /*
+     *	If we had no date or time information - we give up, otherwise
+     *	we can use reasonable defaults for any missing info.
+     *	Missing date => today
+     *	Missing time => 12: 00
+     *	If we had a week/month/year modifier without a day, we assume today.
+     *	If we had a day name without any more day detail - adjust to that
+     *	day this week.
+     */
+    if (hadDay == NO && hadWeekDay == YES)
     {
-      if (debug)
-	{
-	  NSLog(@"Date resulted in wrong day of week.");
-	}
-      return nil;
+        modDay += weekDay - dayOfWeek;
+        hadDay = YES;
     }
-  if (theDate == nil)
+    if (hadDay == NO && hadHour == NO)
     {
-      return theDate;
+        if (modDay == NO && modMonth == NO && modYear == NO)
+        {
+            return nil;
+        }
     }
-  else
+
+    /*
+     *	Build a calendar date we can adjust easily.
+     */
+    theDate = [calendarClass dateWithYear:Y
+               month:M
+               day:D
+               hour:h
+               minute:m
+               second:s
+               timeZone:[NSTimeZone defaultTimeZone]];
+
+    /*
+     *	Adjust the date by year month or days if necessary.
+     */
+    if (modYear || modMonth || modDay)
     {
-      return [self dateWithTimeIntervalSinceReferenceDate:
-	otherTime(theDate)];
+        theDate = [theDate dateByAddingYears:modYear
+                   months:modMonth
+                   days:modDay
+                   hours:0
+                   minutes:0
+                   seconds:0];
+    }
+    if (hadWeekDay && [theDate dayOfWeek] != weekDay)
+    {
+        if (debug)
+        {
+            NSLog(@"Date resulted in wrong day of week.");
+        }
+        return nil;
+    }
+    if (theDate == nil)
+    {
+        return theDate;
+    }
+    else
+    {
+        return [self dateWithTimeIntervalSinceReferenceDate:
+                otherTime(theDate)];
     }
 }
 
@@ -943,124 +960,138 @@ otherTime(NSDate* other)
  * by the string using the ISO standard format YYYY-MM-DD HH:MM:SS +/-HHHMM
  * (all the fields of which must be present).
  */
-+ (id) dateWithString: (NSString*)description
++ (id)dateWithString:(NSString*)description
 {
-  return AUTORELEASE([[self alloc] initWithString: description]);
+    return AUTORELEASE([[self alloc] initWithString:description]);
 }
 
 /**
  * Returns an autoreleased instance with the offset from the current
  * date/time given by seconds (which may be fractional).
  */
-+ (id) dateWithTimeIntervalSinceNow: (NSTimeInterval)seconds
++ (id)dateWithTimeIntervalSinceNow:(NSTimeInterval)seconds
 {
-  return AUTORELEASE([[self alloc] initWithTimeIntervalSinceNow: seconds]);
+    return AUTORELEASE([[self alloc] initWithTimeIntervalSinceNow:seconds]);
 }
 
 /**
  * Returns an autoreleased instance with the offset from the unix system
  * reference date of 1 January 1970, GMT.
  */
-+ (id) dateWithTimeIntervalSince1970: (NSTimeInterval)seconds
++ (id)dateWithTimeIntervalSince1970:(NSTimeInterval)seconds
 {
-  return AUTORELEASE([[self alloc] initWithTimeIntervalSinceReferenceDate:
-		       -NSTimeIntervalSince1970 + seconds]);
+    return AUTORELEASE([[self alloc] initWithTimeIntervalSinceReferenceDate:
+                        -NSTimeIntervalSince1970 + seconds]);
 }
 
 /**
  * Returns an autoreleased instance with the offset from the OpenStep
  * reference date of 1 January 2001, GMT.
  */
-+ (id) dateWithTimeIntervalSinceReferenceDate: (NSTimeInterval)seconds
++ (id)dateWithTimeIntervalSinceReferenceDate:(NSTimeInterval)seconds
 {
-  return AUTORELEASE([[self alloc] initWithTimeIntervalSinceReferenceDate:
-    seconds]);
+    return AUTORELEASE([[self alloc] initWithTimeIntervalSinceReferenceDate:
+                        seconds]);
+}
+
++ (id)dateWithTimeInterval:(NSTimeInterval)t sinceDate:(NSDate *)otherDate {
+    NSTimeInterval diff = [otherDate timeIntervalSinceReferenceDate];
+    return AUTORELEASE([[self alloc] initWithTimeIntervalSinceReferenceDate:diff+t]);
 }
 
 /**
  * Returns an autoreleased instance with th date/time set in the far
  * future.
  */
-+ (id) distantFuture
++ (id)distantFuture
 {
-  if (_distantFuture == nil)
-    return [GSDateFuture allocWithZone: 0];
-  return _distantFuture;
+    if (_distantFuture == nil) {
+        return [GSDateFuture allocWithZone:0];
+    }
+    return _distantFuture;
 }
 
 /**
  * Returns an autoreleased instance with th date/time set in the far
  * past.
  */
-+ (id) distantPast
++ (id)distantPast
 {
-  if (_distantPast == nil)
-    return [GSDatePast allocWithZone: 0];
-  return _distantPast;
-}
-
-- (id) copyWithZone: (NSZone*)zone
-{
-  if (NSShouldRetainWithZone(self, zone))
-    return RETAIN(self);
-  else
-    return NSCopyObject(self, 0, zone);
-}
-
-- (Class) classForCoder
-{
-  return abstractClass;
-}
-
-- (id) replacementObjectForPortCoder: (NSPortCoder*)aCoder
-{
-  if ([aCoder isByref] == NO)
-    return self;
-  return [super replacementObjectForPortCoder: aCoder];
-}
-
-- (void) encodeWithCoder: (NSCoder*)coder
-{
-  NSTimeInterval	interval = [self timeIntervalSinceReferenceDate];
-
-  if ([coder allowsKeyedCoding])
-    [coder encodeDouble: interval forKey: @"NS.time"];
-  else
-    [coder encodeValueOfObjCType: @encode(NSTimeInterval) at: &interval];
-}
-
-- (id) initWithCoder: (NSCoder*)coder
-{
-  NSTimeInterval	interval;
-  id			o;
-
-  if ([coder allowsKeyedCoding])
-    interval = [coder decodeDoubleForKey: @"NS.time"];
-  else
-    [coder decodeValueOfObjCType: @encode(NSTimeInterval) at: &interval];
-  if (interval == DISTANT_PAST)
-    {
-      o = RETAIN([abstractClass distantPast]);
+    if (_distantPast == nil) {
+        return [GSDatePast allocWithZone:0];
     }
-  else if (interval == DISTANT_FUTURE)
-    {
-      o = RETAIN([abstractClass distantFuture]);
+    return _distantPast;
+}
+
+- (id)copyWithZone:(NSZone*)zone
+{
+    if (NSShouldRetainWithZone(self, zone)) {
+        return RETAIN(self);
     }
-  else
-    {
-      o = [concreteClass allocWithZone: NSDefaultMallocZone()];
-      o = [o initWithTimeIntervalSinceReferenceDate: interval];
+    else{
+        return NSCopyObject(self, 0, zone);
     }
-  DESTROY(self);
-  return o;
+}
+
+- (Class)classForCoder
+{
+    return abstractClass;
+}
+
+- (id)replacementObjectForPortCoder:(NSPortCoder*)aCoder
+{
+    if ([aCoder isByref] == NO) {
+        return self;
+    }
+    return [super replacementObjectForPortCoder:aCoder];
+}
+
+- (void)encodeWithCoder:(NSCoder*)coder
+{
+    NSTimeInterval interval = [self timeIntervalSinceReferenceDate];
+
+    if ([coder allowsKeyedCoding]) {
+        [coder encodeDouble:interval forKey:@"NS.time"];
+    }
+    else{
+        [coder encodeValueOfObjCType:@encode(NSTimeInterval) at:&interval];
+    }
+}
+
+- (id)initWithCoder:(NSCoder*)coder
+{
+    NSTimeInterval interval;
+    id o;
+
+    if ([coder allowsKeyedCoding]) {
+        interval = [coder decodeDoubleForKey:@"NS.time"];
+    }
+    else{
+        [coder decodeValueOfObjCType:@encode(NSTimeInterval) at:&interval];
+    }
+    if (interval == DISTANT_PAST)
+    {
+        o = RETAIN([abstractClass distantPast]);
+    }
+    else if (interval == DISTANT_FUTURE)
+    {
+        o = RETAIN([abstractClass distantFuture]);
+    }
+    else
+    {
+        o = [concreteClass allocWithZone:NSDefaultMallocZone()];
+        o = [o initWithTimeIntervalSinceReferenceDate:interval];
+    }
+    DESTROY(self);
+    return o;
 }
 
 /**
  * Returns an instance initialised with the current date/time.
  */
-- (id) init
+- (id)init
 {
-  return [self initWithTimeIntervalSinceReferenceDate: GSTimeNow()];
+    return [self initWithTimeIntervalSinceReferenceDate:GSTimeNow()];
 }
 
 /**
@@ -1068,70 +1099,70 @@ otherTime(NSDate* other)
  * by the string using the ISO standard format YYYY-MM-DD HH:MM:SS +/-HHHMM
  * (all the fields of which must be present).
  */
-- (id) initWithString: (NSString*)description
+- (id)initWithString:(NSString*)description
 {
-  // Easiest to just have NSCalendarDate do the work for us
-  NSCalendarDate	*d = [calendarClass alloc];
+    // Easiest to just have NSCalendarDate do the work for us
+    NSCalendarDate    *d = [calendarClass alloc];
 
-  d = [d initWithString: description];
-  if (d == nil)
+    d = [d initWithString:description];
+    if (d == nil)
     {
-      DESTROY(self);
-      return nil;
+        DESTROY(self);
+        return nil;
     }
-  else
+    else
     {
-      self = [self initWithTimeIntervalSinceReferenceDate: otherTime(d)];
-      RELEASE(d);
-      return self;
+        self = [self initWithTimeIntervalSinceReferenceDate:otherTime(d)];
+        RELEASE(d);
+        return self;
     }
 }
 
 /**
  * Returns an instance with the given offset from anotherDate.
  */
-- (id) initWithTimeInterval: (NSTimeInterval)secsToBeAdded
-		  sinceDate: (NSDate*)anotherDate
+- (id)initWithTimeInterval:(NSTimeInterval)secsToBeAdded
+    sinceDate:(NSDate*)anotherDate
 {
-  if (anotherDate == nil)
+    if (anotherDate == nil)
     {
-      NSLog(@"initWithTimeInterval:sinceDate: given nil date");
-      DESTROY(self);
-      return nil;
+        NSLog(@"initWithTimeInterval:sinceDate: given nil date");
+        DESTROY(self);
+        return nil;
     }
-  // Get the other date's time, add the secs and init thyself
-  return [self initWithTimeIntervalSinceReferenceDate:
-    otherTime(anotherDate) + secsToBeAdded];
+    // Get the other date's time, add the secs and init thyself
+    return [self initWithTimeIntervalSinceReferenceDate:
+            otherTime(anotherDate) + secsToBeAdded];
 }
 
 /**
  * Returns an instance with the offset from the current date/time.
  */
-- (id) initWithTimeIntervalSinceNow: (NSTimeInterval)secsToBeAdded
+- (id)initWithTimeIntervalSinceNow:(NSTimeInterval)secsToBeAdded
 {
-  // Get the current time, add the secs and init thyself
-  return [self initWithTimeIntervalSinceReferenceDate:
-    GSTimeNow() + secsToBeAdded];
+    // Get the current time, add the secs and init thyself
+    return [self initWithTimeIntervalSinceReferenceDate:
+            GSTimeNow() + secsToBeAdded];
 }
 
 /**
  * Returns an instance with the offset from the unix system
  * reference date of 1 January 1970, GMT.
  */
-- (id) initWithTimeIntervalSince1970: (NSTimeInterval)seconds
+- (id)initWithTimeIntervalSince1970:(NSTimeInterval)seconds
 {
-  return [self initWithTimeIntervalSinceReferenceDate:
-    -NSTimeIntervalSince1970 + seconds];
+    return [self initWithTimeIntervalSinceReferenceDate:
+            -NSTimeIntervalSince1970 + seconds];
 }
 
 /** <init />
  * Returns an instance with the given offset from the OpenStep
  * reference date of 1 January 2001, GMT.
  */
-- (id) initWithTimeIntervalSinceReferenceDate: (NSTimeInterval)secs
+- (id)initWithTimeIntervalSinceReferenceDate:(NSTimeInterval)secs
 {
-  [self subclassResponsibility: _cmd];
-  return self;
+    [self subclassResponsibility:_cmd];
+    return self;
 }
 
 /**
@@ -1139,90 +1170,93 @@ otherTime(NSDate* other)
  * date/time value is the same as that of the receiver, and which uses
  * the formatString and timeZone specified.
  */
-- (NSCalendarDate *) dateWithCalendarFormat: (NSString*)formatString
-				   timeZone: (NSTimeZone*)timeZone
+- (NSCalendarDate *)dateWithCalendarFormat:(NSString*)formatString
+    timeZone:(NSTimeZone*)timeZone
 {
-  NSCalendarDate *d = [calendarClass alloc];
-  d = [d initWithTimeIntervalSinceReferenceDate: otherTime(self)];
-  [d setCalendarFormat: formatString];
-  [d setTimeZone: timeZone];
-  return AUTORELEASE(d);
+    NSCalendarDate *d = [calendarClass alloc];
+    d = [d initWithTimeIntervalSinceReferenceDate:otherTime(self)];
+    [d setCalendarFormat:formatString];
+    [d setTimeZone:timeZone];
+    return AUTORELEASE(d);
 }
 
 /**
  * Returns a string representation of the receiver formatted according
  * to the default format string, time zone, and locale.
  */
-- (NSString*) description
+- (NSString*)description
 {
-  // Easiest to just have NSCalendarDate do the work for us
-  NSString *s;
-  NSCalendarDate *d = [calendarClass alloc];
-  d = [d initWithTimeIntervalSinceReferenceDate: otherTime(self)];
-  s = [[d description] retain];
-  RELEASE(d);
-  return [s autorelease];
+    // Easiest to just have NSCalendarDate do the work for us
+    NSString *s;
+    NSCalendarDate *d = [calendarClass alloc];
+    d = [d initWithTimeIntervalSinceReferenceDate:otherTime(self)];
+    s = [[d description] retain];
+    RELEASE(d);
+    return [s autorelease];
 }
 
 /**
  * Returns a string representation of the receiver formatted according
  * to the specified format string, time zone, and locale.
  */
-- (NSString*) descriptionWithCalendarFormat: (NSString*)format
-				   timeZone: (NSTimeZone*)aTimeZone
-				     locale: (NSDictionary*)l
+- (NSString*)descriptionWithCalendarFormat:(NSString*)format
+    timeZone:(NSTimeZone*)aTimeZone
+    locale:(NSDictionary*)l
 {
-  // Easiest to just have NSCalendarDate do the work for us
-  NSString *s;
-  NSCalendarDate *d = [calendarClass alloc];
-  id f;
+    // Easiest to just have NSCalendarDate do the work for us
+    NSString *s;
+    NSCalendarDate *d = [calendarClass alloc];
+    id f;
 
-  d = [d initWithTimeIntervalSinceReferenceDate: otherTime(self)];
-  if (!format)
-    f = [d calendarFormat];
-  else
-    f = format;
-  if (aTimeZone)
-    [d setTimeZone: aTimeZone];
+    d = [d initWithTimeIntervalSinceReferenceDate:otherTime(self)];
+    if (!format) {
+        f = [d calendarFormat];
+    }
+    else{
+        f = format;
+    }
+    if (aTimeZone) {
+        [d setTimeZone:aTimeZone];
+    }
 
-  s = [[d descriptionWithCalendarFormat: f locale: l] retain];
-  RELEASE(d);
-  return [s autorelease];
+    s = [[d descriptionWithCalendarFormat:f locale:l] retain];
+    RELEASE(d);
+    return [s autorelease];
 }
 
 /**
  * Returns a string representation of the receiver formatted according
  * to the default format string and time zone, but using the given locale.
  */
-- (NSString *) descriptionWithLocale: (NSDictionary *)locale
+- (NSString *)descriptionWithLocale:(NSDictionary *)locale
 {
-  // Easiest to just have NSCalendarDate do the work for us
-  NSString *s;
-  NSCalendarDate *d = [calendarClass alloc];
-  d = [d initWithTimeIntervalSinceReferenceDate: otherTime(self)];
-  s = [[d descriptionWithLocale: locale] retain];
-  RELEASE(d);
-  return [s autorelease];
+    // Easiest to just have NSCalendarDate do the work for us
+    NSString *s;
+    NSCalendarDate *d = [calendarClass alloc];
+    d = [d initWithTimeIntervalSinceReferenceDate:otherTime(self)];
+    s = [[d descriptionWithLocale:locale] retain];
+    RELEASE(d);
+    return [s autorelease];
 }
 
 /**
  * Returns an autoreleased NSDate instance whose value if offset from
  * that of the receiver by seconds.
  */
-- (id) addTimeInterval: (NSTimeInterval)seconds
+- (id)addTimeInterval:(NSTimeInterval)seconds
 {
-  /* xxx We need to check for overflow? */
-  return [[self class] dateWithTimeIntervalSinceReferenceDate:
-    otherTime(self) + seconds];
+    /* xxx We need to check for overflow? */
+    return [[self class] dateWithTimeIntervalSinceReferenceDate:
+            otherTime(self) + seconds];
 }
 
 /**
  * Returns the time interval between the receivers value and the
  * unix system reference date of 1 January 1970, GMT.
  */
-- (NSTimeInterval) timeIntervalSince1970
+- (NSTimeInterval)timeIntervalSince1970
 {
-  return otherTime(self) + NSTimeIntervalSince1970;
+    return otherTime(self) + NSTimeIntervalSince1970;
 }
 
 /**
@@ -1230,14 +1264,14 @@ otherTime(NSDate* other)
  * otherDate argument.  If otherDate is earlier than the receiver, the
  * returned value will be positive, if it is later it will be negative.
  */
-- (NSTimeInterval) timeIntervalSinceDate: (NSDate*)otherDate
+- (NSTimeInterval)timeIntervalSinceDate:(NSDate*)otherDate
 {
-  if (otherDate == nil)
+    if (otherDate == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"nil argument for timeIntervalSinceDate:"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"nil argument for timeIntervalSinceDate:"];
     }
-  return otherTime(self) - otherTime(otherDate);
+    return otherTime(self) - otherTime(otherDate);
 }
 
 /**
@@ -1246,19 +1280,19 @@ otherTime(NSDate* other)
  * the past this will be negative, if it is in the future the
  * returned value will be positive.
  */
-- (NSTimeInterval) timeIntervalSinceNow
+- (NSTimeInterval)timeIntervalSinceNow
 {
-  return otherTime(self) - GSTimeNow();
+    return otherTime(self) - GSTimeNow();
 }
 
 /**
  * Returns the time interval between the receivers value and the
  * OpenStep reference date of 1 Jan 2001 GMT.
  */
-- (NSTimeInterval) timeIntervalSinceReferenceDate
+- (NSTimeInterval)timeIntervalSinceReferenceDate
 {
-  [self subclassResponsibility: _cmd];
-  return 0;
+    [self subclassResponsibility:_cmd];
+    return 0;
 }
 
 /**
@@ -1266,57 +1300,60 @@ otherTime(NSDate* other)
  * Returns NSOrderedAscending if the receiver is earlier than otherDate,
  * Otherwise, returns NSOrderedSame.
  */
-- (NSComparisonResult) compare: (NSDate*)otherDate
+- (NSComparisonResult)compare:(NSDate*)otherDate
 {
-  if (otherDate == self)
+    if (otherDate == self)
     {
-      return NSOrderedSame;
+        return NSOrderedSame;
     }
-  if (otherDate == nil)
+    if (otherDate == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"nil argument for compare:"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"nil argument for compare:"];
     }
-  if (otherTime(self) > otherTime(otherDate))
+    if (otherTime(self) > otherTime(otherDate))
     {
-      return NSOrderedDescending;
+        return NSOrderedDescending;
     }
-  if (otherTime(self) < otherTime(otherDate))
+    if (otherTime(self) < otherTime(otherDate))
     {
-      return NSOrderedAscending;
+        return NSOrderedAscending;
     }
-  return NSOrderedSame;
+    return NSOrderedSame;
 }
 
 /**
  * Returns the earlier of the receiver and otherDate.<br />
  * If the two represent identical date/time values, returns the receiver.
  */
-- (NSDate*) earlierDate: (NSDate*)otherDate
+- (NSDate*)earlierDate:(NSDate*)otherDate
 {
-  if (otherDate == nil)
+    if (otherDate == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"nil argument for earlierDate:"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"nil argument for earlierDate:"];
     }
-  if (otherTime(self) > otherTime(otherDate))
-    return otherDate;
-  return self;
+    if (otherTime(self) > otherTime(otherDate)) {
+        return otherDate;
+    }
+    return self;
 }
 
-- (NSUInteger) hash
+- (NSUInteger)hash
 {
-  return (unsigned)[self timeIntervalSinceReferenceDate];
+    return (unsigned)[self timeIntervalSinceReferenceDate];
 }
 
-- (BOOL) isEqual: (id)other
+- (BOOL)isEqual:(id)other
 {
-  if (other == nil)
+    if (other == nil) {
+        return NO;
+    }
+    if ([other isKindOfClass:abstractClass]
+        && otherTime(self) == otherTime(other)) {
+        return YES;
+    }
     return NO;
-  if ([other isKindOfClass: abstractClass]
-    && otherTime(self) == otherTime(other))
-    return YES;
-  return NO;
 }
 
 /**
@@ -1330,175 +1367,191 @@ otherTime(NSDate* other)
  *  no reasonable way to use a date as a dictionary key or store dates
  *  in a set.
  */
-- (BOOL) isEqualToDate: (NSDate*)other
+- (BOOL)isEqualToDate:(NSDate*)other
 {
-  if (other == nil)
+    if (other == nil) {
+        return NO;
+    }
+    if (otherTime(self) == otherTime(other)) {
+        return YES;
+    }
     return NO;
-  if (otherTime(self) == otherTime(other))
-    return YES;
-  return NO;
 }
 
 /**
  * Returns the earlier of the receiver and otherDate.<br />
  * If the two represent identical date/time values, returns the receiver.
  */
-- (NSDate*) laterDate: (NSDate*)otherDate
+- (NSDate*)laterDate:(NSDate*)otherDate
 {
-  if (otherDate == nil)
+    if (otherDate == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"nil argument for laterDate:"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"nil argument for laterDate:"];
     }
-  if (otherTime(self) < otherTime(otherDate))
-    return otherDate;
-  return self;
+    if (otherTime(self) < otherTime(otherDate)) {
+        return otherDate;
+    }
+    return self;
+}
+
+- (NSDate *)dateByAddingTimeInterval:(NSTimeInterval)ti
+{
+    return [NSDate dateWithTimeIntervalSince1970:[self timeIntervalSince1970] + ti ];
 }
 
 @end
 
 @implementation NSGDate
 
-+ (void) initialize
++ (void)initialize
 {
-  if (self == [NSDate class])
+    if (self == [NSDate class])
     {
-      [self setVersion: 1];
+        [self setVersion:1];
     }
 }
 
-- (void) encodeWithCoder: (NSCoder*)coder
+- (void)encodeWithCoder:(NSCoder*)coder
 {
-  if ([coder allowsKeyedCoding])
-    [coder encodeDouble:_seconds_since_ref forKey:@"NS.time"];
-  else
-    [coder encodeValueOfObjCType: @encode(NSTimeInterval) at: &_seconds_since_ref];
-}
-
-- (id) initWithCoder: (NSCoder*)coder
-{
-  if ([coder allowsKeyedCoding])
-    _seconds_since_ref = [coder decodeDoubleForKey:@"NS.time"];
-  else
-    [coder decodeValueOfObjCType: @encode(NSTimeInterval) at: &_seconds_since_ref];
-  return self;
-}
-
-- (id) initWithTimeIntervalSinceReferenceDate: (NSTimeInterval)secs
-{
-  if (isnan(secs))
-    {
-      [NSException raise: NSInvalidArgumentException
-	          format: @"[%@-%@] interval is not a number",
-	NSStringFromClass([self class]), NSStringFromSelector(_cmd)];
+    if ([coder allowsKeyedCoding]) {
+        [coder encodeDouble:_seconds_since_ref forKey:@"NS.time"];
     }
-  _seconds_since_ref = secs;
-  return self;
+    else{
+        [coder encodeValueOfObjCType:@encode(NSTimeInterval) at:&_seconds_since_ref];
+    }
+}
+
+- (id)initWithCoder:(NSCoder*)coder
+{
+    if ([coder allowsKeyedCoding]) {
+        _seconds_since_ref = [coder decodeDoubleForKey:@"NS.time"];
+    }
+    else{
+        [coder decodeValueOfObjCType:@encode(NSTimeInterval) at:&_seconds_since_ref];
+    }
+    return self;
+}
+
+- (id)initWithTimeIntervalSinceReferenceDate:(NSTimeInterval)secs
+{
+    if (isnan(secs))
+    {
+        [NSException raise:NSInvalidArgumentException
+         format:@"[%@-%@] interval is not a number",
+         NSStringFromClass([self class]), NSStringFromSelector(_cmd)];
+    }
+    _seconds_since_ref = secs;
+    return self;
 }
 
 
 // Adding and getting intervals
 
-- (NSTimeInterval) timeIntervalSince1970
+- (NSTimeInterval)timeIntervalSince1970
 {
-  return _seconds_since_ref + NSTimeIntervalSince1970;
+    return _seconds_since_ref + NSTimeIntervalSince1970;
 }
 
-- (NSTimeInterval) timeIntervalSinceDate: (NSDate*)otherDate
+- (NSTimeInterval)timeIntervalSinceDate:(NSDate*)otherDate
 {
-  if (otherDate == nil)
+    if (otherDate == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"nil argument for timeIntervalSinceDate:"];
+        return NAN; // this is the expected result for mac os x and ios
     }
-  return _seconds_since_ref - otherTime(otherDate);
+    return _seconds_since_ref - otherTime(otherDate);
 }
 
-- (NSTimeInterval) timeIntervalSinceNow
+- (NSTimeInterval)timeIntervalSinceNow
 {
-  return _seconds_since_ref - GSTimeNow();
+    return _seconds_since_ref - GSTimeNow();
 }
 
-- (NSTimeInterval) timeIntervalSinceReferenceDate
+- (NSTimeInterval)timeIntervalSinceReferenceDate
 {
-  return _seconds_since_ref;
+    return _seconds_since_ref;
 }
 
 // Comparing dates
 
-- (NSComparisonResult) compare: (NSDate*)otherDate
+- (NSComparisonResult)compare:(NSDate*)otherDate
 {
-  if (otherDate == self)
+    if (otherDate == self)
     {
-      return NSOrderedSame;
+        return NSOrderedSame;
     }
-  if (otherDate == nil)
+    if (otherDate == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"nil argument for compare:"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"nil argument for compare:"];
     }
-  if (_seconds_since_ref > otherTime(otherDate))
+    if (_seconds_since_ref > otherTime(otherDate))
     {
-      return NSOrderedDescending;
+        return NSOrderedDescending;
     }
-  if (_seconds_since_ref < otherTime(otherDate))
+    if (_seconds_since_ref < otherTime(otherDate))
     {
-      return NSOrderedAscending;
+        return NSOrderedAscending;
     }
-  return NSOrderedSame;
+    return NSOrderedSame;
 }
 
-- (NSDate*) earlierDate: (NSDate*)otherDate
+- (NSDate*)earlierDate:(NSDate*)otherDate
 {
-  if (otherDate == nil)
+    if (otherDate == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"nil argument for earlierDate:"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"nil argument for earlierDate:"];
     }
-  if (_seconds_since_ref > otherTime(otherDate))
-    return otherDate;
-  return self;
+    if (_seconds_since_ref > otherTime(otherDate)) {
+        return otherDate;
+    }
+    return self;
 }
 
-- (NSUInteger) hash
+- (NSUInteger)hash
 {
-  return (unsigned)_seconds_since_ref;
+    return (unsigned)_seconds_since_ref;
 }
 
-- (BOOL) isEqual: (id)other
+- (BOOL)isEqual:(id)other
 {
-  if (other == nil)
+    if (other == nil) {
+        return NO;
+    }
+    if ([other isKindOfClass:abstractClass]
+        && _seconds_since_ref == otherTime(other)) {
+        return YES;
+    }
     return NO;
-  if ([other isKindOfClass: abstractClass]
-    && _seconds_since_ref == otherTime(other))
-    return YES;
-  return NO;
 }
 
-- (BOOL) isEqualToDate: (NSDate*)other
+- (BOOL)isEqualToDate:(NSDate*)other
 {
-  if (other == nil)
-    return NO;
-  if (_seconds_since_ref == otherTime(other))
-    return YES;
-  return NO;
-}
-
-- (NSDate*) laterDate: (NSDate*)otherDate
-{
-  if (otherDate == nil)
-    {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"nil argument for laterDate:"];
+    if (other == nil) {
+        return NO;
     }
-  if (_seconds_since_ref < otherTime(otherDate))
-    return otherDate;
-  return self;
+    if (_seconds_since_ref == otherTime(other)) {
+        return YES;
+    }
+    return NO;
+}
+
+- (NSDate*)laterDate:(NSDate*)otherDate
+{
+    if (otherDate == nil)
+    {
+        [NSException raise:NSInvalidArgumentException
+         format:@"nil argument for laterDate:"];
+    }
+    if (_seconds_since_ref < otherTime(otherDate)) {
+        return otherDate;
+    }
+    return self;
 }
 
 @end
 
-
 
 /*
  *	This abstract class represents a date of which there can be only
@@ -1506,74 +1559,73 @@ otherTime(NSDate* other)
  */
 @implementation GSDateSingle
 
-+ (void) initialize
++ (void)initialize
 {
-  if (self == [GSDateSingle class])
+    if (self == [GSDateSingle class])
     {
-      [self setVersion: 1];
-      GSObjCAddClassBehavior(self, [NSGDate class]);
+        [self setVersion:1];
+        GSObjCAddClassBehavior(self, [NSGDate class]);
     }
 }
 
-- (id) autorelease
+- (id)autorelease
 {
-  return self;
+    return self;
 }
 
-- (void) release
+- (void)release
 {
 }
 
-- (id) retain
+- (id)retain
 {
-  return self;
+    return self;
 }
 
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
-  [NSException raise: NSInternalInconsistencyException
-	      format: @"Attempt to allocate fixed date"];
-  return nil;
+    [NSException raise:NSInternalInconsistencyException
+     format:@"Attempt to allocate fixed date"];
+    return nil;
 }
 
-- (id) copyWithZone: (NSZone*)z
+- (id)copyWithZone:(NSZone*)z
 {
-  return self;
+    return self;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  [NSException raise: NSInternalInconsistencyException
-	      format: @"Attempt to deallocate fixed date"];
-  GSNOSUPERDEALLOC;
+    [NSException raise:NSInternalInconsistencyException
+     format:@"Attempt to deallocate fixed date"];
+    GSNOSUPERDEALLOC;
 }
 
-- (id) initWithTimeIntervalSinceReferenceDate: (NSTimeInterval)secs
+- (id)initWithTimeIntervalSinceReferenceDate:(NSTimeInterval)secs
 {
-  return self;
+    return self;
 }
 
 @end
 
-
 
 @implementation GSDatePast
 
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
-  if (_distantPast == nil)
+    if (_distantPast == nil)
     {
-      id	obj = NSAllocateObject(self, 0, NSDefaultMallocZone());
+        id obj = NSAllocateObject(self, 0, NSDefaultMallocZone());
 
-      _distantPast = [obj init];
+        _distantPast = [obj init];
     }
-  return _distantPast;
+    return _distantPast;
 }
 
-- (id) initWithTimeIntervalSinceReferenceDate: (NSTimeInterval)secs
+- (id)initWithTimeIntervalSinceReferenceDate:(NSTimeInterval)secs
 {
-  _seconds_since_ref = DISTANT_PAST;
-  return self;
+    _seconds_since_ref = DISTANT_PAST;
+    return self;
 }
 
 @end
@@ -1581,21 +1633,21 @@ otherTime(NSDate* other)
 
 @implementation GSDateFuture
 
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
-  if (_distantFuture == nil)
+    if (_distantFuture == nil)
     {
-      id	obj = NSAllocateObject(self, 0, NSDefaultMallocZone());
+        id obj = NSAllocateObject(self, 0, NSDefaultMallocZone());
 
-      _distantFuture = [obj init];
+        _distantFuture = [obj init];
     }
-  return _distantFuture;
+    return _distantFuture;
 }
 
-- (id) initWithTimeIntervalSinceReferenceDate: (NSTimeInterval)secs
+- (id)initWithTimeIntervalSinceReferenceDate:(NSTimeInterval)secs
 {
-  _seconds_since_ref = DISTANT_FUTURE;
-  return self;
+    _seconds_since_ref = DISTANT_FUTURE;
+    return self;
 }
 
 @end

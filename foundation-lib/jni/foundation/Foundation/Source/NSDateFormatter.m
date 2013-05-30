@@ -23,18 +23,29 @@
 
    <title>NSDateFormatter class reference</title>
    $Date: 2010-11-23 05:20:34 -0800 (Tue, 23 Nov 2010) $ $Revision: 31645 $
-   */
+ */
 
 #import "common.h"
-#define	EXPOSE_NSDateFormatter_IVARS	1
+#define EXPOSE_NSDateFormatter_IVARS    1
 #import "Foundation/NSDate.h"
 #import "Foundation/NSCalendarDate.h"
+#import "Foundation/NSLocale.h"
 #import "Foundation/NSTimeZone.h"
 #import "Foundation/NSFormatter.h"
 #import "Foundation/NSDateFormatter.h"
 #import "Foundation/NSCoder.h"
+#import "Foundation/NSInvocation.h"
 
 @implementation NSDateFormatter
+
+- (id)init {
+    self = [super init];
+    if (self) {
+        _timezone = nil;
+        _locale = nil;
+    }
+    return self;
+}
 
 - (void)setDateStyle:(NSDateFormatterStyle)style
 {
@@ -46,126 +57,323 @@
     return dateStyle_;
 }
 
-- (BOOL) allowsNaturalLanguage
+- (void)setTimeStyle:(NSDateFormatterStyle)style
 {
-  return _allowsNaturalLanguage;
+    timeStyle_ = style;
 }
 
-- (NSAttributedString*) attributedStringForObjectValue: (id)anObject
-				 withDefaultAttributes: (NSDictionary*)attr
+- (NSDateFormatterStyle)timeStyle
 {
-  return nil;
+    return timeStyle_;
 }
 
-- (id) copyWithZone: (NSZone*)zone
+- (BOOL)allowsNaturalLanguage
 {
-  NSDateFormatter	*other = (id)NSCopyObject(self, 0, zone);
-
-  IF_NO_GC(RETAIN(other->_dateFormat));
-  return other;
+    return _allowsNaturalLanguage;
 }
 
-- (NSString*) dateFormat
+- (NSAttributedString*)attributedStringForObjectValue:(id)anObject
+    withDefaultAttributes:(NSDictionary*)attr
 {
-  return _dateFormat;
+    return nil;
 }
 
-- (void) dealloc
+- (id)copyWithZone:(NSZone*)zone
 {
-  RELEASE(_dateFormat);
-  [super dealloc];
+    NSDateFormatter   *other = (id)NSCopyObject(self, 0, zone);
+
+    IF_NO_GC(RETAIN(other->_dateFormat));
+    return other;
 }
 
-- (NSString*) editingStringForObjectValue: (id)anObject
+- (NSString*)dateFormat
 {
-  return [self stringForObjectValue: anObject];
+    return _dateFormat;
 }
 
-- (void) encodeWithCoder: (NSCoder*)aCoder
+- (void)dealloc
 {
-  [aCoder encodeValuesOfObjCTypes: "@C", &_dateFormat, &_allowsNaturalLanguage];
+    [_timezone release];
+    [_locale release];
+    [_dateFormat release];
+    [super dealloc];
 }
 
-- (BOOL) getObjectValue: (id*)anObject
-	      forString: (NSString*)string
-       errorDescription: (NSString**)error
+- (NSString*)editingStringForObjectValue:(id)anObject
 {
-  NSCalendarDate	*d;
+    return [self stringForObjectValue:anObject];
+}
 
-  if ([string length] == 0)
+- (void)encodeWithCoder:(NSCoder*)aCoder
+{
+    [aCoder encodeValuesOfObjCTypes:"@C", &_dateFormat, &_allowsNaturalLanguage];
+}
+
+- (BOOL)getObjectValue:(id*)anObject
+             forString:(NSString*)string
+      errorDescription:(NSString**)error
+{
+    NSCalendarDate    *d;
+
+    if ([string length] == 0)
     {
-      d = nil;
+        d = nil;
     }
-  else
+    else
     {
-      d = [NSCalendarDate dateWithString: string calendarFormat: _dateFormat];
+        d = [NSCalendarDate dateWithString:string calendarFormat:_dateFormat];
     }
-  if (d == nil)
+    if (d == nil)
     {
-      if (_allowsNaturalLanguage)
-	{
-	  d = [NSCalendarDate dateWithNaturalLanguageString: string];
-	}
-      if (d == nil)
-	{
-	  if (error)
-	    {
-	      *error = @"Couldn't convert to date";
-	    }
-	  return NO;
-	}
+        if (_allowsNaturalLanguage)
+        {
+            d = [NSCalendarDate dateWithNaturalLanguageString:string];
+        }
+        if (d == nil)
+        {
+            if (error)
+            {
+                *error = @"Couldn't convert to date";
+            }
+            return NO;
+        }
     }
-  if (anObject)
+    if (anObject)
     {
-      *anObject = d;
+        *anObject = d;
     }
-  return YES;
+    return YES;
 }
 
-- (id) initWithCoder: (NSCoder*)aCoder
+- (id)initWithCoder:(NSCoder*)aCoder
 {
-  [aCoder decodeValuesOfObjCTypes: "@C", &_dateFormat, &_allowsNaturalLanguage];
-  return self;
+    [aCoder decodeValuesOfObjCTypes:"@C", &_dateFormat, &_allowsNaturalLanguage];
+    return self;
 }
 
-- (id) initWithDateFormat: (NSString *)format
-     allowNaturalLanguage: (BOOL)flag
+- (id)initWithDateFormat:(NSString *)format
+    allowNaturalLanguage:(BOOL)flag
 {
-  _dateFormat = [format copy];
-  _allowsNaturalLanguage = flag;
-  return self;
+    _dateFormat = [format copy];
+    _allowsNaturalLanguage = flag;
+    return self;
 }
 
-- (BOOL) isPartialStringValid: (NSString*)partialString
-	     newEditingString: (NSString**)newString
-	     errorDescription: (NSString**)error
+- (BOOL)isPartialStringValid:(NSString*)partialString
+    newEditingString:(NSString**)newString
+    errorDescription:(NSString**)error
 {
-  if (newString)
+    if (newString)
     {
-      *newString = nil;
+        *newString = nil;
     }
-  if (error)
+    if (error)
     {
-      *error = nil;
+        *error = nil;
     }
-  return YES;
+    return YES;
 }
 
-- (NSString*) stringForObjectValue: (id)anObject
+#include "time.h"
+
+// Convert an NSDate format to a strptime Format.
+// Currently only the input characters in yyyy-MM-dd HH:mm:ss are supported as
+// format characters
+// yyyy-MM-dd HH:mm:ss will be converted to %Y-%m-%d %H:%M:%s
+
+static char *convertFormat(const char *input)
 {
-  if ([anObject isKindOfClass: [NSDate class]] == NO)
-    {
-      return nil;
+    char *returnValue = malloc(strlen(input) * 2); // conservative - the new
+                                                   // string should always be
+                                                   // smaller than the input
+    const char *c = input;
+    char *r = returnValue;
+    while (*c) {
+        switch (*c) {
+        case 'Y':
+            *r++ = '%';
+            *r++ = 'Y';
+            while (*++c == 'Y') ;
+            break;
+        case 'y':
+            *r++ = '%';
+            *r++ = 'Y';
+            while (*++c == 'y') ;
+            break;
+        case 'M':
+            *r++ = '%';
+            *r++ = 'm';
+            while (*++c == 'M') ;
+            break;
+        case 'd':
+            *r++ = '%';
+            *r++ = 'd';
+            while (*++c == 'd') ;
+            break;
+        case 'H':
+            *r++ = '%';
+            *r++ = 'H';
+            while (*++c == 'H') ;
+            break;
+        case 'h':
+            *r++ = '%';
+            *r++ = 'I';
+            while (*++c == 'h') ;
+            break;
+        case 'a':
+            *r++ = '%';
+            *r++ = 'p';
+            while (*++c == 'a') ;
+            break;
+        case 'm':
+            *r++ = '%';
+            *r++ = 'M';
+            while (*++c == 'm') ;
+            break;
+        case 's':
+            *r++ = '%';
+            *r++ = 'S';
+            while (*++c == 's') ;
+            break;
+        case '\'':
+            // Single-quote escape sequence
+            while (*++c != '\'' && *c)
+            {
+                *r++ = *c;
+            }
+            if (*c) { c++; }
+            break;
+        case '+':
+            // +0000 ==> %z
+            *r++ = '%';
+            *r++ = 'z';
+            while (*++c == '0') ;
+            break;
+        default:
+            *r++ = *c++;
+        }
+        *r = '\0';
     }
-  return [anObject descriptionWithCalendarFormat: _dateFormat
-					timeZone: [NSTimeZone defaultTimeZone]
-					  locale: nil];
+    return returnValue;
+}
+
+- (char *)getFormat
+{
+    char *fmt = "";
+    if (_dateFormat != nil)
+    {
+        fmt = convertFormat([_dateFormat UTF8String]);
+    }
+    else
+    {
+        char *dateFmt = "";
+        char *timeFmt = "";
+        switch (dateStyle_) {
+        case NSDateFormatterNoStyle: dateFmt = ""; break;
+        case NSDateFormatterShortStyle: dateFmt = "M/d/yy"; break;
+        case NSDateFormatterMediumStyle:
+        case NSDateFormatterLongStyle:
+        case NSDateFormatterFullStyle:
+        default:
+            DEBUG_LOG("Date style %d not implemented", dateStyle_);
+        }
+        switch (timeStyle_) {
+        case NSDateFormatterNoStyle: timeFmt = ""; break;
+        case NSDateFormatterShortStyle: timeFmt = " h:mm a"; break;
+        case NSDateFormatterMediumStyle:
+        case NSDateFormatterLongStyle:
+        case NSDateFormatterFullStyle:
+        default:
+            DEBUG_LOG("Time style %d not implemented", timeStyle_);
+        }
+        char *dateTimeFmt = malloc(strlen(dateFmt) + strlen(timeFmt) + 1);
+        strcpy(dateTimeFmt, dateFmt);
+        strcat(dateTimeFmt, timeFmt);
+        fmt = convertFormat(dateTimeFmt);
+        free(dateTimeFmt);
+    }
+    return fmt;
+}
+
++ (NSString *)dateFormatFromTemplate:(NSString *)template options:(NSUInteger)opts locale:(NSLocale *)locale
+{
+    DEBUG_LOG("locale formaters not supported");
+    return template;
+}
+
+- (NSString*)stringForObjectValue:(id)anObject
+{
+    if ([anObject isKindOfClass:[NSDate class]] == NO)
+    {
+        return nil;
+    }
+    char *fmt = [self getFormat];
+
+    NSString *gsFmt = [NSString stringWithUTF8String:fmt];
+    NSString *result = [anObject descriptionWithCalendarFormat:gsFmt timeZone:[NSTimeZone defaultTimeZone] locale:nil];
+    free(fmt);
+    return result;
 }
 
 
 - (NSString *)stringFromDate:(NSDate *)date
 {
-  return [self stringForObjectValue:date];
+    return [self stringForObjectValue:date];
+}
+
+- (void)setDateFormat:(NSString *)string
+{
+    _dateFormat = string;
+}
+
+- (NSLocale *)locale {
+    return _locale;
+}
+
+- (void)setLocale:(NSLocale *)locale {
+    if (_locale != locale) {
+        [_locale autorelease];
+        _locale = [locale retain];
+    }
+    DEBUG_LOG("locales are not supported yet on NSDateFormatter");
+}
+
+
+- (NSTimeZone *)timeZone {
+    return _timezone;
+}
+
+- (void)setTimeZone:(NSTimeZone *)tz {
+    if (_timezone != tz) {
+        [_timezone autorelease];
+        _timezone = [tz retain];
+    }
+    DEBUG_LOG("timezone not supported yet on NSDateFormatter");
+}
+
+
+// Convert a string date to epoch seconds - Number of seconds since 1970
+// This function will not work on 32bit processors after 2038.
+// date should be something like  "2012-06-20 12:05:00"
+// The supported format examples is "yyyy-MM-dd HH:mm:ss"
+// The return type is time_t which is long on Android
+
+static time_t convertDate(const char *date, char *strptimeFormat)
+{
+    struct tm stm = {0};
+    strptime(date, strptimeFormat, &stm);
+    free(strptimeFormat);
+    return mktime(&stm);
+}
+
+- (NSDate *)dateFromString:(NSString *)date
+{
+    if (date == NULL)
+    {
+        return NULL;
+    }
+    time_t longSecondsSince1970 = convertDate([date UTF8String], [self getFormat]);
+    return [NSDate dateWithTimeIntervalSince1970:(NSTimeInterval)longSecondsSince1970];
 }
 
 @end

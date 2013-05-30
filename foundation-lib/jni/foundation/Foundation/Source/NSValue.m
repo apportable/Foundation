@@ -25,7 +25,7 @@
 
    <title>NSValue class reference</title>
    $Date: 2010-10-12 06:34:01 -0700 (Tue, 12 Oct 2010) $ $Revision: 31504 $
-*/
+ */
 
 #import "common.h"
 #import "Foundation/NSValue.h"
@@ -37,671 +37,508 @@
 #import "Foundation/NSData.h"
 #import "GNUstepBase/NSObject+GNUstepBase.h"
 
-@interface	GSPlaceholderValue : NSValue
+@interface  GSPlaceholderValue : NSValue
 @end
 
-@class	GSValue;
-@interface GSValue : NSObject	// Help the compiler
+@class GSValue;
+@interface GSValue : NSObject   // Help the compiler
 @end
-@class	GSNonretainedObjectValue;
-@interface GSNonretainedObjectValue : NSObject	// Help the compiler
+@class GSNonretainedObjectValue;
+@interface GSNonretainedObjectValue : NSObject  // Help the compiler
 @end
-@class	GSPointValue;
-@interface GSPointValue : NSObject	// Help the compiler
+@class GSPointValue;
+@interface GSPointValue : NSObject  // Help the compiler
 @end
-@class	GSPointerValue;
-@interface GSPointerValue : NSObject	// Help the compiler
+@class GSPointerValue;
+@interface GSPointerValue : NSObject    // Help the compiler
 @end
-@class	GSRangeValue;
-@interface GSRangeValue : NSObject	// Help the compiler
+@class GSRangeValue;
+@interface GSRangeValue : NSObject  // Help the compiler
 @end
-@class	GSRectValue;
-@interface GSRectValue : NSObject	// Help the compiler
+@class GSRectValue;
+@interface GSRectValue : NSObject   // Help the compiler
 @end
-@class	GSSizeValue;
-@interface GSSizeValue : NSObject	// Help the compiler
+@class GSSizeValue;
+@interface GSSizeValue : NSObject   // Help the compiler
 @end
-@class	NSDataStatic;		// Needed for decoding.
-@interface NSDataStatic : NSObject	// Help the compiler
+@class NSDataStatic;        // Needed for decoding.
+@interface NSDataStatic : NSObject  // Help the compiler
 @end
 
 
-static Class	abstractClass;
-static Class	concreteClass;
-static Class	nonretainedObjectValueClass;
-static Class	pointValueClass;
-static Class	pointerValueClass;
-static Class	rangeValueClass;
-static Class	rectValueClass;
-static Class	sizeValueClass;
-static Class	GSPlaceholderValueClass;
+static Class abstractClass;
+static Class concreteClass;
+static Class nonretainedObjectValueClass;
+static Class pointerValueClass;
+static Class rangeValueClass;
+static Class GSPlaceholderValueClass;
 
 
-static GSPlaceholderValue	*defaultPlaceholderValue;
-static NSMapTable		*placeholderMap;
-static NSLock			*placeholderLock;
+static GSPlaceholderValue   *defaultPlaceholderValue;
+static NSMapTable       *placeholderMap;
+static NSLock           *placeholderLock;
 
 @implementation NSValue
 
-+ (void) initialize
++ (void)initialize
 {
-  if (self == [NSValue class])
+    if (self == [NSValue class])
     {
-      abstractClass = self;
-      [abstractClass setVersion: 3];	// Version 3
-      concreteClass = [GSValue class];
-      nonretainedObjectValueClass = [GSNonretainedObjectValue class];
-      pointValueClass = [GSPointValue class];
-      pointerValueClass = [GSPointerValue class];
-      rangeValueClass = [GSRangeValue class];
-      rectValueClass = [GSRectValue class];
-      sizeValueClass = [GSSizeValue class];
-      GSPlaceholderValueClass = [GSPlaceholderValue class];
+        abstractClass = self;
+        [abstractClass setVersion:3];   // Version 3
+        concreteClass = [GSValue class];
+        nonretainedObjectValueClass = [GSNonretainedObjectValue class];
+        pointerValueClass = [GSPointerValue class];
+        rangeValueClass = [GSRangeValue class];
+        GSPlaceholderValueClass = [GSPlaceholderValue class];
 
-      /*
-       * Set up infrastructure for placeholder values.
-       */
-      defaultPlaceholderValue = (GSPlaceholderValue*)
-	NSAllocateObject(GSPlaceholderValueClass, 0, NSDefaultMallocZone());
-      placeholderMap = NSCreateMapTable(NSNonOwnedPointerMapKeyCallBacks,
-	NSNonRetainedObjectMapValueCallBacks, 0);
-      placeholderLock = [NSLock new];
+        /*
+         * Set up infrastructure for placeholder values.
+         */
+        defaultPlaceholderValue = (GSPlaceholderValue*)
+                                  NSAllocateObject(GSPlaceholderValueClass, 0, NSDefaultMallocZone());
+        placeholderMap = NSCreateMapTable(NSNonOwnedPointerMapKeyCallBacks,
+                                          NSNonRetainedObjectMapValueCallBacks, 0);
+        placeholderLock = [NSLock new];
     }
 }
 
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
-  if (self == abstractClass)
+    if (self == abstractClass)
     {
-      if (z == NSDefaultMallocZone() || z == 0)
-	{
-	  /*
-	   * As a special case, we can return a placeholder for a value
-	   * in the default malloc zone extremely efficiently.
-	   */
-	  return defaultPlaceholderValue;
-	}
-      else
-	{
-	  id	obj;
+        if (z == NSDefaultMallocZone() || z == 0)
+        {
+            /*
+             * As a special case, we can return a placeholder for a value
+             * in the default malloc zone extremely efficiently.
+             */
+            return defaultPlaceholderValue;
+        }
+        else
+        {
+            id obj;
 
-	  /*
-	   * For anything other than the default zone, we need to
-	   * locate the correct placeholder in the (lock protected)
-	   * table of placeholders.
-	   */
-	  [placeholderLock lock];
-	  obj = (id)NSMapGet(placeholderMap, (void*)z);
-	  if (obj == nil)
-	    {
-	      /*
-	       * There is no placeholder object for this zone, so we
-	       * create a new one and use that.
-	       */
-	      obj = (id)NSAllocateObject(GSPlaceholderValueClass, 0, z);
-	      NSMapInsert(placeholderMap, (void*)z, (void*)obj);
-	    }
-	  [placeholderLock unlock];
-	  return obj;
-	}
+            /*
+             * For anything other than the default zone, we need to
+             * locate the correct placeholder in the (lock protected)
+             * table of placeholders.
+             */
+            [placeholderLock lock];
+            obj = (id)NSMapGet(placeholderMap, (void*)z);
+            if (obj == nil)
+            {
+                /*
+                 * There is no placeholder object for this zone, so we
+                 * create a new one and use that.
+                 */
+                obj = (id)NSAllocateObject(GSPlaceholderValueClass, 0, z);
+                NSMapInsert(placeholderMap, (void*)z, (void*)obj);
+            }
+            [placeholderLock unlock];
+            return obj;
+        }
     }
-  else
+    else
     {
-      return NSAllocateObject(self, 0, z);
+        return NSAllocateObject(self, 0, z);
     }
 }
 
 // NSCopying - always a simple retain.
 
-- (id) copy
+- (id)copy
 {
-  return RETAIN(self);
+    return RETAIN(self);
 }
 
-- (id) copyWithZone: (NSZone *)zone
+- (id)copyWithZone:(NSZone *)zone
 {
-  return RETAIN(self);
+    return RETAIN(self);
 }
 
 /* Returns the concrete class associated with the type encoding */
-+ (Class) valueClassWithObjCType: (const char *)type
++ (Class)valueClassWithObjCType:(const char *)type
 {
-  Class	theClass = concreteClass;
+    Class theClass = concreteClass;
 
-  /* Let someone else deal with this error */
-  if (!type)
+    /* Let someone else deal with this error */
+    if (!type) {
+        return theClass;
+    }
+
+    if (strcmp(@encode(id), type) == 0) {
+        theClass = nonretainedObjectValueClass;
+    }
+    else if (strcmp(@encode(void *), type) == 0) {
+        theClass = pointerValueClass;
+    }
+    else if (strcmp(@encode(NSRange), type) == 0) {
+        theClass = rangeValueClass;
+    }
+
     return theClass;
-
-  if (strcmp(@encode(id), type) == 0)
-    theClass = nonretainedObjectValueClass;
-  else if (strcmp(@encode(NSPoint), type) == 0)
-    theClass = pointValueClass;
-  else if (strcmp(@encode(void *), type) == 0)
-    theClass = pointerValueClass;
-  else if (strcmp(@encode(NSRange), type) == 0)
-    theClass = rangeValueClass;
-  else if (strcmp(@encode(NSRect), type) == 0)
-    theClass = rectValueClass;
-  else if (strcmp(@encode(NSSize), type) == 0)
-    theClass = sizeValueClass;
-
-  return theClass;
 }
 
 // Allocating and Initializing
 
-+ (NSValue*) value: (const void *)value
-      withObjCType: (const char *)type
++ (NSValue*)value:(const void *)value
+    withObjCType:(const char *)type
 {
-  Class		theClass = [self valueClassWithObjCType: type];
-  NSValue	*theObj;
+    Class theClass = [self valueClassWithObjCType:type];
+    NSValue   *theObj;
 
-  theObj = [theClass allocWithZone: NSDefaultMallocZone()];
-  theObj = [theObj initWithBytes: value objCType: type];
-  return AUTORELEASE(theObj);
-}
-		
-+ (NSValue*) valueWithBytes: (const void *)value
-		   objCType: (const char *)type
-{
-  Class		theClass = [self valueClassWithObjCType: type];
-  NSValue	*theObj;
-
-  theObj = [theClass allocWithZone: NSDefaultMallocZone()];
-  theObj = [theObj initWithBytes: value objCType: type];
-  return AUTORELEASE(theObj);
-}
-		
-+ (NSValue*) valueWithNonretainedObject: (id)anObject
-{
-  NSValue	*theObj;
-
-  theObj = [nonretainedObjectValueClass allocWithZone: NSDefaultMallocZone()];
-  theObj = [theObj initWithBytes: &anObject objCType: @encode(id)];
-  return AUTORELEASE(theObj);
-}
-	
-+ (NSValue*) valueWithPoint: (NSPoint)point
-{
-  NSValue	*theObj;
-
-  theObj = [pointValueClass allocWithZone: NSDefaultMallocZone()];
-  theObj = [theObj initWithBytes: &point objCType: @encode(NSPoint)];
-  return AUTORELEASE(theObj);
+    theObj = [theClass allocWithZone:NSDefaultMallocZone()];
+    theObj = [theObj initWithBytes:value objCType:type];
+    return AUTORELEASE(theObj);
 }
 
-+ (NSValue*) valueWithPointer: (const void *)pointer
++ (NSValue*)valueWithBytes:(const void *)value
+    objCType:(const char *)type
 {
-  NSValue	*theObj;
+    Class theClass = [self valueClassWithObjCType:type];
+    NSValue   *theObj;
 
-  theObj = [pointerValueClass allocWithZone: NSDefaultMallocZone()];
-  theObj = [theObj initWithBytes: &pointer objCType: @encode(void*)];
-  return AUTORELEASE(theObj);
+    theObj = [theClass allocWithZone:NSDefaultMallocZone()];
+    theObj = [theObj initWithBytes:value objCType:type];
+    return AUTORELEASE(theObj);
 }
 
-+ (NSValue*) valueWithRange: (NSRange)range
++ (NSValue*)valueWithNonretainedObject:(id)anObject
 {
-  NSValue	*theObj;
+    NSValue   *theObj;
 
-  theObj = [rangeValueClass allocWithZone: NSDefaultMallocZone()];
-  theObj = [theObj initWithBytes: &range objCType: @encode(NSRange)];
-  return AUTORELEASE(theObj);
+    theObj = [nonretainedObjectValueClass allocWithZone:NSDefaultMallocZone()];
+    theObj = [theObj initWithBytes:&anObject objCType:@encode(id)];
+    return AUTORELEASE(theObj);
 }
 
-+ (NSValue*) valueWithRect: (NSRect)rect
++ (NSValue*)valueWithPointer:(const void *)pointer
 {
-  NSValue	*theObj;
+    NSValue   *theObj;
 
-  theObj = [rectValueClass allocWithZone: NSDefaultMallocZone()];
-  theObj = [theObj initWithBytes: &rect objCType: @encode(NSRect)];
-  return AUTORELEASE(theObj);
+    theObj = [pointerValueClass allocWithZone:NSDefaultMallocZone()];
+    theObj = [theObj initWithBytes:&pointer objCType:@encode(void*)];
+    return AUTORELEASE(theObj);
 }
 
-+ (NSValue*) valueWithSize: (NSSize)size
++ (NSValue*)valueWithRange:(NSRange)range
 {
-  NSValue	*theObj;
+    NSValue   *theObj;
 
-  theObj = [sizeValueClass allocWithZone: NSDefaultMallocZone()];
-  theObj = [theObj initWithBytes: &size objCType: @encode(NSSize)];
-  return AUTORELEASE(theObj);
+    theObj = [rangeValueClass allocWithZone:NSDefaultMallocZone()];
+    theObj = [theObj initWithBytes:&range objCType:@encode(NSRange)];
+    return AUTORELEASE(theObj);
 }
 
-+ (NSValue*) valueFromString: (NSString *)string
+- (id)initWithBytes:(const void*)data objCType:(const char*)type
 {
-  NSDictionary	*dict = [string propertyList];
-
-  if (dict == nil)
+    [self subclassResponsibility:_cmd];
     return nil;
-
-  if ([dict objectForKey: @"location"])
-    {
-      NSRange range;
-      range = NSMakeRange([[dict objectForKey: @"location"] intValue],
-			[[dict objectForKey: @"length"] intValue]);
-    }
-  else if ([dict objectForKey: @"width"] && [dict objectForKey: @"x"])
-    {
-      NSRect rect;
-      rect = NSMakeRect([[dict objectForKey: @"x"] floatValue],
-		       [[dict objectForKey: @"y"] floatValue],
-		       [[dict objectForKey: @"width"] floatValue],
-		       [[dict objectForKey: @"height"] floatValue]);
-      return [abstractClass valueWithRect: rect];
-    }
-  else if ([dict objectForKey: @"width"])
-    {
-      NSSize size;
-      size = NSMakeSize([[dict objectForKey: @"width"] floatValue],
-			[[dict objectForKey: @"height"] floatValue]);
-      return [abstractClass valueWithSize: size];
-    }
-  else if ([dict objectForKey: @"x"])
-    {
-      NSPoint point;
-      point = NSMakePoint([[dict objectForKey: @"x"] floatValue],
-			[[dict objectForKey: @"y"] floatValue]);
-      return [abstractClass valueWithPoint: point];
-    }
-  return nil;
-}
-
-- (id) initWithBytes: (const void*)data objCType: (const char*)type
-{
-  [self subclassResponsibility: _cmd];
-  return nil;
 }
 
 // Accessing Data
 /* All the rest of these methods must be implemented by a subclass */
-- (void) getValue: (void *)value
+- (void)getValue:(void *)value
 {
-  [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
 }
 
-- (BOOL) isEqual: (id)other
+- (BOOL)isEqual:(id)other
 {
-  if ([other isKindOfClass: [self class]])
+    if ([other isKindOfClass:[self class]])
     {
-      return [self isEqualToValue: other];
+        return [self isEqualToValue:other];
     }
-  return NO;
+    return NO;
 }
 
-- (BOOL) isEqualToValue: (NSValue*)other
+- (BOOL)isEqualToValue:(NSValue*)other
 {
-  [self subclassResponsibility: _cmd];
-  return NO;
+    [self subclassResponsibility:_cmd];
+    return NO;
 }
 
-- (const char *) objCType
+- (const char *)objCType
 {
-  [self subclassResponsibility: _cmd];
-  return 0;
+    [self subclassResponsibility:_cmd];
+    return 0;
 }
 
-- (id) nonretainedObjectValue
+- (id)nonretainedObjectValue
 {
-  [self subclassResponsibility: _cmd];
-  return 0;
+    [self subclassResponsibility:_cmd];
+    return 0;
 }
 
-- (void *) pointerValue
+- (void *)pointerValue
 {
-  [self subclassResponsibility: _cmd];
-  return 0;
+    [self subclassResponsibility:_cmd];
+    return 0;
 }
 
-- (NSRange) rangeValue
+- (NSRange)rangeValue
 {
-  [self subclassResponsibility: _cmd];
-  return NSMakeRange(0,0);
+    [self subclassResponsibility:_cmd];
+    return NSMakeRange(0,0);
 }
 
-- (NSRect) rectValue
+- (Class)classForCoder
 {
-  [self subclassResponsibility: _cmd];
-  return NSMakeRect(0,0,0,0);
+    return abstractClass;
 }
 
-- (NSSize) sizeValue
+- (void)encodeWithCoder:(NSCoder *)coder
 {
-  [self subclassResponsibility: _cmd];
-  return NSMakeSize(0,0);
-}
+    unsigned size;
+    const char    *data;
+    const char    *objctype = [self objCType];
+    NSMutableData *d;
 
-- (NSPoint) pointValue
-{
-  [self subclassResponsibility: _cmd];
-  return NSMakePoint(0,0);
-}
-
-- (Class) classForCoder
-{
-  return abstractClass;
-}
-
-- (void) encodeWithCoder: (NSCoder *)coder
-{
-  unsigned	size;
-  const char	*data;
-  const char	*objctype = [self objCType];
-  NSMutableData	*d;
-
-  size = strlen(objctype)+1;
-  [coder encodeValueOfObjCType: @encode(unsigned) at: &size];
-  [coder encodeArrayOfObjCType: @encode(signed char) count: size at: objctype];
-  if (strncmp("{_NSSize=", objctype, 9) == 0)
+    size = strlen(objctype)+1;
+    [coder encodeValueOfObjCType:@encode(unsigned) at:&size];
+    [coder encodeArrayOfObjCType:@encode(signed char) count:size at:objctype];
+    if (strncmp("{_NSRange=", objctype, 10) == 0)
     {
-      NSSize    v = [self sizeValue];
+        NSRange v = [self rangeValue];
 
-      [coder encodeValueOfObjCType: objctype at: &v];
-      return;
-    }
-  else if (strncmp("{_NSPoint=", objctype, 10) == 0)
-    {
-      NSPoint    v = [self pointValue];
-
-      [coder encodeValueOfObjCType: objctype at: &v];
-      return;
-    }
-  else if (strncmp("{_NSRect=", objctype, 9) == 0)
-    {
-      NSRect    v = [self rectValue];
-
-      [coder encodeValueOfObjCType: objctype at: &v];
-      return;
-    }
-  else if (strncmp("{_NSRange=", objctype, 10) == 0)
-    {
-      NSRange    v = [self rangeValue];
-
-      [coder encodeValueOfObjCType: objctype at: &v];
-      return;
+        [coder encodeValueOfObjCType:objctype at:&v];
+        return;
     }
 
-  size = objc_sizeof_type(objctype);
-  data = (void *)NSZoneMalloc([self zone], size);
-  [self getValue: (void*)data];
-  d = [NSMutableData new];
-  [d serializeDataAt: data ofObjCType: objctype context: nil];
-  size = [d length];
-  [coder encodeValueOfObjCType: @encode(unsigned) at: &size];
-  NSZoneFree(NSDefaultMallocZone(), (void*)data);
-  data = [d bytes];
-  [coder encodeArrayOfObjCType: @encode(unsigned char) count: size at: data];
-  RELEASE(d);
+    size = objc_sizeof_type(objctype);
+    data = (void *)NSZoneMalloc([self zone], size);
+    [self getValue:(void*)data];
+    d = [NSMutableData new];
+    [d serializeDataAt:data ofObjCType:objctype context:nil];
+    size = [d length];
+    [coder encodeValueOfObjCType:@encode(unsigned) at:&size];
+    NSZoneFree(NSDefaultMallocZone(), (void*)data);
+    data = [d bytes];
+    [coder encodeArrayOfObjCType:@encode(unsigned char) count:size at:data];
+    RELEASE(d);
 }
 
-- (id) initWithCoder: (NSCoder *)coder
+- (id)initWithCoder:(NSCoder *)coder
 {
-  char		type[64];
-  const char	*objctype;
-  Class		c;
-  id		o;
-  unsigned	size;
-  int		ver;
+    char type[64];
+    const char    *objctype;
+    Class c;
+    id o;
+    unsigned size;
+    int ver;
 
-  [coder decodeValueOfObjCType: @encode(unsigned) at: &size];
-  /*
-   * For almost all type encodings, we can use space on the stack,
-   * but to handle exceptionally large ones (possibly some huge structs)
-   * we have a strategy of allocating and deallocating heap space too.
-   */
-  if (size <= 64)
+    [coder decodeValueOfObjCType:@encode(unsigned) at:&size];
+    /*
+     * For almost all type encodings, we can use space on the stack,
+     * but to handle exceptionally large ones (possibly some huge structs)
+     * we have a strategy of allocating and deallocating heap space too.
+     */
+    if (size <= 64)
     {
-      objctype = type;
+        objctype = type;
     }
-  else
+    else
     {
-      objctype = (void*)NSZoneMalloc(NSDefaultMallocZone(), size);
+        objctype = (void*)NSZoneMalloc(NSDefaultMallocZone(), size);
     }
-  [coder decodeArrayOfObjCType: @encode(signed char)
-			 count: size
-			    at: (void*)objctype];
-  if (strncmp("{_NSSize=", objctype, 9) == 0)
-    c = [abstractClass valueClassWithObjCType: @encode(NSSize)];
-  else if (strncmp("{_NSPoint=", objctype, 10) == 0)
-    c = [abstractClass valueClassWithObjCType: @encode(NSPoint)];
-  else if (strncmp("{_NSRect=", objctype, 9) == 0)
-    c = [abstractClass valueClassWithObjCType: @encode(NSRect)];
-  else if (strncmp("{_NSRange=", objctype, 10) == 0)
-    c = [abstractClass valueClassWithObjCType: @encode(NSRange)];
-  else
-    c = [abstractClass valueClassWithObjCType: objctype];
-  o = [c allocWithZone: [coder objectZone]];
+    [coder decodeArrayOfObjCType:@encode(signed char)
+     count:size
+     at:(void*)objctype];
+    if (strncmp("{_NSRange=", objctype, 10) == 0) {
+        c = [abstractClass valueClassWithObjCType:@encode(NSRange)];
+    }
+    else{
+        c = [abstractClass valueClassWithObjCType:objctype];
+    }
+    o = [c allocWithZone:[coder objectZone]];
 
-  ver = [coder versionForClassName: @"NSValue"];
-  if (ver > 2)
+    ver = [coder versionForClassName:@"NSValue"];
+    if (ver > 2)
     {
-      if (c == pointValueClass)
+        if (c == rangeValueClass)
         {
-          NSPoint	v;
+            NSRange v;
 
-          [coder decodeValueOfObjCType: @encode(NSPoint) at: &v];
-          DESTROY(self);
-          return [o initWithBytes: &v objCType: @encode(NSPoint)];
-        }
-      else if (c == sizeValueClass)
-        {
-          NSSize	v;
-
-          [coder decodeValueOfObjCType: @encode(NSSize) at: &v];
-          DESTROY(self);
-          return [o initWithBytes: &v objCType: @encode(NSSize)];
-        }
-      else if (c == rangeValueClass)
-        {
-          NSRange	v;
-
-          [coder decodeValueOfObjCType: @encode(NSRange) at: &v];
-          DESTROY(self);
-          return [o initWithBytes: &v objCType: @encode(NSRange)];
-        }
-      else if (c == rectValueClass)
-        {
-          NSRect	v;
-
-          [coder decodeValueOfObjCType: @encode(NSRect) at: &v];
-          DESTROY(self);
-          return [o initWithBytes: &v objCType: @encode(NSRect)];
+            [coder decodeValueOfObjCType:@encode(NSRange) at:&v];
+            DESTROY(self);
+            return [o initWithBytes:&v objCType:@encode(NSRange)];
         }
     }
 
-  if (ver < 2)
+    if (ver < 2)
     {
-      if (ver < 1)
-	{
-	  if (c == pointValueClass)
-	    {
-	      NSPoint	v;
+        if (ver < 1)
+        {
+            if (c == rangeValueClass)
+            {
+                NSRange v;
 
-	      [coder decodeValueOfObjCType: @encode(NSPoint) at: &v];
-	      o = [o initWithBytes: &v objCType: @encode(NSPoint)];
-	    }
-	  else if (c == sizeValueClass)
-	    {
-	      NSSize	v;
+                [coder decodeValueOfObjCType:@encode(NSRange) at:&v];
+                o = [o initWithBytes:&v objCType:@encode(NSRange)];
+            }
+            else
+            {
+                unsigned char *data;
 
-	      [coder decodeValueOfObjCType: @encode(NSSize) at: &v];
-	      o = [o initWithBytes: &v objCType: @encode(NSSize)];
-	    }
-	  else if (c == rangeValueClass)
-	    {
-	      NSRange	v;
+                [coder decodeValueOfObjCType:@encode(unsigned) at:&size];
+                data = (void *)NSZoneMalloc(NSDefaultMallocZone(), size);
+                [coder decodeArrayOfObjCType:@encode(unsigned char)
+                 count:size
+                 at:(void*)data];
+                o = [o initWithBytes:data objCType:objctype];
+                NSZoneFree(NSDefaultMallocZone(), data);
+            }
+        }
+        else
+        {
+            NSData        *d;
+            unsigned cursor = 0;
 
-	      [coder decodeValueOfObjCType: @encode(NSRange) at: &v];
-	      o = [o initWithBytes: &v objCType: @encode(NSRange)];
-	    }
-	  else if (c == rectValueClass)
-	    {
-	      NSRect	v;
+            /*
+             * For performance, decode small values directly onto the stack,
+             * For larger values we allocate and deallocate heap space.
+             */
+            size = objc_sizeof_type(objctype);
+            if (size <= 64)
+            {
+                unsigned char data[size];
 
-	      [coder decodeValueOfObjCType: @encode(NSRect) at: &v];
-	      o = [o initWithBytes: &v objCType: @encode(NSRect)];
-	    }
-	  else
-	    {
-	      unsigned char	*data;
+                [coder decodeValueOfObjCType:@encode(id) at:&d];
+                [d deserializeDataAt:data
+                 ofObjCType:objctype
+                 atCursor:&cursor
+                 context:nil];
+                o = [o initWithBytes:data objCType:objctype];
+                RELEASE(d);
+            }
+            else
+            {
+                unsigned char *data;
 
-	      [coder decodeValueOfObjCType: @encode(unsigned) at: &size];
-	      data = (void *)NSZoneMalloc(NSDefaultMallocZone(), size);
-	      [coder decodeArrayOfObjCType: @encode(unsigned char)
-				     count: size
-					at: (void*)data];
-	      o = [o initWithBytes: data objCType: objctype];
-	      NSZoneFree(NSDefaultMallocZone(), data);
-	    }
-	}
-      else
-	{
-	  NSData        *d;
-	  unsigned      cursor = 0;
-
-	  /*
-	   * For performance, decode small values directly onto the stack,
-	   * For larger values we allocate and deallocate heap space.
-	   */
-	  size = objc_sizeof_type(objctype);
-	  if (size <= 64)
-	    {
-	      unsigned char data[size];
-
-	      [coder decodeValueOfObjCType: @encode(id) at: &d];
-	      [d deserializeDataAt: data
-			ofObjCType: objctype
-			  atCursor: &cursor
-			   context: nil];
-	      o = [o initWithBytes: data objCType: objctype];
-	      RELEASE(d);
-	    }
-	  else
-	    {
-	      unsigned char *data;
-
-	      data = (void *)NSZoneMalloc(NSDefaultMallocZone(), size);
-	      [coder decodeValueOfObjCType: @encode(id) at: &d];
-	      [d deserializeDataAt: data
-			ofObjCType: objctype
-			  atCursor: &cursor
-			   context: nil];
-	      o = [o initWithBytes: data objCType: objctype];
-	      RELEASE(d);
-	      NSZoneFree(NSDefaultMallocZone(), data);
-	    }
-	}
+                data = (void *)NSZoneMalloc(NSDefaultMallocZone(), size);
+                [coder decodeValueOfObjCType:@encode(id) at:&d];
+                [d deserializeDataAt:data
+                 ofObjCType:objctype
+                 atCursor:&cursor
+                 context:nil];
+                o = [o initWithBytes:data objCType:objctype];
+                RELEASE(d);
+                NSZoneFree(NSDefaultMallocZone(), data);
+            }
+        }
     }
-  else
+    else
     {
-      static NSData	*d = nil;
-      unsigned  	cursor = 0;
+        static NSData *d = nil;
+        unsigned cursor = 0;
 
-      if (d == nil)
-	{
-	  d = [NSDataStatic allocWithZone: NSDefaultMallocZone()];
-	}
-      /*
-       * For performance, decode small values directly onto the stack,
-       * For larger values we allocate and deallocate heap space.
-       */
-      size = objc_sizeof_type(objctype);
-      if (size <= 64)
-	{
-	  unsigned char	data[size];
+        if (d == nil)
+        {
+            d = [NSDataStatic allocWithZone:NSDefaultMallocZone()];
+        }
+        /*
+         * For performance, decode small values directly onto the stack,
+         * For larger values we allocate and deallocate heap space.
+         */
+        size = objc_sizeof_type(objctype);
+        if (size <= 64)
+        {
+            unsigned char data[size];
 
-	  [coder decodeValueOfObjCType: @encode(unsigned) at: &size];
-	  {
-	    unsigned char	serialized[size];
+            [coder decodeValueOfObjCType:@encode(unsigned) at:&size];
+            {
+                unsigned char serialized[size];
 
-	    [coder decodeArrayOfObjCType: @encode(unsigned char)
-				   count: size
-				      at: (void*)serialized];
-	    d = [d initWithBytesNoCopy: (void*)serialized length: size];
-	    [d deserializeDataAt: data
-		      ofObjCType: objctype
-			atCursor: &cursor
-			 context: nil];
-	  }
-	  o = [o initWithBytes: data objCType: objctype];
-	}
-      else
-	{
-	  void	*data;
+                [coder decodeArrayOfObjCType:@encode(unsigned char)
+                 count:size
+                 at:(void*)serialized];
+                d = [d initWithBytesNoCopy:(void*)serialized length:size freeWhenDone:NO];
+                [d deserializeDataAt:data
+                 ofObjCType:objctype
+                 atCursor:&cursor
+                 context:nil];
+            }
+            o = [o initWithBytes:data objCType:objctype];
+        }
+        else
+        {
+            void  *data;
 
-	  data = (void *)NSZoneMalloc(NSDefaultMallocZone(), size);
-	  [coder decodeValueOfObjCType: @encode(unsigned) at: &size];
-	  {
-	    void	*serialized;
+            data = (void *)NSZoneMalloc(NSDefaultMallocZone(), size);
+            [coder decodeValueOfObjCType:@encode(unsigned) at:&size];
+            {
+                void    *serialized;
 
-	    serialized = (void *)NSZoneMalloc(NSDefaultMallocZone(), size);
-	    [coder decodeArrayOfObjCType: @encode(unsigned char)
-				   count: size
-				      at: serialized];
-	    d = [d initWithBytesNoCopy: serialized length: size];
-	    [d deserializeDataAt: data
-		      ofObjCType: objctype
-			atCursor: &cursor
-			 context: nil];
-	    NSZoneFree(NSDefaultMallocZone(), serialized);
-	  }
-	  o = [o initWithBytes: data objCType: objctype];
-	  NSZoneFree(NSDefaultMallocZone(), data);
-	}
+                serialized = (void *)NSZoneMalloc(NSDefaultMallocZone(), size);
+                [coder decodeArrayOfObjCType:@encode(unsigned char)
+                 count:size
+                 at:serialized];
+                d = [d initWithBytesNoCopy:serialized length:size freeWhenDone:YES];
+                [d deserializeDataAt:data
+                 ofObjCType:objctype
+                 atCursor:&cursor
+                 context:nil];
+                NSZoneFree(NSDefaultMallocZone(), serialized);
+            }
+            o = [o initWithBytes:data objCType:objctype];
+            NSZoneFree(NSDefaultMallocZone(), data);
+        }
     }
-  if (objctype != type)
+    if (objctype != type)
     {
-      NSZoneFree(NSDefaultMallocZone(), (void*)objctype);
+        NSZoneFree(NSDefaultMallocZone(), (void*)objctype);
     }
-  DESTROY(self);
-  self = o;
-  return self;
+    DESTROY(self);
+    self = o;
+    return self;
 }
 
 @end
 
-
 
-@implementation	GSPlaceholderValue
+@implementation GSPlaceholderValue
 
-- (id) autorelease
+- (id)autorelease
 {
-  NSWarnLog(@"-autorelease sent to uninitialised value");
-  return self;		// placeholders never get released.
+    NSWarnLog(@"-autorelease sent to uninitialised value");
+    return self;    // placeholders never get released.
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  GSNOSUPERDEALLOC;	// placeholders never get deallocated.
+    GSNOSUPERDEALLOC; // placeholders never get deallocated.
 }
 
-- (void) getValue: (void*)data
+- (void)getValue:(void*)data
 {
-  [NSException raise: NSInternalInconsistencyException
-	      format: @"attempt to use uninitialised value"];
+    [NSException raise:NSInternalInconsistencyException
+     format:@"attempt to use uninitialised value"];
 }
 
-- (id) initWithBytes: (const void*)data objCType: (const char*)type
+- (id)initWithBytes:(const void*)data objCType:(const char*)type
 {
-  Class		c = [abstractClass valueClassWithObjCType: type];
+    Class c = [abstractClass valueClassWithObjCType:type];
 
-  self = (id)NSAllocateObject(c, 0, [self zone]);
-  return [self initWithBytes: data objCType: type];
+    self = (id)NSAllocateObject(c, 0, [self zone]);
+    return [self initWithBytes:data objCType:type];
 }
 
-- (const char*) objCType
+- (const char*)objCType
 {
-  [NSException raise: NSInternalInconsistencyException
-	      format: @"attempt to use uninitialised value"];
-  return 0;
+    [NSException raise:NSInternalInconsistencyException
+     format:@"attempt to use uninitialised value"];
+    return 0;
 }
 
-- (void) release
+- (void)release
 {
-  return;		// placeholders never get released.
+    return;     // placeholders never get released.
 }
 
-- (id) retain
+- (id)retain
 {
-  return self;		// placeholders never get retained.
+    return self;    // placeholders never get retained.
 }
 @end
 

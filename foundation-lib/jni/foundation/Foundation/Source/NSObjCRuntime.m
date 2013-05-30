@@ -23,11 +23,13 @@
 
    <title>NSObjCRuntime class reference</title>
    $Date: 2010-09-09 08:06:09 -0700 (Thu, 09 Sep 2010) $ $Revision: 31265 $
-   */
+ */
 
 #import "common.h"
 #import "Foundation/NSException.h"
 #include <string.h>
+
+double NSFoundationVersionNumber = NSFoundationVersionNumber_iOS_5_1;
 
 /**
  * Returns a string object containing the name for
@@ -36,23 +38,24 @@
 NSString *
 NSStringFromProtocol(Protocol *aProtocol)
 {
-  if (aProtocol != (Protocol*)0)
-    return [NSString stringWithUTF8String: protocol_getName(aProtocol)];
-  return nil;
+    if (aProtocol != (Protocol*)0) {
+        return [NSString stringWithUTF8String:protocol_getName(aProtocol)];
+    }
+    return nil;
 }
 
 /**
  * Returns the protocol whose name is supplied in the
  * aProtocolName argument, or 0 if a nil string is supplied.
  */
-Protocol *   
+Protocol *
 NSProtocolFromString(NSString *aProtocolName)
 {
-  if (aProtocolName != nil)
+    if (aProtocolName != nil)
     {
-      return GSProtocolFromName ([aProtocolName cStringUsingEncoding:NSASCIIStringEncoding]);
+        return GSProtocolFromName ([aProtocolName cStringUsingEncoding:NSASCIIStringEncoding]);
     }
-  return (Protocol*)0;
+    return (Protocol*)0;
 }
 
 /**
@@ -62,9 +65,10 @@ NSProtocolFromString(NSString *aProtocolName)
 NSString *
 NSStringFromSelector(SEL aSelector)
 {
-  if (aSelector != (SEL)0)
-    return [NSString stringWithUTF8String: sel_getName(aSelector)];
-  return nil;
+    if (aSelector != (SEL)0) {
+        return [NSString stringWithUTF8String:sel_getName(aSelector)];
+    }
+    return nil;
 }
 
 /**
@@ -74,11 +78,11 @@ NSStringFromSelector(SEL aSelector)
 SEL
 NSSelectorFromString(NSString *aSelectorName)
 {
-  if (aSelectorName != nil)
+    if (aSelectorName != nil)
     {
-      return sel_registerName ([aSelectorName cStringUsingEncoding:NSASCIIStringEncoding]);
+        return sel_registerName ([aSelectorName cStringUsingEncoding:NSASCIIStringEncoding]);
     }
-  return (SEL)0;
+    return (SEL)0;
 }
 
 /**
@@ -88,7 +92,7 @@ NSSelectorFromString(NSString *aSelectorName)
 BOOL
 NSSelectorsEqual(SEL sel1, SEL sel2)
 {
-  return sel_isEqual(sel1,sel2);
+    return sel_isEqual(sel1,sel2);
 }
 
 /**
@@ -98,11 +102,11 @@ NSSelectorsEqual(SEL sel1, SEL sel2)
 Class
 NSClassFromString(NSString *aClassName)
 {
-  if (aClassName != nil)
+    if (aClassName != nil)
     {
-      return objc_lookUpClass ([aClassName cStringUsingEncoding:NSASCIIStringEncoding]);
+        return objc_lookUpClass ([aClassName cStringUsingEncoding:NSASCIIStringEncoding]);
     }
-  return (Class)0;
+    return (Class)0;
 }
 
 /**
@@ -112,9 +116,10 @@ NSClassFromString(NSString *aClassName)
 NSString *
 NSStringFromClass(Class aClass)
 {
-  if (aClass != (Class)0)
-    return [NSString stringWithUTF8String: (char*)class_getName(aClass)];
-  return nil;
+    if (aClass != (Class)0) {
+        return [NSString stringWithUTF8String:(char*)class_getName(aClass)];
+    }
+    return nil;
 }
 
 /**
@@ -128,31 +133,31 @@ NSStringFromClass(Class aClass)
  */
 const char *
 NSGetSizeAndAlignment(const char *typePtr,
-  NSUInteger *sizep, NSUInteger *alignp)
+                      NSUInteger *sizep, NSUInteger *alignp)
 {
-  if (typePtr != NULL)
+    if (typePtr != NULL)
     {
-      /* Skip any offset, but don't call objc_skip_offset() as that's buggy.
-       */
-      if (*typePtr == '+' || *typePtr == '-')
-	{
-	  typePtr++;
-	}
-      while (isdigit(*typePtr))
-	{
-	  typePtr++;
-	}
-      typePtr = objc_skip_type_qualifiers (typePtr);
-      if (sizep)
-	{
-          *sizep = objc_sizeof_type (typePtr);
-	}
-      if (alignp)
-	{
-          *alignp = objc_alignof_type (typePtr);
-	}
-      typePtr = objc_skip_typespec (typePtr);
+        /* Skip any offset, but don't call objc_skip_offset() as that's buggy.
+         */
+        if (*typePtr == '+' || *typePtr == '-')
+        {
+            typePtr++;
+        }
+        while (isdigit(*typePtr))
+        {
+            typePtr++;
+        }
+        typePtr = objc_skip_type_qualifiers (typePtr);
+        if (sizep)
+        {
+            *sizep = objc_sizeof_type (typePtr);
+        }
+        if (alignp)
+        {
+            *alignp = objc_alignof_type (typePtr);
+        }
+        typePtr = objc_skip_typespec (typePtr);
     }
-  return typePtr;
+    return typePtr;
 }
 

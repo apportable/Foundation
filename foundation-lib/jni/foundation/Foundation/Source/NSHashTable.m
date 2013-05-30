@@ -34,276 +34,274 @@
 #import "GSPrivate.h"
 #import "GNUstepBase/NSObject+GNUstepBase.h"
 
-@interface	NSConcreteHashTable : NSHashTable
+@interface  NSConcreteHashTable : NSHashTable
 @end
 
-@implementation	NSHashTable
+@implementation NSHashTable
 
 
-static Class	abstractClass = 0;
-static Class	concreteClass = 0;
+static Class abstractClass = 0;
+static Class concreteClass = 0;
 
-+ (id) allocWithZone: (NSZone*)aZone
++ (id)allocWithZone:(NSZone*)aZone
 {
-  if (self == abstractClass)
+    if (self == abstractClass)
     {
-      return NSAllocateObject(concreteClass, 0, aZone);
+        return NSAllocateObject(concreteClass, 0, aZone);
     }
-  return NSAllocateObject(self, 0, aZone);
+    return NSAllocateObject(self, 0, aZone);
 }
 
-+ (void) initialize
++ (void)initialize
 {
-  if (abstractClass == 0)
+    if (abstractClass == 0)
     {
-      abstractClass = [NSHashTable class];
-      concreteClass = [NSConcreteHashTable class];
-    }
-}
-
-+ (id) hashTableWithOptions: (NSPointerFunctionsOptions)options
-{
-  NSHashTable	*t;
-
-  t = [self allocWithZone: NSDefaultMallocZone()];
-  t = [t initWithOptions: options
-		capacity: 0];
-  return AUTORELEASE(t);
-}
-
-+ (id) hashTableWithWeakObjects
-{
-  return [self hashTableWithOptions:
-    NSPointerFunctionsObjectPersonality | NSPointerFunctionsZeroingWeakMemory];
-}
-
-- (id) initWithOptions: (NSPointerFunctionsOptions)options
-	      capacity: (NSUInteger)initialCapacity
-{
-  NSPointerFunctions	*k;
-  id			o;
-
-  k = [[NSPointerFunctions alloc] initWithOptions: options];
-  o = [self initWithPointerFunctions: k capacity: initialCapacity];
-#if	!GS_WITH_GC
-  [k release];
-#endif
-  return o;
-}
-
-- (id) initWithPointerFunctions: (NSPointerFunctions*)functions
-		capacity: (NSUInteger)initialCapacity
-{
-  return [self subclassResponsibility: _cmd];
-}
-
-- (void) addObject: (id)object
-{
-  [self subclassResponsibility: _cmd];
-}
-
-- (NSArray*) allObjects
-{
-  NSEnumerator	*enumerator;
-  unsigned	nodeCount = [self count];
-  unsigned	index;
-  NSArray	*a;
-  GS_BEGINITEMBUF(objects, nodeCount, id);
-
-  enumerator = [self objectEnumerator];
-  index = 0;
-  while (index < nodeCount && (objects[index] = [enumerator nextObject]) != nil)
-    {
-      index++;
-    }
-  a = [[[NSArray alloc] initWithObjects: objects count: index] autorelease];
-  GS_ENDITEMBUF();
-  return a;
-}
-
-- (id) anyObject
-{
-  return [[self objectEnumerator] nextObject];
-}
-
-- (BOOL) containsObject: (id)anObject
-{
-  return [self member: anObject] ? YES : NO;
-}
-
-- (id) copyWithZone: (NSZone*)aZone
-{
-  return [self subclassResponsibility: _cmd];
-}
-
-- (NSUInteger) count
-{
-  return (NSUInteger)[self subclassResponsibility: _cmd];
-}
-
-- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState*)state 	
-				   objects: (id*)stackbuf
-				     count: (NSUInteger)len
-{
-  return (NSUInteger)[self subclassResponsibility: _cmd];
-}
-
-- (void) encodeWithCoder: (NSCoder*)aCoder
-{
-  [self subclassResponsibility: _cmd];
-}
-
-- (NSUInteger) hash
-{
-  return [self count];
-}
-
-- (id) initWithCoder: (NSCoder*)aCoder
-{
-  return [self subclassResponsibility: _cmd];
-}
-
-- (void) intersectHashTable: (NSHashTable*)other
-{
-  unsigned		count = [self count];
-
-  if (count > 0)
-    {
-      NSEnumerator	*enumerator;
-      NSMutableArray	*array;
-      id		object;
-
-      array = [NSMutableArray arrayWithCapacity: count];
-      enumerator = [self objectEnumerator];
-      while ((object = [enumerator nextObject]) != nil)
-	{
-	  if ([other member: object] == nil)
-	    {
-	      [array addObject: object];
-	    }
-	}
-      enumerator = [array objectEnumerator];
-      while ((object = [enumerator nextObject]) != nil)
-	{
-	  [self removeObject: object];
-	}
+        abstractClass = [NSHashTable class];
+        concreteClass = [NSConcreteHashTable class];
     }
 }
 
-- (BOOL) intersectsHashTable: (NSHashTable*)other
++ (id)hashTableWithOptions:(NSPointerFunctionsOptions)options
 {
-  NSEnumerator	*enumerator;
-  id		object;
+    NSHashTable   *t;
 
-  enumerator = [self objectEnumerator];
-  while ((object = [enumerator nextObject]) != nil)
+    t = [self allocWithZone:NSDefaultMallocZone()];
+    t = [t initWithOptions:options
+         capacity:0];
+    return AUTORELEASE(t);
+}
+
++ (id)hashTableWithWeakObjects
+{
+    return [self hashTableWithOptions:
+            NSPointerFunctionsObjectPersonality | NSPointerFunctionsZeroingWeakMemory];
+}
+
+- (id)initWithOptions:(NSPointerFunctionsOptions)options
+    capacity:(NSUInteger)initialCapacity
+{
+    NSPointerFunctions    *k;
+    id o;
+
+    k = [[NSPointerFunctions alloc] initWithOptions:options];
+    o = [self initWithPointerFunctions:k capacity:initialCapacity];
+    [k release];
+    return o;
+}
+
+- (id)initWithPointerFunctions:(NSPointerFunctions*)functions
+    capacity:(NSUInteger)initialCapacity
+{
+    return [self subclassResponsibility:_cmd];
+}
+
+- (void)addObject:(id)object
+{
+    [self subclassResponsibility:_cmd];
+}
+
+- (NSArray*)allObjects
+{
+    NSEnumerator  *enumerator;
+    unsigned nodeCount = [self count];
+    unsigned index;
+    NSArray   *a;
+    GS_BEGINITEMBUF(objects, nodeCount, id);
+
+    enumerator = [self objectEnumerator];
+    index = 0;
+    while (index < nodeCount && (objects[index] = [enumerator nextObject]) != nil)
     {
-      if ([other member: object] != nil)
-	{
-	  return YES;
-	}
+        index++;
     }
-  return NO;
+    a = [[[NSArray alloc] initWithObjects:objects count:index] autorelease];
+    GS_ENDITEMBUF();
+    return a;
 }
 
-- (BOOL) isEqual: (id)other
+- (id)anyObject
 {
-  if ([other isKindOfClass: abstractClass] == NO) return NO;
-  return NSCompareHashTables(self, other);
+    return [[self objectEnumerator] nextObject];
 }
 
-- (BOOL) isEqualToHashTable: (NSHashTable*)other
+- (BOOL)containsObject:(id)anObject
 {
-  return NSCompareHashTables(self, other);
+    return [self member:anObject] ? YES : NO;
 }
 
-- (BOOL) isSubsetOfHashTable: (NSHashTable*)other
+- (id)copyWithZone:(NSZone*)aZone
 {
-  NSEnumerator	*enumerator;
-  id		object;
+    return [self subclassResponsibility:_cmd];
+}
 
-  enumerator = [self objectEnumerator];
-  while ((object = [enumerator nextObject]) != nil)
+- (NSUInteger)count
+{
+    return (NSUInteger)[self subclassResponsibility : _cmd];
+}
+
+- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState*)state
+    objects:(id*)stackbuf
+    count:(NSUInteger)len
+{
+    return (NSUInteger)[self subclassResponsibility : _cmd];
+}
+
+- (void)encodeWithCoder:(NSCoder*)aCoder
+{
+    [self subclassResponsibility:_cmd];
+}
+
+- (NSUInteger)hash
+{
+    return [self count];
+}
+
+- (id)initWithCoder:(NSCoder*)aCoder
+{
+    return [self subclassResponsibility:_cmd];
+}
+
+- (void)intersectHashTable:(NSHashTable*)other
+{
+    unsigned count = [self count];
+
+    if (count > 0)
     {
-      if ([other member: object] == nil)
-	{
-	  return NO;
-	}
+        NSEnumerator  *enumerator;
+        NSMutableArray    *array;
+        id object;
+
+        array = [NSMutableArray arrayWithCapacity:count];
+        enumerator = [self objectEnumerator];
+        while ((object = [enumerator nextObject]) != nil)
+        {
+            if ([other member:object] == nil)
+            {
+                [array addObject:object];
+            }
+        }
+        enumerator = [array objectEnumerator];
+        while ((object = [enumerator nextObject]) != nil)
+        {
+            [self removeObject:object];
+        }
     }
-  return YES;
 }
 
-- (id) member: (id)object
+- (BOOL)intersectsHashTable:(NSHashTable*)other
 {
-  return [self subclassResponsibility: _cmd];
-}
+    NSEnumerator  *enumerator;
+    id object;
 
-- (void) minusHashTable: (NSHashTable*)other
-{
-  if ([self count] > 0 && [other count] > 0)
+    enumerator = [self objectEnumerator];
+    while ((object = [enumerator nextObject]) != nil)
     {
-      NSEnumerator	*enumerator;
-      id		object;
+        if ([other member:object] != nil)
+        {
+            return YES;
+        }
+    }
+    return NO;
+}
 
-      enumerator = [other objectEnumerator];
-      while ((object = [enumerator nextObject]) != nil)
-	{
-	  [self removeObject: object];
-	}
+- (BOOL)isEqual:(id)other
+{
+    if ([other isKindOfClass:abstractClass] == NO) { return NO; }
+    return NSCompareHashTables(self, other);
+}
+
+- (BOOL)isEqualToHashTable:(NSHashTable*)other
+{
+    return NSCompareHashTables(self, other);
+}
+
+- (BOOL)isSubsetOfHashTable:(NSHashTable*)other
+{
+    NSEnumerator  *enumerator;
+    id object;
+
+    enumerator = [self objectEnumerator];
+    while ((object = [enumerator nextObject]) != nil)
+    {
+        if ([other member:object] == nil)
+        {
+            return NO;
+        }
+    }
+    return YES;
+}
+
+- (id)member:(id)object
+{
+    return [self subclassResponsibility:_cmd];
+}
+
+- (void)minusHashTable:(NSHashTable*)other
+{
+    if ([self count] > 0 && [other count] > 0)
+    {
+        NSEnumerator  *enumerator;
+        id object;
+
+        enumerator = [other objectEnumerator];
+        while ((object = [enumerator nextObject]) != nil)
+        {
+            [self removeObject:object];
+        }
     }
 }
 
-- (NSEnumerator*) objectEnumerator
+- (NSEnumerator*)objectEnumerator
 {
-  return [self subclassResponsibility: _cmd];
+    return [self subclassResponsibility:_cmd];
 }
 
-- (NSPointerFunctions*) pointerFunctions
+- (NSPointerFunctions*)pointerFunctions
 {
-  return [self subclassResponsibility: _cmd];
+    return [self subclassResponsibility:_cmd];
 }
 
-- (void) removeAllObjects
+- (void)removeAllObjects
 {
-  NSEnumerator	*enumerator;
-  id		object;
+    NSEnumerator  *enumerator;
+    id object;
 
-  enumerator = [[self allObjects] objectEnumerator];
-  while ((object = [enumerator nextObject]) != nil)
+    enumerator = [[self allObjects] objectEnumerator];
+    while ((object = [enumerator nextObject]) != nil)
     {
-      [self removeObject: object];
+        [self removeObject:object];
     }
 }
 
-- (void) removeObject: (id)object
+- (void)removeObject:(id)object
 {
-  [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
 }
 
-- (NSSet*) setRepresentation 
+- (NSSet*)setRepresentation
 {
-  NSEnumerator	*enumerator;
-  NSMutableSet	*set;
-  id		object;
+    NSEnumerator  *enumerator;
+    NSMutableSet  *set;
+    id object;
 
-  set = [NSMutableSet setWithCapacity: [self count]];
-  enumerator = [[self allObjects] objectEnumerator];
-  while ((object = [enumerator nextObject]) != nil)
+    set = [NSMutableSet setWithCapacity:[self count]];
+    enumerator = [[self allObjects] objectEnumerator];
+    while ((object = [enumerator nextObject]) != nil)
     {
-      [set addObject: object];
+        [set addObject:object];
     }
-  return [[set copy] autorelease];
+    return [[set copy] autorelease];
 }
 
-- (void) unionHashTable: (NSHashTable*)other
+- (void)unionHashTable:(NSHashTable*)other
 {
-  NSEnumerator	*enumerator;
-  id		object;
+    NSEnumerator  *enumerator;
+    id object;
 
-  enumerator = [other objectEnumerator];
-  while ((object = [enumerator nextObject]) != nil)
+    enumerator = [other objectEnumerator];
+    while ((object = [enumerator nextObject]) != nil)
     {
-      [self addObject: object];
+        [self addObject:object];
     }
 }
 

@@ -3,151 +3,151 @@
 
    Written by:  Richard Frith-Macdonald <rfm@gnu.org>
    Date: 2006
-   
+
    This file is part of the GNUstep Base Library.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
    version 2 of the License, or (at your option) any later version.
-   
+
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Library General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
-   */ 
+ */
 
 #import "common.h"
 
-#define	EXPOSE_NSURLCredential_IVARS	1
+#define EXPOSE_NSURLCredential_IVARS    1
 #import "GSURLPrivate.h"
 
 // Internal data storage
 typedef struct {
-  NSString			*user;
-  NSString			*password;
-  NSURLCredentialPersistence	persistence;
-  BOOL				hasPassword;
+    NSString          *user;
+    NSString          *password;
+    NSURLCredentialPersistence persistence;
+    BOOL hasPassword;
 } Internal;
- 
-#define	this	((Internal*)(self->_NSURLCredentialInternal))
 
-@implementation	NSURLCredential
+#define this    ((Internal*)(self->_NSURLCredentialInternal))
 
-+ (id) allocWithZone: (NSZone*)z
+@implementation NSURLCredential
+
++ (id)allocWithZone:(NSZone*)z
 {
-  NSURLCredential	*o = [super allocWithZone: z];
+    NSURLCredential   *o = [super allocWithZone:z];
 
-  if (o != nil)
+    if (o != nil)
     {
-      o->_NSURLCredentialInternal = NSZoneCalloc(z, 1, sizeof(Internal));
+        o->_NSURLCredentialInternal = NSZoneCalloc(z, 1, sizeof(Internal));
     }
-  return o;
+    return o;
 }
 
-+ (NSURLCredential *) credentialWithUser: (NSString *)user
-  password: (NSString *)password
-  persistence: (NSURLCredentialPersistence)persistence
++ (NSURLCredential *)credentialWithUser:(NSString *)user
+    password:(NSString *)password
+    persistence:(NSURLCredentialPersistence)persistence
 {
-  NSURLCredential	*o = [self alloc];
+    NSURLCredential   *o = [self alloc];
 
-  o = [o initWithUser: user password: password persistence: persistence];
-  return AUTORELEASE(o);
+    o = [o initWithUser:user password:password persistence:persistence];
+    return AUTORELEASE(o);
 }
 
-- (id) copyWithZone: (NSZone*)z
+- (id)copyWithZone:(NSZone*)z
 {
-  NSURLCredential	*o;
+    NSURLCredential   *o;
 
-  if (NSShouldRetainWithZone(self, z) == YES)
+    if (NSShouldRetainWithZone(self, z) == YES)
     {
-      o = RETAIN(self);
+        o = RETAIN(self);
     }
-  else
+    else
     {
-      o = [[self class] allocWithZone: z];
-      o = [o initWithUser: this->user
-		 password: this->password
-	      persistence: this->persistence];
+        o = [[self class] allocWithZone:z];
+        o = [o initWithUser:this->user
+             password:this->password
+             persistence:this->persistence];
     }
-  return o;
+    return o;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  if (this != 0)
+    if (this != 0)
     {
-      RELEASE(this->user);
-      RELEASE(this->password);
-      NSZoneFree([self zone], this);
+        RELEASE(this->user);
+        RELEASE(this->password);
+        NSZoneFree([self zone], this);
     }
-  [super dealloc];
+    [super dealloc];
 }
 
-- (BOOL) hasPassword
+- (BOOL)hasPassword
 {
-  return this->hasPassword;
+    return this->hasPassword;
 }
 
-- (NSUInteger) hash
+- (NSUInteger)hash
 {
-  return [this->user hash];
+    return [this->user hash];
 }
 
-- (id) initWithUser: (NSString *)user
-	   password: (NSString *)password
-	persistence: (NSURLCredentialPersistence)persistence
+- (id)initWithUser:(NSString *)user
+    password:(NSString *)password
+    persistence:(NSURLCredentialPersistence)persistence
 {
-  if (user == nil)
+    if (user == nil)
     {
-      DESTROY(self);
-      return nil;
+        DESTROY(self);
+        return nil;
     }
-  if ((self = [super init]) != nil)
+    if ((self = [super init]) != nil)
     {
-      this->user = [user copy];
-      this->password = [password copy];
-      this->persistence = persistence;
-      this->hasPassword = (this->password == nil) ? NO : YES;
-      if (persistence == NSURLCredentialPersistencePermanent)
+        this->user = [user copy];
+        this->password = [password copy];
+        this->persistence = persistence;
+        this->hasPassword = (this->password == nil) ? NO : YES;
+        if (persistence == NSURLCredentialPersistencePermanent)
         {
-	// FIXME ... should check to see if we really have a password
-	}
+            // FIXME ... should check to see if we really have a password
+        }
     }
-  return self;
+    return self;
 }
 
-- (BOOL) isEqual: (id)other
+- (BOOL)isEqual:(id)other
 {
-  if ((id)self == other)
+    if ((id)self == other)
     {
-      return YES;
+        return YES;
     }
-  if ([other isKindOfClass: [NSURLCredential class]] == NO)
+    if ([other isKindOfClass:[NSURLCredential class]] == NO)
     {
-      return NO;
+        return NO;
     }
-  return [[(NSURLCredential*)other user] isEqualToString: this->user];
+    return [[(NSURLCredential*)other user] isEqualToString:this->user];
 }
 
-- (NSString *) password
+- (NSString *)password
 {
-  return this->password;
+    return this->password;
 }
 
-- (NSURLCredentialPersistence) persistence
+- (NSURLCredentialPersistence)persistence
 {
-  return this->persistence;
+    return this->persistence;
 }
 
-- (NSString *) user
+- (NSString *)user
 {
-  return this->user;
+    return this->user;
 }
 
 @end

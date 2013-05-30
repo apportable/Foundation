@@ -21,25 +21,25 @@
    Boston, MA 02111 USA.
 
    $Date: 2010-02-17 11:47:06 +0000 (Wed, 17 Feb 2010) $ $Revision: 29657 $
-*/
+ */
 
 #import "common.h"
 #import "Foundation/NSThread.h"
 
-#if	defined(NeXT_Foundation_LIBRARY)
+#if defined(NeXT_Foundation_LIBRARY)
 
 /* These functions are in NSThread.m in the base library.
  */
 NSThread*
 GSCurrentThread(void)
 {
-  return [NSThread currentThread];
+    return [NSThread currentThread];
 }
 
 NSMutableDictionary*
 GSCurrentThreadDictionary(void)
 {
-  return [GSCurrentThread() threadDictionary];
+    return [GSCurrentThread() threadDictionary];
 }
 
 #endif

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <dlfcn.h>
 #include <android/log.h>
+#include <pthread.h>
 
 void __cyg_log_func_enter(const char *)
        __attribute__ ((no_instrument_function));

@@ -21,7 +21,7 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-*/
+ */
 #import "common.h"
 #import "Foundation/NSException.h"
 #import "Foundation/NSDebug.h"
@@ -33,88 +33,89 @@
  */
 @implementation NSObject (GNUstepBase)
 
-+ (id) notImplemented: (SEL)selector
++ (id)notImplemented:(SEL)selector
 {
-  [NSException raise: NSGenericException
-    format: @"method %@ not implemented in %s(class)",
-    selector ? (id)NSStringFromSelector(selector) : (id)@"(null)",
-    NSStringFromClass(self)];
-  return nil;
+    [NSException raise:NSGenericException
+     format:@"method %@ not implemented in %s(class)",
+     selector ? (id)NSStringFromSelector(selector):(id)@"(null)",
+     NSStringFromClass(self)];
+    return nil;
 }
 
-- (NSComparisonResult) compare: (id)anObject
+- (NSComparisonResult)compare:(id)anObject
 {
-  NSLog(@"WARNING: The -compare: method for NSObject is deprecated.");
+    NSLog(@"WARNING: The -compare: method for NSObject is deprecated.");
 
-  if (anObject == self)
+    if (anObject == self)
     {
-      return NSOrderedSame;
+        return NSOrderedSame;
     }
-  if (anObject == nil)
+    if (anObject == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-		   format: @"nil argument for compare:"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"nil argument for compare:"];
     }
-  if ([self isEqual: anObject])
+    if ([self isEqual:anObject])
     {
-      return NSOrderedSame;
+        return NSOrderedSame;
     }
-  /*
-   * Ordering objects by their address is pretty useless,
-   * so subclasses should override this is some useful way.
-   */
-  if ((id)self > anObject)
+    /*
+     * Ordering objects by their address is pretty useless,
+     * so subclasses should override this is some useful way.
+     */
+    if ((id)self > anObject)
     {
-      return NSOrderedDescending;
+        return NSOrderedDescending;
     }
-  else
+    else
     {
-      return NSOrderedAscending;
+        return NSOrderedAscending;
     }
 }
 
-- (BOOL) isInstance
+- (BOOL)isInstance
 {
-  GSOnceMLog(@"Warning, the -isInstance method is deprecated. "
-    @"Use 'class_isMetaClass([self class]) ? NO : YES' instead");
-  return class_isMetaClass([self class]) ? NO : YES;
+    GSOnceMLog(@"Warning, the -isInstance method is deprecated. "
+               @"Use 'class_isMetaClass([self class]) ? NO : YES' instead");
+    return class_isMetaClass([self class]) ? NO : YES;
 }
 
-- (id) makeImmutableCopyOnFail: (BOOL)force
+- (id)makeImmutableCopyOnFail:(BOOL)force
 {
-  if (force == YES)
+    if (force == YES)
     {
-      return AUTORELEASE([self copy]);
+        return AUTORELEASE([self copy]);
     }
-  return self;
+    return self;
 }
 
-- (id) notImplemented: (SEL)aSel
+- (id)notImplemented:(SEL)aSel
 {
-  [NSException
-    raise: NSGenericException
-    format: @"method %@ not implemented in %@(%s)",
-    aSel ? (id)NSStringFromSelector(aSel) : (id)@"(null)",
-    NSStringFromClass([self class]),
-    GSObjCIsInstance(self) ? "instance" : "class"];
-  return nil;
+    [NSException
+     raise:NSGenericException
+     format:@"method %@ not implemented in %@(%s)",
+     aSel ? (id)NSStringFromSelector(aSel):(id)@"(null)",
+     NSStringFromClass([self class]),
+     GSObjCIsInstance(self) ? "instance":"class"];
+    return nil;
 }
 
-- (id) shouldNotImplement: (SEL)aSel
+- (id)shouldNotImplement:(SEL)aSel
 {
-  [NSException
-    raise: NSGenericException
-    format: @"%@(%s) should not implement %@",
-    NSStringFromClass([self class]),
-    GSObjCIsInstance(self) ? "instance" : "class",
-    aSel ? (id)NSStringFromSelector(aSel) : (id)@"(null)"];
-  return nil;
+    [NSException
+     raise:NSGenericException
+     format:@"%@(%s) should not implement %@",
+     NSStringFromClass([self class]),
+     GSObjCIsInstance(self) ? "instance":"class",
+     aSel ? (id)NSStringFromSelector(aSel):(id)@"(null)"];
+    return nil;
 }
 
-- (id) subclassResponsibility: (SEL)aSel
+- (id)subclassResponsibility:(SEL)aSel
 {
-  DEBUG_LOG("The subclass does not handle %s correctly. Undefined behaviour may follow.", NSStringFromSelector(aSel).UTF8String);
-  return nil;
+    DEBUG_LOG("The subclass does not handle %s correctly. Undefined behaviour may follow.", NSStringFromSelector(aSel).UTF8String);
+    DEBUG_BREAK();
+    return nil;
 }
 
 @end

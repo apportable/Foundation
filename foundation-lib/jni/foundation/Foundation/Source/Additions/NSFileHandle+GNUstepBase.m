@@ -21,10 +21,10 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-*/
+ */
 #import "common.h"
 
-#if	defined(NeXT_Foundation_LIBRARY)
+#if defined(NeXT_Foundation_LIBRARY)
 
 #import "Foundation/NSByteOrder.h"
 #import "Foundation/NSHost.h"
@@ -37,127 +37,127 @@
 #define INADDR_NONE     -1
 #endif
 
-@implementation NSFileHandle(GNUstepBase)
+@implementation NSFileHandle (GNUstepBase)
 // From GSFileHandle.m
 
 static BOOL
 getAddr(NSString* name, NSString* svc, NSString* pcl, struct addrinfo **ai, struct addrinfo *hints)
 {
-  const char        *cHostn = NULL;
-  const char        *cPortn = NULL;
-  int                e = 0;
+    const char        *cHostn = NULL;
+    const char        *cPortn = NULL;
+    int e = 0;
 
-  if (!svc)
+    if (!svc)
     {
-      NSLog(@"service is nil.");
-      
-      return NO;
+        NSLog(@"service is nil.");
+
+        return NO;
     }
 
-  hints->ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
-  hints->ai_protocol = IPPROTO_IP; // accept any
+    hints->ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
+    hints->ai_protocol = IPPROTO_IP; // accept any
 
-  if (pcl)
+    if (pcl)
     {
-      if ([pcl isEqualToString:@"tcp"])
-	{
-	  hints->ai_protocol = IPPROTO_TCP;
-	  hints->ai_socktype = SOCK_STREAM;
-	}
-      else if ([pcl isEqualToString:@"udp"])
-	{
-	  hints->ai_protocol = IPPROTO_UDP;
-	} 
+        if ([pcl isEqualToString:@"tcp"])
+        {
+            hints->ai_protocol = IPPROTO_TCP;
+            hints->ai_socktype = SOCK_STREAM;
+        }
+        else if ([pcl isEqualToString:@"udp"])
+        {
+            hints->ai_protocol = IPPROTO_UDP;
+        }
     }
 
-  /*
-   *    If we were given a hostname, we use any address for that host.
-   *    Otherwise we expect the given name to be an address unless it  is
-   *    a null (any address).
-   */
-  if (name)
+    /*
+     *    If we were given a hostname, we use any address for that host.
+     *    Otherwise we expect the given name to be an address unless it  is
+     *    a null (any address).
+     */
+    if (name)
     {
-      NSHost*        host = [NSHost hostWithName: name];
-      
-      if (host != nil)
-	{
-	  name = [host address];
-	  NSLog(@"host address '%@'", name);
-	  cHostn = [name cStringUsingEncoding:NSASCIIStringEncoding];
-	}
-    }
-  
-  cPortn = [svc cStringUsingEncoding:NSASCIIStringEncoding];
-  
-  // getaddrinfo() returns zero on success or one of the error codes listed in
-  // gai_strerror(3) if an error occurs.
-  NSLog(@"cPortn '%s'", cPortn);
-                                           //&ai
-  e = getaddrinfo (cHostn, cPortn, hints, ai);
+        NSHost*        host = [NSHost hostWithName:name];
 
-  if (e != 0)
-    {
-      NSLog(@"getaddrinfo: %s", gai_strerror (e));
-      return NO;
+        if (host != nil)
+        {
+            name = [host address];
+            NSLog(@"host address '%@'", name);
+            cHostn = [name cStringUsingEncoding:NSASCIIStringEncoding];
+        }
     }
 
-  return YES;
+    cPortn = [svc cStringUsingEncoding:NSASCIIStringEncoding];
+
+    // getaddrinfo() returns zero on success or one of the error codes listed in
+    // gai_strerror(3) if an error occurs.
+    NSLog(@"cPortn '%s'", cPortn);
+    //&ai
+    e = getaddrinfo (cHostn, cPortn, hints, ai);
+
+    if (e != 0)
+    {
+        NSLog(@"getaddrinfo: %s", gai_strerror (e));
+        return NO;
+    }
+
+    return YES;
 }
 
-- (id) initAsServerAtAddress: (NSString*)a
-		     service: (NSString*)s
-		    protocol: (NSString*)p
+- (id)initAsServerAtAddress:(NSString*)a
+    service:(NSString*)s
+    protocol:(NSString*)p
 {
 #ifndef    BROKEN_SO_REUSEADDR
-  int    status = 1;
+    int status = 1;
 #endif
-  int    net;
-  struct addrinfo *ai;
-  struct addrinfo hints;
-  memset (&hints, '\0', sizeof (hints));
+    int net;
+    struct addrinfo *ai;
+    struct addrinfo hints;
+    memset (&hints, '\0', sizeof (hints));
 
-  if (getAddr(a, s, p, &ai, &hints) == NO)
+    if (getAddr(a, s, p, &ai, &hints) == NO)
     {
-      DESTROY(self);
-      NSLog(@"bad address-service-protocol combination");
-      return  nil;
+        DESTROY(self);
+        NSLog(@"bad address-service-protocol combination");
+        return nil;
     }
 
-  if ((net = socket (ai->ai_family, ai->ai_socktype,
-                     ai->ai_protocol)) < 0)
+    if ((net = socket (ai->ai_family, ai->ai_socktype,
+                       ai->ai_protocol)) < 0)
     {
-      NSLog(@"unable to create socket ai_family: %@ socktype:%@ protocol:%d - %@", (ai->ai_family == PF_INET6 ? @"PF_INET6":@"PF_INET"),
-            (ai->ai_socktype == SOCK_STREAM ? @"SOCK_STREAM":@"whatever"),
-            ai->ai_protocol,            
-            [NSError _last]);
-      DESTROY(self);
-      return nil;
+        NSLog(@"unable to create socket ai_family: %@ socktype:%@ protocol:%d - %@", (ai->ai_family == PF_INET6 ? @"PF_INET6" : @"PF_INET"),
+              (ai->ai_socktype == SOCK_STREAM ? @"SOCK_STREAM" : @"whatever"),
+              ai->ai_protocol,
+              [NSError _last]);
+        DESTROY(self);
+        return nil;
     }
 
 #ifndef    BROKEN_SO_REUSEADDR
-  /*
-   * Under decent systems, SO_REUSEADDR means that the port can be  reused
-   * immediately that this process exits.  Under some it means
-   * that multiple processes can serve the same port simultaneously.
-   * We don't want that broken behavior!
-   */
-  setsockopt(net, SOL_SOCKET, SO_REUSEADDR, (char *)&status,  sizeof(status));
+    /*
+     * Under decent systems, SO_REUSEADDR means that the port can be  reused
+     * immediately that this process exits.  Under some it means
+     * that multiple processes can serve the same port simultaneously.
+     * We don't want that broken behavior!
+     */
+    setsockopt(net, SOL_SOCKET, SO_REUSEADDR, (char *)&status,  sizeof(status));
 #endif
 
-  if (bind(net, ai->ai_addr, ai->ai_addrlen) != 0)
+    if (bind(net, ai->ai_addr, ai->ai_addrlen) != 0)
     {
-      NSLog(@"unable to bind to port %@", [NSError _last]);
-      goto cleanup;
+        NSLog(@"unable to bind to port %@", [NSError _last]);
+        goto cleanup;
     }
 
-  if (listen(net, 5) < 0)
+    if (listen(net, 5) < 0)
     {
-      NSLog(@"unable to listen on port - %@",  [NSError _last]);
-      goto cleanup;
+        NSLog(@"unable to listen on port - %@",  [NSError _last]);
+        goto cleanup;
     }
 
-  // 	struct sockaddr_storeage sstore;
-  // 	int slen = sizeof(ss);
+    //  struct sockaddr_storeage sstore;
+    //  int slen = sizeof(ss);
 
 
 //  if (getsockname(net,(struct sockaddr *)&sstore, &slen) < 0)
@@ -166,79 +166,78 @@ getAddr(NSString* name, NSString* svc, NSString* pcl, struct addrinfo **ai, stru
 //      goto cleanup;
 //    }
 
-  freeaddrinfo (ai);
-  
-  self = [self initWithFileDescriptor: net closeOnDealloc: YES];
+    freeaddrinfo (ai);
 
-  return self;
-  
+    self = [self initWithFileDescriptor:net closeOnDealloc:YES];
+
+    return self;
+
 cleanup:
-  (void) close(net);
-  freeaddrinfo (ai);
-  DESTROY(self);
-  
-  return nil;
+    (void) close(net);
+    freeaddrinfo (ai);
+    DESTROY(self);
+
+    return nil;
 }
 
-+ (id) fileHandleAsServerAtAddress: (NSString*)address
-                           service: (NSString*)service
-                          protocol: (NSString*)protocol
++ (id)fileHandleAsServerAtAddress:(NSString*)address
+    service:(NSString*)service
+    protocol:(NSString*)protocol
 {
-  id    o = [self allocWithZone: NSDefaultMallocZone()];
+    id o = [self allocWithZone:NSDefaultMallocZone()];
 
-  return AUTORELEASE([o initAsServerAtAddress: address
-                                      service: service
-                                     protocol: protocol]);
+    return AUTORELEASE([o initAsServerAtAddress:address
+                        service:service
+                        protocol:protocol]);
 }
 
-- (NSString*) socketAddress
+- (NSString*)socketAddress
 {
-  struct sockaddr_storage    sstore;
-  struct sockaddr            *sadr;
-  
-  socklen_t    size = sizeof(sstore);
-  
-  if (getsockname([self fileDescriptor], (struct sockaddr*)&sstore,  &size) < 0)
+    struct sockaddr_storage sstore;
+    struct sockaddr            *sadr;
+
+    socklen_t size = sizeof(sstore);
+
+    if (getsockname([self fileDescriptor], (struct sockaddr*)&sstore,  &size) < 0)
     {
-      NSLog(@"unable to get socket name - %@",  [NSError _last]);
-      return nil;
+        NSLog(@"unable to get socket name - %@",  [NSError _last]);
+        return nil;
     }
-  
-  sadr = (struct sockaddr *) &sstore;
-  
-  switch (sadr->sa_family)
+
+    sadr = (struct sockaddr *) &sstore;
+
+    switch (sadr->sa_family)
     {
-      case AF_INET6:
-	{
-	  char straddr[INET6_ADDRSTRLEN];
-	  struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)&sstore;
-	  
-	  inet_ntop(AF_INET6, &(addr6->sin6_addr), straddr, 
-		    sizeof(straddr));
-	  
-	  return [NSString stringWithCString: straddr 
-				    encoding: NSASCIIStringEncoding];
-	  break;
-	}
-      case AF_INET:
-	{
-	  
-	  struct sockaddr_in * addr4 = (struct sockaddr_in*) &sstore;
-	  
-	  char *address = inet_ntoa(addr4->sin_addr);
-	  
-	  return [NSString stringWithCString: address 
-				    encoding: NSASCIIStringEncoding];
-	  break;
-	} 
-      default:
-	break;
+    case AF_INET6:
+    {
+        char straddr[INET6_ADDRSTRLEN];
+        struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)&sstore;
+
+        inet_ntop(AF_INET6, &(addr6->sin6_addr), straddr,
+                  sizeof(straddr));
+
+        return [NSString stringWithCString:straddr
+                encoding:NSASCIIStringEncoding];
+        break;
     }
-  
-  return nil;
+    case AF_INET:
+    {
+        struct sockaddr_in * addr4 = (struct sockaddr_in*) &sstore;
+
+        char *address = inet_ntoa(addr4->sin_addr);
+
+        return [NSString stringWithCString:address
+                encoding:NSASCIIStringEncoding];
+        break;
+    }
+    default:
+        break;
+    }
+
+    return nil;
 }
 
 @end
 
-#endif	/* defined(NeXT_Foundation_LIBRARY) */
+#endif  /* defined(NeXT_Foundation_LIBRARY) */
 

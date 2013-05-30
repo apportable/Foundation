@@ -41,31 +41,31 @@
 unsigned int
 _NS_int_hash(void *table, void* i)
 {
-  return (unsigned)(uintptr_t)i;
+    return (unsigned)(uintptr_t)i;
 }
 
 BOOL
 _NS_int_is_equal(void *table, void* i, void* j)
 {
-  return (i == j) ? YES : NO;
+    return (i == j) ? YES : NO;
 }
 
 void
 _NS_int_retain(void *table, void* i)
 {
-  return;
+    return;
 }
 
 void
 _NS_int_release(void *table, void* i)
 {
-  return;
+    return;
 }
 
 NSString *
 _NS_int_describe(void *table, void* i)
 {
-  return [NSString stringWithFormat: @"%d", (int)(intptr_t)i];
+    return [NSString stringWithFormat:@"%d", (int)(intptr_t)i];
 }
 
 /** For owned `void *' **/
@@ -73,34 +73,35 @@ _NS_int_describe(void *table, void* i)
 unsigned int
 _NS_owned_void_p_hash(void *table, void *p)
 {
-  /* P may be aligned, so we need to compensate. */
-  return ((unsigned)(uintptr_t)p)/4;
+    /* P may be aligned, so we need to compensate. */
+    return ((unsigned)(uintptr_t)p)/4;
 }
 
 BOOL
 _NS_owned_void_p_is_equal(void *table, void *p, void *q)
 {
-  return (p == q) ? YES : NO;
+    return (p == q) ? YES : NO;
 }
 
 void
 _NS_owned_void_p_retain(void *table, void *p)
 {
-  return;
+    return;
 }
 
 void
 _NS_owned_void_p_release(void *table, void *p)
 {
-  if (p != 0)
-    objc_free(p);
-  return;
+    if (p != 0) {
+        objc_free(p);
+    }
+    return;
 }
 
 NSString *
 _NS_owned_void_p_describe(void *table, void *p)
 {
-  return [NSString stringWithFormat: @"%#x", p];
+    return [NSString stringWithFormat:@"%p", p];
 }
 
 /** For non-retained Objective-C objects **/
@@ -108,31 +109,31 @@ _NS_owned_void_p_describe(void *table, void *p)
 unsigned int
 _NS_non_retained_id_hash(void *table, id <NSObject> o)
 {
-  return [o hash];
+    return [o hash];
 }
 
 BOOL
 _NS_non_retained_id_is_equal(void *table, id <NSObject> o, id <NSObject> p)
 {
-  return [o isEqual: p];
+    return [o isEqual:p];
 }
 
 void
 _NS_non_retained_id_retain(void *table, id <NSObject> o)
 {
-  return;
+    return;
 }
 
 void
 _NS_non_retained_id_release(void *table, id <NSObject> o)
 {
-  return;
+    return;
 }
 
 NSString *
 _NS_non_retained_id_describe(void *table, id <NSObject> o)
 {
-  return [o description];
+    return [o description];
 }
 
 /** For(retainable) objects **/
@@ -140,33 +141,33 @@ _NS_non_retained_id_describe(void *table, id <NSObject> o)
 unsigned int
 _NS_id_hash(void *table, id <NSObject> o)
 {
-  return [o hash];
+    return [o hash];
 }
 
 BOOL
 _NS_id_is_equal(void *table, id <NSObject> o, id <NSObject> p)
 {
-  return [o isEqual: p];
+    return [o isEqual:p];
 }
 
 void
 _NS_id_retain(void *table, id <NSObject> o)
 {
-  IF_NO_GC(RETAIN(o));
-  return;
+    IF_NO_GC(RETAIN(o));
+    return;
 }
 
 void
 _NS_id_release(void *table, id <NSObject> o)
 {
-  RELEASE(o);
-  return;
+    RELEASE(o);
+    return;
 }
 
 NSString *
 _NS_id_describe(void *table, id <NSObject> o)
 {
-  return [o description];
+    return [o description];
 }
 
 
@@ -175,31 +176,31 @@ _NS_id_describe(void *table, id <NSObject> o)
 unsigned int
 _NS_non_owned_void_p_hash(void *table, void *p)
 {
-  return ((unsigned)(uintptr_t)p)/4;
+    return ((unsigned)(uintptr_t)p)/4;
 }
 
 BOOL
 _NS_non_owned_void_p_is_equal(void *table, void *p, void *q)
 {
-  return (p == q) ? YES : NO;
+    return (p == q) ? YES : NO;
 }
 
 void
 _NS_non_owned_void_p_retain(void *table, void *p)
 {
-  return;
+    return;
 }
 
 void
 _NS_non_owned_void_p_release(void *table, void *p)
 {
-  return;
+    return;
 }
 
 NSString *
 _NS_non_owned_void_p_describe(void *table, void *p)
 {
-  return [NSString stringWithFormat: @"%0x", p];
+    return [NSString stringWithFormat:@"%p", p];
 }
 
 /** For pointers to structures and `int *' **/
@@ -207,30 +208,30 @@ _NS_non_owned_void_p_describe(void *table, void *p)
 unsigned int
 _NS_int_p_hash(void *table, int *p)
 {
-  return ((unsigned)(uintptr_t)p)/4;
+    return ((unsigned)(uintptr_t)p)/4;
 }
 
 BOOL
 _NS_int_p_is_equal(void *table, int *p, int *q)
 {
-  return (p == q) ? YES : NO;
+    return (p == q) ? YES : NO;
 }
 
 void
 _NS_int_p_retain(void *table, int *p)
 {
-  return;
+    return;
 }
 
 void
 _NS_int_p_release(void *table, int *p)
 {
-  return;
+    return;
 }
 
 NSString *
 _NS_int_p_describe(void *table, int *p)
 {
-  /* Is this useful? */
-  return [NSString stringWithFormat: @"%d(%#x)", *p, p];
+    /* Is this useful? */
+    return [NSString stringWithFormat:@"%d(%p)", *p, p];
 }

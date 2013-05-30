@@ -37,6 +37,7 @@
 #import "Foundation/NSValue.h"
 #import "Foundation/NSHost.h"
 #import "Foundation/NSByteOrder.h"
+#import "Foundation/NSURL.h"
 #import "GNUstepBase/NSObject+GNUstepBase.h"
 
 #import "../GSPrivate.h"
@@ -100,10 +101,7 @@
 
 - (void) dealloc
 {
-  if ([self _isOpened])
-    {
-      [self close];
-    }
+  [self close];
   DESTROY(_path);
   [super dealloc];
 }
@@ -123,9 +121,7 @@
 		  format: @"zero byte read write requested"];
     }
 
-  _events &= ~NSStreamEventHasBytesAvailable;
-
-  if ([self streamStatus] == NSStreamStatusClosed)
+  if (![self _isOpened])
     {
       return 0;
     }
@@ -134,11 +130,18 @@
   if (readLen < 0 && errno != EAGAIN && errno != EINTR)
     {
       [self _recordError];
+      [self _resetEvents:NSStreamEventErrorOccurred];
+      [self _sendEvent:NSStreamEventErrorOccurred];
       readLen = -1;
     }
   else if (readLen == 0)
     {
       [self _setStatus: NSStreamStatusAtEnd];
+      [self _sendEvent: NSStreamEventEndEncountered];
+    }
+  else 
+    {
+      _events &= ~NSStreamEventHasBytesAvailable;  // Clear to process next read event    
     }
   return readLen;
 }
@@ -172,6 +175,7 @@
 {
   int fd;
 
+  [self close];
   fd = open([_path fileSystemRepresentation], O_RDONLY|O_NONBLOCK);
   if (fd < 0)
     {  
@@ -184,14 +188,20 @@
 
 - (void) close
 {
-  int closeReturn = close((intptr_t)_loopID);
-
-  if (closeReturn < 0)
-    [self _recordError];
+  if (![self _isOpened])
+    {
+      return;
+    }
+  if (self != _loopID && close((intptr_t)_loopID) == -1)
+    {
+      NSLog(@"Failed to close file descriptor %d, errno is %d.", (int)(intptr_t)_loopID, errno);
+    }
   [super close];
+  // Initially _loopID is set to self, so we restore it like stream was never opened.
+  _loopID = self;
 }
 
-- (void) _dispatch
+- (void) _dispatch:(RunLoopEventType)rlEvent
 {
   if ([self streamStatus] == NSStreamStatusOpen)
     {
@@ -227,6 +237,7 @@
 {
   if ((self = [super init]) != nil)
     {
+      [self _makeNonSchedulable];
       ASSIGN(_path, path);
       // so that unopened access will fail
       _shouldAppend = shouldAppend;
@@ -236,10 +247,7 @@
 
 - (void) dealloc
 {
-  if ([self _isOpened])
-    {
-      [self close];
-    }
+  [self close];
   RELEASE(_path);
   [super dealloc];
 }
@@ -261,7 +269,7 @@
 
   _events &= ~NSStreamEventHasSpaceAvailable;
 
-  if ([self streamStatus] == NSStreamStatusClosed)
+  if (![self _isOpened])
     {
       return 0;
     }
@@ -289,6 +297,7 @@
     flag = flag | O_APPEND;
   else
     flag = flag | O_TRUNC;
+  [self close];
   fd = open([_path fileSystemRepresentation], flag, mode);
   if (fd < 0)
     {  // make an error
@@ -301,10 +310,17 @@
 
 - (void) close
 {
-  int closeReturn = close((intptr_t)_loopID);
-  if (closeReturn < 0)
-    [self _recordError];
+  if (![self _isOpened])
+    {
+      return;
+    }
+  if (close((intptr_t)_loopID) == -1)
+    {
+      NSLog(@"Failed to close file descriptor %d, errno is %d.", (intptr_t)_loopID, errno);
+    }
   [super close];
+  // Initially _loopID was set to self, so we restore it like stream was never opened.
+  _loopID = self;
 }
 
 - (id) propertyForKey: (NSString *)key
@@ -320,7 +336,7 @@
   return [super propertyForKey: key];
 }
 
-- (void) _dispatch
+- (void) _dispatch:(RunLoopEventType)rlEvent
 {
   if ([self streamStatus] == NSStreamStatusOpen)
     {
@@ -547,6 +563,12 @@
     initToBuffer: buffer capacity: capacity]);  
 }
 
++ (id) outputStreamWithURL:(NSURL *)fileURL append: (BOOL)shouldAppend {
+  return AUTORELEASE([[GSFileOutputStream alloc]
+    initToFileAtPath:[fileURL path]
+    append: shouldAppend]);
+}
+
 + (id) outputStreamToFileAtPath: (NSString *)path append: (BOOL)shouldAppend
 {
   return AUTORELEASE([[GSFileOutputStream alloc]
@@ -567,14 +589,22 @@
 - (id) initToBuffer: (uint8_t *)buffer capacity: (NSUInteger)capacity
 {
   DESTROY(self);
-  return [[GSBufferOutputStream alloc] initToBuffer: buffer capacity: capacity];
+  self = [[GSBufferOutputStream alloc] initToBuffer: buffer capacity: capacity];
+  return self;
+}
+
+- (id) initWithURL: (NSURL *)fileURL append: (BOOL)shouldAppend
+{
+  self = [self initToFileAtPath:[fileURL path] append:shouldAppend];
+  return self;
 }
 
 - (id) initToFileAtPath: (NSString *)path append: (BOOL)shouldAppend
 {
   DESTROY(self);
-  return [[GSFileOutputStream alloc] initToFileAtPath: path
+  self = [[GSFileOutputStream alloc] initToFileAtPath: path
 					       append: shouldAppend];  
+  return self;
 }
 
 - (id) initToMemory

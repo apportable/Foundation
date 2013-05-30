@@ -23,78 +23,78 @@
 
    <title>NSObject+NSComparisonMethods category reference</title>
    $Date: 2008-11-26 04:20:34 -0500 (Wed, 26 Nov 2008) $ $Revision: 27135 $
-*/
+ */
 
 #import "common.h"
 #import "Foundation/NSArray.h"
 #import "GNUstepBase/NSObject+GNUstepBase.h"
 
 @interface NSObject (NSComparisonMethods)
-- (BOOL) doesContain: (id) object;
-- (BOOL) isCaseInsensitiveLike: (id) object;
-- (BOOL) isEqualTo: (id) object;
-- (BOOL) isGreaterThan: (id) object;
-- (BOOL) isGreaterThanOrEqualTo: (id) object;
-- (BOOL) isLessThan: (id) object;
-- (BOOL) isLessThanOrEqualTo: (id) object;
-- (BOOL) isLike: (NSString *)object;
-- (BOOL) isNotEqualTo: (id) object;
+- (BOOL)doesContain:(id)object;
+- (BOOL)isCaseInsensitiveLike:(id)object;
+- (BOOL)isEqualTo:(id)object;
+- (BOOL)isGreaterThan:(id)object;
+- (BOOL)isGreaterThanOrEqualTo:(id)object;
+- (BOOL)isLessThan:(id)object;
+- (BOOL)isLessThanOrEqualTo:(id)object;
+- (BOOL)isLike:(NSString *)object;
+- (BOOL)isNotEqualTo:(id)object;
 @end
 
 @implementation NSObject (NSComparisonMethods)
-- (BOOL) doesContain: (id) object
+- (BOOL)doesContain:(id)object
 {
-  if (object)
+    if (object)
     {
-      if ([self isKindOfClass: [NSArray class]])
-	{
-	  [(NSArray *)self containsObject: object];
-	}
+        if ([self isKindOfClass:[NSArray class]])
+        {
+            [(NSArray *)self containsObject : object];
+        }
     }
-  return NO;
+    return NO;
 }
 
-- (BOOL) isCaseInsensitiveLike: (id) object
+- (BOOL)isCaseInsensitiveLike:(id)object
 {
-  NSLog(@"%@ not implemented yet", NSStringFromSelector(_cmd));
-  return NO;
+    NSLog(@"%@ not implemented yet", NSStringFromSelector(_cmd));
+    return NO;
 }
 
-- (BOOL) isEqualTo: (id) object
+- (BOOL)isEqualTo:(id)object
 {
-  return [self isEqual: object];
+    return [self isEqual:object];
 }
 
-- (BOOL) isGreaterThan: (id) object
+- (BOOL)isGreaterThan:(id)object
 {
-  return ([self compare: object] == NSOrderedDescending);
+    return ([self compare:object] == NSOrderedDescending);
 }
 
-- (BOOL) isGreaterThanOrEqualTo: (id) object
+- (BOOL)isGreaterThanOrEqualTo:(id)object
 {
-  return ([self compare: object] == NSOrderedDescending ||
-	  [self compare: object] == NSOrderedSame);
+    return ([self compare:object] == NSOrderedDescending ||
+            [self compare:object] == NSOrderedSame);
 }
 
-- (BOOL) isLessThan: (id) object
+- (BOOL)isLessThan:(id)object
 {
-  return ([self compare: object] == NSOrderedAscending);
+    return ([self compare:object] == NSOrderedAscending);
 }
 
-- (BOOL) isLessThanOrEqualTo: (id) object
+- (BOOL)isLessThanOrEqualTo:(id)object
 {
-  return ([self compare: object] == NSOrderedAscending ||
-	  [self compare: object] == NSOrderedSame);
+    return ([self compare:object] == NSOrderedAscending ||
+            [self compare:object] == NSOrderedSame);
 }
 
-- (BOOL) isLike: (NSString *)object
+- (BOOL)isLike:(NSString *)object
 {
-  NSLog(@"%@ not implemented yet", NSStringFromSelector(_cmd));
-  return NO;
+    NSLog(@"%@ not implemented yet", NSStringFromSelector(_cmd));
+    return NO;
 }
 
-- (BOOL) isNotEqualTo: (id) object
+- (BOOL)isNotEqualTo:(id)object
 {
-  return !([self isEqual: object]);
+    return !([self isEqual:object]);
 }
 @end

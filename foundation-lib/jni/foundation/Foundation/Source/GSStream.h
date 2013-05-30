@@ -102,7 +102,7 @@ IVARS
 /**
  * Async notification
  */
-- (void) _dispatch;
+- (void) _dispatch:(RunLoopEventType)rlEvent;
 
 /**
  * Return YES if the stream is opened, NO otherwise.
@@ -119,6 +119,13 @@ IVARS
 - (void) _resetEvents: (NSUInteger)mask;
 
 /**
+ * Make stream non-schedulable, i.e. cause all run loop methods
+ * (_schedule, scheduleInRunLoop, _unschedule, removeFromRunLoop)
+ * to be a noops.
+ */
+- (void) _makeNonSchedulable;
+
+/**
  * Place the stream in all the scheduled runloops.
  */
 - (void) _schedule;
@@ -127,6 +134,12 @@ IVARS
  * send an event to delegate
  */
 - (void) _sendEvent: (NSStreamEvent)event;
+
+/**
+ * send an event to a specific delegate (which might not be the
+ * delegate set to stream)
+ */
+- (void) _sendEvent: (NSStreamEvent)event toDelegate: (id)delegate;
 
 /**
  * setter for IO event reference (file descriptor, file handle etc )

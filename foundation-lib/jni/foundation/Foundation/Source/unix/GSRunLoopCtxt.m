@@ -33,7 +33,6 @@
 
 #define	FDCOUNT	128
 
-#if	GS_WITH_GC == 0
 static SEL	wRelSel;
 static SEL	wRetSel;
 static IMP	wRelImp;
@@ -57,20 +56,15 @@ static const NSMapTableValueCallBacks WatcherMapValueCallBacks =
   wRelease,
   0
 };
-#else
-#define	WatcherMapValueCallBacks	NSOwnedPointerMapValueCallBacks 
-#endif
 
 @implementation	GSRunLoopCtxt
 
 + (void) initialize
 {
-#if	GS_WITH_GC == 0
   wRelSel = @selector(release);
   wRetSel = @selector(retain);
   wRelImp = [[GSRunLoopWatcher class] instanceMethodForSelector: wRelSel];
   wRetImp = [[GSRunLoopWatcher class] instanceMethodForSelector: wRetSel];
-#endif
 }
 
 - (void) dealloc
@@ -180,19 +174,11 @@ static const NSMapTableValueCallBacks WatcherMapValueCallBacks =
 
       mode = [theMode copy];
       extra = e;
-#if	GS_WITH_GC
-      z = (NSZone*)1;
-      performers = NSAllocateCollectable(sizeof(GSIArray_t), NSScannedOption);
-      timers = NSAllocateCollectable(sizeof(GSIArray_t), NSScannedOption);
-      watchers = NSAllocateCollectable(sizeof(GSIArray_t), NSScannedOption);
-      _trigger = NSAllocateCollectable(sizeof(GSIArray_t), NSScannedOption);
-#else
       z = [self zone];
       performers = NSZoneMalloc(z, sizeof(GSIArray_t));
       timers = NSZoneMalloc(z, sizeof(GSIArray_t));
       watchers = NSZoneMalloc(z, sizeof(GSIArray_t));
       _trigger = NSZoneMalloc(z, sizeof(GSIArray_t));
-#endif
       GSIArrayInitWithZoneAndCapacity(performers, z, 8);
       GSIArrayInitWithZoneAndCapacity(timers, z, 8);
       GSIArrayInitWithZoneAndCapacity(watchers, z, 8);
@@ -223,23 +209,13 @@ static void setPollfd(int fd, int event, GSRunLoopCtxt *ctxt)
       pe->limit = fd + 1;
       if (pe->index == 0)
 	{
-#if	GS_WITH_GC
-	  pe->index
-	    = NSAllocateCollectable(pe->limit * sizeof(*(pe->index)), 0);
-#else
 	  pe->index = NSZoneMalloc(NSDefaultMallocZone(),
 	    pe->limit * sizeof(*(pe->index)));
-#endif
 	}
       else
 	{
-#if	GS_WITH_GC
-	  pe->index = NSReallocateCollectable(pe->index,
-	    pe->limit * sizeof(*(pe->index)), 0);
-#else
 	  pe->index = NSZoneRealloc(NSDefaultMallocZone(),
 	    pe->index, pe->limit * sizeof(*(pe->index)));
-#endif
 	}
       do
 	{
@@ -253,13 +229,8 @@ static void setPollfd(int fd, int event, GSRunLoopCtxt *ctxt)
       if (ctxt->pollfds_count >= ctxt->pollfds_capacity)
 	{
 	  ctxt->pollfds_capacity += 8;
-#if	GS_WITH_GC
-	  pollfds = NSReallocateCollectable(pollfds,
-	    ctxt->pollfds_capacity * sizeof (*pollfds), 0);
-#else
 	  pollfds = NSZoneRealloc(NSDefaultMallocZone(),
 	    pollfds, ctxt->pollfds_capacity * sizeof (*pollfds));
-#endif
 	  ctxt->pollfds = pollfds;
 	}
       index = ctxt->pollfds_count++;
@@ -309,23 +280,13 @@ static void setPollfd(int fd, int event, GSRunLoopCtxt *ctxt)
       pollfds_capacity = i + 2;
       if (pollfds == 0)
 	{
-#if	GS_WITH_GC
-	  pollfds
-	    = NSAllocateCollectable(pollfds_capacity * sizeof(*pollfds), 0);
-#else
 	  pollfds = NSZoneMalloc(NSDefaultMallocZone(),
 	    pollfds_capacity * sizeof(*pollfds));
-#endif
 	}
       else
 	{
-#if	GS_WITH_GC
-	  pollfds = NSReallocateCollectable(pollfds,
-	    pollfds_capacity * sizeof(*pollfds), 0);
-#else
 	  pollfds = NSZoneRealloc(NSDefaultMallocZone(),
 	    pollfds, pollfds_capacity * sizeof(*pollfds));
-#endif
 	}
     }
   pollfds_count = 0;
@@ -684,11 +645,6 @@ static void setPollfd(int fd, int event, GSRunLoopCtxt *ctxt)
 
 #else
 
-- (void)_dispatchMainQueueCallback
-{
-    
-}
-
 - (BOOL) pollUntil: (int)milliseconds within: (NSArray*)contexts
 {
   GSRunLoopThreadInfo   *threadInfo = GSRunLoopInfoForThread(nil);
@@ -756,7 +712,6 @@ static void setPollfd(int fd, int event, GSRunLoopCtxt *ctxt)
   while (i-- > 0)
     {
       GSRunLoopWatcher	*info;
-      int		fd;
       BOOL		trigger;
 
       info = GSIArrayItemAtIndex(watchers, i).obj;
@@ -868,7 +823,8 @@ static void setPollfd(int fd, int event, GSRunLoopCtxt *ctxt)
 	     aborting here. */
 	  NSLog (@"select() error in -acceptInputForMode:beforeDate: '%@'",
 	    [NSError _last]);
-	  abort ();
+	  // this can occur when the interface is mid connecting/disconnecting or when signal is too weak to establish a proper connection
+	  select_return = 0;
 	}
     }
 
@@ -1067,17 +1023,12 @@ static void setPollfd(int fd, int event, GSRunLoopCtxt *ctxt)
   int			milliseconds = (ti <= 0.0) ? 0 : (int)(ti*1000);
   struct timeval	timeout;
   fd_set 		read_fds;	// Mask for read-ready fds.
-  fd_set 		exception_fds;	// Mask for exception fds.
-  fd_set 		write_fds;	// Mask for write-ready fds.
 
-  memset(&exception_fds, '\0', sizeof(exception_fds));
   memset(&read_fds, '\0', sizeof(read_fds));
-  memset(&write_fds, '\0', sizeof(write_fds));
   timeout.tv_sec = milliseconds/1000;
   timeout.tv_usec = (milliseconds - 1000 * timeout.tv_sec) * 1000;
   FD_SET (threadInfo->inputFd, &read_fds);
-  if (select (threadInfo->inputFd, &read_fds, &write_fds,
-    &exception_fds, &timeout) > 0)
+  if (select (threadInfo->inputFd + 1, &read_fds, NULL, NULL, &timeout) > 0)
     {
       NSDebugMLLog(@"NSRunLoop", @"Fire perform on thread");
       [threadInfo fire];
@@ -1087,4 +1038,47 @@ static void setPollfd(int fd, int event, GSRunLoopCtxt *ctxt)
 }
 
 #endif
+@end
+
+extern void _dispatch_main_queue_callback_4CF(void *msg);
+extern void (*_dispatch_send_wakeup_main_thread)(void);
+extern int pthread_main_np();
+extern void (*dispatch_begin_thread_4GC)(void);
+extern BOOL GSRegisterCurrentThread(void);
+
+static void GSRegisterDispatch() __attribute((constructor));
+static void GSRegisterDispatch()
+{
+    dispatch_begin_thread_4GC = &GSRegisterCurrentThread;
+}
+
+static void GSDispatchWakeup() 
+{
+    [GSRunLoopCtxt performSelectorOnMainThread:@selector(_dispatchQueueWakeUp) withObject:NULL waitUntilDone:NO];
+}
+
+@implementation GSRunLoopCtxt (Dispatch)
+
++ (void)_dispatchQueueWakeUp
+{
+    _dispatch_main_queue_callback_4CF(NULL);
+}
+
+- (void)_dispatchMainQueueCallback
+{
+    if (pthread_main_np() == 1)
+    {
+        if (_dispatch_send_wakeup_main_thread == NULL)
+        {
+            _dispatch_send_wakeup_main_thread = &GSDispatchWakeup;
+        }
+        _dispatch_main_queue_callback_4CF(NULL);
+    }
+}
+
+- (void)_dispatchQueueWakeUp
+{
+
+}
+
 @end

@@ -23,7 +23,7 @@
 
    <title>NSLog reference</title>
    $Date: 2010-03-19 05:10:11 -0700 (Fri, 19 Mar 2010) $ $Revision: 30001 $
-   */
+ */
 
 #import "common.h"
 #import "Foundation/NSDate.h"
@@ -37,30 +37,30 @@
 #import "Foundation/NSThread.h"
 #import "GNUstepBase/NSString+GNUstepBase.h"
 
-#ifdef	HAVE_SYSLOG_H
+#ifdef  HAVE_SYSLOG_H
 #include <syslog.h>
 #endif
 
-#define	UNISTR(X) \
-((const unichar*)[(X) cStringUsingEncoding: NSUnicodeStringEncoding])
+#define UNISTR(X) \
+    ((const unichar*)[(X) cStringUsingEncoding : NSUnicodeStringEncoding])
 
-#if	defined(HAVE_SYSLOG)
-# if	defined(LOG_ERR)
-#   if	defined(LOG_USER)
-#     define	SYSLOGMASK	(LOG_ERR|LOG_USER)
+#if defined(HAVE_SYSLOG)
+# if    defined(LOG_ERR)
+#   if  defined(LOG_USER)
+#     define    SYSLOGMASK  (LOG_ERR|LOG_USER)
 #   else
-#     define	SYSLOGMASK	(LOG_ERR)
-#   endif	// LOG_USER
-# elif	defined(LOG_ERROR)
-#   if	defined(LOG_USER)
-#     define	SYSLOGMASK	(LOG_ERROR|LOG_USER)
+#     define    SYSLOGMASK  (LOG_ERR)
+#   endif   // LOG_USER
+# elif  defined(LOG_ERROR)
+#   if  defined(LOG_USER)
+#     define    SYSLOGMASK  (LOG_ERROR|LOG_USER)
 #   else
-#     define	SYSLOGMASK	(LOG_ERROR)
-#   endif	// LOG_USER
+#     define    SYSLOGMASK  (LOG_ERROR)
+#   endif   // LOG_USER
 # else
 #   error "Help, I can't find a logging level for syslog"
 # endif
-#endif	// HAVE_SYSLOG
+#endif  // HAVE_SYSLOG
 
 
 #ifdef HAVE_UNISTD_H
@@ -69,7 +69,7 @@
 
 #import "GSPrivate.h"
 
-extern NSThread	*GSCurrentThread();
+extern NSThread *GSCurrentThread();
 
 /**
  * A variable holding the file descriptor to which NSLogv() messages are
@@ -78,8 +78,8 @@ extern NSThread	*GSCurrentThread();
  * use the lock provided by GSLogLock() to protect the change.
  */
 int _NSLogDescriptor = 2;
-
-static NSRecursiveLock	*myLock = nil;
+int NSLogEnabled = 0;
+static NSRecursiveLock  *myLock = nil;
 
 /**
  * Returns the lock used to protect the GNUstep NSLogv() implementation.
@@ -90,105 +90,74 @@ static NSRecursiveLock	*myLock = nil;
 NSRecursiveLock *
 GSLogLock()
 {
-  if (myLock == nil)
+    if (myLock == nil)
     {
-      [gnustep_global_lock lock];
-      if (myLock == nil)
-	{
-	  myLock = [NSRecursiveLock new];
-	}
-      [gnustep_global_lock unlock];
+        [gnustep_global_lock lock];
+        if (myLock == nil)
+        {
+            myLock = [NSRecursiveLock new];
+        }
+        [gnustep_global_lock unlock];
     }
-  return myLock;
+    return myLock;
 }
 
 static void
 _NSLog_standard_printf_handler (NSString* message)
 {
-  NSData	*d;
-  const char	*buf;
-  unsigned	len;
-#if	defined(__MINGW__)
-  LPCWSTR	null_terminated_buf;
-#else
-#if	defined(HAVE_SYSLOG)
-  char	*null_terminated_buf;
+    NSData    *d;
+    const char    *buf;
+    unsigned len;
+#if defined(HAVE_SYSLOG)
+    char  *null_terminated_buf;
 #endif
-#endif
-  static NSStringEncoding enc = 0;
+    static NSStringEncoding enc = 0;
 
-  if (enc == 0)
+    if (enc == 0)
     {
-      enc = [NSString defaultCStringEncoding];
+        enc = [NSString defaultCStringEncoding];
     }
-  d = [message dataUsingEncoding: enc allowLossyConversion: NO];
-  if (d == nil)
+    d = [message dataUsingEncoding:enc allowLossyConversion:NO];
+    if (d == nil)
     {
-      d = [message dataUsingEncoding: NSUTF8StringEncoding
-		allowLossyConversion: NO];
-    }
-
-  if (d == nil)		// Should never happen.
-    {
-      buf = [message lossyCString];
-      len = strlen(buf);
-    }
-  else
-    {
-      buf = (const char*)[d bytes];
-      len = [d length];
+        d = [message dataUsingEncoding:NSUTF8StringEncoding
+             allowLossyConversion:NO];
     }
 
-#if	defined(__MINGW__)
-  null_terminated_buf = UNISTR(message);
-
-  OutputDebugStringW(null_terminated_buf);
-
-  if ((GSPrivateDefaultsFlag(GSLogSyslog) == YES
-    || write(_NSLogDescriptor, buf, len) != (int)len) && !IsDebuggerPresent())
+    if (d == nil)   // Should never happen.
     {
-      static HANDLE eventloghandle = 0;
-
-      if (!eventloghandle)
-	{
-	  eventloghandle = RegisterEventSourceW(NULL,
-	    UNISTR([[NSProcessInfo processInfo] processName]));
-	}
-      if (eventloghandle)
-	{
-	  ReportEventW(eventloghandle,	// event log handle
-	    EVENTLOG_WARNING_TYPE,	// event type
-	    0,				// category zero
-	    0,				// event identifier
-	    NULL,			// no user security identifier
-	    1,				// one substitution string
-	    0,				// no data
-	    &null_terminated_buf,	// pointer to string array
-	    NULL);			// pointer to data
-	}
+        buf = [message lossyCString];
+        len = strlen(buf);
     }
-#else      
-      
-#if	defined(HAVE_SYSLOG)
-  if (GSPrivateDefaultsFlag(GSLogSyslog) == YES
-    || write(_NSLogDescriptor, buf, len) != (int)len)
+    else
     {
-      null_terminated_buf = objc_malloc (sizeof (char) * (len + 1));
-      strncpy (null_terminated_buf, buf, len);
-      null_terminated_buf[len] = '\0';
+        buf = (const char*)[d bytes];
+        len = [d length];
+    }
 
-      syslog(SYSLOGMASK, "%s",  null_terminated_buf);
 
-      objc_free (null_terminated_buf);
+#if defined(HAVE_SYSLOG)
+    if (GSPrivateDefaultsFlag(GSLogSyslog) == YES
+        || write(_NSLogDescriptor, buf, len) != (int)len)
+    {
+        null_terminated_buf = objc_malloc (sizeof (char) * (len + 1));
+        strncpy (null_terminated_buf, buf, len);
+        null_terminated_buf[len] = '\0';
+
+        syslog(SYSLOGMASK, "%s",  null_terminated_buf);
+
+        objc_free (null_terminated_buf);
     }
 #else
-#if defined(APPORTABLE) && (defined(TARGET_OS_android) || defined(TARGET_OS_googletv))
-  DEBUG_LOG("%s", [message cString]);
-#else
-  write(_NSLogDescriptor, buf, len);
+    if (NSLogEnabled)
+    {
+        write(_NSLogDescriptor, buf, len);
+    }
+    else
+    {
+        DEBUG_LOG("%s", [message cString]);
+    }
 #endif
-#endif
-#endif // __MINGW__
 }
 
 /**
@@ -247,14 +216,18 @@ NSLog_printf_handler *_NSLog_printf_handler = _NSLog_standard_printf_handler;
  * GSObjCRuntime.h.
  * </p>
  */
+
+#undef NSLog
+#undef NSLogv
+
 void
 NSLog (NSString* format, ...)
 {
-  va_list ap;
+    va_list ap;
 
-  va_start (ap, format);
-  NSLogv (format, ap);
-  va_end (ap);
+    va_start (ap, format);
+    NSLogv (format, ap);
+    va_end (ap);
 }
 
 /**
@@ -286,82 +259,78 @@ NSLog (NSString* format, ...)
 void
 NSLogv (NSString* format, va_list args)
 {
-  NSString	*prefix;
-  NSString	*message;
-  static int	pid = 0;
-  CREATE_AUTORELEASE_POOL(arp);
+    NSString  *prefix;
+    NSString  *message;
+    static int pid = 0;
+    CREATE_AUTORELEASE_POOL(arp);
 
-  if (_NSLog_printf_handler == NULL)
+    if (_NSLog_printf_handler == NULL)
     {
-      _NSLog_printf_handler = *_NSLog_standard_printf_handler;
+        _NSLog_printf_handler = *_NSLog_standard_printf_handler;
     }
 
-  if (pid == 0)
+    if (pid == 0)
     {
-#if defined(__MINGW__)
-      pid = (int)GetCurrentProcessId();
-#else
-      pid = (int)getpid();
-#endif
+        pid = (int)getpid();
     }
 
-#ifdef	HAVE_SYSLOG
-  if (GSPrivateDefaultsFlag(GSLogSyslog) == YES)
+#ifdef  HAVE_SYSLOG
+    if (GSPrivateDefaultsFlag(GSLogSyslog) == YES)
     {
-      if (GSPrivateDefaultsFlag(GSLogThread) == YES)
-	{
-	  prefix = [NSString stringWithFormat: @"[thread:%x] ",
-	    GSCurrentThread()];
-	}
-      else
-	{
-	  prefix = @"";
-	}
+        if (GSPrivateDefaultsFlag(GSLogThread) == YES)
+        {
+            prefix = [NSString stringWithFormat:@"[thread:%x] ",
+                      GSCurrentThread()];
+        }
+        else
+        {
+            prefix = @"";
+        }
     }
-  else
+    else
 #endif
     {
 //       if (GSPrivateDefaultsFlag(GSLogThread) == YES)
-// 	{
-// 	  prefix = [NSString
-// 	    stringWithFormat: @"%@ %@[%d,%x] ",
-// 	    [[NSCalendarDate calendarDate]
-// 	      descriptionWithCalendarFormat: @"%Y-%m-%d %H:%M:%S.%F"],
-// 	    [[NSProcessInfo processInfo] processName],
-// 	    pid, GSCurrentThread()];
-// 	}
+//      {
+//        prefix = [NSString
+//          stringWithFormat: @"%@ %@[%d,%x] ",
+//          [[NSCalendarDate calendarDate]
+//            descriptionWithCalendarFormat: @"%Y-%m-%d %H:%M:%S.%F"],
+//          [[NSProcessInfo processInfo] processName],
+//          pid, GSCurrentThread()];
+//      }
 //       else
-// 	{
-// 	  prefix = [NSString
-// 	    stringWithFormat: @"%@ %@[%d] ",
-// 	    [[NSCalendarDate calendarDate]
-// 	      descriptionWithCalendarFormat: @"%Y-%m-%d %H:%M:%S.%F"],
-// 	    [[NSProcessInfo processInfo] processName],
-// 	    pid];
-// 	}
-    prefix = @"";
+//      {
+//        prefix = [NSString
+//          stringWithFormat: @"%@ %@[%d] ",
+//          [[NSCalendarDate calendarDate]
+//            descriptionWithCalendarFormat: @"%Y-%m-%d %H:%M:%S.%F"],
+//          [[NSProcessInfo processInfo] processName],
+//          pid];
+//      }
+        prefix = @"";
     }
 
-  /* Check if there is already a newline at the end of the format */
-  if ([format hasSuffix: @"\n"] == NO)
+    /* Check if there is already a newline at the end of the format */
+    if ([format hasSuffix:@"\n"] == NO)
     {
-      format = [format stringByAppendingString: @"\n"];
+        format = [format stringByAppendingString:@"\n"];
     }
-  message = [NSString stringWithFormat: format arguments: args];
+    message = [NSString stringWithFormat:format arguments:args];
 
-  prefix = [prefix stringByAppendingString: message];
+    prefix = [prefix stringByAppendingString:message];
 
-  if (myLock == nil)
+    if (myLock == nil)
     {
-      GSLogLock();
+        GSLogLock();
     }
 
-  [myLock lock];
+    [myLock lock];
 
-  _NSLog_printf_handler(prefix);
+    _NSLog_printf_handler(prefix);
 
-  [myLock unlock];
+    [myLock unlock];
 
-  RELEASE(arp);
+    RELEASE(arp);
 }
 

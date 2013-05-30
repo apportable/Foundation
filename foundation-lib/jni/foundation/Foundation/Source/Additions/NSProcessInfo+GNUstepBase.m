@@ -21,7 +21,7 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-*/
+ */
 
 
 #import "common.h"
@@ -31,86 +31,86 @@
 
 #include <stdio.h>
 
-@implementation NSProcessInfo(GNUstepBase)
+@implementation NSProcessInfo (GNUstepBase)
 
-static NSMutableSet	*_debug_set = nil;
-static BOOL     debugTemporarilyDisabled = NO;
+static NSMutableSet *_debug_set = nil;
+static BOOL debugTemporarilyDisabled = NO;
 
 
 BOOL GSDebugSet(NSString *level)
 {
-  static IMP debugImp = 0;
-  static SEL debugSel;
+    static IMP debugImp = 0;
+    static SEL debugSel;
 
-  if (debugTemporarilyDisabled == YES)
+    if (debugTemporarilyDisabled == YES)
     {
-      return NO;
+        return NO;
     }
-  if (debugImp == 0)
+    if (debugImp == 0)
     {
-      debugSel = @selector(member:);
-      if (_debug_set == nil)
-	{
-	  [[NSProcessInfo processInfo] debugSet];
-	}
-      debugImp = [_debug_set methodForSelector: debugSel];
-      if (debugImp == 0)
-	{
-	  fprintf(stderr, "Unable to set up with [NSProcessInfo-debugSet]\n");
-	  return NO;
-	}
+        debugSel = @selector(member:);
+        if (_debug_set == nil)
+        {
+            [[NSProcessInfo processInfo] debugSet];
+        }
+        debugImp = [_debug_set methodForSelector:debugSel];
+        if (debugImp == 0)
+        {
+            fprintf(stderr, "Unable to set up with [NSProcessInfo-debugSet]\n");
+            return NO;
+        }
     }
-  if ((*debugImp)(_debug_set, debugSel, level) == nil)
+    if ((*debugImp)(_debug_set, debugSel, level) == nil)
     {
-      return NO;
+        return NO;
     }
-  return YES;
+    return YES;
 }
 
-- (BOOL) debugLoggingEnabled
+- (BOOL)debugLoggingEnabled
 {
-  if (debugTemporarilyDisabled == YES)
+    if (debugTemporarilyDisabled == YES)
     {
-      return NO;
+        return NO;
     }
-  else
+    else
     {
-      return YES;
+        return YES;
     }
 }
 
-- (NSMutableSet *) debugSet
+- (NSMutableSet *)debugSet
 {
-  if (_debug_set == nil)
+    if (_debug_set == nil)
     {
-      int		argc = [[self arguments] count];
-      NSMutableSet	*mySet;
-      int		i;
+        int argc = [[self arguments] count];
+        NSMutableSet  *mySet;
+        int i;
 
-      mySet = [NSMutableSet new];
-      for (i = 0; i < argc; i++)
-	{
-	  NSString	*str = [[self arguments] objectAtIndex: i];
+        mySet = [NSMutableSet new];
+        for (i = 0; i < argc; i++)
+        {
+            NSString  *str = [[self arguments] objectAtIndex:i];
 
-	  if ([str hasPrefix: @"--GNU-Debug="])
-	    {
-	      [mySet addObject: [str substringFromIndex: 12]];
-	    }
-	}
-      _debug_set = mySet;
+            if ([str hasPrefix:@"--GNU-Debug="])
+            {
+                [mySet addObject:[str substringFromIndex:12]];
+            }
+        }
+        _debug_set = mySet;
     }
-  return _debug_set;
+    return _debug_set;
 }
 
-- (void) setDebugLoggingEnabled: (BOOL)flag
+- (void)setDebugLoggingEnabled:(BOOL)flag
 {
-  if (flag == NO)
+    if (flag == NO)
     {
-      debugTemporarilyDisabled = YES;
+        debugTemporarilyDisabled = YES;
     }
-  else
+    else
     {
-      debugTemporarilyDisabled = NO;
+        debugTemporarilyDisabled = NO;
     }
 }
 

@@ -21,47 +21,47 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-*/
+ */
 
-#ifndef	GNUSTEP
+#ifndef GNUSTEP
 
 #import "common.h"
 #import "GNUstepBase/NSURL+GNUstepBase.h"
 
 @implementation NSURL (GNUstepBase)
-- (NSString*) fullPath
+- (NSString*)fullPath
 {
-  NSRange	r;
-  NSString	*s;
+    NSRange r;
+    NSString  *s;
 
-  s = [self absoluteString];
-  if ((r = [s rangeOfString: @";"]).length > 0)
+    s = [self absoluteString];
+    if ((r = [s rangeOfString:@";"]).length > 0)
     {
-      s = [s substringToIndex: r.location];
+        s = [s substringToIndex:r.location];
     }
-  else if ((r = [s rangeOfString: @"?"]).length > 0)
+    else if ((r = [s rangeOfString:@"?"]).length > 0)
     {
-      s = [s substringToIndex: r.location];
+        s = [s substringToIndex:r.location];
     }
-  r = [s rangeOfString: @"//"];
-  if (r.location != NSNotFound)
-  {
-      s = [s substringFromIndex: NSMaxRange(r)];
-      r = [s rangeOfString: @"/"];
-      if (r.location != NSNotFound)
-      {
-          s = [s substringFromIndex: r.location];
-      }
-      else
-      {
-          return @"";
-      }
-  }
-  else
-  {
-      return @"";
-  }
-  return s;
+    r = [s rangeOfString:@"//"];
+    if (r.location != NSNotFound)
+    {
+        s = [s substringFromIndex:NSMaxRange(r)];
+        r = [s rangeOfString:@"/"];
+        if (r.location != NSNotFound)
+        {
+            s = [s substringFromIndex:r.location];
+        }
+        else
+        {
+            return @"";
+        }
+    }
+    else
+    {
+        return @"";
+    }
+    return s;
 }
 @end
 

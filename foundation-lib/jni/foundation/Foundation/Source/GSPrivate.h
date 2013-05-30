@@ -92,8 +92,15 @@ typedef struct objc_category* Category;
  * arrays are allocated on the stack (for speed), but large arrays are
  * allocated from the heap (to avoid stack overflow).
  */
+
+#ifndef NDEBUG // This is to prevent false positives from clang code analysis, sad side effect: we increase the stack frame by one byte...
+#define GS_MIN_ITEM_BUF_COUNT 1
+#else
+#define GS_MIN_ITEM_BUF_COUNT 0
+#endif
+
 #define	GS_BEGINITEMBUF(P, S, T) { \
-  T _ibuf[(S) <= GS_MAX_OBJECTS_FROM_STACK ? (S) : 0]; \
+  T _ibuf[(S) <= GS_MAX_OBJECTS_FROM_STACK ? (S) : GS_MIN_ITEM_BUF_COUNT]; \
   T *_base = ((S) <= GS_MAX_OBJECTS_FROM_STACK) ? _ibuf \
     : (T*)NSZoneMalloc(NSDefaultMallocZone(), (S) * sizeof(T)); \
   T *(P) = _base;
@@ -166,6 +173,7 @@ typedef union {
 @interface GSString : NSString
 {
 @public
+  int extra_flags;
   GSCharPtr _contents;
   unsigned int	_count;
   struct {
@@ -185,6 +193,7 @@ typedef union {
 @interface GSMutableString : NSMutableString
 {
 @public
+  int extra_flags;
   GSCharPtr _contents;
   unsigned int	_count;
   struct {
@@ -214,7 +223,6 @@ typedef enum {
   GSUserDefaultMaxFlag			// End marker.
 } GSUserDefaultFlagType;
 
-
 
 /**
  * This class exists simply as a mechanism for encapsulating arrays
@@ -242,6 +250,7 @@ typedef enum {
 @interface	NSError (GNUstepBase)
 + (NSError*) _last;
 + (NSError*) _systemError: (long)number;
++ (NSError*) _unimplementedError;
 @end
 
 @class  NSRunLoop;
@@ -256,12 +265,8 @@ typedef enum {
   NSRunLoop             *loop;
   NSLock                *lock;
   NSMutableArray        *performers;
-#ifdef __MINGW__
-  HANDLE	        event;
-#else
   int                   inputFd;
   int                   outputFd;
-#endif	
 }
 /* Add a performer to be run in the loop's thread.  May be called from
  * any thread.
@@ -503,11 +508,19 @@ GSPrivateUnloadModule(FILE *errorStream,
 {
   unsigned      size;
   void          *buffer;
+  void    *executable;
 }
 + (GSCodeBuffer*) memoryWithSize: (NSUInteger)_size;
 - (void*) buffer;
+- (void*) executable;
 - (id) initWithSize: (NSUInteger)_size;
 - (void) protect;
+@end
+
+typedef void (^NSDeallocateNotifier)(void);
+
+@interface NSObject (Private)
+- (void)_notifyOnDealloc:(NSDeallocateNotifier)block;
 @end
 
 /* Function to safely change the class of an object by 'isa' swizzling

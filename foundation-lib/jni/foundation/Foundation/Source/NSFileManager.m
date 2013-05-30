@@ -35,7 +35,7 @@
 
    <title>NSFileManager class reference</title>
    $Date: 2010-09-15 15:16:18 -0700 (Wed, 15 Sep 2010) $ $Revision: 31351 $
-*/
+ */
 
 #define _FILE_OFFSET_BITS 64
 /* The following define is needed for Solaris get(pw/gr)(nam/uid)_r declartions
@@ -43,8 +43,8 @@
 #define _POSIX_PTHREAD_SEMANTICS
 
 #import "common.h"
-#define	EXPOSE_NSFileManager_IVARS	1
-#define	EXPOSE_NSDirectoryEnumerator_IVARS	1
+#define EXPOSE_NSFileManager_IVARS  1
+#define EXPOSE_NSDirectoryEnumerator_IVARS  1
 #import "Foundation/NSArray.h"
 #import "Foundation/NSAutoreleasePool.h"
 #import "Foundation/NSBundle.h"
@@ -59,6 +59,8 @@
 #import "Foundation/NSProcessInfo.h"
 #import "Foundation/NSSet.h"
 #import "Foundation/NSValue.h"
+#import "Foundation/NSURL.h"
+#import "Foundation/NSInvocation.h"
 #import "GSPrivate.h"
 #import "GNUstepBase/NSObject+GNUstepBase.h"
 #import "GNUstepBase/NSString+GNUstepBase.h"
@@ -85,23 +87,11 @@
 #  include <windows.h>
 #endif
 
-#if	defined(__MINGW__)
-#include <stdio.h>
-#include <tchar.h>
-#include <wchar.h>
-#include <accctrl.h>
-#include <aclapi.h>
-#define	WIN32ERR	((DWORD)0xFFFFFFFF)
-#endif
 
 /* determine filesystem max path length */
 
 #if defined(_POSIX_VERSION) || defined(__WIN32__)
-# if defined(__MINGW__)
-#   include <sys/utime.h>
-# else
 #   include <utime.h>
-# endif
 #endif
 
 #ifdef HAVE_SYS_CDEFS_H
@@ -169,66 +159,44 @@
  * On systems that have the O_BINARY flag, use it for a binary copy.
  */
 #if defined(O_BINARY)
-#define	GSBINIO	O_BINARY
+#define GSBINIO O_BINARY
 #else
-#define	GSBINIO	0
+#define GSBINIO 0
 #endif
 
 @interface NSDirectoryEnumerator (Local)
-- (id) initWithDirectoryPath: (NSString*)path 
-   recurseIntoSubdirectories: (BOOL)recurse
-              followSymlinks: (BOOL)follow
-                justContents: (BOOL)justContents
-			 for: (NSFileManager*)mgr;
+- (id)initWithDirectoryPath:(NSString*)path
+    recurseIntoSubdirectories:(BOOL)recurse
+    followSymlinks:(BOOL)follow
+    justContents:(BOOL)justContents
+    for:(NSFileManager*)mgr;
+- (void)_setReturnURLs;
 @end
 
 /*
  * Macros to handle unichar filesystem support.
  */
 
-#if	defined(__MINGW__)
 
-#define	_CHMOD(A,B)	_wchmod(A,B)
-#define	_CLOSEDIR(A)	_wclosedir(A)
-#define	_OPENDIR(A)	_wopendir(A)
-#define	_READDIR(A)	_wreaddir(A)
-#define	_RENAME(A,B)	(MoveFileExW(A,B,MOVEFILE_COPY_ALLOWED|MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH)==0)?-1:0
-#define	_RMDIR(A)	_wrmdir(A)
-#define	_STAT(A,B)	_wstat(A,B)
-#define	_UTIME(A,B)	_wutime(A,B)
+#define _CHMOD(A,B) chmod(A,B)
+#define _CLOSEDIR(A)    closedir(A)
+#define _OPENDIR(A) opendir(A)
+#define _READDIR(A) readdir(A)
+#define _RENAME(A,B)    rename(A,B)
+#define _RMDIR(A)   rmdir(A)
+#define _STAT(A,B)  stat(A,B)
+#define _UTIME(A,B) utime(A,B)
 
-#define	_CHAR		unichar
-#define	_DIR		_WDIR
-#define	_DIRENT		_wdirent
-#define	_STATB		_stat
-#define	_UTIMB		_utimbuf
+#define _CHAR       char
+#define _DIR        DIR
+#define _DIRENT     dirent
+#define _STATB      stat
+#define _UTIMB      utimbuf
 
-#define	_NUL		L'\0'
-
-#else
-
-#define	_CHMOD(A,B)	chmod(A,B)
-#define	_CLOSEDIR(A)	closedir(A)
-#define	_OPENDIR(A)	opendir(A)
-#define	_READDIR(A)	readdir(A)
-#define	_RENAME(A,B)	rename(A,B)
-#define	_RMDIR(A)	rmdir(A)
-#define	_STAT(A,B)	stat(A,B)
-#define	_UTIME(A,B)	utime(A,B)
-
-#define	_CHAR		char
-#define	_DIR		DIR
-#define	_DIRENT		dirent
-#define	_STATB		stat
-#define	_UTIMB		utimbuf
-
-#define	_NUL		'\0'
-
-#endif
-
-#define	_CCP		const _CHAR*
+#define _NUL        '\0'
 
 
+#define _CCP        const _CHAR*
 
 
 /*
@@ -236,66 +204,73 @@
  * handle file attributes efficiently ...  using lazy evaluation
  * to ensure that we only do the minimum work necessary at any time.
  */
-@interface	GSAttrDictionary : NSDictionary
+@interface  GSAttrDictionary : NSDictionary
 {
-@public
-  struct _STATB	statbuf;
-  _CHAR		_path[0];
+    @public
+    struct _STATB statbuf;
+    _CHAR _path[0];
 }
-+ (NSDictionary*) attributesAt: (const _CHAR*)lpath
-		  traverseLink: (BOOL)traverse;
++ (NSDictionary*)attributesAt:(const _CHAR*)lpath
+    traverseLink:(BOOL)traverse;
 @end
 
-static Class	GSAttrDictionaryClass = 0;
+static Class GSAttrDictionaryClass = 0;
 
 /*
  * We also need a special enumerator class to enumerate the dictionary.
  */
-@interface	GSAttrDictionaryEnumerator : NSEnumerator
+@interface  GSAttrDictionaryEnumerator : NSEnumerator
 {
-  NSDictionary	*dictionary;
-  NSEnumerator	*enumerator;
+    NSDictionary  *dictionary;
+    NSEnumerator  *enumerator;
 }
-+ (NSEnumerator*) enumeratorFor: (NSDictionary*)d;
++ (NSEnumerator*)enumeratorFor:(NSDictionary*)d;
 @end
 
-
+/*
+ * Internal methods take 'handler', and use it to report errors.
+ * This class implements error callback and reads error from current
+ * errno value ignoring error-related information that gets passed.
+ */
+@interface _NSFileManagerErrorHandler: NSObject {
+    NSError* _error;
+}
+@property (nonatomic, readonly) NSError* error;
+@end
 
 @interface NSFileManager (PrivateMethods)
 
 /* Copies the contents of source file to destination file. Assumes source
    and destination are regular files or symbolic links. */
-- (BOOL) _copyFile: (NSString*)source
-	    toFile: (NSString*)destination
-	   handler: (id)handler;
+- (BOOL)_copyFile:(NSString*)source
+    toFile:(NSString*)destination
+    handler:(id)handler;
 
 /* Recursively copies the contents of source directory to destination. */
-- (BOOL) _copyPath: (NSString*)source
-	    toPath: (NSString*)destination
-	   handler: (id)handler;
+- (BOOL)_copyPath:(NSString*)source
+    toPath:(NSString*)destination
+    handler:(id)handler;
 
 /* Recursively links the contents of source directory to destination. */
-- (BOOL) _linkPath: (NSString*)source
-	    toPath: (NSString*)destination
-	   handler: handler;
+- (BOOL)_linkPath:(NSString*)source
+    toPath:(NSString*)destination
+    handler:handler;
 
 /* encapsulates the will Process check for existence of selector. */
-- (void) _sendToHandler: (id) handler
-        willProcessPath: (NSString*) path;
+- (void)_sendToHandler:(id)handler
+    willProcessPath:(NSString*)path;
 
 /* methods to encapsulates setting up and calling the handler
    in case of an error */
-- (BOOL) _proceedAccordingToHandler: (id) handler
-                           forError: (NSString*) error
-                             inPath: (NSString*) path;
+- (BOOL)_proceedAccordingToHandler:(id)handler
+    forError:(NSString*)error
+    inPath:(NSString*)path;
 
-- (BOOL) _proceedAccordingToHandler: (id) handler
-                           forError: (NSString*) error
-                             inPath: (NSString*) path
-                           fromPath: (NSString*) fromPath
-                             toPath: (NSString*) toPath;
-
-
+- (BOOL)_proceedAccordingToHandler:(id)handler
+    forError:(NSString*)error
+    inPath:(NSString*)path
+    fromPath:(NSString*)fromPath
+    toPath:(NSString*)toPath;
 
 
 @end /* NSFileManager (PrivateMethods) */
@@ -312,46 +287,46 @@ static Class	GSAttrDictionaryClass = 0;
 // Getting the default manager
 
 static NSFileManager* defaultManager = nil;
-static NSStringEncoding	defaultEncoding;
+static NSStringEncoding defaultEncoding;
 
 /**
  * Returns a shared default file manager which may be used throughout an
  * application.
  */
-+ (NSFileManager*) defaultManager
++ (NSFileManager*)defaultManager
 {
-  if (defaultManager == nil)
+    if (defaultManager == nil)
     {
-      NS_DURING
-	{
-	  [gnustep_global_lock lock];
-	  if (defaultManager == nil)
-	    {
-	      defaultManager = [[self alloc] init];
-	    }
-	  [gnustep_global_lock unlock];
-	}
-      NS_HANDLER
-	{
-	  // unlock then re-raise the exception
-	  [gnustep_global_lock unlock];
-	  [localException raise];
-	}
-      NS_ENDHANDLER
+        NS_DURING
+        {
+            [gnustep_global_lock lock];
+            if (defaultManager == nil)
+            {
+                defaultManager = [[self alloc] init];
+            }
+            [gnustep_global_lock unlock];
+        }
+        NS_HANDLER
+        {
+            // unlock then re-raise the exception
+            [gnustep_global_lock unlock];
+            [localException raise];
+        }
+        NS_ENDHANDLER
     }
-  return defaultManager;
+    return defaultManager;
 }
 
-+ (void) initialize
++ (void)initialize
 {
-  defaultEncoding = [NSString defaultCStringEncoding];
-  GSAttrDictionaryClass = [GSAttrDictionary class];
+    defaultEncoding = [NSString defaultCStringEncoding];
+    GSAttrDictionaryClass = [GSAttrDictionary class];
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  TEST_RELEASE(_lastError);
-  [super dealloc];
+    TEST_RELEASE(_lastError);
+    [super dealloc];
 }
 
 /**
@@ -361,26 +336,22 @@ static NSStringEncoding	defaultEncoding;
  * directory for other file manager instances will also be changed
  * by this method.
  */
-- (BOOL) changeCurrentDirectoryPath: (NSString*)path
+- (BOOL)changeCurrentDirectoryPath:(NSString*)path
 {
-  static Class	bundleClass = 0;
-  const _CHAR	*lpath = [self fileSystemRepresentationWithPath: path];
+    static Class bundleClass = 0;
+    const _CHAR   *lpath = [self fileSystemRepresentationWithPath:path];
 
-  /*
-   * On some systems the only way NSBundle can determine the path to the
-   * executable is by searching for it ... so it needs to know what was
-   * the current directory at launch time ... so we must make sure it is
-   * initialised before we change the current directory.
-   */
-  if (bundleClass == 0)
+    /*
+     * On some systems the only way NSBundle can determine the path to the
+     * executable is by searching for it ... so it needs to know what was
+     * the current directory at launch time ... so we must make sure it is
+     * initialised before we change the current directory.
+     */
+    if (bundleClass == 0)
     {
-      bundleClass = [NSBundle class];
+        bundleClass = [NSBundle class];
     }
-#if defined(__MINGW__)
-  return SetCurrentDirectoryW(lpath) == TRUE ? YES : NO;
-#else
-  return (chdir(lpath) == 0) ? YES : NO;
-#endif
+    return (chdir(lpath) == 0) ? YES : NO;
 }
 
 /**
@@ -389,205 +360,205 @@ static NSStringEncoding	defaultEncoding;
  * was nil or empty, so no changes were requested), NO otherwise.<br />
  * On failure, some of the requested changes may have taken place.<br />
  */
-- (BOOL) changeFileAttributes: (NSDictionary*)attributes atPath: (NSString*)path
+- (BOOL)changeFileAttributes:(NSDictionary*)attributes atPath:(NSString*)path
 {
-  const _CHAR	*lpath = 0;
-  unsigned long	num;
-  NSString	*str;
-  NSDate	*date;
-  BOOL		allOk = YES;
+    const _CHAR   *lpath = 0;
+    unsigned long num;
+    NSString  *str;
+    NSDate    *date;
+    BOOL allOk = YES;
 
-  if (attributes == nil)
+    if (attributes == nil)
     {
-      return YES;
+        return YES;
     }
-  lpath = [defaultManager fileSystemRepresentationWithPath: path];
+    lpath = [defaultManager fileSystemRepresentationWithPath:path];
 
-#ifndef __MINGW__
-  if (object_getClass(attributes) == GSAttrDictionaryClass)
+    if (object_getClass(attributes) == GSAttrDictionaryClass)
     {
-      num = ((GSAttrDictionary*)attributes)->statbuf.st_uid;
+        num = ((GSAttrDictionary*)attributes)->statbuf.st_uid;
     }
-  else
+    else
     {
-      NSNumber	*tmpNum = [attributes fileOwnerAccountID];
+        NSNumber  *tmpNum = [attributes fileOwnerAccountID];
 
-      num = tmpNum ? [tmpNum unsignedLongValue] : NSNotFound;
+        num = tmpNum ?[tmpNum unsignedLongValue] : NSNotFound;
     }
-  if (num != NSNotFound)
+    if (num != NSNotFound)
     {
-      if (chown(lpath, num, -1) != 0)
-	{
-	  allOk = NO;
-	  str = [NSString stringWithFormat:
-	    @"Unable to change NSFileOwnerAccountID to '%u' - %@",
-	    num, [NSError _last]];
-	  ASSIGN(_lastError, str);
-	}
+        if (chown(lpath, num, -1) != 0)
+        {
+            allOk = NO;
+            str = [NSString stringWithFormat:
+                   @"Unable to change NSFileOwnerAccountID to '%lu' - %@",
+                   num, [NSError _last]];
+            ASSIGN(_lastError, str);
+        }
     }
-  else
+    else
     {
-      if ((str = [attributes fileOwnerAccountName]) != nil)
-	{
-	  BOOL	ok = NO;
+        if ((str = [attributes fileOwnerAccountName]) != nil)
+        {
+            BOOL ok = NO;
 #ifdef HAVE_PWD_H
 #if     defined(HAVE_GETPWNAM_R)
-	  struct passwd pw;
-	  struct passwd *p;
-          char buf[BUFSIZ*10];
+            struct passwd pw;
+            struct passwd *p;
+            char buf[BUFSIZ*10];
 
-	  if (getpwnam_r([str cStringUsingEncoding: defaultEncoding],
-            &pw, buf, sizeof(buf), &p) == 0)
-	    {
-	      ok = (chown(lpath, pw.pw_uid, -1) == 0);
-	      chown(lpath, -1, pw.pw_gid);
-	    }
+            if (getpwnam_r([str cStringUsingEncoding:defaultEncoding],
+                           &pw, buf, sizeof(buf), &p) == 0)
+            {
+                ok = (chown(lpath, pw.pw_uid, -1) == 0);
+                chown(lpath, -1, pw.pw_gid);
+            }
 #else
 #if     defined(HAVE_GETPWNAM)
-	  struct passwd *pw;
+            struct passwd *pw;
 
-          [gnustep_global_lock lock];
-	  pw = getpwnam([str cStringUsingEncoding: defaultEncoding]);
-	  if (pw != 0)
-	    {
-	      ok = (chown(lpath, pw->pw_uid, -1) == 0);
-	      chown(lpath, -1, pw->pw_gid);
-	    }
-          [gnustep_global_lock unlock];
+            [gnustep_global_lock lock];
+            pw = getpwnam([str cStringUsingEncoding:defaultEncoding]);
+            if (pw != 0)
+            {
+                ok = (chown(lpath, pw->pw_uid, -1) == 0);
+                chown(lpath, -1, pw->pw_gid);
+            }
+            [gnustep_global_lock unlock];
 #endif
 #endif
 #endif
-	  if (ok == NO)
-	    {
-	      allOk = NO;
-	      str = [NSString stringWithFormat:
-		@"Unable to change NSFileOwnerAccountName to '%@' - %@",
-		str, [NSError _last]];
-	      ASSIGN(_lastError, str);
-	    }
-	}
+            if (ok == NO)
+            {
+                allOk = NO;
+                str = [NSString stringWithFormat:
+                       @"Unable to change NSFileOwnerAccountName to '%@' - %@",
+                       str, [NSError _last]];
+                ASSIGN(_lastError, str);
+            }
+        }
     }
 
-  if (object_getClass(attributes) == GSAttrDictionaryClass)
+    if (object_getClass(attributes) == GSAttrDictionaryClass)
     {
-      num = ((GSAttrDictionary*)attributes)->statbuf.st_gid;
+        num = ((GSAttrDictionary*)attributes)->statbuf.st_gid;
     }
-  else
+    else
     {
-      NSNumber	*tmpNum = [attributes fileGroupOwnerAccountID];
+        NSNumber  *tmpNum = [attributes fileGroupOwnerAccountID];
 
-      num = tmpNum ? [tmpNum unsignedLongValue] : NSNotFound;
+        num = tmpNum ?[tmpNum unsignedLongValue] : NSNotFound;
     }
-  if (num != NSNotFound)
+    if (num != NSNotFound)
     {
-      if (chown(lpath, -1, num) != 0)
-	{
-	  allOk = NO;
-	  str = [NSString stringWithFormat:
-	    @"Unable to change NSFileGroupOwnerAccountID to '%u' - %@",
-	    num, [NSError _last]];
-	  ASSIGN(_lastError, str);
-	}
+        if (chown(lpath, -1, num) != 0)
+        {
+            allOk = NO;
+            str = [NSString stringWithFormat:
+                   @"Unable to change NSFileGroupOwnerAccountID to '%lu' - %@",
+                   num, [NSError _last]];
+            ASSIGN(_lastError, str);
+        }
     }
-  else if ((str = [attributes fileGroupOwnerAccountName]) != nil)
+    else if ((str = [attributes fileGroupOwnerAccountName]) != nil)
     {
-      BOOL	ok = NO;
+        BOOL ok = NO;
 #ifdef HAVE_GRP_H
 #ifdef HAVE_GETGRNAM_R
-      struct group gp;
-      struct group *p;
-      char buf[BUFSIZ*10];
+        struct group gp;
+        struct group *p;
+        char buf[BUFSIZ*10];
 
-      if (getgrnam_r([str cStringUsingEncoding: defaultEncoding], &gp,
-        buf, sizeof(buf), &p) == 0)
+        if (getgrnam_r([str cStringUsingEncoding:defaultEncoding], &gp,
+                       buf, sizeof(buf), &p) == 0)
         {
-	  if (chown(lpath, -1, gp.gr_gid) == 0)
-	    ok = YES;
+            if (chown(lpath, -1, gp.gr_gid) == 0) {
+                ok = YES;
+            }
         }
 #else
 #ifdef HAVE_GETGRNAM
-      struct group *gp;
-      
-      [gnustep_global_lock lock];
-      gp = getgrnam([str cStringUsingEncoding: defaultEncoding]);
-      if (gp)
-	{
-	  if (chown(lpath, -1, gp->gr_gid) == 0)
-	    ok = YES;
-	}
-      [gnustep_global_lock unlock];
-#endif
-#endif
-#endif
-      if (ok == NO)
-	{
-	  allOk = NO;
-	  str = [NSString stringWithFormat:
-	    @"Unable to change NSFileGroupOwnerAccountName to '%@' - %@",
-	    str, [NSError _last]];
-	  ASSIGN(_lastError, str);
-	}
-    }
-#endif	/* __MINGW__ */
+        struct group *gp;
 
-  num = [attributes filePosixPermissions];
-  if (num != NSNotFound)
-    {
-      if (_CHMOD(lpath, num) != 0)
-	{
-	  allOk = NO;
-	  str = [NSString stringWithFormat:
-	    @"Unable to change NSFilePosixPermissions to '%o' - %@",
-	    num, [NSError _last]];
-	  ASSIGN(_lastError, str);
-	}
+        [gnustep_global_lock lock];
+        gp = getgrnam([str cStringUsingEncoding:defaultEncoding]);
+        if (gp)
+        {
+            if (chown(lpath, -1, gp->gr_gid) == 0) {
+                ok = YES;
+            }
+        }
+        [gnustep_global_lock unlock];
+#endif
+#endif
+#endif
+        if (ok == NO)
+        {
+            allOk = NO;
+            str = [NSString stringWithFormat:
+                   @"Unable to change NSFileGroupOwnerAccountName to '%@' - %@",
+                   str, [NSError _last]];
+            ASSIGN(_lastError, str);
+        }
     }
 
-  date = [attributes fileModificationDate];
-  if (date != nil)
+    num = [attributes filePosixPermissions];
+    if (num != NSNotFound)
     {
-      BOOL		ok = NO;
-      struct _STATB	sb;
+        if (_CHMOD(lpath, num) != 0)
+        {
+            allOk = NO;
+            str = [NSString stringWithFormat:
+                   @"Unable to change NSFilePosixPermissions to '%lo' - %@",
+                   num, [NSError _last]];
+            ASSIGN(_lastError, str);
+        }
+    }
+
+    date = [attributes fileModificationDate];
+    if (date != nil)
+    {
+        BOOL ok = NO;
+        struct _STATB sb;
 
 #if  defined(__WIN32__) || defined(_POSIX_VERSION)
-      struct _UTIMB ub;
+        struct _UTIMB ub;
 #else
-      time_t ub[2];
+        time_t ub[2];
 #endif
 
-      if (_STAT(lpath, &sb) != 0)
-	{
-	  ok = NO;
-	}
+        if (_STAT(lpath, &sb) != 0)
+        {
+            ok = NO;
+        }
 #if  defined(__WIN32__)
-      else if (sb.st_mode & _S_IFDIR)
-	{
-	  ok = YES;	// Directories don't have modification times.
-	}
+        else if (sb.st_mode & _S_IFDIR)
+        {
+            ok = YES; // Directories don't have modification times.
+        }
 #endif
-      else
-	{
+        else
+        {
 #if  defined(__WIN32__) || defined(_POSIX_VERSION)
-	  ub.actime = sb.st_atime;
-	  ub.modtime = [date timeIntervalSince1970];
-	  ok = (_UTIME(lpath, &ub) == 0);
+            ub.actime = sb.st_atime;
+            ub.modtime = [date timeIntervalSince1970];
+            ok = (_UTIME(lpath, &ub) == 0);
 #else
-	  ub[0] = sb.st_atime;
-	  ub[1] = [date timeIntervalSince1970];
-	  ok = (_UTIME(lpath, ub) == 0);
+            ub[0] = sb.st_atime;
+            ub[1] = [date timeIntervalSince1970];
+            ok = (_UTIME(lpath, ub) == 0);
 #endif
-	}
-      if (ok == NO)
-	{
-	  allOk = NO;
-	  str = [NSString stringWithFormat:
-	    @"Unable to change NSFileModificationDate to '%@' - %@",
-	    date, [NSError _last]];
-	  ASSIGN(_lastError, str);
-	}
+        }
+        if (ok == NO)
+        {
+            allOk = NO;
+            str = [NSString stringWithFormat:
+                   @"Unable to change NSFileModificationDate to '%@' - %@",
+                   date, [NSError _last]];
+            ASSIGN(_lastError, str);
+        }
     }
 
-  return allOk;
+    return allOk;
 }
 
 /**
@@ -598,9 +569,9 @@ static NSStringEncoding	defaultEncoding;
  * parallel one returned by [NSString-pathComponents] (for path
  * manipulation).
  */
-- (NSArray*) componentsToDisplayForPath: (NSString*)path
+- (NSArray*)componentsToDisplayForPath:(NSString*)path
 {
-  return [path pathComponents];
+    return [path pathComponents];
 }
 
 /**
@@ -608,9 +579,9 @@ static NSStringEncoding	defaultEncoding;
  * If an error occurs or if path specifies a directory etc then nil is
  * returned.
  */
-- (NSData*) contentsAtPath: (NSString*)path
+- (NSData*)contentsAtPath:(NSString*)path
 {
-  return [NSData dataWithContentsOfFile: path];
+    return [NSData dataWithContentsOfFile:path];
 }
 
 /**
@@ -622,73 +593,74 @@ static NSStringEncoding	defaultEncoding;
  * Symbolic links are not followed.<br />
  * A comparison checks first file identity, then size, then content.
  */
-- (BOOL) contentsEqualAtPath: (NSString*)path1 andPath: (NSString*)path2
+- (BOOL)contentsEqualAtPath:(NSString*)path1 andPath:(NSString*)path2
 {
-  NSDictionary	*d1;
-  NSDictionary	*d2;
-  NSString	*t;
+    NSDictionary  *d1;
+    NSDictionary  *d2;
+    NSString  *t;
 
-  if ([path1 isEqual: path2])
-    return YES;
-  d1 = [self fileAttributesAtPath: path1 traverseLink: NO];
-  d2 = [self fileAttributesAtPath: path2 traverseLink: NO];
-  t = [d1 fileType];
-  if ([t isEqual: [d2 fileType]] == NO)
-    {
-      return NO;
+    if ([path1 isEqual:path2]) {
+        return YES;
     }
-  if ([t isEqual: NSFileTypeRegular])
+    d1 = [self fileAttributesAtPath:path1 traverseLink:NO];
+    d2 = [self fileAttributesAtPath:path2 traverseLink:NO];
+    t = [d1 fileType];
+    if ([t isEqual:[d2 fileType]] == NO)
     {
-      if ([d1 fileSize] == [d2 fileSize])
-	{
-	  NSData	*c1 = [NSData dataWithContentsOfFile: path1];
-	  NSData	*c2 = [NSData dataWithContentsOfFile: path2];
-
-	  if ([c1 isEqual: c2])
-	    {
-	      return YES;
-	    }
-	}
-      return NO;
+        return NO;
     }
-  else if ([t isEqual: NSFileTypeDirectory])
+    if ([t isEqual:NSFileTypeRegular])
     {
-      NSArray	*a1 = [self directoryContentsAtPath: path1];
-      NSArray	*a2 = [self directoryContentsAtPath: path2];
-      unsigned	index, count = [a1 count];
-      BOOL	ok = YES;
+        if ([d1 fileSize] == [d2 fileSize])
+        {
+            NSData    *c1 = [NSData dataWithContentsOfFile:path1];
+            NSData    *c2 = [NSData dataWithContentsOfFile:path2];
 
-      if ([a1 isEqual: a2] == NO)
-	{
-	  return NO;
-	}
-      for (index = 0; ok == YES && index < count; index++)
-	{
-	  NSString	*n = [a1 objectAtIndex: index];
-	  NSString	*p1;
-	  NSString	*p2;
-	  CREATE_AUTORELEASE_POOL(pool);
-
-	  p1 = [path1 stringByAppendingPathComponent: n];
-	  p2 = [path2 stringByAppendingPathComponent: n];
-	  d1 = [self fileAttributesAtPath: p1 traverseLink: NO];
-	  d2 = [self fileAttributesAtPath: p2 traverseLink: NO];
-	  t = [d1 fileType];
-	  if ([t isEqual: [d2 fileType]] == NO)
-	    {
-	      ok = NO;
-	    }
-	  else if ([t isEqual: NSFileTypeDirectory])
-	    {
-	      ok = [self contentsEqualAtPath: p1 andPath: p2];
-	    }
-	  RELEASE(pool);
-	}
-      return ok;
+            if ([c1 isEqual:c2])
+            {
+                return YES;
+            }
+        }
+        return NO;
     }
-  else
+    else if ([t isEqual:NSFileTypeDirectory])
     {
-      return YES;
+        NSArray   *a1 = [self directoryContentsAtPath:path1];
+        NSArray   *a2 = [self directoryContentsAtPath:path2];
+        unsigned index, count = [a1 count];
+        BOOL ok = YES;
+
+        if ([a1 isEqual:a2] == NO)
+        {
+            return NO;
+        }
+        for (index = 0; ok == YES && index < count; index++)
+        {
+            NSString  *n = [a1 objectAtIndex:index];
+            NSString  *p1;
+            NSString  *p2;
+            CREATE_AUTORELEASE_POOL(pool);
+
+            p1 = [path1 stringByAppendingPathComponent:n];
+            p2 = [path2 stringByAppendingPathComponent:n];
+            d1 = [self fileAttributesAtPath:p1 traverseLink:NO];
+            d2 = [self fileAttributesAtPath:p2 traverseLink:NO];
+            t = [d1 fileType];
+            if ([t isEqual:[d2 fileType]] == NO)
+            {
+                ok = NO;
+            }
+            else if ([t isEqual:NSFileTypeDirectory])
+            {
+                ok = [self contentsEqualAtPath:p1 andPath:p2];
+            }
+            RELEASE(pool);
+        }
+        return ok;
+    }
+    else
+    {
+        return YES;
     }
 }
 
@@ -699,37 +671,40 @@ static NSStringEncoding	defaultEncoding;
  * specified in attributes and any error is returned in error.<br />
  * returns YES on success, NO on failure.
  */
-- (BOOL) createDirectoryAtPath: (NSString *)path
-   withIntermediateDirectories: (BOOL)flag
-		    attributes: (NSDictionary *)attributes
-			 error: (NSError **) error
+- (BOOL)createDirectoryAtPath:(NSString *)target
+    withIntermediateDirectories:(BOOL)flag
+    attributes:(NSDictionary *)attributes
+    error:(NSError **)error
 {
-  BOOL result = NO;
+    int saveErrno = errno;
+    errno = 0;
+    BOOL result = NO;
 
-  if (flag == YES)
+    if (flag == YES)
     {
-      NSEnumerator *paths = [[path pathComponents] objectEnumerator];
-      NSString *path = nil;
-      NSString *dir = [NSString string];
+        NSEnumerator *paths = [[target pathComponents] objectEnumerator];
+        NSString *path = nil;
+        NSString *dir = [NSString string];
 
-      while ((path = (NSString *)[paths nextObject]) != nil)
-	{
-	  dir = [dir stringByAppendingPathComponent: path];
-	  result = [self createDirectoryAtPath: dir
-			 attributes: attributes];
-	}
+        while ((path = (NSString *)[paths nextObject]) != nil)
+        {
+            dir = [dir stringByAppendingPathComponent:path];
+            result = [self createDirectoryAtPath:dir
+                      attributes:attributes];
+        }
     }
-  else
+    else
     {
-      result = [self createDirectoryAtPath: [path lastPathComponent]
-                                attributes: attributes];
-    }  
-
-  if (error != NULL)
-    {
-      *error = [NSError _last];
+        result = [self createDirectoryAtPath:[target lastPathComponent]
+                  attributes:attributes];
     }
-  return result;
+
+    if (error != NULL && result == NO)
+    {
+        *error = [NSError _last];
+    }
+    errno = errno != 0 ? errno : saveErrno;
+    return result;
 }
 
 /**
@@ -737,156 +712,120 @@ static NSStringEncoding	defaultEncoding;
  * Creates other directories in the path as necessary.<br />
  * Returns YES on success, NO on failure.
  */
-- (BOOL) createDirectoryAtPath: (NSString*)path
-		    attributes: (NSDictionary*)attributes
+- (BOOL)createDirectoryAtPath:(NSString*)path
+    attributes:(NSDictionary*)attributes
 {
-#if defined(__MINGW__)
-  NSEnumerator	*paths = [[path pathComponents] objectEnumerator];
-  NSString	*subPath;
-  NSString	*completePath = nil;
-#else
-  const char	*lpath;
-  char		dirpath[PATH_MAX+1];
-  struct _STATB	statbuf;
-  int		len, cur;
-  NSDictionary	*needChown = nil;
-#endif
+    const char    *lpath;
+    char dirpath[PATH_MAX+1];
+    struct _STATB statbuf;
+    int len, cur;
+    NSDictionary  *needChown = nil;
 
-  /* This is consistent with MacOSX - just return NO for an invalid path. */
-  if ([path length] == 0)
-    return NO;
+    /* This is consistent with MacOSX - just return NO for an invalid path. */
+    if ([path length] == 0) {
+        return NO;
+    }
 
-#if defined(__MINGW__)
-  while ((subPath = [paths nextObject]))
+
+    /*
+     * If there is no file owner specified, and we are running setuid to
+     * root, then we assume we need to change ownership to correct user.
+     */
+    if (attributes == nil || ([attributes fileOwnerAccountID] == nil
+                              && [attributes fileOwnerAccountName] == nil))
     {
-      BOOL isDir = NO;
-
-      if (completePath == nil)
-	completePath = subPath;
-      else
-	completePath = [completePath stringByAppendingPathComponent: subPath];
-
-      if ([self fileExistsAtPath: completePath isDirectory: &isDir])
-	{
-	  if (!isDir)
-	    NSLog(@"WARNING: during creation of directory %@:"
-		  @" sub path %@ exists, but is not a directory !",
-		  path, completePath);
-        }
-      else
-	{
-	  const _CHAR *lpath;
-
-	  lpath = [self fileSystemRepresentationWithPath: completePath];
-	  if (CreateDirectoryW(lpath, 0) == FALSE)
-	    {
-	      return NO;
-	    }
+        if (geteuid() == 0 && [@"root" isEqualToString : NSUserName()] == NO)
+        {
+            needChown = [NSDictionary dictionaryWithObjectsAndKeys:
+                         NSFileOwnerAccountName, NSUserName(), nil];
         }
     }
-
-#else
-
-  /*
-   * If there is no file owner specified, and we are running setuid to
-   * root, then we assume we need to change ownership to correct user.
-   */
-  if (attributes == nil || ([attributes fileOwnerAccountID] == nil
-    && [attributes fileOwnerAccountName] == nil))
+    lpath = [self fileSystemRepresentationWithPath:path];
+    len = strlen(lpath);
+    if (len > PATH_MAX) // name too long
     {
-      if (geteuid() == 0 && [@"root" isEqualToString: NSUserName()] == NO)
-	{
-	  needChown = [NSDictionary dictionaryWithObjectsAndKeys:
-	    NSFileOwnerAccountName, NSUserName(), nil];
-	}
-    }
-  lpath = [self fileSystemRepresentationWithPath: path];
-  len = strlen(lpath);
-  if (len > PATH_MAX) // name too long
-    {
-      ASSIGN(_lastError, @"Could not create directory - name too long");
-      return NO;
+        ASSIGN(_lastError, @"Could not create directory - name too long");
+        return NO;
     }
 
-  if (strcmp(lpath, "/") == 0 || len == 0) // cannot use "/" or ""
+    if (len == 0) // cannot ""
     {
-      ASSIGN(_lastError, @"Could not create directory - no name given");
-      return NO;
+        ASSIGN(_lastError, @"Could not create directory - no name given");
+        return NO;
     }
 
-  strcpy(dirpath, lpath);
-  dirpath[len] = '\0';
-  if (dirpath[len-1] == '/')
-    dirpath[len-1] = '\0';
-  cur = 0;
-
-  do
-    {
-      // find next '/'
-      while (dirpath[cur] != '/' && cur < len)
-	cur++;
-      // if first char is '/' then again; (cur == len) -> last component
-      if (cur == 0)
-	{
-	  cur++;
-	  continue;
-	}
-      // check if path from 0 to cur is valid
-      dirpath[cur] = '\0';
-      if (_STAT(dirpath, &statbuf) == 0)
-	{
-	  if (cur == len)
-	    {
-	      ASSIGN(_lastError,
-		@"Could not create directory - already exists");
-	      return NO;
-	    }
-	}
-      else
-	{
-	  // make new directory
-	  if (mkdir(dirpath, 0777) != 0)
-	    {
-	      NSString	*s;
-
-	      s = [NSString stringWithFormat: @"Could not create '%s' - '%@'",
-		dirpath, [NSError _last]];
-	      ASSIGN(_lastError, s);
-	      return NO;
-	    }
-	  // if last directory and attributes then change
-	  if (cur == len && attributes != nil)
-	    {
-	      if ([self changeFileAttributes: attributes
-		atPath: [self stringWithFileSystemRepresentation: dirpath
-			length: cur]] == NO)
-		return NO;
-	      if (needChown != nil)
-		{
-		  if ([self changeFileAttributes: needChown
-		    atPath: [self stringWithFileSystemRepresentation: dirpath
-		      length: cur]] == NO)
-		    {
-		      NSLog(@"Failed to change ownership of '%s' to '%@'",
-			      dirpath, NSUserName());
-		    }
-		}
-	      return YES;
-	    }
-	}
-      dirpath[cur] = '/';
-      cur++;
+    strcpy(dirpath, lpath);
+    dirpath[len] = '\0';
+    if (dirpath[len-1] == '/') {
+        dirpath[len-1] = '\0';
     }
-  while (cur < len);
+    cur = 0;
 
-#endif /* !MINGW */
-
-  // change attributes of last directory
-  if ([attributes count] == 0)
+    do
     {
-      return YES;
+        // find next '/'
+        while (dirpath[cur] != '/' && cur < len)
+            cur++;
+        // if first char is '/' then again; (cur == len) -> last component
+        if (cur == 0)
+        {
+            cur++;
+            continue;
+        }
+        // check if path from 0 to cur is valid
+        dirpath[cur] = '\0';
+        if (_STAT(dirpath, &statbuf) == 0)
+        {
+            if (cur == len)
+            {
+                return YES; // File already exists
+            }
+        }
+        else
+        {
+            // make new directory
+            if (mkdir(dirpath, 0777) != 0)
+            {
+                NSString  *s;
+
+                s = [NSString stringWithFormat:@"Could not create '%s' - '%@'",
+                     dirpath, [NSError _last]];
+                ASSIGN(_lastError, s);
+                return NO;
+            }
+            // if last directory and attributes then change
+            if (cur == len && attributes != nil)
+            {
+                if ([self changeFileAttributes:attributes
+                     atPath:[self stringWithFileSystemRepresentation:dirpath
+                             length:cur]] == NO) {
+                    return NO;
+                }
+                if (needChown != nil)
+                {
+                    if ([self changeFileAttributes:needChown
+                         atPath:[self stringWithFileSystemRepresentation:dirpath
+                                 length:cur]] == NO)
+                    {
+                        NSLog(@"Failed to change ownership of '%s' to '%@'",
+                              dirpath, NSUserName());
+                    }
+                }
+                return YES;
+            }
+        }
+        dirpath[cur] = '/';
+        cur++;
     }
-  return [self changeFileAttributes: attributes atPath: path];
+    while (cur < len);
+
+
+    // change attributes of last directory
+    if ([attributes count] == 0)
+    {
+        return YES;
+    }
+    return [self changeFileAttributes:attributes atPath:path];
 }
 
 /**
@@ -894,136 +833,87 @@ static NSStringEncoding	defaultEncoding;
  * Initialises the file content with the specified data.<br />
  * Returns YES on success, NO on failure.
  */
-- (BOOL) createFileAtPath: (NSString*)path
-		 contents: (NSData*)contents
-	       attributes: (NSDictionary*)attributes
+- (BOOL)createFileAtPath:(NSString*)path
+    contents:(NSData*)contents
+    attributes:(NSDictionary*)attributes
 {
-#if	defined(__MINGW__)
-  const _CHAR *lpath = [self fileSystemRepresentationWithPath: path];
-  HANDLE fh;
-  DWORD	written = 0;
-  DWORD	len = [contents length];
-#else
-  const char	*lpath;
-  int	fd;
-  int	len;
-  int	written;
-#endif
+    const char    *lpath;
+    int fd;
+    int len;
+    int written;
 
-  /* This is consistent with MacOSX - just return NO for an invalid path. */
-  if ([path length] == 0)
-    return NO;
-
-#if	defined(__MINGW__)
-  fh = CreateFileW(lpath, GENERIC_WRITE, 0, 0, CREATE_ALWAYS,
-    FILE_ATTRIBUTE_NORMAL, 0);
-  if (fh == INVALID_HANDLE_VALUE)
-    {
-      return NO;
-    }
-  else
-    {
-      if (len > 0)
-	{
-	  WriteFile(fh, [contents bytes], len, &written, 0);
-	}
-      CloseHandle(fh);
-      if (attributes != nil
-	&& [self changeFileAttributes: attributes atPath: path] == NO)
-	{
-	  return NO;
-	}
-      return YES;
-    }
-#else
-  lpath = [self fileSystemRepresentationWithPath: path];
-
-  fd = open(lpath, GSBINIO|O_WRONLY|O_TRUNC|O_CREAT, 0644);
-  if (fd < 0)
-    {
-      return NO;
-    }
-  if (attributes != nil
-    && [self changeFileAttributes: attributes atPath: path] == NO)
-    {
-      close (fd);
-      return NO;
+    /* This is consistent with MacOSX - just return NO for an invalid path. */
+    if ([path length] == 0) {
+        return NO;
     }
 
-  /*
-   * If there is no file owner specified, and we are running setuid to
-   * root, then we assume we need to change ownership to correct user.
-   */
-  if (attributes == nil || ([attributes fileOwnerAccountID] == nil
-    && [attributes fileOwnerAccountName] == nil))
+    lpath = [self fileSystemRepresentationWithPath:path];
+
+    fd = open(lpath, GSBINIO|O_WRONLY|O_TRUNC|O_CREAT, 0644);
+    if (fd < 0)
     {
-      if (geteuid() == 0 && [@"root" isEqualToString: NSUserName()] == NO)
-	{
-	  attributes = [NSDictionary dictionaryWithObjectsAndKeys:
-	    NSFileOwnerAccountName, NSUserName(), nil];
-	  if (![self changeFileAttributes: attributes atPath: path])
-	    {
-	      NSLog(@"Failed to change ownership of '%@' to '%@'",
-		path, NSUserName());
-	    }
-	}
+        return NO;
     }
-  len = [contents length];
-  if (len > 0)
+    if (attributes != nil
+        && [self changeFileAttributes:attributes atPath:path] == NO)
     {
-      written = write(fd, [contents bytes], len);
+        close (fd);
+        return NO;
     }
-  else
+
+    /*
+     * If there is no file owner specified, and we are running setuid to
+     * root, then we assume we need to change ownership to correct user.
+     */
+    if (attributes == nil || ([attributes fileOwnerAccountID] == nil
+                              && [attributes fileOwnerAccountName] == nil))
     {
-      written = 0;
+        if (geteuid() == 0 && [@"root" isEqualToString : NSUserName()] == NO)
+        {
+            attributes = [NSDictionary dictionaryWithObjectsAndKeys:
+                          NSFileOwnerAccountName, NSUserName(), nil];
+            if (![self changeFileAttributes:attributes atPath:path])
+            {
+                NSLog(@"Failed to change ownership of '%@' to '%@'",
+                      path, NSUserName());
+            }
+        }
     }
-  close (fd);
-#endif
-  return written == len;
+    len = [contents length];
+    if (len > 0)
+    {
+        written = write(fd, [contents bytes], len);
+    }
+    else
+    {
+        written = 0;
+    }
+    close (fd);
+    return written == len;
 }
 
 /**
  * Returns the current working directory used by all instance of the file
  * manager in the current task.
  */
-- (NSString*) currentDirectoryPath
+- (NSString*)currentDirectoryPath
 {
-  NSString *currentDir = nil;
+    NSString *currentDir = nil;
 
-#if defined(__MINGW__)
-  int len = GetCurrentDirectoryW(0, 0);
-  if (len > 0)
-    {
-      _CHAR *lpath = (_CHAR*)objc_calloc(len+10,sizeof(_CHAR));
-
-      if (lpath != 0)
-	{
-	  if (GetCurrentDirectoryW(len, lpath)>0)
-	    {
-	      NSString	*path;
-
-	      // Windows may count the trailing nul ... we don't want to.
-	      if (len > 0 && lpath[len] == 0) len--;
-	      path = [NSString stringWithCharacters: lpath length: len];
-	      currentDir = path;
-	    }
-	  objc_free(lpath);
-	}
+    char path[PATH_MAX];
+#ifdef HAVE_GETCWD
+    if (getcwd(path, PATH_MAX-1) == 0) {
+        return nil;
     }
 #else
-  char path[PATH_MAX];
-#ifdef HAVE_GETCWD
-  if (getcwd(path, PATH_MAX-1) == 0)
-    return nil;
-#else
-  if (getwd(path) == 0)
-    return nil;
+    if (getwd(path) == 0) {
+        return nil;
+    }
 #endif /* HAVE_GETCWD */
-  currentDir = [self stringWithFileSystemRepresentation: path
-						 length: strlen(path)];
-#endif /* !MINGW */
+    currentDir = [self stringWithFileSystemRepresentation:path
+                  length:strlen(path)];
 
-  return currentDir;
+    return currentDir;
 }
 
 /**
@@ -1033,96 +923,96 @@ static NSStringEncoding	defaultEncoding;
  * [NSObject-fileManager:shouldProceedAfterError:] messages.<br />
  * Will not copy to a destination which already exists.
  */
-- (BOOL) copyPath: (NSString*)source
-	   toPath: (NSString*)destination
-	  handler: (id)handler
+- (BOOL)copyPath:(NSString*)source
+    toPath:(NSString*)destination
+    handler:(id)handler
 {
-  NSDictionary	*attrs;
-  NSString	*fileType;
+    NSDictionary  *attrs;
+    NSString  *fileType;
 
-  if ([self fileExistsAtPath: destination] == YES)
+    if ([self fileExistsAtPath:destination] == YES)
     {
-      return NO;
+        return NO;
     }
-  attrs = [self fileAttributesAtPath: source traverseLink: NO];
-  if (attrs == nil)
+    attrs = [self fileAttributesAtPath:source traverseLink:NO];
+    if (attrs == nil)
     {
-      return NO;
+        return NO;
     }
-  fileType = [attrs fileType];
-  if ([fileType isEqualToString: NSFileTypeDirectory] == YES)
+    fileType = [attrs fileType];
+    if ([fileType isEqualToString:NSFileTypeDirectory] == YES)
     {
-      NSMutableDictionary	*mattrs;
+        NSMutableDictionary   *mattrs;
 
-      /* If destination directory is a descendant of source directory copying
-	  isn't possible. */
-      if ([[destination stringByAppendingString: @"/"]
-	hasPrefix: [source stringByAppendingString: @"/"]])
-	{
-	  return NO;
-	}
+        /* If destination directory is a descendant of source directory copying
+           isn't possible. */
+        if ([[destination stringByAppendingString:@"/"]
+             hasPrefix:[source stringByAppendingString:@"/"]])
+        {
+            return NO;
+        }
 
-      [self _sendToHandler: handler willProcessPath: destination];
+        [self _sendToHandler:handler willProcessPath:destination];
 
-      /*
-       * Don't attempt to retain ownership of copy ... we want the copy
-       * to be owned by the current user.
-       */
-      mattrs = [attrs mutableCopy];
-      [mattrs removeObjectForKey: NSFileOwnerAccountID];
-      [mattrs removeObjectForKey: NSFileGroupOwnerAccountID];
-      [mattrs removeObjectForKey: NSFileGroupOwnerAccountName];
-      [mattrs setObject: NSUserName() forKey: NSFileOwnerAccountName];
-      attrs = AUTORELEASE(mattrs);
+        /*
+         * Don't attempt to retain ownership of copy ... we want the copy
+         * to be owned by the current user.
+         */
+        mattrs = [attrs mutableCopy];
+        [mattrs removeObjectForKey:NSFileOwnerAccountID];
+        [mattrs removeObjectForKey:NSFileGroupOwnerAccountID];
+        [mattrs removeObjectForKey:NSFileGroupOwnerAccountName];
+        [mattrs setObject:NSUserName() forKey:NSFileOwnerAccountName];
+        attrs = AUTORELEASE(mattrs);
 
-      if ([self createDirectoryAtPath: destination attributes: attrs] == NO)
-	{
-          return [self _proceedAccordingToHandler: handler
-					 forError: _lastError
-					   inPath: destination
-					 fromPath: source
-					   toPath: destination];
-	}
+        if ([self createDirectoryAtPath:destination attributes:attrs] == NO)
+        {
+            return [self _proceedAccordingToHandler:handler
+                    forError:_lastError
+                    inPath:destination
+                    fromPath:source
+                    toPath:destination];
+        }
 
-      if ([self _copyPath: source toPath: destination handler: handler] == NO)
-	{
-	  return NO;
-	}
+        if ([self _copyPath:source toPath:destination handler:handler] == NO)
+        {
+            return NO;
+        }
     }
-  else if ([fileType isEqualToString: NSFileTypeSymbolicLink] == YES)
+    else if ([fileType isEqualToString:NSFileTypeSymbolicLink] == YES)
     {
-      NSString	*path;
-      BOOL	result;
+        NSString  *path;
+        BOOL result;
 
-      [self _sendToHandler: handler willProcessPath: source];
+        [self _sendToHandler:handler willProcessPath:source];
 
-      path = [self pathContentOfSymbolicLinkAtPath: source];
-      result = [self createSymbolicLinkAtPath: destination pathContent: path];
-      if (result == NO)
-	{
-          result = [self _proceedAccordingToHandler: handler
-					   forError: @"cannot link to file"
-					     inPath: source
-					   fromPath: source
-					     toPath: destination];
+        path = [self pathContentOfSymbolicLinkAtPath:source];
+        result = [self createSymbolicLinkAtPath:destination pathContent:path];
+        if (result == NO)
+        {
+            result = [self _proceedAccordingToHandler:handler
+                      forError:@"cannot link to file"
+                      inPath:source
+                      fromPath:source
+                      toPath:destination];
 
-	  if (result == NO)
-	    {
-	      return NO;
-	    }
-	}
+            if (result == NO)
+            {
+                return NO;
+            }
+        }
     }
-  else
+    else
     {
-      [self _sendToHandler: handler willProcessPath: source];
+        [self _sendToHandler:handler willProcessPath:source];
 
-      if ([self _copyFile: source toFile: destination handler: handler] == NO)
-	{
-	  return NO;
-	}
+        if ([self _copyFile:source toFile:destination handler:handler] == NO)
+        {
+            return NO;
+        }
     }
-  [self changeFileAttributes: attrs atPath: destination];
-  return YES;
+    [self changeFileAttributes:attrs atPath:destination];
+    return YES;
 }
 
 /**
@@ -1132,82 +1022,85 @@ static NSStringEncoding	defaultEncoding;
  * [NSObject-fileManager:shouldProceedAfterError:] messages.
  * Will not move to a destination which already exists.<br />
  */
-- (BOOL) movePath: (NSString*)source
-	   toPath: (NSString*)destination
-	  handler: (id)handler
+- (BOOL)movePath:(NSString*)source
+    toPath:(NSString*)destination
+    handler:(id)handler
 {
-  BOOL		sourceIsDir;
-  BOOL		fileExists;
-  NSString	*destinationParent;
-  unsigned int	sourceDevice;
-  unsigned int	destinationDevice;
-  const _CHAR	*sourcePath;
-  const _CHAR	*destPath;
+    BOOL sourceIsDir;
+    BOOL fileExists;
+    NSString  *destinationParent;
+    unsigned int sourceDevice;
+    unsigned int destinationDevice;
+    const _CHAR   *sourcePath;
+    const _CHAR   *destPath;
 
-  sourcePath = [self fileSystemRepresentationWithPath: source];
-  destPath = [self fileSystemRepresentationWithPath: destination];
+    sourcePath = [self fileSystemRepresentationWithPath:source];
+    destPath = [self fileSystemRepresentationWithPath:destination];
 
-  if ([self fileExistsAtPath: destination] == YES)
+    if ([self fileExistsAtPath:destination] == YES)
     {
-      return NO;
+        return NO;
     }
-  fileExists = [self fileExistsAtPath: source isDirectory: &sourceIsDir];
-  if (!fileExists)
+    fileExists = [self fileExistsAtPath:source isDirectory:&sourceIsDir];
+    if (!fileExists)
     {
-      return NO;
-    }
-
-  /* Check to see if the source and destination's parent are on the same
-     physical device so we can perform a rename syscall directly. */
-  sourceDevice = [[self fileSystemAttributesAtPath: source] fileSystemNumber];
-  destinationParent = [destination stringByDeletingLastPathComponent];
-  if ([destinationParent isEqual: @""])
-    destinationParent = @".";
-  destinationDevice
-    = [[self fileSystemAttributesAtPath: destinationParent] fileSystemNumber];
-
-  if (sourceDevice != destinationDevice)
-    {
-      /* If destination directory is a descendant of source directory moving
-	  isn't possible. */
-      if (sourceIsDir && [[destination stringByAppendingString: @"/"]
-	hasPrefix: [source stringByAppendingString: @"/"]])
-	{
-	  return NO;
-	}
-
-      if ([self copyPath: source toPath: destination handler: handler])
-	{
-	  NSDictionary	*attributes;
-
-	  attributes = [self fileAttributesAtPath: source
-				     traverseLink: NO];
-	  [self changeFileAttributes: attributes atPath: destination];
-	  return [self removeFileAtPath: source handler: handler];
-	}
-      else
-	{
-	  return NO;
-	}
-    }
-  else
-    {
-      /* source and destination are on the same device so we can simply
-	 invoke rename on source. */
-      [self _sendToHandler: handler willProcessPath: source];
-
-      if (_RENAME (sourcePath, destPath) == -1)
-	{
-          return [self _proceedAccordingToHandler: handler
-					 forError: @"cannot move file"
-					   inPath: source
-					 fromPath: source
-					   toPath: destination];
-	}
-      return YES;
+        return NO;
     }
 
-  return NO;
+    /* Check to see if the source and destination's parent are on the same
+       physical device so we can perform a rename syscall directly. */
+    /*
+       sourceDevice = [[self fileSystemAttributesAtPath: source]
+          fileSystemNumber];
+       destinationParent = [destination stringByDeletingLastPathComponent];
+       if ([destinationParent isEqual: @""])
+       destinationParent = @".";
+       destinationDevice
+       = [[self fileSystemAttributesAtPath: destinationParent]
+          fileSystemNumber];
+
+       if (sourceDevice != destinationDevice)
+       {
+       /* If destination directory is a descendant of source directory moving
+       isn't possible. * /
+       if (sourceIsDir && [[destination stringByAppendingString: @"/"]
+       hasPrefix: [source stringByAppendingString: @"/"]])
+       {
+       return NO;
+       }
+
+       if ([self copyPath: source toPath: destination handler: handler])
+       {
+       NSDictionary	*attributes;
+
+       attributes = [self fileAttributesAtPath: source
+                 traverseLink: NO];
+       [self changeFileAttributes: attributes atPath: destination];
+       return [self removeFileAtPath: source handler: handler];
+       }
+       else
+       {
+       return NO;
+       }
+       }
+       else
+       {*/
+    /* source and destination are on the same device so we can simply
+       invoke rename on source. */
+    [self _sendToHandler:handler willProcessPath:source];
+
+    if (TEMP_FAILURE_RETRY(_RENAME (sourcePath, destPath)) == -1)
+    {
+        return [self _proceedAccordingToHandler:handler
+                forError:@"cannot move file"
+                inPath:source
+                fromPath:source
+                toPath:destination];
+    }
+    return YES;
+    //}
+
+    //return NO;
 }
 
 /**
@@ -1227,92 +1120,92 @@ static NSStringEncoding	defaultEncoding;
  * Otherwise, a hard link is made from the destination to the source.
  * </p>
  */
-- (BOOL) linkPath: (NSString*)source
-	   toPath: (NSString*)destination
-	  handler: (id)handler
+- (BOOL)linkPath:(NSString*)source
+    toPath:(NSString*)destination
+    handler:(id)handler
 {
 #ifdef HAVE_LINK
-  NSDictionary	*attrs;
-  NSString	*fileType;
-  BOOL		isDir;
+    NSDictionary  *attrs;
+    NSString  *fileType;
+    BOOL isDir;
 
-  if ([self fileExistsAtPath: destination isDirectory: &isDir] == YES
-    && isDir == YES)
+    if ([self fileExistsAtPath:destination isDirectory:&isDir] == YES
+        && isDir == YES)
     {
-      destination = [destination stringByAppendingPathComponent:
-	[source lastPathComponent]];
+        destination = [destination stringByAppendingPathComponent:
+                       [source lastPathComponent]];
     }
 
-  attrs = [self fileAttributesAtPath: source traverseLink: NO];
-  if (attrs == nil)
+    attrs = [self fileAttributesAtPath:source traverseLink:NO];
+    if (attrs == nil)
     {
-      return NO;
+        return NO;
     }
 
-  [self _sendToHandler: handler willProcessPath: destination];
+    [self _sendToHandler:handler willProcessPath:destination];
 
-  fileType = [attrs fileType];
-  if ([fileType isEqualToString: NSFileTypeDirectory] == YES)
+    fileType = [attrs fileType];
+    if ([fileType isEqualToString:NSFileTypeDirectory] == YES)
     {
-      /* If destination directory is a descendant of source directory linking
-	  isn't possible because of recursion. */
-      if ([[destination stringByAppendingString: @"/"]
-	hasPrefix: [source stringByAppendingString: @"/"]])
-	{
-	  return NO;
-	}
+        /* If destination directory is a descendant of source directory linking
+           isn't possible because of recursion. */
+        if ([[destination stringByAppendingString:@"/"]
+             hasPrefix:[source stringByAppendingString:@"/"]])
+        {
+            return NO;
+        }
 
-      if ([self createDirectoryAtPath: destination attributes: attrs] == NO)
-	{
-          return [self _proceedAccordingToHandler: handler
-					 forError: _lastError
-					   inPath: destination
-					 fromPath: source
-					   toPath: destination];
-	}
+        if ([self createDirectoryAtPath:destination attributes:attrs] == NO)
+        {
+            return [self _proceedAccordingToHandler:handler
+                    forError:_lastError
+                    inPath:destination
+                    fromPath:source
+                    toPath:destination];
+        }
 
-      if ([self _linkPath: source toPath: destination handler: handler] == NO)
-	{
-	  return NO;
-	}
+        if ([self _linkPath:source toPath:destination handler:handler] == NO)
+        {
+            return NO;
+        }
     }
-  else if ([fileType isEqual: NSFileTypeSymbolicLink])
+    else if ([fileType isEqual:NSFileTypeSymbolicLink])
     {
-      NSString	*path;
+        NSString  *path;
 
-      path = [self pathContentOfSymbolicLinkAtPath: source];
-      if ([self createSymbolicLinkAtPath: destination
-			     pathContent: path] == NO)
-	{
-	  if ([self _proceedAccordingToHandler: handler
-				      forError: @"cannot create symbolic link"
-					inPath: source
-				      fromPath: source
-					toPath: destination] == NO)
-	    {
-	      return NO;
-	    }
-	}
+        path = [self pathContentOfSymbolicLinkAtPath:source];
+        if ([self createSymbolicLinkAtPath:destination
+             pathContent:path] == NO)
+        {
+            if ([self _proceedAccordingToHandler:handler
+                 forError:@"cannot create symbolic link"
+                 inPath:source
+                 fromPath:source
+                 toPath:destination] == NO)
+            {
+                return NO;
+            }
+        }
     }
-  else
+    else
     {
-      if (link([self fileSystemRepresentationWithPath: source],
-	[self fileSystemRepresentationWithPath: destination]) < 0)
-	{
-	  if ([self _proceedAccordingToHandler: handler
-				      forError: @"cannot create hard link"
-					inPath: source
-				      fromPath: source
-					toPath: destination] == NO)
-	    {
-	      return NO;
-	    }
-	}
+        if (link([self fileSystemRepresentationWithPath:source],
+                 [self fileSystemRepresentationWithPath:destination]) < 0)
+        {
+            if ([self _proceedAccordingToHandler:handler
+                 forError:@"cannot create hard link"
+                 inPath:source
+                 fromPath:source
+                 toPath:destination] == NO)
+            {
+                return NO;
+            }
+        }
     }
-  [self changeFileAttributes: attrs atPath: destination];
-  return YES;
+    [self changeFileAttributes:attrs atPath:destination];
+    return YES;
 #else
-  return NO;	// Links not supported on this platform
+    return NO;  // Links not supported on this platform
 #endif
 }
 
@@ -1322,118 +1215,95 @@ static NSStringEncoding	defaultEncoding;
  * [NSObject-fileManager:willProcessPath:] and
  * [NSObject-fileManager:shouldProceedAfterError:] messages.
  */
-- (BOOL) removeFileAtPath: (NSString*)path
-		  handler: handler
+- (BOOL)removeFileAtPath:(NSString*)path
+    handler:handler
 {
-  BOOL		is_dir;
-  const _CHAR	*lpath;
+    BOOL is_dir;
+    const _CHAR   *lpath;
 
-  if ([path isEqualToString: @"."] || [path isEqualToString: @".."])
+    if ([path isEqualToString:@"."] || [path isEqualToString:@".."])
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"Attempt to remove illegal path"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"Attempt to remove illegal path"];
     }
 
-  [self _sendToHandler: handler willProcessPath: path];
+    [self _sendToHandler:handler willProcessPath:path];
 
-  lpath = [self fileSystemRepresentationWithPath: path];
-  if (lpath == 0 || *lpath == 0)
+    lpath = [self fileSystemRepresentationWithPath:path];
+    if (lpath == 0 || *lpath == 0)
     {
-      return NO;
+        return NO;
     }
-  else
+    else
     {
-#if defined(__MINGW__)
-      DWORD res;
+        struct _STATB statbuf;
 
-      res = GetFileAttributesW(lpath);
-
-      if (res == WIN32ERR)
-	{
-	  return NO;
-	}
-      if (res & FILE_ATTRIBUTE_DIRECTORY)
-	{
-	  is_dir = YES;
-	}
-      else
-	{
-	  is_dir = NO;
-	}
-#else
-      struct _STATB statbuf;
-
-      if (lstat(lpath, &statbuf) != 0)
-	{
-	  return NO;
-	}
-      is_dir = ((statbuf.st_mode & S_IFMT) == S_IFDIR);
-#endif /* MINGW */
+        if (lstat(lpath, &statbuf) != 0)
+        {
+            return NO;
+        }
+        is_dir = ((statbuf.st_mode & S_IFMT) == S_IFDIR);
     }
 
-  if (!is_dir)
+    if (!is_dir)
     {
-#if defined(__MINGW__)
-      if (DeleteFileW(lpath) == FALSE)
-#else
-      if (unlink(lpath) < 0)
-#endif
-	{
-	  NSString	*message = [[NSError _last] localizedDescription];
+        if (unlink(lpath) < 0)
+        {
+            NSString  *message = [[NSError _last] localizedDescription];
 
-	  return [self _proceedAccordingToHandler: handler
-					 forError: message
-					   inPath: path];
-	}
-      else
-	{
-	  return YES;
-	}
+            return [self _proceedAccordingToHandler:handler
+                    forError:message
+                    inPath:path];
+        }
+        else
+        {
+            return YES;
+        }
     }
-  else
+    else
     {
-      NSArray   *contents = [self directoryContentsAtPath: path];
-      unsigned	count = [contents count];
-      unsigned	i;
+        NSArray   *contents = [self directoryContentsAtPath:path];
+        unsigned count = [contents count];
+        unsigned i;
 
-      for (i = 0; i < count; i++)
-	{
-	  NSString		*item;
-	  NSString		*next;
-	  BOOL			result;
-	  CREATE_AUTORELEASE_POOL(arp);
+        for (i = 0; i < count; i++)
+        {
+            NSString      *item;
+            NSString      *next;
+            BOOL result;
+            CREATE_AUTORELEASE_POOL(arp);
 
-	  item = [contents objectAtIndex: i];
-	  next = [path stringByAppendingPathComponent: item];
-	  result = [self removeFileAtPath: next handler: handler];
-	  RELEASE(arp);
-	  if (result == NO)
-	    {
-	      return NO;
-	    }
-	}
+            item = [contents objectAtIndex:i];
+            next = [path stringByAppendingPathComponent:item];
+            result = [self removeFileAtPath:next handler:handler];
+            RELEASE(arp);
+            if (result == NO)
+            {
+                return NO;
+            }
+        }
 
-      if (_RMDIR([self fileSystemRepresentationWithPath: path]) < 0)
-	{
-	  NSString	*message = [[NSError _last] localizedDescription];
+        if (_RMDIR([self fileSystemRepresentationWithPath:path]) < 0)
+        {
+            NSString  *message = [[NSError _last] localizedDescription];
 
-	  return [self _proceedAccordingToHandler: handler
-					 forError: message
-					   inPath: path];
-	}
-      else
-	{
-	  return YES;
-	}
+            return [self _proceedAccordingToHandler:handler
+                    forError:message
+                    inPath:path];
+        }
+        else
+        {
+            return YES;
+        }
     }
 }
 
 /**
  * Returns YES if a file (or directory etc) exists at the specified path.
  */
-- (BOOL) fileExistsAtPath: (NSString*)path
+- (BOOL)fileExistsAtPath:(NSString*)path
 {
-  return [self fileExistsAtPath: path isDirectory: 0];
+    return [self fileExistsAtPath:path isDirectory:0];
 }
 
 /**
@@ -1442,135 +1312,82 @@ static NSStringEncoding	defaultEncoding;
  * in the location it points to, indicating whether the file is a
  * directory or not.<br />
  */
-- (BOOL) fileExistsAtPath: (NSString*)path isDirectory: (BOOL*)isDirectory
+- (BOOL)fileExistsAtPath:(NSString*)path isDirectory:(BOOL*)isDirectory
 {
-  const _CHAR *lpath = [self fileSystemRepresentationWithPath: path];
+    const _CHAR *lpath = [self fileSystemRepresentationWithPath:path];
 
-  if (isDirectory != 0)
+    if (isDirectory != 0)
     {
-      *isDirectory = NO;
+        *isDirectory = NO;
     }
 
-  if (lpath == 0 || *lpath == _NUL)
+    if (lpath == 0 || *lpath == _NUL)
     {
-      return NO;
+        return NO;
     }
 
-#if defined(__MINGW__)
     {
-      DWORD res;
+        struct _STATB statbuf;
 
-      res = GetFileAttributesW(lpath);
+        if (_STAT(lpath, &statbuf) != 0)
+        {
+            return NO;
+        }
 
-      if (res == WIN32ERR)
-	{
-	  return NO;
-	}
-      if (isDirectory != 0)
-	{
-	  if (res & FILE_ATTRIBUTE_DIRECTORY)
-	    {
-	      *isDirectory = YES;
-	    }
-	}
-      return YES;
+        if (isDirectory)
+        {
+            if ((statbuf.st_mode & S_IFMT) == S_IFDIR)
+            {
+                *isDirectory = YES;
+            }
+        }
+
+        return YES;
     }
-#else
-    {
-      struct _STATB statbuf;
-
-      if (_STAT(lpath, &statbuf) != 0)
-	{
-	  return NO;
-	}
-
-      if (isDirectory)
-	{
-	  if ((statbuf.st_mode & S_IFMT) == S_IFDIR)
-	    {
-	      *isDirectory = YES;
-	    }
-	}
-
-      return YES;
-    }
-#endif /* MINGW */
 }
 
 /**
  * Returns YES if a file (or directory etc) exists at the specified path
  * and is readable.
  */
-- (BOOL) isReadableFileAtPath: (NSString*)path
+- (BOOL)isReadableFileAtPath:(NSString*)path
 {
-  const _CHAR* lpath = [self fileSystemRepresentationWithPath: path];
+    const _CHAR* lpath = [self fileSystemRepresentationWithPath:path];
 
-  if (lpath == 0 || *lpath == _NUL)
+    if (lpath == 0 || *lpath == _NUL)
     {
-      return NO;
+        return NO;
     }
 
-#if defined(__MINGW__)
     {
-      DWORD res;
-
-      res = GetFileAttributesW(lpath);
-
-      if (res == WIN32ERR)
-	{
-	  return NO;
-	}
-      return YES;
+        if (access(lpath, R_OK) == 0)
+        {
+            return YES;
+        }
+        return NO;
     }
-#else
-    {
-      if (access(lpath, R_OK) == 0)
-	{
-	  return YES;
-	}
-      return NO;
-    }
-#endif
 }
 
 /**
  * Returns YES if a file (or directory etc) exists at the specified path
  * and is writable.
  */
-- (BOOL) isWritableFileAtPath: (NSString*)path
+- (BOOL)isWritableFileAtPath:(NSString*)path
 {
-  const _CHAR* lpath = [self fileSystemRepresentationWithPath: path];
+    const _CHAR* lpath = [self fileSystemRepresentationWithPath:path];
 
-  if (lpath == 0 || *lpath == _NUL)
+    if (lpath == 0 || *lpath == _NUL)
     {
-      return NO;
+        return NO;
     }
 
-#if defined(__MINGW__)
     {
-      DWORD res;
-
-      res = GetFileAttributesW(lpath);
-
-      if (res == WIN32ERR)
-	{
-	  return NO;
-	}
-      if (res & FILE_ATTRIBUTE_READONLY)
-	{
-	  return NO;
-	}
-      return YES;
+        if (access(lpath, W_OK) == 0)
+        {
+            return YES;
+        }
+        return NO;
     }
-#else
-    {
-      if (access(lpath, W_OK) == 0)
-	{
-	  return YES;
-	}
-      return NO;
-    }
-#endif
 }
 
 /**
@@ -1578,92 +1395,52 @@ static NSStringEncoding	defaultEncoding;
  * and is executable (if a directory is executable, you can access its
  * contents).
  */
-- (BOOL) isExecutableFileAtPath: (NSString*)path
+- (BOOL)isExecutableFileAtPath:(NSString*)path
 {
-  const _CHAR* lpath = [self fileSystemRepresentationWithPath: path];
+    const _CHAR* lpath = [self fileSystemRepresentationWithPath:path];
 
-  if (lpath == 0 || *lpath == _NUL)
+    if (lpath == 0 || *lpath == _NUL)
     {
-      return NO;
+        return NO;
     }
 
-#if defined(__MINGW__)
     {
-      DWORD res;
-
-      res = GetFileAttributesW(lpath);
-
-      if (res == WIN32ERR)
-	{
-	  return NO;
-	}
-	// TODO: Actually should check all extensions in env var PATHEXT
-      if ([[[path pathExtension] lowercaseString] isEqualToString: @"exe"])
-	{
-	  return YES;
-	}
-      /* FIXME: On unix, directory accessible == executable, so we simulate that
-      here for Windows. Is there a better check for directory access? */
-      if (res & FILE_ATTRIBUTE_DIRECTORY)
-	{
-	  return YES;
-	}
-      return NO;
+        if (access(lpath, X_OK) == 0)
+        {
+            return YES;
+        }
+        return NO;
     }
-#else
-    {
-      if (access(lpath, X_OK) == 0)
-	{
-	  return YES;
-	}
-      return NO;
-    }
-#endif
 }
 
 /**
  * Returns YES if a file (or directory etc) exists at the specified path
  * and is deletable.
  */
-- (BOOL) isDeletableFileAtPath: (NSString*)path
+- (BOOL)isDeletableFileAtPath:(NSString*)path
 {
-  const _CHAR* lpath = [self fileSystemRepresentationWithPath: path];
+    const _CHAR* lpath = [self fileSystemRepresentationWithPath:path];
 
-  if (lpath == 0 || *lpath == _NUL)
+    if (lpath == 0 || *lpath == _NUL)
     {
-      return NO;
+        return NO;
     }
 
-#if defined(__MINGW__)
-      // TODO - handle directories
     {
-      DWORD res;
+        // TODO - handle directories
+        path = [path stringByDeletingLastPathComponent];
+        if ([path length] == 0)
+        {
+            path = @".";
+        }
+        lpath = [self fileSystemRepresentationWithPath:path];
 
-      res = GetFileAttributesW(lpath);
-
-      if (res == WIN32ERR)
-	{
-	  return NO;
-	}
-      return (res & FILE_ATTRIBUTE_READONLY) ? NO : YES;
+        if (access(lpath, X_OK | W_OK) == 0)
+        {
+            return YES;
+        }
+        return NO;
     }
-#else
-    {
-      // TODO - handle directories
-      path = [path stringByDeletingLastPathComponent];
-      if ([path length] == 0)
-	{
-	  path = @".";
-	}
-      lpath = [self fileSystemRepresentationWithPath: path];
-
-      if (access(lpath, X_OK | W_OK) == 0)
-	{
-	  return YES;
-	}
-      return NO;
-    }
-#endif
 }
 
 
@@ -1739,13 +1516,13 @@ static NSStringEncoding	defaultEncoding;
  *   <item>[NSDictionary-fileSystemFileNumber]</item>
  * </list>
  */
-- (NSDictionary*) fileAttributesAtPath: (NSString*)path traverseLink: (BOOL)flag
+- (NSDictionary*)fileAttributesAtPath:(NSString*)path traverseLink:(BOOL)flag
 {
-  NSDictionary	*d;
+    NSDictionary  *d;
 
-  d = [GSAttrDictionaryClass attributesAt:
-    [self fileSystemRepresentationWithPath: path] traverseLink: flag];
-  return d;
+    d = [GSAttrDictionaryClass attributesAt:
+         [self fileSystemRepresentationWithPath:path] traverseLink:flag];
+    return d;
 }
 
 /**
@@ -1820,20 +1597,25 @@ static NSStringEncoding	defaultEncoding;
  *   <item>[NSDictionary-fileSystemFileNumber]</item>
  * </list>
  */
-- (NSDictionary*) attributesOfItemAtPath: (NSString*)path
-				   error: (NSError**)error
+- (NSDictionary*)attributesOfItemAtPath:(NSString*)path error:(NSError**)error
 {
-  NSDictionary	*d;
-  
-  d = [GSAttrDictionaryClass attributesAt:
-    [self fileSystemRepresentationWithPath: path] traverseLink: NO];
-  
-  if (error != NULL)
+    NSDictionary  *d;
+
+    d = [GSAttrDictionaryClass attributesAt:
+         [self fileSystemRepresentationWithPath:path] traverseLink:NO];
+
+    if (error != NULL)
     {
-      *error = [NSError _last];
+        *error = [NSError _last];
     }
-  
-  return d;
+
+    return d;
+}
+
+- (NSDictionary*)attributesOfFileSystemForPath:(NSString *)path error:(NSError **)error
+{
+    *error = nil;
+    return [self fileSystemAttributesAtPath:path];
 }
 
 /**
@@ -1852,115 +1634,69 @@ static NSStringEncoding	defaultEncoding;
  *   <desc>NSNumber the identifying number for the filesystem</desc>
  * </deflist>
  */
-- (NSDictionary*) fileSystemAttributesAtPath: (NSString*)path
+- (NSDictionary*)fileSystemAttributesAtPath:(NSString*)path
 {
-#if defined(__MINGW__)
-  unsigned long long totalsize, freesize;
-  id  values[5];
-  id	keys[5] = {
-    NSFileSystemSize,
-    NSFileSystemFreeSize,
-    NSFileSystemNodes,
-    NSFileSystemFreeNodes,
-    NSFileSystemNumber
-  };
-  DWORD SectorsPerCluster, BytesPerSector, NumberFreeClusters;
-  DWORD TotalNumberClusters;
-  DWORD volumeSerialNumber = 0;
-  const _CHAR *lpath = [self fileSystemRepresentationWithPath: path];
-  _CHAR volumePathName[128];
-
-  if (!GetVolumePathNameW(lpath, volumePathName, 128))
-    {
-      return nil;
-    }
-  GetVolumeInformationW(volumePathName, NULL, 0, &volumeSerialNumber,
-    NULL, NULL, NULL, 0);
-
-  if (!GetDiskFreeSpaceW(volumePathName, &SectorsPerCluster,
-    &BytesPerSector, &NumberFreeClusters, &TotalNumberClusters))
-    {
-      return nil;
-    }
-
-  totalsize = (unsigned long long)TotalNumberClusters
-    * (unsigned long long)SectorsPerCluster
-    * (unsigned long long)BytesPerSector;
-  freesize = (unsigned long long)NumberFreeClusters
-    * (unsigned long long)SectorsPerCluster
-    * (unsigned long long)BytesPerSector;
-
-  values[0] = [NSNumber numberWithUnsignedLongLong: totalsize];
-  values[1] = [NSNumber numberWithUnsignedLongLong: freesize];
-  values[2] = [NSNumber numberWithLong: LONG_MAX];
-  values[3] = [NSNumber numberWithLong: LONG_MAX];
-  values[4] = [NSNumber numberWithUnsignedInt: volumeSerialNumber];
-
-  return [NSDictionary dictionaryWithObjects: values forKeys: keys count: 5];
-
-#else
 #if defined(HAVE_SYS_VFS_H) || defined(HAVE_SYS_STATFS_H) \
-  || defined(HAVE_SYS_MOUNT_H)
-  struct _STATB statbuf;
+    || defined(HAVE_SYS_MOUNT_H)
+    struct _STATB statbuf;
 #ifdef HAVE_STATVFS
-  struct statvfs statfsbuf;
+    struct statvfs statfsbuf;
 #else
-  struct statfs statfsbuf;
+    struct statfs statfsbuf;
 #endif
-  unsigned long long totalsize, freesize;
-  unsigned long blocksize;
-  const char* lpath = [self fileSystemRepresentationWithPath: path];
+    unsigned long long totalsize, freesize;
+    unsigned long blocksize;
+    const char* lpath = [self fileSystemRepresentationWithPath:path];
 
-  id  values[5];
-  id	keys[5] = {
-    NSFileSystemSize,
-    NSFileSystemFreeSize,
-    NSFileSystemNodes,
-    NSFileSystemFreeNodes,
-    NSFileSystemNumber
-  };
+    id values[5];
+    id keys[5] = {
+        NSFileSystemSize,
+        NSFileSystemFreeSize,
+        NSFileSystemNodes,
+        NSFileSystemFreeNodes,
+        NSFileSystemNumber
+    };
 
-  if (_STAT(lpath, &statbuf) != 0)
+    if (_STAT(lpath, &statbuf) != 0)
     {
-      NSDebugMLLog(@"NSFileManager", @"stat failed for '%s' ... %@",
-        lpath, [NSError _last]);
-      return nil;
+        NSDebugMLLog(@"NSFileManager", @"stat failed for '%s' ... %@",
+                     lpath, [NSError _last]);
+        return nil;
     }
 #ifdef HAVE_STATVFS
-  if (statvfs(lpath, &statfsbuf) != 0)
+    if (statvfs(lpath, &statfsbuf) != 0)
     {
-      NSDebugMLLog(@"NSFileManager", @"statvfs failed for '%s' ... %@",
-        lpath, [NSError _last]);
-      return nil;
+        NSDebugMLLog(@"NSFileManager", @"statvfs failed for '%s' ... %@",
+                     lpath, [NSError _last]);
+        return nil;
     }
-  blocksize = statfsbuf.f_frsize;
+    blocksize = statfsbuf.f_frsize;
 #else
-  if (statfs(lpath, &statfsbuf) != 0)
+    if (statfs(lpath, &statfsbuf) != 0)
     {
-      NSDebugMLLog(@"NSFileManager", @"statfs failed for '%s' ... %@",
-        lpath, [NSError _last]);
-      return nil;
+        NSDebugMLLog(@"NSFileManager", @"statfs failed for '%s' ... %@",
+                     lpath, [NSError _last]);
+        return nil;
     }
-  blocksize = statfsbuf.f_bsize;
+    blocksize = statfsbuf.f_bsize;
 #endif
 
-  totalsize = (unsigned long long) blocksize
-    * (unsigned long long) statfsbuf.f_blocks;
-  freesize = (unsigned long long) blocksize
-    * (unsigned long long) statfsbuf.f_bavail;
+    totalsize = (unsigned long long) blocksize
+                * (unsigned long long) statfsbuf.f_blocks;
+    freesize = (unsigned long long) blocksize
+               * (unsigned long long) statfsbuf.f_bavail;
 
-  values[0] = [NSNumber numberWithUnsignedLongLong: totalsize];
-  values[1] = [NSNumber numberWithUnsignedLongLong: freesize];
-  values[2] = [NSNumber numberWithLong: statfsbuf.f_files];
-  values[3] = [NSNumber numberWithLong: statfsbuf.f_ffree];
-  values[4] = [NSNumber numberWithUnsignedLong: statbuf.st_dev];
+    values[0] = [NSNumber numberWithUnsignedLongLong:totalsize];
+    values[1] = [NSNumber numberWithUnsignedLongLong:freesize];
+    values[2] = [NSNumber numberWithLong:statfsbuf.f_files];
+    values[3] = [NSNumber numberWithLong:statfsbuf.f_ffree];
+    values[4] = [NSNumber numberWithUnsignedLong:statbuf.st_dev];
 
-  return [NSDictionary dictionaryWithObjects: values forKeys: keys count: 5];
+    return [NSDictionary dictionaryWithObjects:values forKeys:keys count:5];
 #else
-  NSLog(@"NSFileManager", @"no support for filesystem attributes");
-  return nil;
+    NSLog(@"NSFileManager", @"no support for filesystem attributes");
+    return nil;
 #endif
-#endif /* MINGW */
 }
 
 /**
@@ -1970,42 +1706,51 @@ static NSStringEncoding	defaultEncoding;
  * Indicates an error by returning nil (eg. if path is not a directory or
  * it can't be read for some reason).
  */
-- (NSArray*) directoryContentsAtPath: (NSString*)path
+- (NSArray*)directoryContentsAtPath:(NSString*)path
 {
-  NSDirectoryEnumerator	*direnum;
-  NSMutableArray	*content;
-  IMP			nxtImp;
-  IMP			addImp;
-  BOOL			is_dir;
+    NSDirectoryEnumerator *direnum;
+    NSMutableArray    *content;
+    IMP nxtImp;
+    IMP addImp;
+    BOOL is_dir;
 
-  /*
-   * See if this is a directory (don't follow links).
-   */
-  if ([self fileExistsAtPath: path isDirectory: &is_dir] == NO || is_dir == NO)
+    /*
+     * See if this is a directory (don't follow links).
+     */
+    if ([self fileExistsAtPath:path isDirectory:&is_dir] == NO || is_dir == NO)
     {
-      return nil;
+        return nil;
     }
-  /* We initialize the directory enumerator with justContents == YES,
-     which tells the NSDirectoryEnumerator code that we only enumerate
-     the contents non-recursively once, and exit.  NSDirectoryEnumerator
-     can perform some optimisations using this assumption. */
-  direnum = [[NSDirectoryEnumerator alloc] initWithDirectoryPath: path
-				       recurseIntoSubdirectories: NO
-						  followSymlinks: NO
-						    justContents: YES
-							     for: self];
-  content = [NSMutableArray arrayWithCapacity: 128];
+    /* We initialize the directory enumerator with justContents == YES,
+       which tells the NSDirectoryEnumerator code that we only enumerate
+       the contents non-recursively once, and exit.  NSDirectoryEnumerator
+       can perform some optimisations using this assumption. */
+    direnum = [[NSDirectoryEnumerator alloc] initWithDirectoryPath:path
+               recurseIntoSubdirectories:NO
+               followSymlinks:NO
+               justContents:YES
+               for:self];
+    content = [NSMutableArray arrayWithCapacity:128];
 
-  nxtImp = [direnum methodForSelector: @selector(nextObject)];
-  addImp = [content methodForSelector: @selector(addObject:)];
+    nxtImp = [direnum methodForSelector:@selector(nextObject)];
+    addImp = [content methodForSelector:@selector(addObject:)];
 
-  while ((path = (*nxtImp)(direnum, @selector(nextObject))) != nil)
+    while ((path = (*nxtImp)(direnum, @selector(nextObject))) != nil)
     {
-      (*addImp)(content, @selector(addObject:), path);
+        (*addImp)(content, @selector(addObject:), path);
     }
-  RELEASE(direnum);
+    RELEASE(direnum);
 
-  return [content makeImmutableCopyOnFail: NO];
+    return [content makeImmutableCopyOnFail:NO];
+}
+
+- (NSArray *)contentsOfDirectoryAtPath:(NSString *)path error:(NSError **)error
+{
+    if(error != nil)
+    {
+        *error = nil;
+    }
+    return [self directoryContentsAtPath:path];
 }
 
 /**
@@ -2017,19 +1762,42 @@ static NSStringEncoding	defaultEncoding;
  * The default operation is to return the result of calling
  * [NSString-lastPathComponent] on the path.
  */
-- (NSString*) displayNameAtPath: (NSString*)path
+- (NSString*)displayNameAtPath:(NSString*)path
 {
-  return [path lastPathComponent];
+    return [path lastPathComponent];
 }
 
-- (NSDirectoryEnumerator*) enumeratorAtPath: (NSString*)path
+- (NSDirectoryEnumerator*)enumeratorAtPath:(NSString*)path
 {
-  return AUTORELEASE([[NSDirectoryEnumerator alloc]
-		       initWithDirectoryPath: path
-		       recurseIntoSubdirectories: YES
-		       followSymlinks: NO
-		       justContents: NO
-		       for: self]);
+    return AUTORELEASE([[NSDirectoryEnumerator alloc]
+                        initWithDirectoryPath:path
+                        recurseIntoSubdirectories:YES
+                        followSymlinks:NO
+                        justContents:NO
+                        for:self]);
+}
+
+- (NSDirectoryEnumerator*)enumeratorAtURL:(NSURL*)url
+{
+    return [self enumeratorAtURL:url includingPropertiesForKeys:nil options:0 errorHandler:nil];
+}
+
+- (NSDirectoryEnumerator*)enumeratorAtURL:(NSURL *)url
+    includingPropertiesForKeys:(NSArray *)keys
+    options:(NSDirectoryEnumerationOptions)mask
+    errorHandler:(BOOL (^)(NSURL *url, NSError *error))handler
+{
+    if (![url isFileURL])
+    {
+        if (handler)
+        {
+            handler(url, [NSError _unimplementedError]);
+        }
+        return nil;
+    }
+    NSDirectoryEnumerator* enumerator = [self enumeratorAtPath:[url path]];
+    [enumerator _setReturnURLs];
+    return enumerator;
 }
 
 /**
@@ -2038,52 +1806,61 @@ static NSStringEncoding	defaultEncoding;
  * The listing follows all subdirectories, so it can produce a very
  * large array ... use with care.
  */
-- (NSArray*) subpathsAtPath: (NSString*)path
+- (NSArray*)subpathsAtPath:(NSString*)path
 {
-  NSDirectoryEnumerator	*direnum;
-  NSMutableArray	*content;
-  BOOL			isDir;
-  IMP			nxtImp;
-  IMP			addImp;
+    NSDirectoryEnumerator *direnum;
+    NSMutableArray    *content;
+    BOOL isDir;
+    IMP nxtImp;
+    IMP addImp;
 
-  if (![self fileExistsAtPath: path isDirectory: &isDir] || !isDir)
+    if (![self fileExistsAtPath:path isDirectory:&isDir] || !isDir)
     {
-      return nil;
+        return nil;
     }
-  direnum = [[NSDirectoryEnumerator alloc] initWithDirectoryPath: path
-				       recurseIntoSubdirectories: YES
-						  followSymlinks: NO
-						    justContents: NO
-							     for: self];
-  content = [NSMutableArray arrayWithCapacity: 128];
+    direnum = [[NSDirectoryEnumerator alloc] initWithDirectoryPath:path
+               recurseIntoSubdirectories:YES
+               followSymlinks:NO
+               justContents:NO
+               for:self];
+    content = [NSMutableArray arrayWithCapacity:128];
 
-  nxtImp = [direnum methodForSelector: @selector(nextObject)];
-  addImp = [content methodForSelector: @selector(addObject:)];
+    nxtImp = [direnum methodForSelector:@selector(nextObject)];
+    addImp = [content methodForSelector:@selector(addObject:)];
 
-  while ((path = (*nxtImp)(direnum, @selector(nextObject))) != nil)
+    while ((path = (*nxtImp)(direnum, @selector(nextObject))) != nil)
     {
-      (*addImp)(content, @selector(addObject:), path);
+        (*addImp)(content, @selector(addObject:), path);
     }
 
-  RELEASE(direnum);
+    RELEASE(direnum);
 
-  return [content makeImmutableCopyOnFail: NO];
+    return [content makeImmutableCopyOnFail:NO];
+}
+
+- (NSArray *)subpathsOfDirectoryAtPath:(NSString *)path error:(NSError **)error
+{
+    if (error)
+    {
+        *error = nil;
+    }
+    return [self subpathsAtPath:path];
 }
 
 /**
  * Creates a symbolic link at path which links to the location
  * specified by otherPath.
  */
-- (BOOL) createSymbolicLinkAtPath: (NSString*)path
-		      pathContent: (NSString*)otherPath
+- (BOOL)createSymbolicLinkAtPath:(NSString*)path
+    pathContent:(NSString*)otherPath
 {
 #ifdef HAVE_SYMLINK
-  const char* newpath = [self fileSystemRepresentationWithPath: path];
-  const char* oldpath = [self fileSystemRepresentationWithPath: otherPath];
+    const char* newpath = [self fileSystemRepresentationWithPath:path];
+    const char* oldpath = [self fileSystemRepresentationWithPath:otherPath];
 
-  return (symlink(oldpath, newpath) == 0);
+    return (symlink(oldpath, newpath) == 0);
 #else
-  return NO;
+    return NO;
 #endif
 }
 
@@ -2091,54 +1868,172 @@ static NSStringEncoding	defaultEncoding;
  * Returns the name of the file or directory that the symbolic link
  * at path points to.
  */
-- (NSString*) pathContentOfSymbolicLinkAtPath: (NSString*)path
+- (NSString*)pathContentOfSymbolicLinkAtPath:(NSString*)path
 {
 #ifdef HAVE_READLINK
-  char  buf[PATH_MAX];
-  const char* lpath = [self fileSystemRepresentationWithPath: path];
-  int   llen = readlink(lpath, buf, PATH_MAX-1);
+    char buf[PATH_MAX];
+    const char* lpath = [self fileSystemRepresentationWithPath:path];
+    int llen = readlink(lpath, buf, PATH_MAX-1);
 
-  if (llen > 0)
+    if (llen > 0)
     {
-      return [self stringWithFileSystemRepresentation: buf length: llen];
+        return [self stringWithFileSystemRepresentation:buf length:llen];
     }
-  else
+    else
     {
-      return nil;
+        return nil;
     }
 #else
-  return nil;
+    return nil;
 #endif
 }
 
-#if	defined(__MINGW__)
-- (const GSNativeChar*) fileSystemRepresentationWithPath: (NSString*)path
+- (const GSNativeChar*)fileSystemRepresentationWithPath:(NSString*)path
 {
-  if (path != nil && [path rangeOfString: @"/"].length > 0)
-    {
-      path = [path stringByReplacingString: @"/" withString: @"\\"];
+    return
+        (const GSNativeChar*)[path cStringUsingEncoding:defaultEncoding];
+}
+- (NSString*)stringWithFileSystemRepresentation:(const GSNativeChar*)string
+    length:(NSUInteger)len
+{
+    return AUTORELEASE([[NSString allocWithZone:NSDefaultMallocZone()]
+                        initWithBytes:string length:len encoding:defaultEncoding]);
+}
+
+- (BOOL)copyItemAtPath:(NSString *)srcPath toPath:(NSString *)dstPath error:(NSError **)error
+{
+    if(error != nil) {
+        *error = nil;
     }
-  return
-    (const GSNativeChar*)[path cStringUsingEncoding: NSUnicodeStringEncoding];
+
+    BOOL isDir;
+    BOOL dstExists;
+    BOOL dstIsDir;
+
+    if (![ self fileExistsAtPath:srcPath isDirectory:&isDir]) {
+        return NO;
+    }
+    if ((dstExists = [ self fileExistsAtPath:dstPath isDirectory:&dstIsDir]) && !dstIsDir) {
+        return NO;
+    }
+
+    if (isDir) {
+        if (!dstExists) {
+            mkdir([ dstPath UTF8String], 0777);
+        }
+        NSArray *dirContents = [self directoryContentsAtPath:srcPath];
+        for (NSString *tString in dirContents) {
+            if ([tString hasPrefix:@"."]) { continue; // otherwise uncles are
+                                                      // included
+            }
+            NSString *srcFullPath = [[srcPath stringByAppendingString:@"/"] stringByAppendingString:tString];
+            NSString *dstFullPath = [[dstPath stringByAppendingString:@"/"] stringByAppendingString:tString];
+            [[NSFileManager defaultManager] copyItemAtPath:srcFullPath toPath:dstFullPath error:NULL]; //
+                                                                                                       // ignore
+                                                                                                       // errors
+                                                                                                       // to
+                                                                                                       // skip
+                                                                                                       // already
+                                                                                                       // existing
+                                                                                                       // files
+        }
+        return YES;
+    }
+
+    // Plain file case
+
+    NSData *data = [NSData dataWithContentsOfFile:srcPath];
+    if (data == nil)
+    {
+        return NO;
+    }
+
+    return [data writeToFile:dstPath atomically:NO];
 }
-- (NSString*) stringWithFileSystemRepresentation: (const GSNativeChar*)string
-					  length: (NSUInteger)len
+
+- (BOOL)moveItemAtPath:(NSString *)src toPath:(NSString *)dst error:(NSError **)error
 {
-  return [NSString stringWithCharacters: string length: len];
+    if ([self fileExistsAtPath:dst]) {
+        if (error) {
+            *error = [NSError errorWithDomain:NSCocoaErrorDomain code:-1 userInfo:[NSDictionary dictionaryWithObject:@"File already there." forKey:NSLocalizedDescriptionKey]];
+        }
+        return NO;
+    }
+    BOOL success = TEMP_FAILURE_RETRY(rename([src UTF8String], [dst UTF8String])) == 0;
+
+    if (!success && error) {
+        *error = [NSError errorWithDomain:NSCocoaErrorDomain code:-1 userInfo:[NSDictionary dictionaryWithObject:@"File squatting on the directory path" forKey:NSLocalizedDescriptionKey]];
+    }
+
+    return success;
 }
-#else
-- (const GSNativeChar*) fileSystemRepresentationWithPath: (NSString*)path
+
+- (BOOL)moveItemAtURL:(NSURL *)srcURL toURL:(NSURL *)dstURL error:(NSError **)error {
+    return [self moveItemAtPath:[srcURL path] toPath:[dstURL path] error:error];
+}
+
+- (BOOL)removeItemAtPath:(NSString *)path error:(NSError **)error
 {
-  return
-    (const GSNativeChar*)[path cStringUsingEncoding: defaultEncoding];
+    if(error != nil) {
+        *error = nil;
+    }
+    if (path == NULL) {
+        return NO;
+    }
+    return remove([path cString]) == 0;
 }
-- (NSString*) stringWithFileSystemRepresentation: (const GSNativeChar*)string
-					  length: (NSUInteger)len
+
++ (BOOL)createDirectoryAtPath:(NSString *)path
+    withIntermediateDirectories:(BOOL)flag
+    attributes:(NSDictionary *)attributes
+    error:(NSError **)error
 {
-  return AUTORELEASE([[NSString allocWithZone: NSDefaultMallocZone()]
-    initWithBytes: string length: len encoding: defaultEncoding]);
+    return [[NSFileManager defaultManager] createDirectoryAtPath:path withIntermediateDirectories:flag attributes:attributes error:error];
 }
-#endif
+
+- (BOOL)createDirectoryAtURL:(NSURL *)fileURL
+    withIntermediateDirectories:(BOOL)flag
+    attributes:(NSDictionary *)attributes
+    error:(NSError **)error
+{
+    return [self createDirectoryAtPath:[fileURL path] withIntermediateDirectories:flag attributes:attributes error:error];
+}
+
+
++ (BOOL)createDirectoryAtURL:(NSURL *)fileURL
+    withIntermediateDirectories:(BOOL)flag
+    attributes:(NSDictionary *)attributes
+    error:(NSError **)error
+{
+    return [[NSFileManager defaultManager] createDirectoryAtPath:[fileURL path] withIntermediateDirectories:flag attributes:attributes error:error];
+}
+
+- (BOOL)removeItemAtURL:(NSURL *)fileURL withError:(NSError **)error {
+    return [self removeItemAtPath:[fileURL path] error:error];
+}
+
+- (BOOL)linkItemAtPath:(NSString *)source toPath:(NSString *)destination error:(NSError **)error
+{
+    _NSFileManagerErrorHandler* handler = [[_NSFileManagerErrorHandler new] autorelease];
+    BOOL success = [self linkPath:source toPath:destination handler:handler];
+    if (!success && error)
+    {
+        *error = handler.error;
+    }
+    return success;
+}
+
+- (NSArray *)URLsForDirectory:(NSSearchPathDirectory)directory inDomains:(NSSearchPathDomainMask)domainMask {
+    NSArray *pathsForDirectory = NSSearchPathForDirectoriesInDomains(directory, domainMask, YES);
+    NSMutableArray *urls = [NSMutableArray arrayWithCapacity:[pathsForDirectory count]];
+
+    for (NSString *s in pathsForDirectory) {
+        [urls addObject:[NSURL fileURLWithPath:s]];
+    }
+
+    return [urls copy];
+}
+
 
 @end /* NSFileManager */
 
@@ -2148,25 +2043,25 @@ static NSStringEncoding	defaultEncoding;
    (using readdir).  If we find a file which is actually a directory,
    and if we have to recurse into it, we create a new
    GSEnumeratedDirectory struct for the subdirectory, open its DIR
-   *pointer for reading, and put it on top of the stack, so next time
+ * pointer for reading, and put it on top of the stack, so next time
    -nextObject is called, it will read from that directory instead of
    the top level one.  Once all the subdirectory is read, it is
    removed from the stack, so the top of the stack if the top
    directory again, and enumeration continues in there.  */
-typedef	struct	_GSEnumeratedDirectory {
-  NSString *path;
-  _DIR *pointer;
+typedef struct _GSEnumeratedDirectory {
+    NSString *path;
+    _DIR *pointer;
 } GSEnumeratedDirectory;
 
 
 static inline void gsedRelease(GSEnumeratedDirectory X)
 {
-  DESTROY(X.path);
-  _CLOSEDIR(X.pointer);
+    DESTROY(X.path);
+    _CLOSEDIR(X.pointer);
 }
 
-#define GSI_ARRAY_TYPES	0
-#define GSI_ARRAY_TYPE	GSEnumeratedDirectory
+#define GSI_ARRAY_TYPES 0
+#define GSI_ARRAY_TYPE  GSEnumeratedDirectory
 #define GSI_ARRAY_RELEASE(A, X)   gsedRelease(X.ext)
 #define GSI_ARRAY_RETAIN(A, X)
 
@@ -2180,9 +2075,9 @@ static inline void gsedRelease(GSEnumeratedDirectory X)
  * tools for big directories.
  */
 
-+ (void) initialize
++ (void)initialize
 {
-  if (self == [NSDirectoryEnumerator class])
+    if (self == [NSDirectoryEnumerator class])
     {
     }
 }
@@ -2195,60 +2090,56 @@ static inline void gsedRelease(GSEnumeratedDirectory X)
  *  set, is equivalent to recurseIntoSubdirectories = NO and followSymlinks =
  *  NO, but the implementation will be made more efficient.
  */
-- (id) initWithDirectoryPath: (NSString*)path
-   recurseIntoSubdirectories: (BOOL)recurse
-	      followSymlinks: (BOOL)follow
-		justContents: (BOOL)justContents
-			 for: (NSFileManager*)mgr
+- (id)initWithDirectoryPath:(NSString*)path
+    recurseIntoSubdirectories:(BOOL)recurse
+    followSymlinks:(BOOL)follow
+    justContents:(BOOL)justContents
+    for:(NSFileManager*)mgr
 {
 //TODO: the justContents flag is currently basically useless and should be
 //      removed
-  _DIR		*dir_pointer;
-  const _CHAR	*localPath;
+    _DIR      *dir_pointer;
+    const _CHAR   *localPath;
 
-  self = [super init];
+    self = [super init];
 
-  _mgr = RETAIN(mgr);
-#if	GS_WITH_GC
-  _stack = NSAllocateCollectable(sizeof(GSIArray_t), NSScannedOption);
-#else
-  _stack = NSZoneMalloc([self zone], sizeof(GSIArray_t));
-#endif
-  GSIArrayInitWithZoneAndCapacity(_stack, [self zone], 64);
+    _mgr = RETAIN(mgr);
+    _stack = NSZoneMalloc([self zone], sizeof(GSIArray_t));
+    GSIArrayInitWithZoneAndCapacity(_stack, [self zone], 64);
 
-  _flags.isRecursive = recurse;
-  _flags.isFollowing = follow;
-  _flags.justContents = justContents;
+    _flags.isRecursive = recurse;
+    _flags.isFollowing = follow;
+    _flags.justContents = justContents;
 
-  _topPath = [[NSString alloc] initWithString: path];
+    _topPath = [[NSString alloc] initWithString:path];
 
-  localPath = [_mgr fileSystemRepresentationWithPath: path];
-  dir_pointer = _OPENDIR(localPath);
-  if (dir_pointer)
+    localPath = [_mgr fileSystemRepresentationWithPath:path];
+    dir_pointer = _OPENDIR(localPath);
+    if (dir_pointer)
     {
-      GSIArrayItem item;
+        GSIArrayItem item;
 
-      item.ext.path = @"";
-      item.ext.pointer = dir_pointer;
+        item.ext.path = @"";
+        item.ext.pointer = dir_pointer;
 
-      GSIArrayAddItem(_stack, item);
+        GSIArrayAddItem(_stack, item);
     }
-  else
+    else
     {
-      NSLog(@"Failed to recurse into directory '%@' - %@", path,
-	[NSError _last]);
+        NSLog(@"Failed to recurse into directory '%@' - %@", path,
+              [NSError _last]);
     }
-  return self;
+    return self;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  GSIArrayEmpty(_stack);
-  NSZoneFree([self zone], _stack);
-  DESTROY(_topPath);
-  DESTROY(_currentFilePath);
-  DESTROY(_mgr);
-  [super dealloc];
+    GSIArrayEmpty(_stack);
+    NSZoneFree([self zone], _stack);
+    DESTROY(_topPath);
+    DESTROY(_currentFilePath);
+    DESTROY(_mgr);
+    [super dealloc];
 }
 
 /**
@@ -2257,10 +2148,10 @@ static inline void gsedRelease(GSEnumeratedDirectory X)
  * The contents of this dictionary are as produced by
  * [NSFileManager-fileAttributesAtPath:traverseLink:]
  */
-- (NSDictionary*) directoryAttributes
+- (NSDictionary*)directoryAttributes
 {
-  return [_mgr fileAttributesAtPath: _topPath
-		       traverseLink: _flags.isFollowing];
+    return [_mgr fileAttributesAtPath:_topPath
+            traverseLink:_flags.isFollowing];
 }
 
 /**
@@ -2269,10 +2160,10 @@ static inline void gsedRelease(GSEnumeratedDirectory X)
  * The contents of this dictionary are as produced by
  * [NSFileManager-fileAttributesAtPath:traverseLink:]
  */
-- (NSDictionary*) fileAttributes
+- (NSDictionary*)fileAttributes
 {
-  return [_mgr fileAttributesAtPath: _currentFilePath
-		       traverseLink: _flags.isFollowing];
+    return [_mgr fileAttributesAtPath:_currentFilePath
+            traverseLink:_flags.isFollowing];
 }
 
 /**
@@ -2280,15 +2171,15 @@ static inline void gsedRelease(GSEnumeratedDirectory X)
  * should be skipped rather than enumerated.  Use this to avoid enumerating
  * the contents of directories you are not interested in.
  */
-- (void) skipDescendents
+- (void)skipDescendents
 {
-  if (GSIArrayCount(_stack) > 0)
+    if (GSIArrayCount(_stack) > 0)
     {
-      GSIArrayRemoveLastItem(_stack);
-      if (_currentFilePath != 0)
-	{
-	  DESTROY(_currentFilePath);
-	}
+        GSIArrayRemoveLastItem(_stack);
+        if (_currentFilePath != 0)
+        {
+            DESTROY(_currentFilePath);
+        }
     }
 }
 
@@ -2303,1160 +2194,828 @@ static inline void gsedRelease(GSEnumeratedDirectory X)
  * find the next entry in the parent
  * - sets currentFile to nil if there are no more files to enumerate
  */
-- (id) nextObject
+- (id)nextObject
 {
-  NSString *returnFileName = 0;
+    NSString *returnFileName = 0;
 
-  if (_currentFilePath != 0)
+    if (_currentFilePath != 0)
     {
-      DESTROY(_currentFilePath);
+        DESTROY(_currentFilePath);
     }
 
-  while (GSIArrayCount(_stack) > 0)
+    while (GSIArrayCount(_stack) > 0)
     {
-      GSEnumeratedDirectory dir = GSIArrayLastItem(_stack).ext;
-      struct _DIRENT	*dirbuf;
-      struct _STATB	statbuf;
+        GSEnumeratedDirectory dir = GSIArrayLastItem(_stack).ext;
+        struct _DIRENT    *dirbuf;
+        struct _STATB statbuf;
 
-      dirbuf = _READDIR(dir.pointer);
+        dirbuf = _READDIR(dir.pointer);
 
-      if (dirbuf)
-	{
-#if defined(__MINGW__)
-	  /* Skip "." and ".." directory entries */
-	  if (wcscmp(dirbuf->d_name, L".") == 0
-	    || wcscmp(dirbuf->d_name, L"..") == 0)
-	    {
-	      continue;
-	    }
-	  /* Name of file to return  */
-	  returnFileName = [_mgr
-	    stringWithFileSystemRepresentation: dirbuf->d_name
-	    length: wcslen(dirbuf->d_name)];
-#else
-	  /* Skip "." and ".." directory entries */
-	  if (strcmp(dirbuf->d_name, ".") == 0
-	    || strcmp(dirbuf->d_name, "..") == 0)
-	    {
-	      continue;
-	    }
-	  /* Name of file to return  */
-	  returnFileName = [_mgr
-	    stringWithFileSystemRepresentation: dirbuf->d_name
-	    length: strlen(dirbuf->d_name)];
-#endif
-	  returnFileName = RETAIN([dir.path stringByAppendingPathComponent:
-	    returnFileName]);
+        if (dirbuf)
+        {
+            /* Skip "." and ".." directory entries */
+            if (strcmp(dirbuf->d_name, ".") == 0
+                || strcmp(dirbuf->d_name, "..") == 0)
+            {
+                continue;
+            }
+            /* Name of file to return  */
+            returnFileName = [_mgr
+                              stringWithFileSystemRepresentation:dirbuf->d_name
+                              length:strlen(dirbuf->d_name)];
+            returnFileName = RETAIN([dir.path stringByAppendingPathComponent:
+                                     returnFileName]);
 
-	  /* TODO - can this one can be removed ? */
-	  if (!_flags.justContents)
-	    _currentFilePath = RETAIN([_topPath stringByAppendingPathComponent:
-	      returnFileName]);
+            /* TODO - can this one can be removed ? */
+            if (!_flags.justContents) {
+                _currentFilePath = RETAIN([_topPath stringByAppendingPathComponent:
+                                           returnFileName]);
+            }
 
-	  if (_flags.isRecursive == YES)
-	    {
-	      // Do not follow links
+            if (_flags.isRecursive == YES)
+            {
+                // Do not follow links
 #ifdef S_IFLNK
-#ifdef __MINGW__
-#warning "lstat does not support unichars"
-#else
-	      if (!_flags.isFollowing)
-		{
-		  if (lstat([_mgr fileSystemRepresentationWithPath:
-		    _currentFilePath], &statbuf) != 0)
-		    {
-		      break;
-		    }
-		  // If link then return it as link
-		  if (S_IFLNK == (S_IFMT & statbuf.st_mode))
-		    {
-		      break;
-		    }
-		}
-	      else
+                if (!_flags.isFollowing)
+                {
+                    if (lstat([_mgr fileSystemRepresentationWithPath:
+                               _currentFilePath], &statbuf) != 0)
+                    {
+                        break;
+                    }
+                    // If link then return it as link
+                    if (S_IFLNK == (S_IFMT & statbuf.st_mode))
+                    {
+                        break;
+                    }
+                }
+                else
 #endif
-#endif
-		{
-		  if (_STAT([_mgr fileSystemRepresentationWithPath:
-		    _currentFilePath], &statbuf) != 0)
-		    {
-		      break;
-		    }
-		}
-	      if (S_IFDIR == (S_IFMT & statbuf.st_mode))
-		{
-		  _DIR*  dir_pointer;
+                {
+                    if (_STAT([_mgr fileSystemRepresentationWithPath:
+                               _currentFilePath], &statbuf) != 0)
+                    {
+                        break;
+                    }
+                }
+                if (S_IFDIR == (S_IFMT & statbuf.st_mode))
+                {
+                    _DIR*  dir_pointer;
 
-		  dir_pointer
-		    = _OPENDIR([_mgr fileSystemRepresentationWithPath:
-		    _currentFilePath]);
-		  if (dir_pointer)
-		    {
-		      GSIArrayItem item;
+                    dir_pointer
+                        = _OPENDIR([_mgr fileSystemRepresentationWithPath:
+                                    _currentFilePath]);
+                    if (dir_pointer)
+                    {
+                        GSIArrayItem item;
 
-		      item.ext.path = RETAIN(returnFileName);
-		      item.ext.pointer = dir_pointer;
+                        item.ext.path = RETAIN(returnFileName);
+                        item.ext.pointer = dir_pointer;
 
-		      GSIArrayAddItem(_stack, item);
-		    }
-		  else
-		    {
-		      NSLog(@"Failed to recurse into directory '%@' - %@",
-			_currentFilePath, [NSError _last]);
-		    }
-		}
-	    }
-	  break;	// Got a file name - break out of loop
-	}
-      else
-	{
-	  GSIArrayRemoveLastItem(_stack);
-	  if (_currentFilePath != 0)
-	    {
-	      DESTROY(_currentFilePath);
-	    }
-	}
+                        GSIArrayAddItem(_stack, item);
+                    }
+                    else
+                    {
+                        NSLog(@"Failed to recurse into directory '%@' - %@",
+                              _currentFilePath, [NSError _last]);
+                    }
+                }
+            }
+            break; // Got a file name - break out of loop
+        }
+        else
+        {
+            GSIArrayRemoveLastItem(_stack);
+            if (_currentFilePath != 0)
+            {
+                DESTROY(_currentFilePath);
+            }
+        }
     }
-  return AUTORELEASE(returnFileName);
+    if (_flags.returnURLs)
+    {
+        return returnFileName ? [NSURL fileURLWithPath:returnFileName] : nil;
+    }
+    else
+    {
+        return AUTORELEASE(returnFileName);
+    }
+}
+
+- (void)_setReturnURLs
+{
+    _flags.returnURLs = YES;
 }
 
 @end /* NSDirectoryEnumerator */
 
-/**
- * Convenience methods for accessing named file attributes in a dictionary.
- */
-@implementation NSDictionary(NSFileAttributes)
-
-/**
- * Return the file creation date attribute (or nil if not found).
- */
-- (NSDate*) fileCreationDate
-{
-  return [self objectForKey: NSFileCreationDate];
-}
-
-/**
- * Return the file extension hidden attribute (or NO if not found).
- */
-- (BOOL) fileExtensionHidden
-{
-  return [[self objectForKey: NSFileExtensionHidden] boolValue];
-}
-
-/**
- *  Returns HFS creator attribute (OS X).
- */
-- (OSType) fileHFSCreatorCode
-{
-  return [[self objectForKey: NSFileHFSCreatorCode] unsignedLongValue];
-}
-
-/**
- *  Returns HFS type code attribute (OS X).
- */
-- (OSType) fileHFSTypeCode
-{
-  return [[self objectForKey: NSFileHFSTypeCode] unsignedLongValue];
-}
-
-/**
- * Return the file append only attribute (or NO if not found).
- */
-- (BOOL) fileIsAppendOnly
-{
-  return [[self objectForKey: NSFileAppendOnly] boolValue];
-}
-
-/**
- * Return the file immutable attribute (or NO if not found).
- */
-- (BOOL) fileIsImmutable
-{
-  return [[self objectForKey: NSFileImmutable] boolValue];
-}
-
-/**
- * Return the size of the file, or NSNotFound if the file size attribute
- * is not found in the dictionary.
- */
-- (unsigned long long) fileSize
-{
-  NSNumber	*n = [self objectForKey: NSFileSize];
-
-  if (n == nil)
-    {
-      return NSNotFound;
-    }
-  return [n unsignedLongLongValue];
-}
-
-/**
- * Return the file type attribute or nil if not present.
- */
-- (NSString*) fileType
-{
-  return [self objectForKey: NSFileType];
-}
-
-/**
- * Return the file owner account name attribute or nil if not present.
- */
-- (NSString*) fileOwnerAccountName
-{
-  return [self objectForKey: NSFileOwnerAccountName];
-}
-
-/**
- * Return an NSNumber with the numeric value of the NSFileOwnerAccountID attribute
- * in the dictionary, or nil if the attribute is not present.
- */
-- (NSNumber*) fileOwnerAccountID
-{
-  return [self objectForKey: NSFileOwnerAccountID];
-}
-
-/**
- * Return the file group owner account name attribute or nil if not present.
- */
-- (NSString*) fileGroupOwnerAccountName
-{
-  return [self objectForKey: NSFileGroupOwnerAccountName];
-}
-
-/**
- * Return an NSNumber with the numeric value of the NSFileGroupOwnerAccountID attribute
- * in the dictionary, or nil if the attribute is not present.
- */
-- (NSNumber*) fileGroupOwnerAccountID
-{
-  return [self objectForKey: NSFileGroupOwnerAccountID];
-}
-
-/**
- * Return the file modification date attribute (or nil if not found)
- */
-- (NSDate*) fileModificationDate
-{
-  return [self objectForKey: NSFileModificationDate];
-}
-
-/**
- * Return the file posix permissions attribute (or NSNotFound if
- * the attribute is not present in the dictionary).
- */
-- (NSUInteger) filePosixPermissions
-{
-  NSNumber	*n = [self objectForKey: NSFilePosixPermissions];
-
-  if (n == nil)
-    {
-      return NSNotFound;
-    }
-  return [n unsignedIntegerValue];
-}
-
-/**
- * Return the file system number attribute (or NSNotFound if
- * the attribute is not present in the dictionary).
- */
-- (NSUInteger) fileSystemNumber
-{
-  NSNumber	*n = [self objectForKey: NSFileSystemNumber];
-
-  if (n == nil)
-    {
-      return NSNotFound;
-    }
-  return [n unsignedIntegerValue];
-}
-
-/**
- * Return the file system file identification number attribute
- * or NSNotFound if the attribute is not present in the dictionary).
- */
-- (NSUInteger) fileSystemFileNumber
-{
-  NSNumber	*n = [self objectForKey: NSFileSystemFileNumber];
-
-  if (n == nil)
-    {
-      return NSNotFound;
-    }
-  return [n unsignedIntegerValue];
-}
-@end
 
 @implementation NSFileManager (PrivateMethods)
 
-- (BOOL) _copyFile: (NSString*)source
-	    toFile: (NSString*)destination
-	   handler: (id)handler
+- (BOOL)_copyFile:(NSString*)source
+    toFile:(NSString*)destination
+    handler:(id)handler
 {
-#if defined(__MINGW__)
-  if (CopyFileW([self fileSystemRepresentationWithPath: source],
-    [self fileSystemRepresentationWithPath: destination], NO))
+    NSDictionary  *attributes;
+    int i;
+    int bufsize = 8096;
+    int sourceFd;
+    int destFd;
+    int fileSize;
+    int fileMode;
+    int rbytes;
+    int wbytes;
+    char buffer[bufsize];
+
+    /* Assumes source is a file and exists! */
+    NSAssert1 ([self fileExistsAtPath:source],
+               @"source file '%@' does not exist!", source);
+
+    attributes = [self fileAttributesAtPath:source traverseLink:NO];
+    NSAssert1 (attributes, @"could not get the attributes for file '%@'",
+               source);
+
+    fileSize = [attributes fileSize];
+    fileMode = [attributes filePosixPermissions];
+
+    /* Open the source file. In case of error call the handler. */
+    sourceFd = open([self fileSystemRepresentationWithPath:source],
+                    GSBINIO|O_RDONLY);
+    if (sourceFd < 0)
     {
-      return YES;
+        return [self _proceedAccordingToHandler:handler
+                forError:@"cannot open file for reading"
+                inPath:source
+                fromPath:source
+                toPath:destination];
     }
 
-  return [self _proceedAccordingToHandler: handler
-				 forError: @"cannot copy file"
-				   inPath: source
-				 fromPath: source
-				   toPath: destination];
-
-#else
-  NSDictionary	*attributes;
-  int		i;
-  int		bufsize = 8096;
-  int		sourceFd;
-  int		destFd;
-  int		fileSize;
-  int		fileMode;
-  int		rbytes;
-  int		wbytes;
-  char		buffer[bufsize];
-
-  /* Assumes source is a file and exists! */
-  NSAssert1 ([self fileExistsAtPath: source],
-    @"source file '%@' does not exist!", source);
-
-  attributes = [self fileAttributesAtPath: source traverseLink: NO];
-  NSAssert1 (attributes, @"could not get the attributes for file '%@'",
-    source);
-
-  fileSize = [attributes fileSize];
-  fileMode = [attributes filePosixPermissions];
-
-  /* Open the source file. In case of error call the handler. */
-  sourceFd = open([self fileSystemRepresentationWithPath: source],
-    GSBINIO|O_RDONLY);
-  if (sourceFd < 0)
+    /* Open the destination file. In case of error call the handler. */
+    destFd = open([self fileSystemRepresentationWithPath:destination],
+                  GSBINIO|O_WRONLY|O_CREAT|O_TRUNC, fileMode);
+    if (destFd < 0)
     {
-      return [self _proceedAccordingToHandler: handler
-				     forError: @"cannot open file for reading"
-				       inPath: source
-				     fromPath: source
-				       toPath: destination];
+        close (sourceFd);
+
+        return [self _proceedAccordingToHandler:handler
+                forError:@"cannot open file for writing"
+                inPath:destination
+                fromPath:source
+                toPath:destination];
     }
 
-  /* Open the destination file. In case of error call the handler. */
-  destFd = open([self fileSystemRepresentationWithPath: destination],
-    GSBINIO|O_WRONLY|O_CREAT|O_TRUNC, fileMode);
-  if (destFd < 0)
+    /* Read bufsize bytes from source file and write them into the destination
+       file. In case of errors call the handler and abort the operation. */
+    for (i = 0; i < fileSize; i += rbytes)
     {
-      close (sourceFd);
+        rbytes = read (sourceFd, buffer, bufsize);
+        if (rbytes < 0)
+        {
+            close (sourceFd);
+            close (destFd);
 
-      return [self _proceedAccordingToHandler: handler
-				     forError:  @"cannot open file for writing"
-				       inPath: destination
-				     fromPath: source
-				       toPath: destination];
-    }
+            return [self _proceedAccordingToHandler:handler
+                    forError:@"cannot read from file"
+                    inPath:source
+                    fromPath:source
+                    toPath:destination];
+        }
 
-  /* Read bufsize bytes from source file and write them into the destination
-     file. In case of errors call the handler and abort the operation. */
-  for (i = 0; i < fileSize; i += rbytes)
-    {
-      rbytes = read (sourceFd, buffer, bufsize);
-      if (rbytes < 0)
-	{
-          close (sourceFd);
-          close (destFd);
+        wbytes = write (destFd, buffer, rbytes);
+        if (wbytes != rbytes)
+        {
+            close (sourceFd);
+            close (destFd);
 
-          return [self _proceedAccordingToHandler: handler
-					 forError: @"cannot read from file"
-					   inPath: source
-					 fromPath: source
-					   toPath: destination];
-	}
-
-      wbytes = write (destFd, buffer, rbytes);
-      if (wbytes != rbytes)
-	{
-          close (sourceFd);
-          close (destFd);
-
-          return [self _proceedAccordingToHandler: handler
-					 forError: @"cannot write to file"
-					   inPath: destination
-					 fromPath: source
-					   toPath: destination];
+            return [self _proceedAccordingToHandler:handler
+                    forError:@"cannot write to file"
+                    inPath:destination
+                    fromPath:source
+                    toPath:destination];
         }
     }
-  close (sourceFd);
-  close (destFd);
+    close (sourceFd);
+    close (destFd);
 
-  return YES;
-#endif
+    return YES;
 }
 
-- (BOOL) _copyPath: (NSString*)source
-	    toPath: (NSString*)destination
-	   handler: handler
+- (BOOL)_copyPath:(NSString*)source
+    toPath:(NSString*)destination
+    handler:handler
 {
-  NSDirectoryEnumerator	*enumerator;
-  NSString		*dirEntry;
-  CREATE_AUTORELEASE_POOL(pool);
+    NSDirectoryEnumerator *enumerator;
+    NSString      *dirEntry;
+    CREATE_AUTORELEASE_POOL(pool);
 
-  enumerator = [self enumeratorAtPath: source];
-  while ((dirEntry = [enumerator nextObject]))
+    enumerator = [self enumeratorAtPath:source];
+    while ((dirEntry = [enumerator nextObject]))
     {
-      NSString		*sourceFile;
-      NSString		*fileType;
-      NSString		*destinationFile;
-      NSDictionary	*attributes;
+        NSString      *sourceFile;
+        NSString      *fileType;
+        NSString      *destinationFile;
+        NSDictionary  *attributes;
 
-      attributes = [enumerator fileAttributes];
-      fileType = [attributes fileType];
-      sourceFile = [source stringByAppendingPathComponent: dirEntry];
-      destinationFile
-	= [destination stringByAppendingPathComponent: dirEntry];
+        attributes = [enumerator fileAttributes];
+        fileType = [attributes fileType];
+        sourceFile = [source stringByAppendingPathComponent:dirEntry];
+        destinationFile
+            = [destination stringByAppendingPathComponent:dirEntry];
 
-      [self _sendToHandler: handler willProcessPath: sourceFile];
+        [self _sendToHandler:handler willProcessPath:sourceFile];
 
-      if ([fileType isEqual: NSFileTypeDirectory])
-	{
-	  BOOL	dirOK;
+        if ([fileType isEqual:NSFileTypeDirectory])
+        {
+            BOOL dirOK;
 
-	  dirOK = [self createDirectoryAtPath: destinationFile
-				   attributes: attributes];
-	  if (dirOK == NO)
-	    {
-              if (![self _proceedAccordingToHandler: handler
-					   forError: _lastError
-					     inPath: destinationFile
-					   fromPath: sourceFile
-					     toPath: destinationFile])
+            dirOK = [self createDirectoryAtPath:destinationFile
+                     attributes:attributes];
+            if (dirOK == NO)
+            {
+                if (![self _proceedAccordingToHandler:handler
+                      forError:_lastError
+                      inPath:destinationFile
+                      fromPath:sourceFile
+                      toPath:destinationFile])
                 {
-                  return NO;
+                    return NO;
                 }
-	      /*
-	       * We may have managed to create the directory but not set
-	       * its attributes ... if so we can continue copying.
-	       */
-	      if (![self fileExistsAtPath: destinationFile isDirectory: &dirOK])
-	        {
-		  dirOK = NO;
-	        }
-	    }
-	  if (dirOK == YES)
-	    {
-	      [enumerator skipDescendents];
-	      if (![self _copyPath: sourceFile
-                         toPath: destinationFile
-                         handler: handler])
-		return NO;
-	    }
-	}
-      else if ([fileType isEqual: NSFileTypeRegular])
-	{
-	  if (![self _copyFile: sourceFile
-			toFile: destinationFile
-		       handler: handler])
-	    return NO;
-	}
-      else if ([fileType isEqual: NSFileTypeSymbolicLink])
-	{
-	  NSString	*path;
-
-	  path = [self pathContentOfSymbolicLinkAtPath: sourceFile];
-	  if (![self createSymbolicLinkAtPath: destinationFile
-				  pathContent: path])
-	    {
-              if (![self _proceedAccordingToHandler: handler
-		forError: @"cannot create symbolic link"
-		inPath: sourceFile
-		fromPath: sourceFile
-		toPath: destinationFile])
+                /*
+                 * We may have managed to create the directory but not set
+                 * its attributes ... if so we can continue copying.
+                 */
+                if (![self fileExistsAtPath:destinationFile isDirectory:&dirOK])
                 {
-                  return NO;
+                    dirOK = NO;
                 }
-	    }
-	}
-      else
-	{
-	  NSString	*s;
+            }
+            if (dirOK == YES)
+            {
+                [enumerator skipDescendents];
+                if (![self _copyPath:sourceFile
+                      toPath:destinationFile
+                      handler:handler]) {
+                    return NO;
+                }
+            }
+        }
+        else if ([fileType isEqual:NSFileTypeRegular])
+        {
+            if (![self _copyFile:sourceFile
+                  toFile:destinationFile
+                  handler:handler]) {
+                return NO;
+            }
+        }
+        else if ([fileType isEqual:NSFileTypeSymbolicLink])
+        {
+            NSString  *path;
 
-	  s = [NSString stringWithFormat: @"cannot copy file type '%@'",
-	    fileType];
-	  ASSIGN(_lastError, s);
-	  NSLog(@"%@: %@", sourceFile, s);
-	  continue;
-	}
-      [self changeFileAttributes: attributes atPath: destinationFile];
+            path = [self pathContentOfSymbolicLinkAtPath:sourceFile];
+            if (![self createSymbolicLinkAtPath:destinationFile
+                  pathContent:path])
+            {
+                if (![self _proceedAccordingToHandler:handler
+                      forError:@"cannot create symbolic link"
+                      inPath:sourceFile
+                      fromPath:sourceFile
+                      toPath:destinationFile])
+                {
+                    return NO;
+                }
+            }
+        }
+        else
+        {
+            NSString  *s;
+
+            s = [NSString stringWithFormat:@"cannot copy file type '%@'",
+                 fileType];
+            ASSIGN(_lastError, s);
+            NSLog(@"%@: %@", sourceFile, s);
+            continue;
+        }
+        [self changeFileAttributes:attributes atPath:destinationFile];
     }
-  RELEASE(pool);
+    RELEASE(pool);
 
-  return YES;
+    return YES;
 }
 
-- (BOOL) _linkPath: (NSString*)source
-	    toPath: (NSString*)destination
-	   handler: handler
+- (BOOL)_linkPath:(NSString*)source
+    toPath:(NSString*)destination
+    handler:handler
 {
 #ifdef HAVE_LINK
-  NSDirectoryEnumerator	*enumerator;
-  NSString		*dirEntry;
-  CREATE_AUTORELEASE_POOL(pool);
+    NSDirectoryEnumerator *enumerator;
+    NSString      *dirEntry;
+    CREATE_AUTORELEASE_POOL(pool);
 
-  enumerator = [self enumeratorAtPath: source];
-  while ((dirEntry = [enumerator nextObject]))
+    enumerator = [self enumeratorAtPath:source];
+    while ((dirEntry = [enumerator nextObject]))
     {
-      NSString		*sourceFile;
-      NSString		*fileType;
-      NSString		*destinationFile;
-      NSDictionary	*attributes;
+        NSString      *sourceFile;
+        NSString      *fileType;
+        NSString      *destinationFile;
+        NSDictionary  *attributes;
 
-      attributes = [enumerator fileAttributes];
-      fileType = [attributes fileType];
-      sourceFile = [source stringByAppendingPathComponent: dirEntry];
-      destinationFile
-	= [destination stringByAppendingPathComponent: dirEntry];
+        attributes = [enumerator fileAttributes];
+        fileType = [attributes fileType];
+        sourceFile = [source stringByAppendingPathComponent:dirEntry];
+        destinationFile
+            = [destination stringByAppendingPathComponent:dirEntry];
 
-      [self _sendToHandler: handler willProcessPath: sourceFile];
+        [self _sendToHandler:handler willProcessPath:sourceFile];
 
-      if ([fileType isEqual: NSFileTypeDirectory] == YES)
-	{
-	  if ([self createDirectoryAtPath: destinationFile
-			       attributes: attributes] == NO)
-	    {
-              if ([self _proceedAccordingToHandler: handler
-					  forError: _lastError
-					    inPath: destinationFile
-					  fromPath: sourceFile
-					    toPath: destinationFile] == NO)
+        if ([fileType isEqual:NSFileTypeDirectory] == YES)
+        {
+            if ([self createDirectoryAtPath:destinationFile
+                 attributes:attributes] == NO)
+            {
+                if ([self _proceedAccordingToHandler:handler
+                     forError:_lastError
+                     inPath:destinationFile
+                     fromPath:sourceFile
+                     toPath:destinationFile] == NO)
                 {
-                  return NO;
+                    return NO;
                 }
-	    }
-	  else
-	    {
-	      [enumerator skipDescendents];
-	      if ([self _linkPath: sourceFile
-			   toPath: destinationFile
-			  handler: handler] == NO)
-		{
-		  return NO;
-		}
-	    }
-	}
-      else if ([fileType isEqual: NSFileTypeSymbolicLink])
-	{
-	  NSString	*path;
+            }
+            else
+            {
+                [enumerator skipDescendents];
+                if ([self _linkPath:sourceFile
+                     toPath:destinationFile
+                     handler:handler] == NO)
+                {
+                    return NO;
+                }
+            }
+        }
+        else if ([fileType isEqual:NSFileTypeSymbolicLink])
+        {
+            NSString  *path;
 
-	  path = [self pathContentOfSymbolicLinkAtPath: sourceFile];
-	  if ([self createSymbolicLinkAtPath: destinationFile
-				 pathContent: path] == NO)
-	    {
-              if ([self _proceedAccordingToHandler: handler
-		forError: @"cannot create symbolic link"
-		inPath: sourceFile
-		fromPath: sourceFile
-		toPath: destinationFile] == NO)
+            path = [self pathContentOfSymbolicLinkAtPath:sourceFile];
+            if ([self createSymbolicLinkAtPath:destinationFile
+                 pathContent:path] == NO)
+            {
+                if ([self _proceedAccordingToHandler:handler
+                     forError:@"cannot create symbolic link"
+                     inPath:sourceFile
+                     fromPath:sourceFile
+                     toPath:destinationFile] == NO)
                 {
-                  return NO;
+                    return NO;
                 }
-	    }
-	}
-      else
-	{
-	  if (link([self fileSystemRepresentationWithPath: sourceFile],
-	    [self fileSystemRepresentationWithPath: destinationFile]) < 0)
-	    {
-              if ([self _proceedAccordingToHandler: handler
-		forError: @"cannot create hard link"
-		inPath: sourceFile
-		fromPath: sourceFile
-		toPath: destinationFile] == NO)
+            }
+        }
+        else
+        {
+            if (link([self fileSystemRepresentationWithPath:sourceFile],
+                     [self fileSystemRepresentationWithPath:destinationFile]) < 0)
+            {
+                if ([self _proceedAccordingToHandler:handler
+                     forError:@"cannot create hard link"
+                     inPath:sourceFile
+                     fromPath:sourceFile
+                     toPath:destinationFile] == NO)
                 {
-                  return NO;
+                    return NO;
                 }
-	    }
-	}
-      [self changeFileAttributes: attributes atPath: destinationFile];
+            }
+        }
+        [self changeFileAttributes:attributes atPath:destinationFile];
     }
-  RELEASE(pool);
-  return YES;
+    RELEASE(pool);
+    return YES;
 #else
-  return NO;
+    return NO;
 #endif
 }
 
-- (void) _sendToHandler: (id) handler
-        willProcessPath: (NSString*) path
+- (void)_sendToHandler:(id)handler
+    willProcessPath:(NSString*)path
 {
-  if ([handler respondsToSelector: @selector (fileManager:willProcessPath:)])
+    if (handler && [handler respondsToSelector:@selector(fileManager:willProcessPath:)])
     {
-      [handler fileManager: self willProcessPath: path];
+        [handler fileManager:self willProcessPath:path];
     }
 }
 
-- (BOOL) _proceedAccordingToHandler: (id) handler
-                           forError: (NSString*) error
-                             inPath: (NSString*) path
+- (BOOL)_proceedAccordingToHandler:(id)handler
+    forError:(NSString*)error
+    inPath:(NSString*)path
 {
-  if ([handler respondsToSelector:
-    @selector (fileManager:shouldProceedAfterError:)])
+    if ([handler respondsToSelector:
+         @selector(fileManager:shouldProceedAfterError:)])
     {
-      NSDictionary *errorInfo = [NSDictionary dictionaryWithObjectsAndKeys:
-                                                path, @"Path",
-                                              error, @"Error", nil];
-      return [handler fileManager: self
-	  shouldProceedAfterError: errorInfo];
+        NSDictionary *errorInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+                                   path, @"Path",
+                                   error, @"Error", nil];
+        return [handler fileManager:self
+                shouldProceedAfterError:errorInfo];
     }
-  return NO;
+    return NO;
 }
 
-- (BOOL) _proceedAccordingToHandler: (id) handler
-                           forError: (NSString*) error
-                             inPath: (NSString*) path
-                           fromPath: (NSString*) fromPath
-                             toPath: (NSString*) toPath
+- (BOOL)_proceedAccordingToHandler:(id)handler
+    forError:(NSString*)error
+    inPath:(NSString*)path
+    fromPath:(NSString*)fromPath
+    toPath:(NSString*)toPath
 {
-  if ([handler respondsToSelector:
-    @selector (fileManager:shouldProceedAfterError:)])
+    if ([handler respondsToSelector:
+         @selector(fileManager:shouldProceedAfterError:)])
     {
-      NSDictionary *errorInfo = [NSDictionary dictionaryWithObjectsAndKeys:
-                                                path, @"Path",
-                                              fromPath, @"FromPath",
-                                              toPath, @"ToPath",
-                                              error, @"Error", nil];
-      return [handler fileManager: self
-	  shouldProceedAfterError: errorInfo];
+        NSDictionary *errorInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+                                   path, @"Path",
+                                   fromPath, @"FromPath",
+                                   toPath, @"ToPath",
+                                   error, @"Error", nil];
+        return [handler fileManager:self
+                shouldProceedAfterError:errorInfo];
     }
-  return NO;
+    return NO;
 }
 
 @end /* NSFileManager (PrivateMethods) */
 
-
 
-@implementation	GSAttrDictionary
+@implementation GSAttrDictionary
 
-static NSSet	*fileKeys = nil;
+static NSSet    *fileKeys = nil;
 
-+ (NSDictionary*) attributesAt: (const _CHAR*)lpath
-		  traverseLink: (BOOL)traverse
++ (NSDictionary*)attributesAt:(const _CHAR*)lpath
+    traverseLink:(BOOL)traverse
 {
-  GSAttrDictionary	*d;
-  unsigned		l = 0;
-  unsigned		i;
+    GSAttrDictionary  *d;
+    unsigned l = 0;
+    unsigned i;
 
-  if (lpath == 0 || *lpath == 0)
+    if (lpath == 0 || *lpath == 0)
     {
-      return nil;
+        return nil;
     }
-  while (lpath[l] != 0)
+    while (lpath[l] != 0)
     {
-      l++;
+        l++;
     }
-  d = (GSAttrDictionary*)NSAllocateObject(self, (l+1)*sizeof(_CHAR),
-    NSDefaultMallocZone());
+    d = (GSAttrDictionary*)NSAllocateObject(self, (l+1)*sizeof(_CHAR),
+                                            NSDefaultMallocZone());
 
 #if defined(S_IFLNK) && !defined(__MINGW__)
-  if (traverse == NO)
+    if (traverse == NO)
     {
-      if (lstat(lpath, &d->statbuf) != 0)
-	{
-	  DESTROY(d);
-	}
+        if (lstat(lpath, &d->statbuf) != 0)
+        {
+            DESTROY(d);
+        }
     }
-  else
+    else
 #endif
-  if (_STAT(lpath, &d->statbuf) != 0)
+    if (_STAT(lpath, &d->statbuf) != 0)
     {
-      DESTROY(d);
+        DESTROY(d);
     }
-  if (d != nil)
+    if (d != nil)
     {
-      for (i = 0; i <= l; i++)
-	{
-	  d->_path[i] = lpath[i];
-	}
+        for (i = 0; i <= l; i++)
+        {
+            d->_path[i] = lpath[i];
+        }
     }
-  return AUTORELEASE(d);
+    return AUTORELEASE(d);
 }
 
-+ (void) initialize
++ (void)initialize
 {
-  if (fileKeys == nil)
+    if (fileKeys == nil)
     {
-      fileKeys = [NSSet setWithObjects:
-	NSFileAppendOnly,
-	NSFileCreationDate,
-	NSFileDeviceIdentifier,
-	NSFileExtensionHidden,
-	NSFileGroupOwnerAccountName,
-	NSFileGroupOwnerAccountID,
-	NSFileHFSCreatorCode,
-	NSFileHFSTypeCode,
-	NSFileImmutable,
-	NSFileModificationDate,
-	NSFileOwnerAccountName,
-	NSFileOwnerAccountID,
-	NSFilePosixPermissions,
-	NSFileReferenceCount,
-	NSFileSize,
-	NSFileSystemFileNumber,
-	NSFileSystemNumber,
-	NSFileType,
-	nil];
-      IF_NO_GC([fileKeys retain];)
+        fileKeys = [NSSet setWithObjects:
+                    NSFileAppendOnly,
+                    NSFileCreationDate,
+                    NSFileDeviceIdentifier,
+                    NSFileExtensionHidden,
+                    NSFileGroupOwnerAccountName,
+                    NSFileGroupOwnerAccountID,
+                    NSFileHFSCreatorCode,
+                    NSFileHFSTypeCode,
+                    NSFileImmutable,
+                    NSFileModificationDate,
+                    NSFileOwnerAccountName,
+                    NSFileOwnerAccountID,
+                    NSFilePosixPermissions,
+                    NSFileReferenceCount,
+                    NSFileSize,
+                    NSFileSystemFileNumber,
+                    NSFileSystemNumber,
+                    NSFileType,
+                    nil];
+        IF_NO_GC([fileKeys retain]; )
     }
 }
 
-- (NSUInteger) count
+- (NSUInteger)count
 {
-  return [fileKeys count];
+    return [fileKeys count];
 }
 
-- (NSDate*) fileCreationDate
+- (NSDate*)fileCreationDate
 {
-  /*
-   * FIXME ... not sure there is any way to get a creation date :-(
-   * Use the earlier of ctime or mtime
-   */
-  if (statbuf.st_ctime < statbuf.st_mtime)
-    return [NSDate dateWithTimeIntervalSince1970: statbuf.st_ctime];
-  else
-    return [NSDate dateWithTimeIntervalSince1970: statbuf.st_mtime];
+    /*
+     * FIXME ... not sure there is any way to get a creation date :-(
+     * Use the earlier of ctime or mtime
+     */
+    if (statbuf.st_ctime < statbuf.st_mtime) {
+        return [NSDate dateWithTimeIntervalSince1970:statbuf.st_ctime];
+    }
+    else{
+        return [NSDate dateWithTimeIntervalSince1970:statbuf.st_mtime];
+    }
 }
 
-- (BOOL) fileExtensionHidden
+- (BOOL)fileExtensionHidden
 {
-  return NO;
+    return NO;
 }
 
-- (NSNumber*) fileGroupOwnerAccountID
+- (NSNumber*)fileGroupOwnerAccountID
 {
-  return [NSNumber numberWithInt: statbuf.st_gid];
+    return [NSNumber numberWithInt:statbuf.st_gid];
 }
 
-- (NSString*) fileGroupOwnerAccountName
+- (NSString*)fileGroupOwnerAccountName
 {
-  NSString	*group = @"UnknownGroup";
+    NSString  *group = @"UnknownGroup";
 
-#if	defined(__MINGW__)
-  DWORD		returnCode = 0;
-  PSID		sidOwner;
-  BOOL		result = TRUE;
-  _CHAR		account[BUFSIZ];
-  _CHAR		domain[BUFSIZ];
-  DWORD		accountSize = 1024;
-  DWORD		domainSize = 1024;
-  SID_NAME_USE	eUse = SidTypeUnknown;
-  HANDLE	hFile;
-  PSECURITY_DESCRIPTOR pSD;
-
-  // Get the handle of the file object.
-  hFile = CreateFileW(
-    _path,
-    GENERIC_READ,
-    FILE_SHARE_READ,
-    0,
-    OPEN_EXISTING,
-    FILE_FLAG_BACKUP_SEMANTICS,
-    0);
-
-  // Check GetLastError for CreateFile error code.
-  if (hFile == INVALID_HANDLE_VALUE)
-    {
-      DWORD dwErrorCode = 0;
-
-      dwErrorCode = GetLastError();
-      NSDebugMLog(@"Error %d getting file handle for '%S'",
-        dwErrorCode, _path);
-      return group;
-    }
-
-  // Get the group SID of the file.
-  returnCode = GetSecurityInfo(
-    hFile,
-    SE_FILE_OBJECT,
-    GROUP_SECURITY_INFORMATION,
-    0,
-    &sidOwner,
-    0,
-    0,
-    &pSD);
-
-  CloseHandle(hFile);
-
-  // Check GetLastError for GetSecurityInfo error condition.
-  if (returnCode != ERROR_SUCCESS)
-    {
-      DWORD dwErrorCode = 0;
-
-      dwErrorCode = GetLastError();
-      NSDebugMLog(@"Error %d getting security info for '%S'",
-        dwErrorCode, _path);
-      return group;
-    }
-
-  // First call to LookupAccountSid to get the buffer sizes.
-  result = LookupAccountSidW(
-    0,           // local computer
-    sidOwner,
-    account,
-    (LPDWORD)&accountSize,
-    domain,
-    (LPDWORD)&domainSize,
-    &eUse);
-
-  // Check GetLastError for LookupAccountSid error condition.
-  if (result == FALSE)
-    {
-      DWORD dwErrorCode = 0;
-
-      dwErrorCode = GetLastError();
-      if (dwErrorCode == ERROR_NONE_MAPPED)
-	NSDebugMLog(@"Error %d in LookupAccountSid for '%S'", _path);
-      else
-        NSDebugMLog(@"Error %d getting security info for '%S'",
-          dwErrorCode, _path);
-      return group;
-    }
-
-  if (accountSize >= 1024)
-    {
-      NSDebugMLog(@"Account name for '%S' is unreasonably long", _path);
-      return group;
-    }
-  return [NSString stringWithCharacters: account length: accountSize];
-#else
 #if defined(HAVE_GRP_H)
 #if defined(HAVE_GETGRGID_H)
-  struct group gp;
-  struct group *p;
-  char buf[BUFSIZ*10];
+    struct group gp;
+    struct group *p;
+    char buf[BUFSIZ*10];
 
-  if (getgrgid_r(statbuf.st_gid, &gp, buf, sizeof(buf), &p) == 0)
+    if (getgrgid_r(statbuf.st_gid, &gp, buf, sizeof(buf), &p) == 0)
     {
-      group = [NSString stringWithCString: gp.gr_name
-				 encoding: defaultEncoding];
+        group = [NSString stringWithCString:gp.gr_name
+                 encoding:defaultEncoding];
     }
 #else
 #if defined(HAVE_GETGRGID)
-  struct group	*gp;
+    struct group  *gp;
 
-  [gnustep_global_lock lock];
-  gp = getgrgid(statbuf.st_gid);
-  if (gp != 0)
+    [gnustep_global_lock lock];
+    gp = getgrgid(statbuf.st_gid);
+    if (gp != 0)
     {
-      group = [NSString stringWithCString: gp->gr_name
-				 encoding: defaultEncoding];
+        group = [NSString stringWithCString:gp->gr_name
+                 encoding:defaultEncoding];
     }
-  [gnustep_global_lock unlock];
+    [gnustep_global_lock unlock];
 #endif
 #endif
 #endif
-#endif
-  return group;
+    return group;
 }
 
-- (OSType) fileHFSCreatorCode
+- (OSType)fileHFSCreatorCode
 {
-  return 0;
+    return 0;
 }
 
-- (OSType) fileHFSTypeCode
+- (OSType)fileHFSTypeCode
 {
-  return 0;
+    return 0;
 }
 
-- (BOOL) fileIsAppendOnly
+- (BOOL)fileIsAppendOnly
 {
-  return 0;
+    return 0;
 }
 
-- (BOOL) fileIsImmutable
+- (BOOL)fileIsImmutable
 {
-  return 0;
+    return 0;
 }
 
-- (NSDate*) fileModificationDate
+- (NSDate*)fileModificationDate
 {
-  return [NSDate dateWithTimeIntervalSince1970: statbuf.st_mtime];
+    return [NSDate dateWithTimeIntervalSince1970:statbuf.st_mtime];
 }
 
-- (NSUInteger) filePosixPermissions
+- (NSUInteger)filePosixPermissions
 {
-  return (statbuf.st_mode & ~S_IFMT);
+    return (statbuf.st_mode & ~S_IFMT);
 }
 
-- (NSNumber*) fileOwnerAccountID
+- (NSNumber*)fileOwnerAccountID
 {
-  return [NSNumber numberWithInt: statbuf.st_uid];
+    return [NSNumber numberWithInt:statbuf.st_uid];
 }
 
-- (NSString*) fileOwnerAccountName
+- (NSString*)fileOwnerAccountName
 {
-  NSString	*owner = @"UnknownUser";
+    NSString  *owner = @"UnknownUser";
 
-#if	defined(__MINGW__)
-  DWORD		returnCode = 0;
-  PSID		sidOwner;
-  BOOL		result = TRUE;
-  _CHAR		account[BUFSIZ];
-  _CHAR		domain[BUFSIZ];
-  DWORD		accountSize = 1024;
-  DWORD		domainSize = 1024;
-  SID_NAME_USE	eUse = SidTypeUnknown;
-  HANDLE	hFile;
-  PSECURITY_DESCRIPTOR pSD;
-
-  // Get the handle of the file object.
-  hFile = CreateFileW(
-    _path,
-    GENERIC_READ,
-    FILE_SHARE_READ,
-    0,
-    OPEN_EXISTING,
-    FILE_FLAG_BACKUP_SEMANTICS,
-    0);
-
-  // Check GetLastError for CreateFile error code.
-  if (hFile == INVALID_HANDLE_VALUE)
-    {
-      DWORD dwErrorCode = 0;
-
-      dwErrorCode = GetLastError();
-      NSDebugMLog(@"Error %d getting file handle for '%S'",
-        dwErrorCode, _path);
-      return owner;
-    }
-
-  // Get the owner SID of the file.
-  returnCode = GetSecurityInfo(
-    hFile,
-    SE_FILE_OBJECT,
-    OWNER_SECURITY_INFORMATION,
-    &sidOwner,
-    0,
-    0,
-    0,
-    &pSD);
-
-  CloseHandle(hFile);
-
-  // Check GetLastError for GetSecurityInfo error condition.
-  if (returnCode != ERROR_SUCCESS)
-    {
-      DWORD dwErrorCode = 0;
-
-      dwErrorCode = GetLastError();
-      NSDebugMLog(@"Error %d getting security info for '%S'",
-        dwErrorCode, _path);
-      return owner;
-    }
-
-  // First call to LookupAccountSid to get the buffer sizes.
-  result = LookupAccountSidW(
-    0,           // local computer
-    sidOwner,
-    account,
-    (LPDWORD)&accountSize,
-    domain,
-    (LPDWORD)&domainSize,
-    &eUse);
-
-  // Check GetLastError for LookupAccountSid error condition.
-  if (result == FALSE)
-    {
-      DWORD dwErrorCode = 0;
-
-      dwErrorCode = GetLastError();
-      if (dwErrorCode == ERROR_NONE_MAPPED)
-	NSDebugMLog(@"Error %d in LookupAccountSid for '%S'", _path);
-      else
-        NSDebugMLog(@"Error %d getting security info for '%S'",
-          dwErrorCode, _path);
-      return owner;
-    }
-
-  if (accountSize >= 1024)
-    {
-      NSDebugMLog(@"Account name for '%S' is unreasonably long", _path);
-      return owner;
-    }
-  return [NSString stringWithCharacters: account length: accountSize];
-#else
 #ifdef HAVE_PWD_H
 #if     defined(HAVE_GETPWUID_R)
-  struct passwd pw;
-  struct passwd *p;
-  char buf[BUFSIZ*10];
+    struct passwd pw;
+    struct passwd *p;
+    char buf[BUFSIZ*10];
 
-  if (getpwuid_r(statbuf.st_uid, &pw, buf, sizeof(buf), &p) == 0)
+    if (getpwuid_r(statbuf.st_uid, &pw, buf, sizeof(buf), &p) == 0)
     {
-      owner = [NSString stringWithCString: pw.pw_name
-				 encoding: defaultEncoding];
+        owner = [NSString stringWithCString:pw.pw_name
+                 encoding:defaultEncoding];
     }
 #else
 #if     defined(HAVE_GETPWUID)
-  struct passwd *pw;
+    struct passwd *pw;
 
-  [gnustep_global_lock lock];
-  pw = getpwuid(statbuf.st_uid);
-  if (pw != 0)
+    [gnustep_global_lock lock];
+    pw = getpwuid(statbuf.st_uid);
+    if (pw != 0)
     {
-      owner = [NSString stringWithCString: pw->pw_name
-				 encoding: defaultEncoding];
+        owner = [NSString stringWithCString:pw->pw_name
+                 encoding:defaultEncoding];
     }
-  [gnustep_global_lock unlock];
+    [gnustep_global_lock unlock];
 #endif
 #endif
 #endif /* HAVE_PWD_H */
-#endif
-  return owner;
+    return owner;
 }
 
-- (unsigned long long) fileSize
+- (unsigned long long)fileSize
 {
-  return statbuf.st_size;
+    return statbuf.st_size;
 }
 
-- (NSUInteger) fileSystemFileNumber
+- (NSUInteger)fileSystemFileNumber
 {
-  return statbuf.st_ino;
+    return statbuf.st_ino;
 }
 
-- (NSUInteger) fileSystemNumber
+- (NSUInteger)fileSystemNumber
 {
-#if defined(__MINGW__)
-  DWORD volumeSerialNumber = 0;
-  _CHAR volumePathName[128];
-  if (GetVolumePathNameW(_path,volumePathName,128))
-  {
-    GetVolumeInformationW(volumePathName,NULL,0,&volumeSerialNumber,NULL,NULL,NULL,0);
-  }
-
-  return (NSUInteger)volumeSerialNumber;
-#else
-  return statbuf.st_dev;
-#endif
+    return statbuf.st_dev;
 }
 
-- (NSString*) fileType
+- (NSString*)fileType
 {
-  switch (statbuf.st_mode & S_IFMT)
+    switch (statbuf.st_mode & S_IFMT)
     {
-      case S_IFREG: return NSFileTypeRegular;
-      case S_IFDIR: return NSFileTypeDirectory;
-      case S_IFCHR: return NSFileTypeCharacterSpecial;
-      case S_IFBLK: return NSFileTypeBlockSpecial;
+    case S_IFREG: return NSFileTypeRegular;
+    case S_IFDIR: return NSFileTypeDirectory;
+    case S_IFCHR: return NSFileTypeCharacterSpecial;
+    case S_IFBLK: return NSFileTypeBlockSpecial;
 #ifdef S_IFLNK
-      case S_IFLNK: return NSFileTypeSymbolicLink;
+    case S_IFLNK: return NSFileTypeSymbolicLink;
 #endif
-      case S_IFIFO: return NSFileTypeFifo;
+    case S_IFIFO: return NSFileTypeFifo;
 #ifdef S_IFSOCK
-      case S_IFSOCK: return NSFileTypeSocket;
+    case S_IFSOCK: return NSFileTypeSocket;
 #endif
-      default: return NSFileTypeUnknown;
+    default: return NSFileTypeUnknown;
     }
 }
 
-- (NSEnumerator*) keyEnumerator
+- (NSEnumerator*)keyEnumerator
 {
-  return [fileKeys objectEnumerator];
+    return [fileKeys objectEnumerator];
 }
 
-- (NSEnumerator*) objectEnumerator
+- (NSEnumerator*)objectEnumerator
 {
-  return [GSAttrDictionaryEnumerator enumeratorFor: self];
+    return [GSAttrDictionaryEnumerator enumeratorFor:self];
 }
 
-- (id) objectForKey: (id)key
+- (id)objectForKey:(id)key
 {
-  int	count = 0;
+    int count = 0;
 
-  while (key != 0 && count < 2)
+    while (key != 0 && count < 2)
     {
-      if (key == NSFileAppendOnly)
-	return [NSNumber numberWithBool: [self fileIsAppendOnly]];
-      if (key == NSFileCreationDate)
-	return [self fileCreationDate];
-      if (key == NSFileDeviceIdentifier)
-	return [NSNumber numberWithUnsignedInt: statbuf.st_dev];
-      if (key == NSFileExtensionHidden)
-	return [NSNumber numberWithBool: [self fileExtensionHidden]];
-      if (key == NSFileGroupOwnerAccountName)
-	return [self fileGroupOwnerAccountName];
-      if (key == NSFileGroupOwnerAccountID)
-	return [self fileGroupOwnerAccountID];
-      if (key == NSFileHFSCreatorCode)
-	return [NSNumber numberWithUnsignedLong: [self fileHFSCreatorCode]];
-      if (key == NSFileHFSTypeCode)
-	return [NSNumber numberWithUnsignedLong: [self fileHFSTypeCode]];
-      if (key == NSFileImmutable)
-	return [NSNumber numberWithBool: [self fileIsImmutable]];
-      if (key == NSFileModificationDate)
-	return [self fileModificationDate];
-      if (key == NSFileOwnerAccountName)
-	return [self fileOwnerAccountName];
-      if (key == NSFileOwnerAccountID)
-	return [self fileOwnerAccountID];
-      if (key == NSFilePosixPermissions)
-	return [NSNumber numberWithUnsignedInt: [self filePosixPermissions]];
-      if (key == NSFileReferenceCount)
-	return [NSNumber numberWithUnsignedInt: statbuf.st_nlink];
-      if (key == NSFileSize)
-	return [NSNumber numberWithUnsignedLongLong: [self fileSize]];
-      if (key == NSFileSystemFileNumber)
-	return [NSNumber numberWithUnsignedInt: [self fileSystemFileNumber]];
-      if (key == NSFileSystemNumber)
-	return [NSNumber numberWithUnsignedInt: [self fileSystemNumber]];
-      if (key == NSFileType)
-	return [self fileType];
+        if (key == NSFileAppendOnly) {
+            return [NSNumber numberWithBool:[self fileIsAppendOnly]];
+        }
+        if (key == NSFileCreationDate) {
+            return [self fileCreationDate];
+        }
+        if (key == NSFileDeviceIdentifier) {
+            return [NSNumber numberWithUnsignedInt:statbuf.st_dev];
+        }
+        if (key == NSFileExtensionHidden) {
+            return [NSNumber numberWithBool:[self fileExtensionHidden]];
+        }
+        if (key == NSFileGroupOwnerAccountName) {
+            return [self fileGroupOwnerAccountName];
+        }
+        if (key == NSFileGroupOwnerAccountID) {
+            return [self fileGroupOwnerAccountID];
+        }
+        if (key == NSFileHFSCreatorCode) {
+            return [NSNumber numberWithUnsignedLong:[self fileHFSCreatorCode]];
+        }
+        if (key == NSFileHFSTypeCode) {
+            return [NSNumber numberWithUnsignedLong:[self fileHFSTypeCode]];
+        }
+        if (key == NSFileImmutable) {
+            return [NSNumber numberWithBool:[self fileIsImmutable]];
+        }
+        if (key == NSFileModificationDate) {
+            return [self fileModificationDate];
+        }
+        if (key == NSFileOwnerAccountName) {
+            return [self fileOwnerAccountName];
+        }
+        if (key == NSFileOwnerAccountID) {
+            return [self fileOwnerAccountID];
+        }
+        if (key == NSFilePosixPermissions) {
+            return [NSNumber numberWithUnsignedInt:[self filePosixPermissions]];
+        }
+        if (key == NSFileReferenceCount) {
+            return [NSNumber numberWithUnsignedInt:statbuf.st_nlink];
+        }
+        if (key == NSFileSize) {
+            return [NSNumber numberWithUnsignedLongLong:[self fileSize]];
+        }
+        if (key == NSFileSystemFileNumber) {
+            return [NSNumber numberWithUnsignedInt:[self fileSystemFileNumber]];
+        }
+        if (key == NSFileSystemNumber) {
+            return [NSNumber numberWithUnsignedInt:[self fileSystemNumber]];
+        }
+        if (key == NSFileType) {
+            return [self fileType];
+        }
 
-      /*
-       * Now, if we didn't get an exact pointer match, check for
-       * string equalities and ensure we get an exact match next
-       * time round the loop.
-       */
-      count++;
-      key = [fileKeys member: key];
+        /*
+         * Now, if we didn't get an exact pointer match, check for
+         * string equalities and ensure we get an exact match next
+         * time round the loop.
+         */
+        count++;
+        key = [fileKeys member:key];
     }
-  if (count >= 2)
+    if (count >= 2)
     {
-      NSLog(@"Warning ... key '%@' not handled", key);
+        NSLog(@"Warning ... key '%@' not handled", key);
     }
-  return nil;
+    return nil;
 }
 
-@end	/* GSAttrDictionary */
+@end    /* GSAttrDictionary */
 
-@implementation	GSAttrDictionaryEnumerator
-+ (NSEnumerator*) enumeratorFor: (NSDictionary*)d
+@implementation GSAttrDictionaryEnumerator
++ (NSEnumerator*)enumeratorFor:(NSDictionary*)d
 {
-  GSAttrDictionaryEnumerator	*e;
+    GSAttrDictionaryEnumerator    *e;
 
-  e = (GSAttrDictionaryEnumerator*)
-    NSAllocateObject(self, 0, NSDefaultMallocZone());
-  e->dictionary = RETAIN(d);
-  e->enumerator = RETAIN([fileKeys objectEnumerator]);
-  return AUTORELEASE(e);
+    e = (GSAttrDictionaryEnumerator*)
+        NSAllocateObject(self, 0, NSDefaultMallocZone());
+    e->dictionary = RETAIN(d);
+    e->enumerator = RETAIN([fileKeys objectEnumerator]);
+    return AUTORELEASE(e);
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  RELEASE(enumerator);
-  RELEASE(dictionary);
-  [super dealloc];
+    RELEASE(enumerator);
+    RELEASE(dictionary);
+    [super dealloc];
 }
 
-- (id) nextObject
+- (id)nextObject
 {
-  NSString	*key = [enumerator nextObject];
-  id		val = nil;
+    NSString  *key = [enumerator nextObject];
+    id val = nil;
 
-  if (key != nil)
+    if (key != nil)
     {
-      val = [dictionary objectForKey: key];
+        val = [dictionary objectForKey:key];
     }
-  return val;
+    return val;
 }
+@end
+
+@implementation _NSFileManagerErrorHandler
+
+@synthesize error = _error;
+
+- (void)dealloc
+{
+    [_error release];
+    [super dealloc];
+}
+
+- (BOOL)fileManager:(NSFileManager*)fileManager shouldProceedAfterError:(NSDictionary*)errorInfo
+{
+    _error = [[NSError _last] retain];
+    return NO;
+}
+
 @end
 
 NSString * const NSFileAppendOnly = @"NSFileAppendOnly";

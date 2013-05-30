@@ -3,367 +3,367 @@
 
    Written by:  Richard Frith-Macdonald <rfm@gnu.org>
    Date:	2009
-   
+
    This file is part of the GNUstep Base Library.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
    version 2 of the License, or (at your option) any later version.
-   
+
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Library General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-   */ 
+ */
 
 #import "common.h"
-#import	"NSConcretePointerFunctions.h"
+#import "NSConcretePointerFunctions.h"
 
 static void*
 acquireMallocMemory(const void *item,
-  NSUInteger (*size)(const void *item), BOOL shouldCopy)
+                    NSUInteger (*size)(const void *item), BOOL shouldCopy)
 {
-  if (shouldCopy == YES)
+    if (shouldCopy == YES)
     {
-      NSUInteger	len = (*size)(item);
-      void		*newItem = objc_malloc(len);
+        NSUInteger len = (*size)(item);
+        void      *newItem = objc_malloc(len);
 
-      memcpy(newItem, item, len);
-      item = newItem;
+        memcpy(newItem, item, len);
+        item = newItem;
     }
-  return (void*)item;
+    return (void*)item;
 }
 
 static void*
 acquireRetainedObject(const void *item,
-  NSUInteger (*size)(const void *item), BOOL shouldCopy)
+                      NSUInteger (*size)(const void *item), BOOL shouldCopy)
 {
-  if (shouldCopy == YES)
+    if (shouldCopy == YES)
     {
-      return [(NSObject*)item copy];
+        return [(NSObject*)item copy];
     }
-  return [(NSObject*)item retain];
+    return [(NSObject*)item retain];
 }
 
 static void*
 acquireExistingMemory(const void *item,
-  NSUInteger (*size)(const void *item), BOOL shouldCopy)
+                      NSUInteger (*size)(const void *item), BOOL shouldCopy)
 {
-  return (void*)item;
+    return (void*)item;
 }
 
 static NSString*
 describeString(const void *item)
 {
-  return [NSString stringWithFormat: @"%s", item];
+    return [NSString stringWithFormat:@"%s", item];
 }
 
 static NSString*
 describeInteger(const void *item)
 {
-  return [NSString stringWithFormat: @"%ld", (long)(intptr_t)item];
+    return [NSString stringWithFormat:@"%ld", (long)(intptr_t)item];
 }
 
 static NSString*
 describeObject(const void *item)
 {
-  return [(NSObject*)item description];
+    return [(NSObject*)item description];
 }
 
 static NSString*
 describePointer(const void *item)
 {
-  return [NSString stringWithFormat: @"%p", item];
+    return [NSString stringWithFormat:@"%p", item];
 }
 
 static BOOL
 equalDirect(const void *item1, const void *item2,
-  NSUInteger (*size)(const void *item))
+            NSUInteger (*size)(const void *item))
 {
-  return (item1 == item2) ? YES : NO;
+    return (item1 == item2) ? YES : NO;
 }
 
 static BOOL
 equalObject(const void *item1, const void *item2,
-  NSUInteger (*size)(const void *item))
+            NSUInteger (*size)(const void *item))
 {
-  return [(NSObject*)item1 isEqual: (NSObject*)item2];
+    return [(NSObject*)item1 isEqual : (NSObject*)item2];
 }
 
 static BOOL
 equalMemory(const void *item1, const void *item2,
-  NSUInteger (*size)(const void *item))
+            NSUInteger (*size)(const void *item))
 {
-  NSUInteger	s1 = (*size)(item1);
-  NSUInteger	s2 = (*size)(item2);
+    NSUInteger s1 = (*size)(item1);
+    NSUInteger s2 = (*size)(item2);
 
-  return (s1 == s2 && memcmp(item1, item2, s1) == 0) ? YES : NO;
+    return (s1 == s2 && memcmp(item1, item2, s1) == 0) ? YES : NO;
 }
 
 static BOOL
 equalString(const void *item1, const void *item2,
-  NSUInteger (*size)(const void *item))
+            NSUInteger (*size)(const void *item))
 {
-  return (strcmp((const char*)item1, (const char*)item2) == 0) ? YES : NO;
+    return (strcmp((const char*)item1, (const char*)item2) == 0) ? YES : NO;
 }
 
 static NSUInteger
 hashDirect(const void *item, NSUInteger (*size)(const void *item))
 {
-  return (NSUInteger)(uintptr_t)item;
+    return (NSUInteger)(uintptr_t)item;
 }
 
 static NSUInteger
 hashObject(const void *item, NSUInteger (*size)(const void *item))
 {
-  return [(NSObject*)item hash];
+    return [(NSObject*)item hash];
 }
 
 static NSUInteger
 hashMemory(const void *item, NSUInteger (*size)(const void *item))
 {
-  unsigned	len = (*size)(item);
-  NSUInteger	hash = 0;
+    unsigned len = (*size)(item);
+    NSUInteger hash = 0;
 
-  while (len-- > 0)
+    while (len-- > 0)
     {
-      hash = (hash << 5) + hash + *(const uint8_t*)item++;
+        hash = (hash << 5) + hash + *(const uint8_t*)item++;
     }
-  return hash;
+    return hash;
 }
 
 static NSUInteger
 hashShifted(const void *item, NSUInteger (*size)(const void *item))
 {
-  return ((NSUInteger)(uintptr_t)item) >> 2;
+    return ((NSUInteger)(uintptr_t)item) >> 2;
 }
 
 static NSUInteger
 hashString(const void *item, NSUInteger (*size)(const void *item))
 {
-  NSUInteger	hash = 0;
+    NSUInteger hash = 0;
 
-  while (*(const uint8_t*)item != 0)
+    while (*(const uint8_t*)item != 0)
     {
-      hash = (hash << 5) + hash + *(const uint8_t*)item++;
+        hash = (hash << 5) + hash + *(const uint8_t*)item++;
     }
-  return hash;
+    return hash;
 }
 
 static void
 relinquishMallocMemory(const void *item,
-  NSUInteger (*size)(const void *item))
+                       NSUInteger (*size)(const void *item))
 {
-  objc_free((void*)item);
+    objc_free((void*)item);
 }
 
 static void
 relinquishRetainedMemory(const void *item,
-  NSUInteger (*size)(const void *item))
+                         NSUInteger (*size)(const void *item))
 {
-#if	!GS_WITH_GC
-  [(NSObject*)item release];
-#endif
+    [(NSObject*)item release];
 }
 
 @implementation NSConcretePointerFunctions
 
-+ (id) allocWithZone: (NSZone*)zone
++ (id)allocWithZone:(NSZone*)zone
 {
-  return (id) NSAllocateObject(self, 0, zone);
+    return (id) NSAllocateObject(self, 0, zone);
 }
 
-- (id) copyWithZone: (NSZone*)zone
+- (id)copyWithZone:(NSZone*)zone
 {
-  return NSCopyObject(self, 0, zone);
+    return NSCopyObject(self, 0, zone);
 }
 
-- (id) initWithOptions: (NSPointerFunctionsOptions)options
+- (id)initWithOptions:(NSPointerFunctionsOptions)options
 {
-  _x.options = options;
+    _x.options = options;
 
-  /* First we look at the memory management options to see which function
-   * should be used to relinquish contents of a container with these
-   * options.
-   */
-  if (options & NSPointerFunctionsZeroingWeakMemory)
+    /* First we look at the memory management options to see which function
+     * should be used to relinquish contents of a container with these
+     * options.
+     */
+    if (options & NSPointerFunctionsZeroingWeakMemory)
     {
-      _x.relinquishFunction = 0;
+        _x.relinquishFunction = 0;
     }
-  else if (options & NSPointerFunctionsOpaqueMemory)
+    else if (options & NSPointerFunctionsOpaqueMemory)
     {
-      _x.relinquishFunction = 0;
+        _x.relinquishFunction = 0;
     }
-  else if (options & NSPointerFunctionsMallocMemory)
+    else if (options & NSPointerFunctionsMallocMemory)
     {
-      _x.relinquishFunction = relinquishMallocMemory;
+        _x.relinquishFunction = relinquishMallocMemory;
     }
-  else if (options & NSPointerFunctionsMachVirtualMemory)
+    else if (options & NSPointerFunctionsMachVirtualMemory)
     {
-      _x.relinquishFunction = relinquishMallocMemory;
+        _x.relinquishFunction = relinquishMallocMemory;
     }
-  else
+    else
     {
-      _x.relinquishFunction = relinquishRetainedMemory;
-    }
-
-  /* Now we look at the personality options to determine other functions.
-   */
-  if (options & NSPointerFunctionsOpaquePersonality)
-    {
-      _x.acquireFunction = acquireExistingMemory;
-      _x.descriptionFunction = describePointer;
-      _x.hashFunction = hashShifted;
-      _x.isEqualFunction = equalDirect;
-    }
-  else if (options & NSPointerFunctionsObjectPointerPersonality)
-    {
-      _x.acquireFunction = acquireRetainedObject;
-      _x.descriptionFunction = describeObject;
-      _x.hashFunction = hashShifted;
-      _x.isEqualFunction = equalDirect;
-    }
-  else if (options & NSPointerFunctionsCStringPersonality)
-    {
-      _x.acquireFunction = acquireMallocMemory;
-      _x.descriptionFunction = describeString;
-      _x.hashFunction = hashString;
-      _x.isEqualFunction = equalString;
-    }
-  else if (options & NSPointerFunctionsStructPersonality)
-    {
-      _x.acquireFunction = acquireMallocMemory;
-      _x.descriptionFunction = describePointer;
-      _x.hashFunction = hashMemory;
-      _x.isEqualFunction = equalMemory;
-    }
-  else if (options & NSPointerFunctionsIntegerPersonality)
-    {
-      _x.acquireFunction = acquireExistingMemory;
-      _x.descriptionFunction = describeInteger;
-      _x.hashFunction = hashDirect;
-      _x.isEqualFunction = equalDirect;
-    }
-  else		/* objects */
-    {
-      _x.acquireFunction = acquireRetainedObject;
-      _x.descriptionFunction = describeObject;
-      _x.hashFunction = hashObject;
-      _x.isEqualFunction = equalObject;
+        _x.relinquishFunction = relinquishRetainedMemory;
     }
 
-  return self;
+    /* Now we look at the personality options to determine other functions.
+     */
+    if (options & NSPointerFunctionsOpaquePersonality)
+    {
+        _x.acquireFunction = acquireExistingMemory;
+        _x.descriptionFunction = describePointer;
+        _x.hashFunction = hashShifted;
+        _x.isEqualFunction = equalDirect;
+    }
+    else if (options & NSPointerFunctionsObjectPointerPersonality)
+    {
+        _x.acquireFunction = acquireRetainedObject;
+        _x.descriptionFunction = describeObject;
+        _x.hashFunction = hashShifted;
+        _x.isEqualFunction = equalDirect;
+    }
+    else if (options & NSPointerFunctionsCStringPersonality)
+    {
+        _x.acquireFunction = acquireMallocMemory;
+        _x.descriptionFunction = describeString;
+        _x.hashFunction = hashString;
+        _x.isEqualFunction = equalString;
+    }
+    else if (options & NSPointerFunctionsStructPersonality)
+    {
+        _x.acquireFunction = acquireMallocMemory;
+        _x.descriptionFunction = describePointer;
+        _x.hashFunction = hashMemory;
+        _x.isEqualFunction = equalMemory;
+    }
+    else if (options & NSPointerFunctionsIntegerPersonality)
+    {
+        _x.acquireFunction = acquireExistingMemory;
+        _x.descriptionFunction = describeInteger;
+        _x.hashFunction = hashDirect;
+        _x.isEqualFunction = equalDirect;
+    }
+    else    /* objects */
+    {
+        _x.acquireFunction = acquireRetainedObject;
+        _x.descriptionFunction = describeObject;
+        _x.hashFunction = hashObject;
+        _x.isEqualFunction = equalObject;
+    }
+
+    return self;
 }
 
 - (void* (*)(const void *item,
-  NSUInteger (*size)(const void *item), BOOL shouldCopy)) acquireFunction
+             NSUInteger (*size)(const void *item), BOOL shouldCopy))acquireFunction
 {
-  return _x.acquireFunction;
+    return _x.acquireFunction;
 }
 
-- (NSString *(*)(const void *item)) descriptionFunction
+- (NSString *(*)(const void *item))descriptionFunction
 {
-  return _x.descriptionFunction;
+    return _x.descriptionFunction;
 }
 
 - (NSUInteger (*)(const void *item,
-  NSUInteger (*size)(const void *item))) hashFunction
+                  NSUInteger (*size)(const void *item)))hashFunction
 {
-  return _x.hashFunction;
+    return _x.hashFunction;
 }
 
 - (BOOL (*)(const void *item1, const void *item2,
-  NSUInteger (*size)(const void *item))) isEqualFunction
+            NSUInteger (*size)(const void *item)))isEqualFunction
 {
-  return _x.isEqualFunction;
+    return _x.isEqualFunction;
 }
 
 - (void (*)(const void *item,
-  NSUInteger (*size)(const void *item))) relinquishFunction
+            NSUInteger (*size)(const void *item)))relinquishFunction
 {
-  return _x.relinquishFunction;
+    return _x.relinquishFunction;
 }
 
-- (void) setAcquireFunction: (void* (*)(const void *item,
-  NSUInteger (*size)(const void *item), BOOL shouldCopy))func
+- (void)setAcquireFunction:(void* (*)(const void *item,
+                                      NSUInteger (*size)(const void *item), BOOL shouldCopy))func
 {
-  _x.acquireFunction = func;
+    _x.acquireFunction = func;
 }
 
-- (void) setDescriptionFunction: (NSString *(*)(const void *item))func
+- (void)setDescriptionFunction:(NSString *(*)(const void *item))func
 {
-  _x.descriptionFunction = func;
+    _x.descriptionFunction = func;
 }
 
-- (void) setHashFunction: (NSUInteger (*)(const void *item,
-  NSUInteger (*size)(const void *item)))func
+- (void)setHashFunction:(NSUInteger (*)(const void *item,
+                                        NSUInteger (*size)(const void *item)))func
 {
-  _x.hashFunction = func;
+    _x.hashFunction = func;
 }
 
-- (void) setIsEqualFunction: (BOOL (*)(const void *item1, const void *item2,
-  NSUInteger (*size)(const void *item)))func
+- (void)setIsEqualFunction:(BOOL (*)(const void *item1, const void *item2,
+                                     NSUInteger (*size)(const void *item)))func
 {
-  _x.isEqualFunction = func;
+    _x.isEqualFunction = func;
 }
 
-- (void) setRelinquishFunction: (void (*)(const void *item,
-  NSUInteger (*size)(const void *item))) func
+- (void)setRelinquishFunction:(void (*)(const void *item,
+                                        NSUInteger (*size)(const void *item)))func
 {
-  _x.relinquishFunction = func;
+    _x.relinquishFunction = func;
 }
 
-- (void) setSizeFunction: (NSUInteger (*)(const void *item))func
+- (void)setSizeFunction:(NSUInteger (*)(const void *item))func
 {
-  _x.sizeFunction = func;
+    _x.sizeFunction = func;
 }
 
-- (void) setUsesStrongWriteBarrier: (BOOL)flag
+- (void)setUsesStrongWriteBarrier:(BOOL)flag
 {
-  _x.options &=
-    ~(NSPointerFunctionsZeroingWeakMemory
-    |NSPointerFunctionsOpaqueMemory
-    |NSPointerFunctionsMallocMemory
-    |NSPointerFunctionsMachVirtualMemory);
+    _x.options &=
+        ~(NSPointerFunctionsZeroingWeakMemory
+          |NSPointerFunctionsOpaqueMemory
+          |NSPointerFunctionsMallocMemory
+          |NSPointerFunctionsMachVirtualMemory);
 }
 
-- (void) setUsesWeakReadAndWriteBarriers: (BOOL)flag
+- (void)setUsesWeakReadAndWriteBarriers:(BOOL)flag
 {
-  _x.options |= NSPointerFunctionsZeroingWeakMemory;
-  _x.options &=
-    ~(NSPointerFunctionsOpaqueMemory
-    |NSPointerFunctionsMallocMemory
-    |NSPointerFunctionsMachVirtualMemory);
+    _x.options |= NSPointerFunctionsZeroingWeakMemory;
+    _x.options &=
+        ~(NSPointerFunctionsOpaqueMemory
+          |NSPointerFunctionsMallocMemory
+          |NSPointerFunctionsMachVirtualMemory);
 }
 
-- (NSUInteger (*)(const void *item)) sizeFunction
+- (NSUInteger (*)(const void *item))sizeFunction
 {
-  return _x.sizeFunction;
+    return _x.sizeFunction;
 }
 
-- (BOOL) usesStrongWriteBarrier
+- (BOOL)usesStrongWriteBarrier
 {
-  if ((_x.options &
-    (NSPointerFunctionsZeroingWeakMemory
-    |NSPointerFunctionsOpaqueMemory
-    |NSPointerFunctionsMallocMemory
-    |NSPointerFunctionsMachVirtualMemory)) == NSPointerFunctionsStrongMemory)
-    return YES;
-  return NO;
+    if ((_x.options &
+         (NSPointerFunctionsZeroingWeakMemory
+          |NSPointerFunctionsOpaqueMemory
+          |NSPointerFunctionsMallocMemory
+          |NSPointerFunctionsMachVirtualMemory)) == NSPointerFunctionsStrongMemory) {
+        return YES;
+    }
+    return NO;
 }
 
-- (BOOL) usesWeakReadAndWriteBarriers
+- (BOOL)usesWeakReadAndWriteBarriers
 {
-  if (_x.options & NSPointerFunctionsZeroingWeakMemory)
-    return YES;
-  return NO;
+    if (_x.options & NSPointerFunctionsZeroingWeakMemory) {
+        return YES;
+    }
+    return NO;
 }
 
 @end

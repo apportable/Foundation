@@ -20,7 +20,7 @@
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
-   */
+ */
 
 #import "common.h"
 
@@ -30,11 +30,11 @@
 #import "GSPrivate.h"
 
 /*
- PENDING some string constants are scattered about in the class impl
+   PENDING some string constants are scattered about in the class impl
          files and should be moved here
          furthermore, the test for this in Testing/exported-strings.m
          needs to be updated
-*/
+ */
 
 
 /*
@@ -95,13 +95,13 @@ NSString *NSConnectionReplyMode = @"NSConnectionReplyMode";
 
 /* NSValueTransformer constants */
 NSString *const NSNegateBooleanTransformerName
-  = @"NSNegateBoolean";
+    = @"NSNegateBoolean";
 NSString *const NSIsNilTransformerName
-  = @"NSIsNil";
+    = @"NSIsNil";
 NSString *const NSIsNotNilTransformerName
-  = @"NSIsNotNil"; 
+    = @"NSIsNotNil";
 NSString *const NSUnarchiveFromDataTransformerName
-  = @"NSUnarchiveFromData";
+    = @"NSUnarchiveFromData";
 
 /* NSBundle */
 NSString *NSBundleDidLoadNotification = @"NSBundleDidLoadNotification";
@@ -227,88 +227,88 @@ NSString *NSClassDescriptionNeededForClassNotification = @"NSClassDescriptionNee
 void
 GSPrivateBuildStrings()
 {
-  static Class	NSStringClass = 0;
+    static Class NSStringClass = 0;
 
-  if (NSStringClass == 0)
+    if (NSStringClass == 0)
     {
-      NSStringClass = [NSString class];
+        NSStringClass = [NSString class];
 
-      /*
-       * Ensure that NSString is initialized ... because we are called
-       * from [NSObject +initialize] which might be executing as a
-       * result of a call to [NSString +initialize] !
-       * Use performSelector: to avoid compiler warning about clash of
-       * return value types in two different versions of initialize.
-       */
-      [NSStringClass performSelector: @selector(initialize)];
+        /*
+         * Ensure that NSString is initialized ... because we are called
+         * from [NSObject +initialize] which might be executing as a
+         * result of a call to [NSString +initialize] !
+         * Use performSelector: to avoid compiler warning about clash of
+         * return value types in two different versions of initialize.
+         */
+        [NSString initialize];
 
-      GS_REPLACE_CONSTANT_STRING(GSNetworkNotificationCenterType);
-      GS_REPLACE_CONSTANT_STRING(NSAMPMDesignation);
-      GS_REPLACE_CONSTANT_STRING(NSArgumentDomain);
-      GS_REPLACE_CONSTANT_STRING(NSBundleDidLoadNotification);
-      GS_REPLACE_CONSTANT_STRING(NSClassDescriptionNeededForClassNotification);
-      GS_REPLACE_CONSTANT_STRING(NSConnectionDidDieNotification);
-      GS_REPLACE_CONSTANT_STRING(NSConnectionDidInitializeNotification);
-      GS_REPLACE_CONSTANT_STRING(NSConnectionLocalCount);
-      GS_REPLACE_CONSTANT_STRING(NSConnectionProxyCount);
-      GS_REPLACE_CONSTANT_STRING(NSConnectionRepliesReceived);
-      GS_REPLACE_CONSTANT_STRING(NSConnectionRepliesSent);
-      GS_REPLACE_CONSTANT_STRING(NSConnectionReplyMode);
-      GS_REPLACE_CONSTANT_STRING(NSConnectionRequestsReceived);
-      GS_REPLACE_CONSTANT_STRING(NSConnectionRequestsSent);
-      GS_REPLACE_CONSTANT_STRING(NSCurrencyString);
-      GS_REPLACE_CONSTANT_STRING(NSCurrencySymbol);
-      GS_REPLACE_CONSTANT_STRING(NSDateFormatString);
-      GS_REPLACE_CONSTANT_STRING(NSDateTimeOrdering);
-      GS_REPLACE_CONSTANT_STRING(NSDecimalDigits);
-      GS_REPLACE_CONSTANT_STRING(NSDecimalSeparator);
-      GS_REPLACE_CONSTANT_STRING(NSEarlierTimeDesignations);
-      GS_REPLACE_CONSTANT_STRING(NSFormalName);
-      GS_REPLACE_CONSTANT_STRING(NSGlobalDomain);
-      GS_REPLACE_CONSTANT_STRING(NSHourNameDesignations);
-      GS_REPLACE_CONSTANT_STRING(NSInternationalCurrencyString);
-      GS_REPLACE_CONSTANT_STRING(NSLanguageCode);
-      GS_REPLACE_CONSTANT_STRING(NSLanguageName);
-      GS_REPLACE_CONSTANT_STRING(NSLaterTimeDesignations);
-      GS_REPLACE_CONSTANT_STRING(NSLoadedClasses);
-      GS_REPLACE_CONSTANT_STRING(GSLocale);
-      GS_REPLACE_CONSTANT_STRING(NSLocalNotificationCenterType);
-      GS_REPLACE_CONSTANT_STRING(NSMonthNameArray);
-      GS_REPLACE_CONSTANT_STRING(NSNegativeCurrencyFormatString);
-      GS_REPLACE_CONSTANT_STRING(NSNextDayDesignations);
-      GS_REPLACE_CONSTANT_STRING(NSNextNextDayDesignations);
-      GS_REPLACE_CONSTANT_STRING(NSPortDidBecomeInvalidNotification);
-      GS_REPLACE_CONSTANT_STRING(NSPositiveCurrencyFormatString);
-      GS_REPLACE_CONSTANT_STRING(NSPriorDayDesignations);
-      GS_REPLACE_CONSTANT_STRING(NSRegistrationDomain);
-      GS_REPLACE_CONSTANT_STRING(NSShortDateFormatString);
-      GS_REPLACE_CONSTANT_STRING(NSShortMonthNameArray);
-      GS_REPLACE_CONSTANT_STRING(NSShortTimeDateFormatString);
-      GS_REPLACE_CONSTANT_STRING(NSShortWeekDayNameArray);
-      GS_REPLACE_CONSTANT_STRING(NSShowNonLocalizedStrings);
-      GS_REPLACE_CONSTANT_STRING(NSTaskDidTerminateNotification);
-      GS_REPLACE_CONSTANT_STRING(NSThisDayDesignations);
-      GS_REPLACE_CONSTANT_STRING(NSThousandsSeparator);
-      GS_REPLACE_CONSTANT_STRING(NSThreadDidStartNotification);
-      GS_REPLACE_CONSTANT_STRING(NSThreadWillExitNotification);
-      GS_REPLACE_CONSTANT_STRING(NSTimeDateFormatString);
-      GS_REPLACE_CONSTANT_STRING(NSTimeFormatString);
-      GS_REPLACE_CONSTANT_STRING(NSUndoManagerCheckpointNotification);
-      GS_REPLACE_CONSTANT_STRING(NSUndoManagerDidOpenUndoGroupNotification);
-      GS_REPLACE_CONSTANT_STRING(NSUndoManagerDidRedoChangeNotification);
-      GS_REPLACE_CONSTANT_STRING(NSUndoManagerDidUndoChangeNotification);
-      GS_REPLACE_CONSTANT_STRING(NSUndoManagerWillCloseUndoGroupNotification);
-      GS_REPLACE_CONSTANT_STRING(NSUndoManagerWillRedoChangeNotification);
-      GS_REPLACE_CONSTANT_STRING(NSUndoManagerWillUndoChangeNotification);
-      GS_REPLACE_CONSTANT_STRING(NSURLFileScheme);
-      GS_REPLACE_CONSTANT_STRING(NSUserDefaultsDidChangeNotification);
-      GS_REPLACE_CONSTANT_STRING(NSWeekDayNameArray);
-      GS_REPLACE_CONSTANT_STRING(NSWillBecomeMultiThreadedNotification);
-      GS_REPLACE_CONSTANT_STRING(NSYearMonthWeekDesignations);
+        GS_REPLACE_CONSTANT_STRING(GSNetworkNotificationCenterType);
+        GS_REPLACE_CONSTANT_STRING(NSAMPMDesignation);
+        GS_REPLACE_CONSTANT_STRING(NSArgumentDomain);
+        GS_REPLACE_CONSTANT_STRING(NSBundleDidLoadNotification);
+        GS_REPLACE_CONSTANT_STRING(NSClassDescriptionNeededForClassNotification);
+        GS_REPLACE_CONSTANT_STRING(NSConnectionDidDieNotification);
+        GS_REPLACE_CONSTANT_STRING(NSConnectionDidInitializeNotification);
+        GS_REPLACE_CONSTANT_STRING(NSConnectionLocalCount);
+        GS_REPLACE_CONSTANT_STRING(NSConnectionProxyCount);
+        GS_REPLACE_CONSTANT_STRING(NSConnectionRepliesReceived);
+        GS_REPLACE_CONSTANT_STRING(NSConnectionRepliesSent);
+        GS_REPLACE_CONSTANT_STRING(NSConnectionReplyMode);
+        GS_REPLACE_CONSTANT_STRING(NSConnectionRequestsReceived);
+        GS_REPLACE_CONSTANT_STRING(NSConnectionRequestsSent);
+        GS_REPLACE_CONSTANT_STRING(NSCurrencyString);
+        GS_REPLACE_CONSTANT_STRING(NSCurrencySymbol);
+        GS_REPLACE_CONSTANT_STRING(NSDateFormatString);
+        GS_REPLACE_CONSTANT_STRING(NSDateTimeOrdering);
+        GS_REPLACE_CONSTANT_STRING(NSDecimalDigits);
+        GS_REPLACE_CONSTANT_STRING(NSDecimalSeparator);
+        GS_REPLACE_CONSTANT_STRING(NSEarlierTimeDesignations);
+        GS_REPLACE_CONSTANT_STRING(NSFormalName);
+        GS_REPLACE_CONSTANT_STRING(NSGlobalDomain);
+        GS_REPLACE_CONSTANT_STRING(NSHourNameDesignations);
+        GS_REPLACE_CONSTANT_STRING(NSInternationalCurrencyString);
+        GS_REPLACE_CONSTANT_STRING(NSLanguageCode);
+        GS_REPLACE_CONSTANT_STRING(NSLanguageName);
+        GS_REPLACE_CONSTANT_STRING(NSLaterTimeDesignations);
+        GS_REPLACE_CONSTANT_STRING(NSLoadedClasses);
+        GS_REPLACE_CONSTANT_STRING(GSLocale);
+        GS_REPLACE_CONSTANT_STRING(NSLocalNotificationCenterType);
+        GS_REPLACE_CONSTANT_STRING(NSMonthNameArray);
+        GS_REPLACE_CONSTANT_STRING(NSNegativeCurrencyFormatString);
+        GS_REPLACE_CONSTANT_STRING(NSNextDayDesignations);
+        GS_REPLACE_CONSTANT_STRING(NSNextNextDayDesignations);
+        GS_REPLACE_CONSTANT_STRING(NSPortDidBecomeInvalidNotification);
+        GS_REPLACE_CONSTANT_STRING(NSPositiveCurrencyFormatString);
+        GS_REPLACE_CONSTANT_STRING(NSPriorDayDesignations);
+        GS_REPLACE_CONSTANT_STRING(NSRegistrationDomain);
+        GS_REPLACE_CONSTANT_STRING(NSShortDateFormatString);
+        GS_REPLACE_CONSTANT_STRING(NSShortMonthNameArray);
+        GS_REPLACE_CONSTANT_STRING(NSShortTimeDateFormatString);
+        GS_REPLACE_CONSTANT_STRING(NSShortWeekDayNameArray);
+        GS_REPLACE_CONSTANT_STRING(NSShowNonLocalizedStrings);
+        GS_REPLACE_CONSTANT_STRING(NSTaskDidTerminateNotification);
+        GS_REPLACE_CONSTANT_STRING(NSThisDayDesignations);
+        GS_REPLACE_CONSTANT_STRING(NSThousandsSeparator);
+        GS_REPLACE_CONSTANT_STRING(NSThreadDidStartNotification);
+        GS_REPLACE_CONSTANT_STRING(NSThreadWillExitNotification);
+        GS_REPLACE_CONSTANT_STRING(NSTimeDateFormatString);
+        GS_REPLACE_CONSTANT_STRING(NSTimeFormatString);
+        GS_REPLACE_CONSTANT_STRING(NSUndoManagerCheckpointNotification);
+        GS_REPLACE_CONSTANT_STRING(NSUndoManagerDidOpenUndoGroupNotification);
+        GS_REPLACE_CONSTANT_STRING(NSUndoManagerDidRedoChangeNotification);
+        GS_REPLACE_CONSTANT_STRING(NSUndoManagerDidUndoChangeNotification);
+        GS_REPLACE_CONSTANT_STRING(NSUndoManagerWillCloseUndoGroupNotification);
+        GS_REPLACE_CONSTANT_STRING(NSUndoManagerWillRedoChangeNotification);
+        GS_REPLACE_CONSTANT_STRING(NSUndoManagerWillUndoChangeNotification);
+        GS_REPLACE_CONSTANT_STRING(NSURLFileScheme);
+        GS_REPLACE_CONSTANT_STRING(NSUserDefaultsDidChangeNotification);
+        GS_REPLACE_CONSTANT_STRING(NSWeekDayNameArray);
+        GS_REPLACE_CONSTANT_STRING(NSWillBecomeMultiThreadedNotification);
+        GS_REPLACE_CONSTANT_STRING(NSYearMonthWeekDesignations);
     }
 }
 
 
-
 /* For bug in gcc 3.1. See NSByteOrder.h */
-void _gcc3_1_hack(void){}
+void _gcc3_1_hack(void){
+}

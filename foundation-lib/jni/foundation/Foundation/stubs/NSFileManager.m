@@ -97,10 +97,14 @@ static NSFileManager *defaultManager = nil;
   return nil;
 }
 
+- (BOOL)copyItemAtPath:(NSString *)srcPath toPath:(NSString *)dstPath error:(NSError **)error {
+  NSInvalidAbstractInvocation();
+  return NO;
+}
+
 -(BOOL)readContentsOfFile:(NSString *)path bytes:(const void **)bytes length:(NSUInteger*)length {
   NSInvalidAbstractInvocation();
   return NO;
-
 }
 
 -(BOOL)writeContentsOfFile:(NSString *)path bytes:(const void *)bytes length:(NSUInteger)length atomically:(BOOL)atomically {

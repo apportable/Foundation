@@ -23,10 +23,10 @@
    Boston, MA 02111 USA.
 
    $Date: 2010-09-10 05:47:04 -0700 (Fri, 10 Sep 2010) $ $Revision: 31293 $
-*/
+ */
 
 #import "common.h"
-#define	EXPOSE_GSLock_IVARS	1
+#define EXPOSE_GSLock_IVARS 1
 #import "Foundation/NSException.h"
 #import "Foundation/NSLock.h"
 #import "Foundation/NSNotification.h"
@@ -45,135 +45,134 @@
  * locking inefficiencies when used in a single threaded application,
  * without having to worry about dealing with the issue yourself.
  */
-@implementation	GSLazyLock
+@implementation GSLazyLock
 
 /**
  * Do not use this method ... it is used internally to handle the transition
  * from a single threaded system to a multi threaded one.
  */
-- (void) _becomeThreaded: (NSNotification*)n
+- (void)_becomeThreaded:(NSNotification*)n
 {
-  [[NSNotificationCenter defaultCenter] removeObserver: self];
-  isa = [NSLock class];
-  if (locked == YES)
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    object_setClass(self, [NSLock class]);
+    if (locked == YES)
     {
-      if ([self tryLock] == NO)
-	{
-	  [NSException raise: NSInternalInconsistencyException
-		      format: @"Failed to lock mutex"];
-	}
+        if ([self tryLock] == NO)
+        {
+            [NSException raise:NSInternalInconsistencyException
+             format:@"Failed to lock mutex"];
+        }
     }
-  /*
-   * While we have changed 'isa', it's possible someone might have
-   * cached our old method implementations, so we set the 'locked'
-   * ivar to a value to tell the old method implementations to use
-   * the superclass implementatins.
-   */
-  locked = -1;
+    /*
+     * While we have changed 'isa', it's possible someone might have
+     * cached our old method implementations, so we set the 'locked'
+     * ivar to a value to tell the old method implementations to use
+     * the superclass implementatins.
+     */
+    locked = -1;
 }
 
-- (void) finalize
+- (void)finalize
 {
-  [[NSNotificationCenter defaultCenter] removeObserver: self];
-  [super finalize];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [super finalize];
 }
 
-- (id) init
+- (id)init
 {
-  self = [super init];
+    self = [super init];
 
-  if ([NSThread isMultiThreaded] == YES)
+    if ([NSThread isMultiThreaded] == YES)
     {
-      DESTROY(self);
-      self = [NSLock new];
+        DESTROY(self);
+        self = [NSLock new];
     }
-  else if (self != nil)
+    else if (self != nil)
     {
-      locked = NO;
-      [[NSNotificationCenter defaultCenter]
-	addObserver: self
-	selector: @selector(_becomeThreaded:)
-	name: NSWillBecomeMultiThreadedNotification
-	object: nil];
+        locked = NO;
+        [[NSNotificationCenter defaultCenter]
+         addObserver:self
+         selector:@selector(_becomeThreaded:)
+         name:NSWillBecomeMultiThreadedNotification
+         object:nil];
     }
-  return self;
+    return self;
 }
 
-- (void) lock
+- (void)lock
 {
-  if (locked == NO)
+    if (locked == NO)
     {
-      locked = YES;
+        locked = YES;
     }
-  else if (locked == YES)
+    else if (locked == YES)
     {
-      [NSException raise: NSGenericException
-		  format: @"lock: when already locked"];
+        [NSException raise:NSGenericException
+         format:@"lock: when already locked"];
     }
-  else
+    else
     {
-      [super lock];
-    }
-}
-
-- (BOOL) lockBeforeDate: (NSDate*)limit
-{
-  BOOL	result;
-
-  if (locked == NO)
-    {
-      result = YES;
-    }
-  else if (locked == YES)
-    {
-      result = NO;
-      [NSException raise: NSGenericException
-		  format: @"lock: when already locked"];
-    }
-  else
-    {
-      result = [super lockBeforeDate: limit];
-    }
-  return result;
-}
-
-- (BOOL) tryLock
-{
-  if (locked == NO)
-    {
-      locked = YES;
-      return YES;
-    }
-  else if (locked == YES)
-    {
-      return NO;
-    }
-  else
-    {
-      return [super tryLock];
+        [super lock];
     }
 }
 
-- (void) unlock
+- (BOOL)lockBeforeDate:(NSDate*)limit
 {
-  if (locked == YES)
+    BOOL result;
+
+    if (locked == NO)
     {
-      locked = NO;
+        result = YES;
     }
-  else if (locked == NO)
+    else if (locked == YES)
     {
-      [NSException raise: NSGenericException
-		  format: @"unlock: when already unlocked"];
+        result = NO;
+        [NSException raise:NSGenericException
+         format:@"lock: when already locked"];
     }
-  else
+    else
     {
-      [super unlock];
+        result = [super lockBeforeDate:limit];
+    }
+    return result;
+}
+
+- (BOOL)tryLock
+{
+    if (locked == NO)
+    {
+        locked = YES;
+        return YES;
+    }
+    else if (locked == YES)
+    {
+        return NO;
+    }
+    else
+    {
+        return [super tryLock];
+    }
+}
+
+- (void)unlock
+{
+    if (locked == YES)
+    {
+        locked = NO;
+    }
+    else if (locked == NO)
+    {
+        [NSException raise:NSGenericException
+         format:@"unlock: when already unlocked"];
+    }
+    else
+    {
+        [super unlock];
     }
 }
 
 @end
 
-
 
 /**
  * This implements a class which, when used in single-threaded mode,
@@ -187,114 +186,114 @@
  * locking inefficiencies when used in a single threaded application,
  * without having to worry about dealing with the issue yourself.
  */
-@implementation	GSLazyRecursiveLock
+@implementation GSLazyRecursiveLock
 
 /**
  * Do not use this method ... it is used internally to handle the transition
  * from a single threaded system to a multi threaded one.
  */
-- (void) _becomeThreaded: (NSNotification*)n
+- (void)_becomeThreaded:(NSNotification*)n
 {
-  [[NSNotificationCenter defaultCenter] removeObserver: self];
-  isa = [NSRecursiveLock class];
-  while (counter-- > 0)
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    object_setClass(self, [NSRecursiveLock class]);
+    while (counter-- > 0)
     {
-      if ([self tryLock] == NO)
-	{
-	  [NSException raise: NSInternalInconsistencyException
-		      format: @"Failed to lock mutex"];
-	}
+        if ([self tryLock] == NO)
+        {
+            [NSException raise:NSInternalInconsistencyException
+             format:@"Failed to lock mutex"];
+        }
     }
-  /*
-   * While we have changed 'isa', it's possible someone might have
-   * cached our old method implementations, so we set the 'locked'
-   * ivar to a value to tell the old method implementations to use
-   * the superclass implementatins.
-   */
-  counter = -1;
+    /*
+     * While we have changed 'isa', it's possible someone might have
+     * cached our old method implementations, so we set the 'locked'
+     * ivar to a value to tell the old method implementations to use
+     * the superclass implementatins.
+     */
+    counter = -1;
 }
 
-- (void) finalize
+- (void)finalize
 {
-  [[NSNotificationCenter defaultCenter] removeObserver: self];
-  [super finalize];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [super finalize];
 }
 
-- (id) init
+- (id)init
 {
-  self = [super init];
+    self = [super init];
 
-  if ([NSThread isMultiThreaded] == YES)
+    if ([NSThread isMultiThreaded] == YES)
     {
-      DESTROY(self);
-      self = [NSRecursiveLock new];
+        DESTROY(self);
+        self = [NSRecursiveLock new];
     }
-  else
+    else
     {
-      if (self != nil)
-	{
-	  [[NSNotificationCenter defaultCenter]
-	    addObserver: self
-	    selector: @selector(_becomeThreaded:)
-	    name: NSWillBecomeMultiThreadedNotification
-	    object: nil];
-	}
+        if (self != nil)
+        {
+            [[NSNotificationCenter defaultCenter]
+             addObserver:self
+             selector:@selector(_becomeThreaded:)
+             name:NSWillBecomeMultiThreadedNotification
+             object:nil];
+        }
     }
-  return self;
+    return self;
 }
 
-- (void) lock
+- (void)lock
 {
-  if (counter >= 0)
+    if (counter >= 0)
     {
-      counter++;
+        counter++;
     }
-  else
+    else
     {
-      [super lock];
-    }
-}
-
-- (BOOL) lockBeforeDate: (NSDate*)limit
-{
-  if (counter >= 0)
-    {
-      counter++;
-      return YES;
-    }
-  else
-    {
-      return [super lockBeforeDate: limit];
+        [super lock];
     }
 }
 
-- (BOOL) tryLock
+- (BOOL)lockBeforeDate:(NSDate*)limit
 {
-  if (counter >= 0)
+    if (counter >= 0)
     {
-      counter++;
-      return YES;
+        counter++;
+        return YES;
     }
-  else
+    else
     {
-      return [super tryLock];
+        return [super lockBeforeDate:limit];
     }
 }
 
-- (void) unlock
+- (BOOL)tryLock
 {
-  if (counter > 0)
+    if (counter >= 0)
     {
-      counter--;
+        counter++;
+        return YES;
     }
-  else if (counter == 0)
+    else
     {
-      [NSException raise: NSGenericException
-		  format: @"unlock: failed to unlock mutex"];
+        return [super tryLock];
     }
-  else
+}
+
+- (void)unlock
+{
+    if (counter > 0)
     {
-      [super unlock];
+        counter--;
+    }
+    else if (counter == 0)
+    {
+        [NSException raise:NSGenericException
+         format:@"unlock: failed to unlock mutex"];
+    }
+    else
+    {
+        [super unlock];
     }
 }
 

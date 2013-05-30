@@ -35,10 +35,10 @@
       </p>
       <p>
         The underlying C library handles high performance parsing, while
-	the ObjectiveC classes provide ease of use/integration.
+    the ObjectiveC classes provide ease of use/integration.
       </p>
    </chapter>
-*/
+ */
 
 #include <string.h>
 #import "common.h"
@@ -46,7 +46,7 @@
 #import "GNUstepBase/Unicode.h"
 
 
-#ifdef	HAVE_LIBXML
+#ifdef  HAVE_LIBXML
 
 // #undef	HAVE_LIBXML_SAX2_H
 #import "GNUstepBase/GSObjCRuntime.h"
@@ -72,7 +72,7 @@
 
 /* Avoid problems on systems where the xml headers use 'id'
  */
-#define	id	GSXMLID
+#define id  GSXMLID
 
 /* libxml headers */
 #include <libxml/tree.h>
@@ -80,14 +80,14 @@
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
 #include <libxml/catalog.h>
-#ifdef	HAVE_LIBXML_SAX2_H
+#ifdef  HAVE_LIBXML_SAX2_H
 #include <libxml/SAX2.h>
 #else
-# define	xmlSAX2GetColumnNumber	getColumnNumber
-# define	xmlSAX2GetLineNumber	getLineNumber
-# define	xmlSAX2GetPublicId	getPublicId
-# define	xmlSAX2GetSystemId	getSystemId
-# define	xmlSAX2ResolveEntity 	resolveEntity
+# define    xmlSAX2GetColumnNumber  getColumnNumber
+# define    xmlSAX2GetLineNumber    getLineNumber
+# define    xmlSAX2GetPublicId  getPublicId
+# define    xmlSAX2GetSystemId  getSystemId
+# define    xmlSAX2ResolveEntity    resolveEntity
 #endif
 #include <libxml/HTMLparser.h>
 #include <libxml/xmlmemory.h>
@@ -101,7 +101,7 @@
 #include <libxslt/xsltutils.h>
 #endif /* HAVE_LIBXSLT */
 
-#undef	id
+#undef  id
 
 
 /*
@@ -116,94 +116,94 @@ static SEL usSel;
 /*
  * Macro to cast results to correct type for libxml2
  */
-#define	UTF8STRING(X)	((const unsigned char*)[X UTF8String])
+#define UTF8STRING(X)   ((const unsigned char*)[X UTF8String])
 
 inline static NSString*
 UTF8Str(const unsigned char *bytes)
 {
-  // stringWithUTF8String: raises on OSX if you feed it with a NULL string.
-  if ((bytes == NULL)) {
-    return nil;
-  }
-  return (*usImp)(NSString_class, usSel, bytes);
+    // stringWithUTF8String: raises on OSX if you feed it with a NULL string.
+    if ((bytes == NULL)) {
+        return nil;
+    }
+    return (*usImp)(NSString_class, usSel, bytes);
 }
 
 inline static NSString*
 UTF8StrLen(const unsigned char *bytes, unsigned length)
 {
-  NSString	*str;
+    NSString  *str;
 
-  str = [[NSString_class alloc] initWithBytes: bytes
-				       length: length
-				     encoding: NSUTF8StringEncoding];
-  return AUTORELEASE(str);
+    str = [[NSString_class alloc] initWithBytes:bytes
+           length:length
+           encoding:NSUTF8StringEncoding];
+    return AUTORELEASE(str);
 }
 
 static BOOL cacheDone = NO;
 
 #ifdef NeXT_Foundation_LIBRARY
 @interface NSObject (MissingFromMacOSX)
-+ (IMP) methodForSelector: (SEL)aSelector;
++ (IMP)methodForSelector:(SEL)aSelector;
 @end
 #endif
 
 static char * xml_strdup(const char *from)
 {
-  unsigned	len = (from == 0) ? 1 : (strlen(from) + 1);
-  char		*to = malloc(len);
-  strcpy(to, from);
-  return to;
+    unsigned len = (from == 0) ? 1 : (strlen(from) + 1);
+    char      *to = malloc(len);
+    strcpy(to, from);
+    return to;
 }
 
 static void
 setupCache()
 {
-  if (cacheDone == NO)
+    if (cacheDone == NO)
     {
-      cacheDone = YES;
-      xmlMemSetup(free, malloc, realloc, xml_strdup);
-      xmlInitializeCatalog();
+        cacheDone = YES;
+        xmlMemSetup(free, malloc, realloc, xml_strdup);
+        xmlInitializeCatalog();
 
-#if	HAVE_LIBXML_SAX2_H
-      xmlDefaultSAXHandlerInit();
+#if HAVE_LIBXML_SAX2_H
+        xmlDefaultSAXHandlerInit();
 #endif
-      NSString_class = [NSString class];
-      usSel = @selector(stringWithUTF8String:);
-      usImp = [NSString_class methodForSelector: usSel];
-      treeClass = [GSTreeSAXHandler class];
+        NSString_class = [NSString class];
+        usSel = @selector(stringWithUTF8String:);
+        usImp = [NSString_class methodForSelector:usSel];
+        treeClass = [GSTreeSAXHandler class];
     }
 }
 
 static xmlParserInputPtr
 loadEntityFunction(void *ctx,
-  const unsigned char *eid, const unsigned char *url);
+                   const unsigned char *eid, const unsigned char *url);
 
-@interface GSXPathObject(Private)
-+ (id) _newWithNativePointer: (xmlXPathObject *)lib
-                     context: (GSXPathContext *)context;
+@interface GSXPathObject (Private)
++ (id)_newWithNativePointer:(xmlXPathObject *)lib
+    context:(GSXPathContext *)context;
 @end
 
 @interface GSXMLDocument (GSPrivate)
-- (id) _initFrom: (void*)data parent: (id)p ownsLib: (BOOL)f;
+- (id)_initFrom:(void*)data parent:(id)p ownsLib:(BOOL)f;
 @end
 
 @interface GSXMLNamespace (GSPrivate)
-- (id) _initFrom: (void*)data parent: (id)p;
+- (id)_initFrom:(void*)data parent:(id)p;
 @end
 
 @interface GSXMLNode (GSPrivate)
-- (id) _initFrom: (void*)data parent: (id)p;
+- (id)_initFrom:(void*)data parent:(id)p;
 @end
 
 @interface GSXMLParser (Private)
-- (BOOL) _initLibXML;
-- (NSMutableString*) _messages;
-- (void) _parseChunk: (NSData*)data;
+- (BOOL)_initLibXML;
+- (NSMutableString*)_messages;
+- (void)_parseChunk:(NSData*)data;
 @end
 
 @interface GSSAXHandler (Private)
-- (BOOL) _initLibXML;
-- (void) _setParser: (GSXMLParser*)value;
+- (BOOL)_initLibXML;
+- (void)_setParser:(GSXMLParser*)value;
 @end
 
 /**
@@ -215,123 +215,124 @@ loadEntityFunction(void *ctx,
  */
 @implementation GSXMLAttribute
 
-static NSMapTable	*attrNames = 0;
+static NSMapTable   *attrNames = 0;
 
-+ (void) initialize
++ (void)initialize
 {
-  if (self == [GSXMLAttribute class])
+    if (self == [GSXMLAttribute class])
     {
-      if (cacheDone == NO)
-	setupCache();
-      attrNames = NSCreateMapTable(NSIntMapKeyCallBacks,
-	NSNonRetainedObjectMapValueCallBacks, 0);
-      NSMapInsert(attrNames,
-	(void*)XML_ATTRIBUTE_CDATA, (void*)@"XML_ATTRIBUTE_CDATA");
-      NSMapInsert(attrNames,
-	(void*)XML_ATTRIBUTE_ID, (void*)@"XML_ATTRIBUTE_ID");
-      NSMapInsert(attrNames,
-	(void*)XML_ATTRIBUTE_IDREF, (void*)@"XML_ATTRIBUTE_IDREF");
-      NSMapInsert(attrNames,
-	(void*)XML_ATTRIBUTE_IDREFS, (void*)@"XML_ATTRIBUTE_IDREFS");
-      NSMapInsert(attrNames,
-	(void*)XML_ATTRIBUTE_ENTITY, (void*)@"XML_ATTRIBUTE_ENTITY");
-      NSMapInsert(attrNames,
-	(void*)XML_ATTRIBUTE_ENTITIES, (void*)@"XML_ATTRIBUTE_ENTITIES");
-      NSMapInsert(attrNames,
-	(void*)XML_ATTRIBUTE_NMTOKEN, (void*)@"XML_ATTRIBUTE_NMTOKEN");
-      NSMapInsert(attrNames,
-	(void*)XML_ATTRIBUTE_NMTOKENS, (void*)@"XML_ATTRIBUTE_NMTOKENS");
-      NSMapInsert(attrNames,
-	(void*)XML_ATTRIBUTE_ENUMERATION, (void*)@"XML_ATTRIBUTE_ENUMERATION");
-      NSMapInsert(attrNames,
-	(void*)XML_ATTRIBUTE_NOTATION, (void*)@"XML_ATTRIBUTE_NOTATION");
+        if (cacheDone == NO) {
+            setupCache();
+        }
+        attrNames = NSCreateMapTable(NSIntMapKeyCallBacks,
+                                     NSNonRetainedObjectMapValueCallBacks, 0);
+        NSMapInsert(attrNames,
+                    (void*)XML_ATTRIBUTE_CDATA, (void*)@"XML_ATTRIBUTE_CDATA");
+        NSMapInsert(attrNames,
+                    (void*)XML_ATTRIBUTE_ID, (void*)@"XML_ATTRIBUTE_ID");
+        NSMapInsert(attrNames,
+                    (void*)XML_ATTRIBUTE_IDREF, (void*)@"XML_ATTRIBUTE_IDREF");
+        NSMapInsert(attrNames,
+                    (void*)XML_ATTRIBUTE_IDREFS, (void*)@"XML_ATTRIBUTE_IDREFS");
+        NSMapInsert(attrNames,
+                    (void*)XML_ATTRIBUTE_ENTITY, (void*)@"XML_ATTRIBUTE_ENTITY");
+        NSMapInsert(attrNames,
+                    (void*)XML_ATTRIBUTE_ENTITIES, (void*)@"XML_ATTRIBUTE_ENTITIES");
+        NSMapInsert(attrNames,
+                    (void*)XML_ATTRIBUTE_NMTOKEN, (void*)@"XML_ATTRIBUTE_NMTOKEN");
+        NSMapInsert(attrNames,
+                    (void*)XML_ATTRIBUTE_NMTOKENS, (void*)@"XML_ATTRIBUTE_NMTOKENS");
+        NSMapInsert(attrNames,
+                    (void*)XML_ATTRIBUTE_ENUMERATION, (void*)@"XML_ATTRIBUTE_ENUMERATION");
+        NSMapInsert(attrNames,
+                    (void*)XML_ATTRIBUTE_NOTATION, (void*)@"XML_ATTRIBUTE_NOTATION");
     }
 }
 
-+ (NSInteger) typeFromDescription: (NSString*)desc
++ (NSInteger)typeFromDescription:(NSString*)desc
 {
-  NSMapEnumerator	enumerator;
-  NSString		*val;
-  void			*key;
+    NSMapEnumerator enumerator;
+    NSString      *val;
+    void          *key;
 
-  enumerator = NSEnumerateMapTable(attrNames);
-  while (NSNextMapEnumeratorPair(&enumerator, &key, (void**)&val))
+    enumerator = NSEnumerateMapTable(attrNames);
+    while (NSNextMapEnumeratorPair(&enumerator, &key, (void**)&val))
     {
-      if ([desc isEqual: val] == YES)
-	{
-	  return (NSInteger)(intptr_t)key;
-	}
+        if ([desc isEqual:val] == YES)
+        {
+            return (NSInteger)(intptr_t)key;
+        }
     }
-  return -1;
+    return -1;
 }
 
-+ (NSString*) descriptionFromType: (NSInteger)type
++ (NSString*)descriptionFromType:(NSInteger)type
 {
-  NSString	*desc = (NSString*)NSMapGet(attrNames, (void*)(intptr_t)type);
+    NSString  *desc = (NSString*)NSMapGet(attrNames, (void*)(intptr_t)type);
 
-  return desc;
+    return desc;
 }
 
-- (NSInteger) type
+- (NSInteger)type
 {
-  return (NSInteger)((xmlAttrPtr)(lib))->atype;
+    return (NSInteger)((xmlAttrPtr)(lib))->atype;
 }
 
-- (NSString*) typeDescription
+- (NSString*)typeDescription
 {
-  NSString	*desc;
+    NSString  *desc;
 
-  desc = (NSString*)NSMapGet(attrNames, (void*)(intptr_t)[self type]);
-  if (desc == nil)
+    desc = (NSString*)NSMapGet(attrNames, (void*)(intptr_t)[self type]);
+    if (desc == nil)
     {
-      desc = @"Unknown attribute type";
+        desc = @"Unknown attribute type";
     }
-  return desc;
+    return desc;
 }
 
 /**
  * Return the next sibling node ... another GSXMLAttribute instance.
  */
-- (GSXMLNode*) next
+- (GSXMLNode*)next
 {
-  if (((xmlAttrPtr)(lib))->next != NULL)
+    if (((xmlAttrPtr)(lib))->next != NULL)
     {
-      return AUTORELEASE([[GSXMLAttribute alloc]
-        _initFrom: ((xmlAttrPtr)(lib))->next parent: self]);
+        return AUTORELEASE([[GSXMLAttribute alloc]
+                            _initFrom:((xmlAttrPtr)(lib))->next parent:self]);
     }
-  else
+    else
     {
-      return nil;
+        return nil;
     }
 }
 
 /**
  * Return the previous sibling node ... another GSXMLAttribute instance.
  */
-- (GSXMLNode*) previous
+- (GSXMLNode*)previous
 {
-  if (((xmlAttrPtr)(lib))->prev != NULL)
+    if (((xmlAttrPtr)(lib))->prev != NULL)
     {
-      return AUTORELEASE([[GSXMLAttribute alloc]
-        _initFrom: ((xmlAttrPtr)(lib))->prev parent: self]);
+        return AUTORELEASE([[GSXMLAttribute alloc]
+                            _initFrom:((xmlAttrPtr)(lib))->prev parent:self]);
     }
-  else
+    else
     {
-      return nil;
+        return nil;
     }
 }
 
 /**
  * Returns the string value of the attribute.
  */
-- (NSString*) value
+- (NSString*)value
 {
-  if (((xmlNodePtr)lib)->children != NULL
-    && ((xmlNodePtr)lib)->children->content != NULL)
+    if (((xmlNodePtr)lib)->children != NULL
+        && ((xmlNodePtr)lib)->children->content != NULL)
     {
-      return UTF8Str(((xmlNodePtr)(lib))->children->content);
+        return UTF8Str(((xmlNodePtr)(lib))->children->content);
     }
-  return nil;
+    return nil;
 }
 
 @end
@@ -357,91 +358,92 @@ static NSMapTable	*attrNames = 0;
  * [n1 makeChildWithNamespace: nil name: @"key" content: @"Pets Names"];
  * </example>
  */
-+ (GSXMLDocument*) documentWithVersion: (NSString*)version
++ (GSXMLDocument*)documentWithVersion:(NSString*)version
 {
-  void		*data = xmlNewDoc(UTF8STRING(version));
-  GSXMLDocument	*document = nil;
+    void      *data = xmlNewDoc(UTF8STRING(version));
+    GSXMLDocument *document = nil;
 
-  if (data == 0)
+    if (data == 0)
     {
-      NSLog(@"Can't create GSXMLDocument object");
+        NSLog(@"Can't create GSXMLDocument object");
     }
-  else
+    else
     {
-      document = [GSXMLDocument alloc];
-      document = [document _initFrom: data parent: nil ownsLib: YES];
+        document = [GSXMLDocument alloc];
+        document = [document _initFrom:data parent:nil ownsLib:YES];
     }
-  return AUTORELEASE(document);
+    return AUTORELEASE(document);
 }
 
-+ (void) initialize
++ (void)initialize
 {
-  if (cacheDone == NO)
-    setupCache();
-}
-
-- (id) copyWithZone: (NSZone*)z
-{
-  return RETAIN(self);
-}
-
-- (void) dealloc
-{
-  if (_ownsLib == YES && lib != NULL)
-    {
-      xmlFreeDoc(lib);
+    if (cacheDone == NO) {
+        setupCache();
     }
-  RELEASE(_parent);
-  [super dealloc];
+}
+
+- (id)copyWithZone:(NSZone*)z
+{
+    return RETAIN(self);
+}
+
+- (void)dealloc
+{
+    if (_ownsLib == YES && lib != NULL)
+    {
+        xmlFreeDoc(lib);
+    }
+    RELEASE(_parent);
+    [super dealloc];
 }
 
 /**
  * Returns a string representation of the document (ie the XML)
  * or nil if the document does not have reasonable contents.
  */
-- (NSString*) description
+- (NSString*)description
 {
-  NSString	*string = nil;
-  xmlChar	*buf = NULL;
-  int		length;
+    NSString  *string = nil;
+    xmlChar   *buf = NULL;
+    int length;
 
-  xmlDocDumpFormatMemoryEnc(lib, &buf, &length, "utf-8", 1);
+    xmlDocDumpFormatMemoryEnc(lib, &buf, &length, "utf-8", 1);
 
-  if (buf != 0 && length > 0)
+    if (buf != 0 && length > 0)
     {
-      string = UTF8StrLen(buf, length);
-      free(buf);
+        string = UTF8StrLen(buf, length);
+        free(buf);
     }
-  return string;
+    return string;
 }
 
 /**
  * Returns the name of the encoding for this document.
  */
-- (NSString*) encoding
+- (NSString*)encoding
 {
-  return UTF8Str(((xmlDocPtr)(lib))->encoding);
+    return UTF8Str(((xmlDocPtr)(lib))->encoding);
 }
 
-- (NSUInteger) hash
+- (NSUInteger)hash
 {
-  return (((NSUInteger)(intptr_t)lib) >> 3);
+    return (((NSUInteger)(intptr_t)lib) >> 3);
 }
 
-- (id) init
+- (id)init
 {
-  NSLog(@"GSXMLDocument: calling -init is not legal");
-  DESTROY(self);
-  return nil;
+    NSLog(@"GSXMLDocument: calling -init is not legal");
+    DESTROY(self);
+    return nil;
 }
 
 /**
  * Returns a pointer to the raw libxml data used by this document.<br />
  * Only for use by libxml experts!
  */
-- (void*) lib
+- (void*)lib
 {
-  return lib;
+    return lib;
 }
 
 /**
@@ -456,27 +458,27 @@ static NSMapTable	*attrNames = 0;
  * n1 = [[d root] makeChildWithNamespace: nil name: @"dict" content: nil];
  * </example>
  */
-- (GSXMLNode*) makeNodeWithNamespace: (GSXMLNamespace*)ns
-				name: (NSString*)name
-			     content: (NSString*)content
+- (GSXMLNode*)makeNodeWithNamespace:(GSXMLNamespace*)ns
+    name:(NSString*)name
+    content:(NSString*)content
 {
-  GSXMLNode	*n = [GSXMLNode alloc];
+    GSXMLNode *n = [GSXMLNode alloc];
 
-  n = [n _initFrom:
-    xmlNewDocNode(lib, [ns lib], UTF8STRING(name), UTF8STRING(content))
-    parent: self];
-  return AUTORELEASE(n);
+    n = [n _initFrom:
+         xmlNewDocNode(lib, [ns lib], UTF8STRING(name), UTF8STRING(content))
+         parent:self];
+    return AUTORELEASE(n);
 }
 
 /**
  * Returns the root node of the document.
  */
-- (GSXMLNode*) root
+- (GSXMLNode*)root
 {
-  GSXMLNode	*n = [GSXMLNode alloc];
+    GSXMLNode *n = [GSXMLNode alloc];
 
-  n = [n _initFrom: xmlDocGetRootElement(lib) parent: self];
-  return AUTORELEASE(n);
+    n = [n _initFrom:xmlDocGetRootElement(lib) parent:self];
+    return AUTORELEASE(n);
 }
 
 /**
@@ -484,61 +486,61 @@ static NSMapTable	*attrNames = 0;
  * NB. The node must have been created as part of the receiving document
  * (eg. using the -makeNodeWithNamespace:name:content: method).
  */
-- (GSXMLNode*) setRoot: (GSXMLNode*)node
+- (GSXMLNode*)setRoot:(GSXMLNode*)node
 {
-  xmlNodePtr	nodeLib = (xmlNodePtr)[node lib];
-  xmlNodePtr	selfLib = (xmlNodePtr)[self lib];
+    xmlNodePtr nodeLib = (xmlNodePtr)[node lib];
+    xmlNodePtr selfLib = (xmlNodePtr)[self lib];
 
-  if (node == nil)
+    if (node == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-      		  format: @"Attempt to set root of document to nil"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"Attempt to set root of document to nil"];
     }
-  if (nodeLib->doc != selfLib->doc)
+    if (nodeLib->doc != selfLib->doc)
     {
-      [NSException raise: NSInvalidArgumentException
-      		  format: @"Attempt to set root to node from other document"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"Attempt to set root to node from other document"];
     }
-  xmlDocSetRootElement(lib, nodeLib);
-  return node;
+    xmlDocSetRootElement(lib, nodeLib);
+    return node;
 }
 
 /**
  * Returns the version string for this document.
  */
-- (NSString*) version
+- (NSString*)version
 {
-  return UTF8Str(((xmlDocPtr)(lib))->version);
+    return UTF8Str(((xmlDocPtr)(lib))->version);
 }
 
 /**
  * Uses the -description method to produce a string representation of
  * the document and writes that to filename.
  */
-- (BOOL) writeToFile: (NSString*)filename atomically: (BOOL)useAuxilliaryFile
+- (BOOL)writeToFile:(NSString*)filename atomically:(BOOL)useAuxilliaryFile
 {
-  NSString	*s = [self description];
+    NSString  *s = [self description];
 
-  if (s == nil)
+    if (s == nil)
     {
-      return NO;
+        return NO;
     }
-  return [s writeToFile: filename atomically: useAuxilliaryFile];
+    return [s writeToFile:filename atomically:useAuxilliaryFile];
 }
 
 /**
  * Uses the -description method to produce a string representation of
  * the document and writes that to url.
  */
-- (BOOL) writeToURL: (NSURL*)url atomically: (BOOL)useAuxilliaryFile
+- (BOOL)writeToURL:(NSURL*)url atomically:(BOOL)useAuxilliaryFile
 {
-  NSString	*s = [self description];
+    NSString  *s = [self description];
 
-  if (s == nil)
+    if (s == nil)
     {
-      return NO;
+        return NO;
     }
-  return [s writeToURL: url atomically: useAuxilliaryFile];
+    return [s writeToURL:url atomically:useAuxilliaryFile];
 }
 
 @end
@@ -549,19 +551,19 @@ static NSMapTable	*attrNames = 0;
  * Initialise a new document object using raw libxml data.
  * The resulting document does not 'own' the data, and will not free it.
  */
-- (id) _initFrom: (void*)data parent: (id)p ownsLib: (BOOL)f
+- (id)_initFrom:(void*)data parent:(id)p ownsLib:(BOOL)f
 {
-  if (data == NULL)
+    if (data == NULL)
     {
-      NSLog(@"%@ - no data for initialization",
-	NSStringFromClass([self class]));
-      DESTROY(self);
-      return nil;
+        NSLog(@"%@ - no data for initialization",
+              NSStringFromClass([self class]));
+        DESTROY(self);
+        return nil;
     }
-  lib = data;
-  _ownsLib = f;
-  ASSIGN(_parent, p);
-  return self;
+    lib = data;
+    _ownsLib = f;
+    ASSIGN(_parent, p);
+    return self;
 }
 @end
 
@@ -571,28 +573,29 @@ static NSMapTable	*attrNames = 0;
  */
 @implementation GSXMLNamespace
 
-static NSMapTable	*nsNames = 0;
+static NSMapTable   *nsNames = 0;
 
 /**
  * Return the string representation of the specified numeric type.
  */
-+ (NSString*) descriptionFromType: (NSInteger)type
++ (NSString*)descriptionFromType:(NSInteger)type
 {
-  NSString	*desc = (NSString*)NSMapGet(nsNames, (void*)(intptr_t)type);
+    NSString  *desc = (NSString*)NSMapGet(nsNames, (void*)(intptr_t)type);
 
-  return desc;
+    return desc;
 }
 
-+ (void) initialize
++ (void)initialize
 {
-  if (self == [GSXMLNamespace class])
+    if (self == [GSXMLNamespace class])
     {
-      if (cacheDone == NO)
-	setupCache();
-      nsNames = NSCreateMapTable(NSIntMapKeyCallBacks,
-	NSNonRetainedObjectMapValueCallBacks, 0);
-      NSMapInsert(nsNames,
-	(void*)XML_LOCAL_NAMESPACE, (void*)@"XML_LOCAL_NAMESPACE");
+        if (cacheDone == NO) {
+            setupCache();
+        }
+        nsNames = NSCreateMapTable(NSIntMapKeyCallBacks,
+                                   NSNonRetainedObjectMapValueCallBacks, 0);
+        NSMapInsert(nsNames,
+                    (void*)XML_LOCAL_NAMESPACE, (void*)@"XML_LOCAL_NAMESPACE");
     }
 }
 
@@ -605,118 +608,120 @@ static NSMapTable	*nsNames = 0;
  *   <item>XML_LOCAL_NAMESPACE</item>
  * </list>
  */
-+ (NSInteger) typeFromDescription: (NSString*)desc
++ (NSInteger)typeFromDescription:(NSString*)desc
 {
-  NSMapEnumerator	enumerator;
-  NSString		*val;
-  void			*key;
+    NSMapEnumerator enumerator;
+    NSString      *val;
+    void          *key;
 
-  enumerator = NSEnumerateMapTable(nsNames);
-  while (NSNextMapEnumeratorPair(&enumerator, &key, (void**)&val))
+    enumerator = NSEnumerateMapTable(nsNames);
+    while (NSNextMapEnumeratorPair(&enumerator, &key, (void**)&val))
     {
-      if ([desc isEqual: val] == YES)
-	{
-	  return (NSInteger)(intptr_t)key;
-	}
+        if ([desc isEqual:val] == YES)
+        {
+            return (NSInteger)(intptr_t)key;
+        }
     }
-  return -1;
+    return -1;
 }
 
-- (id) copyWithZone: (NSZone*)z
+- (id)copyWithZone:(NSZone*)z
 {
-  return RETAIN(self);
+    return RETAIN(self);
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  RELEASE(_parent);
-  [super dealloc];
+    RELEASE(_parent);
+    [super dealloc];
 }
 
-- (NSUInteger) hash
+- (NSUInteger)hash
 {
-  return (((NSUInteger)(intptr_t)lib) >> 3);
+    return (((NSUInteger)(intptr_t)lib) >> 3);
 }
 
 /**
  * Returns the namespace reference
  */
-- (NSString*) href
+- (NSString*)href
 {
-  return UTF8Str(((xmlNsPtr)(lib))->href);
+    return UTF8Str(((xmlNsPtr)(lib))->href);
 }
 
-- (id) init
+- (id)init
 {
-  NSLog(@"GSXMLNamespace: calling -init is not legal");
-  DESTROY(self);
-  return nil;
+    NSLog(@"GSXMLNamespace: calling -init is not legal");
+    DESTROY(self);
+    return nil;
 }
 
-- (BOOL) isEqual: (id)other
+- (BOOL)isEqual:(id)other
 {
-  if ([other isKindOfClass: [self class]] == YES && [other lib] == lib)
-    return YES;
-  else
-    return NO;
+    if ([other isKindOfClass:[self class]] == YES && [other lib] == lib) {
+        return YES;
+    }
+    else{
+        return NO;
+    }
 }
 
 /**
  * Returns a pointer to the raw libxml data used by this document.<br />
  * Only for use by libxml experts!
  */
-- (void*) lib
+- (void*)lib
 {
-  return lib;
+    return lib;
 }
 
 /**
  * return the next namespace.
  */
-- (GSXMLNamespace*) next
+- (GSXMLNamespace*)next
 {
-  if (((xmlNsPtr)(lib))->next != NULL)
+    if (((xmlNsPtr)(lib))->next != NULL)
     {
-      GSXMLNamespace	*ns = [GSXMLNamespace alloc];
+        GSXMLNamespace    *ns = [GSXMLNamespace alloc];
 
-      ns = [ns _initFrom: ((xmlNsPtr)(lib))->next parent: self];
-      return AUTORELEASE(ns);
+        ns = [ns _initFrom:((xmlNsPtr)(lib))->next parent:self];
+        return AUTORELEASE(ns);
     }
-  else
+    else
     {
-      return nil;
+        return nil;
     }
 }
 
 /**
  * Return the namespace prefix.
  */
-- (NSString*) prefix
+- (NSString*)prefix
 {
-  return UTF8Str(((xmlNsPtr)(lib))->prefix);
+    return UTF8Str(((xmlNsPtr)(lib))->prefix);
 }
 
 /**
  * Return type of namespace
  */
-- (NSInteger) type
+- (NSInteger)type
 {
-  return (NSInteger)((xmlNsPtr)(lib))->type;
+    return (NSInteger)((xmlNsPtr)(lib))->type;
 }
 
 /**
  * Return string representation of the type of the namespace.
  */
-- (NSString*) typeDescription
+- (NSString*)typeDescription
 {
-  NSString	*desc;
+    NSString  *desc;
 
-  desc = (NSString*)NSMapGet(nsNames, (void*)(intptr_t)[self type]);
-  if (desc == nil)
+    desc = (NSString*)NSMapGet(nsNames, (void*)(intptr_t)[self type]);
+    if (desc == nil)
     {
-      desc = @"Unknown namespace type";
+        desc = @"Unknown namespace type";
     }
-  return desc;
+    return desc;
 }
 
 @end
@@ -727,18 +732,18 @@ static NSMapTable	*nsNames = 0;
  * Initialise a new namespace object using raw libxml data.
  * The resulting namespace does not 'own' the data, and will not free it.
  */
-- (id) _initFrom: (void*)data parent: (id)p
+- (id)_initFrom:(void*)data parent:(id)p
 {
-  if (data == NULL)
+    if (data == NULL)
     {
-      NSLog(@"%@ - no data for initialization",
-	NSStringFromClass([self class]));
-      DESTROY(self);
-      return nil;
+        NSLog(@"%@ - no data for initialization",
+              NSStringFromClass([self class]));
+        DESTROY(self);
+        return nil;
     }
-  lib = data;
-  ASSIGN(_parent, p);
-  return self;
+    lib = data;
+    ASSIGN(_parent, p);
+    return self;
 }
 
 @end
@@ -749,60 +754,61 @@ static NSMapTable	*nsNames = 0;
  */
 @implementation GSXMLNode
 
-static NSMapTable	*nodeNames = 0;
+static NSMapTable   *nodeNames = 0;
 
 /**
  * Return the string constant value for the node type given.
  */
-+ (NSString*) descriptionFromType: (NSInteger)type
++ (NSString*)descriptionFromType:(NSInteger)type
 {
-  NSString	*desc = (NSString*)NSMapGet(nodeNames, (void*)(intptr_t)type);
+    NSString  *desc = (NSString*)NSMapGet(nodeNames, (void*)(intptr_t)type);
 
-  return desc;
+    return desc;
 }
 
-+ (void) initialize
++ (void)initialize
 {
-  if (self == [GSXMLNode class])
+    if (self == [GSXMLNode class])
     {
-      if (cacheDone == NO)
-	setupCache();
-      nodeNames = NSCreateMapTable(NSIntMapKeyCallBacks,
-	NSNonRetainedObjectMapValueCallBacks, 0);
-      NSMapInsert(nodeNames,
-	(void*)XML_ELEMENT_NODE, (void*)@"XML_ELEMENT_NODE");
-      NSMapInsert(nodeNames,
-	(void*)XML_ATTRIBUTE_NODE, (void*)@"XML_ATTRIBUTE_NODE");
-      NSMapInsert(nodeNames,
-	(void*)XML_TEXT_NODE, (void*)@"XML_TEXT_NODE");
-      NSMapInsert(nodeNames,
-	(void*)XML_CDATA_SECTION_NODE, (void*)@"XML_CDATA_SECTION_NODE");
-      NSMapInsert(nodeNames,
-	(void*)XML_ENTITY_REF_NODE, (void*)@"XML_ENTITY_REF_NODE");
-      NSMapInsert(nodeNames,
-	(void*)XML_ENTITY_NODE, (void*)@"XML_ENTITY_NODE");
-      NSMapInsert(nodeNames,
-	(void*)XML_PI_NODE, (void*)@"XML_PI_NODE");
-      NSMapInsert(nodeNames,
-	(void*)XML_COMMENT_NODE, (void*)@"XML_COMMENT_NODE");
-      NSMapInsert(nodeNames,
-	(void*)XML_DOCUMENT_NODE, (void*)@"XML_DOCUMENT_NODE");
-      NSMapInsert(nodeNames,
-	(void*)XML_DOCUMENT_TYPE_NODE, (void*)@"XML_DOCUMENT_TYPE_NODE");
-      NSMapInsert(nodeNames,
-	(void*)XML_DOCUMENT_FRAG_NODE, (void*)@"XML_DOCUMENT_FRAG_NODE");
-      NSMapInsert(nodeNames,
-	(void*)XML_NOTATION_NODE, (void*)@"XML_NOTATION_NODE");
-      NSMapInsert(nodeNames,
-	(void*)XML_HTML_DOCUMENT_NODE, (void*)@"XML_HTML_DOCUMENT_NODE");
-      NSMapInsert(nodeNames,
-	(void*)XML_DTD_NODE, (void*)@"XML_DTD_NODE");
-      NSMapInsert(nodeNames,
-	(void*)XML_ELEMENT_DECL, (void*)@"XML_ELEMENT_DECL");
-      NSMapInsert(nodeNames,
-	(void*)XML_ATTRIBUTE_DECL, (void*)@"XML_ATTRIBUTE_DECL");
-      NSMapInsert(nodeNames,
-	(void*)XML_ENTITY_DECL, (void*)@"XML_ENTITY_DECL");
+        if (cacheDone == NO) {
+            setupCache();
+        }
+        nodeNames = NSCreateMapTable(NSIntMapKeyCallBacks,
+                                     NSNonRetainedObjectMapValueCallBacks, 0);
+        NSMapInsert(nodeNames,
+                    (void*)XML_ELEMENT_NODE, (void*)@"XML_ELEMENT_NODE");
+        NSMapInsert(nodeNames,
+                    (void*)XML_ATTRIBUTE_NODE, (void*)@"XML_ATTRIBUTE_NODE");
+        NSMapInsert(nodeNames,
+                    (void*)XML_TEXT_NODE, (void*)@"XML_TEXT_NODE");
+        NSMapInsert(nodeNames,
+                    (void*)XML_CDATA_SECTION_NODE, (void*)@"XML_CDATA_SECTION_NODE");
+        NSMapInsert(nodeNames,
+                    (void*)XML_ENTITY_REF_NODE, (void*)@"XML_ENTITY_REF_NODE");
+        NSMapInsert(nodeNames,
+                    (void*)XML_ENTITY_NODE, (void*)@"XML_ENTITY_NODE");
+        NSMapInsert(nodeNames,
+                    (void*)XML_PI_NODE, (void*)@"XML_PI_NODE");
+        NSMapInsert(nodeNames,
+                    (void*)XML_COMMENT_NODE, (void*)@"XML_COMMENT_NODE");
+        NSMapInsert(nodeNames,
+                    (void*)XML_DOCUMENT_NODE, (void*)@"XML_DOCUMENT_NODE");
+        NSMapInsert(nodeNames,
+                    (void*)XML_DOCUMENT_TYPE_NODE, (void*)@"XML_DOCUMENT_TYPE_NODE");
+        NSMapInsert(nodeNames,
+                    (void*)XML_DOCUMENT_FRAG_NODE, (void*)@"XML_DOCUMENT_FRAG_NODE");
+        NSMapInsert(nodeNames,
+                    (void*)XML_NOTATION_NODE, (void*)@"XML_NOTATION_NODE");
+        NSMapInsert(nodeNames,
+                    (void*)XML_HTML_DOCUMENT_NODE, (void*)@"XML_HTML_DOCUMENT_NODE");
+        NSMapInsert(nodeNames,
+                    (void*)XML_DTD_NODE, (void*)@"XML_DTD_NODE");
+        NSMapInsert(nodeNames,
+                    (void*)XML_ELEMENT_DECL, (void*)@"XML_ELEMENT_DECL");
+        NSMapInsert(nodeNames,
+                    (void*)XML_ATTRIBUTE_DECL, (void*)@"XML_ATTRIBUTE_DECL");
+        NSMapInsert(nodeNames,
+                    (void*)XML_ENTITY_DECL, (void*)@"XML_ENTITY_DECL");
     }
 }
 
@@ -833,21 +839,21 @@ static NSMapTable	*nodeNames = 0;
  *   <item>XML_ENTITY_DECL</item>
  * </list>
  */
-+ (NSInteger) typeFromDescription: (NSString*)desc
++ (NSInteger)typeFromDescription:(NSString*)desc
 {
-  NSMapEnumerator	enumerator;
-  NSString		*val;
-  void			*key;
+    NSMapEnumerator enumerator;
+    NSString      *val;
+    void          *key;
 
-  enumerator = NSEnumerateMapTable(nodeNames);
-  while (NSNextMapEnumeratorPair(&enumerator, &key, (void**)&val))
+    enumerator = NSEnumerateMapTable(nodeNames);
+    while (NSNextMapEnumeratorPair(&enumerator, &key, (void**)&val))
     {
-      if ([desc isEqual: val] == YES)
-	{
-	  return (NSInteger)(intptr_t)key;
-	}
+        if ([desc isEqual:val] == YES)
+        {
+            return (NSInteger)(intptr_t)key;
+        }
     }
-  return -1;
+    return -1;
 }
 
 /**
@@ -855,37 +861,37 @@ static NSMapTable	*nodeNames = 0;
  *   Return attributes and values as a dictionary
  * </p>
  */
-- (NSDictionary*) attributes
+- (NSDictionary*)attributes
 {
-  xmlAttrPtr		prop;
-  NSMutableDictionary	*d = [NSMutableDictionary dictionary];
+    xmlAttrPtr prop;
+    NSMutableDictionary   *d = [NSMutableDictionary dictionary];
 
-  prop = ((xmlNodePtr)(lib))->properties;
+    prop = ((xmlNodePtr)(lib))->properties;
 
-  while (prop != NULL)
+    while (prop != NULL)
     {
-      const void	*name = prop->name;
-      NSString		*key = UTF8Str(name);
-      NSString		*value = @"";
-      xmlNodePtr	child = prop->children;
+        const void    *name = prop->name;
+        NSString      *key = UTF8Str(name);
+        NSString      *value = @"";
+        xmlNodePtr child = prop->children;
 
-      while (child != NULL)
-	{
-	  const void	*content = child->content;
+        while (child != NULL)
+        {
+            const void    *content = child->content;
 
-	  value = [value stringByAppendingString: UTF8Str(content)];
-	  child = child->next;
-	}
-      [d setObject: value forKey: key];
-      prop = prop->next;
-  }
+            value = [value stringByAppendingString:UTF8Str(content)];
+            child = child->next;
+        }
+        [d setObject:value forKey:key];
+        prop = prop->next;
+    }
 
-  return d;
+    return d;
 }
 
-- (id) copyWithZone: (NSZone*)z
+- (id)copyWithZone:(NSZone*)z
 {
-  return RETAIN(self);
+    return RETAIN(self);
 }
 
 /**
@@ -905,99 +911,99 @@ static NSMapTable	*nodeNames = 0;
  * characters are represented by the original entity escapes, you need
  * to use the -escapedContent method.
  */
-- (NSString*) content
+- (NSString*)content
 {
-  xmlNodePtr	ptr = (xmlNodePtr)lib;
+    xmlNodePtr ptr = (xmlNodePtr)lib;
 
-  if (ptr == NULL)
+    if (ptr == NULL)
     {
-      return nil;
+        return nil;
     }
-  if (ptr->content != NULL)
+    if (ptr->content != NULL)
     {
-      return UTF8Str(ptr->content);
+        return UTF8Str(ptr->content);
     }
-  if ((NSInteger)ptr->type == XML_TEXT_NODE)
+    if ((NSInteger)ptr->type == XML_TEXT_NODE)
     {
-      return @"";
+        return @"";
     }
-  else if ((NSInteger)ptr->type == XML_ELEMENT_NODE)
+    else if ((NSInteger)ptr->type == XML_ELEMENT_NODE)
     {
-      ptr = ptr->children;
-      if (ptr != NULL)
-	{
-	  if (ptr->next == NULL)
-	    {
-	      if (ptr->content != NULL)
-		{
-		  return UTF8Str(ptr->content);
-		}
-	    }
-	  else
-	    {
-	      NSMutableString	*m = [NSMutableString new];
+        ptr = ptr->children;
+        if (ptr != NULL)
+        {
+            if (ptr->next == NULL)
+            {
+                if (ptr->content != NULL)
+                {
+                    return UTF8Str(ptr->content);
+                }
+            }
+            else
+            {
+                NSMutableString   *m = [NSMutableString new];
 
-	      while (ptr != NULL)
-		{
-		  if (ptr->content != NULL)
-		    {
-		      [m appendString: UTF8Str(ptr->content)];
-		    }
-		  ptr = ptr->next;
-		}
-	      return AUTORELEASE(m);
-	    }
-	}
+                while (ptr != NULL)
+                {
+                    if (ptr->content != NULL)
+                    {
+                        [m appendString:UTF8Str(ptr->content)];
+                    }
+                    ptr = ptr->next;
+                }
+                return AUTORELEASE(m);
+            }
+        }
     }
-  return nil;
+    return nil;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  RELEASE(_parent);
-  [super dealloc];
+    RELEASE(_parent);
+    [super dealloc];
 }
 
 /**
  * Returns a string representation of the node and all its children
  * (ie the XML text) or nil if the node does not have reasonable contents.
  */
-- (NSString*) description
+- (NSString*)description
 {
-  NSString		*string = nil;
-  xmlOutputBufferPtr	buf;
+    NSString      *string = nil;
+    xmlOutputBufferPtr buf;
 
-  buf = xmlAllocOutputBuffer(0);
-  if (buf != 0)
+    buf = xmlAllocOutputBuffer(0);
+    if (buf != 0)
     {
-      xmlNodeDumpOutput(buf,
-	((xmlNodePtr)(lib))->doc,
-	(xmlNodePtr)(lib),
-	1,
-	1,
-	"utf-8");
-      xmlOutputBufferFlush(buf);
-      string = UTF8StrLen(buf->buffer->content, buf->buffer->use);
-      xmlOutputBufferClose(buf);
+        xmlNodeDumpOutput(buf,
+                          ((xmlNodePtr)(lib))->doc,
+                          (xmlNodePtr)(lib),
+                          1,
+                          1,
+                          "utf-8");
+        xmlOutputBufferFlush(buf);
+        string = UTF8StrLen(buf->buffer->content, buf->buffer->use);
+        xmlOutputBufferClose(buf);
     }
-  return string;
+    return string;
 }
 
 /**
  * Return the document in which this node exists.
  */
-- (GSXMLDocument*) document
+- (GSXMLDocument*)document
 {
-  if (((xmlNodePtr)(lib))->doc != NULL)
+    if (((xmlNodePtr)(lib))->doc != NULL)
     {
-      GSXMLDocument	*d = [GSXMLDocument alloc];
+        GSXMLDocument *d = [GSXMLDocument alloc];
 
-      d = [d _initFrom: ((xmlNodePtr)(lib))->doc parent: self ownsLib: NO];
-      return AUTORELEASE(d);
+        d = [d _initFrom:((xmlNodePtr)(lib))->doc parent:self ownsLib:NO];
+        return AUTORELEASE(d);
     }
-  else
+    else
     {
-      return nil;
+        return nil;
     }
 }
 
@@ -1008,26 +1014,26 @@ static NSMapTable	*nodeNames = 0;
  * replaced with their standard equivalents
  * (&lt;, &gt;, &apos;, &quot;, and &amp;).
  */
-- (NSString*) escapedContent
+- (NSString*)escapedContent
 {
-  NSString		*str = [self content];
+    NSString      *str = [self content];
 
-  return [str stringByEscapingXML];
+    return [str stringByEscapingXML];
 }
 
 /**
  * Return the first attribute in this node.
  */
-- (GSXMLAttribute*) firstAttribute
+- (GSXMLAttribute*)firstAttribute
 {
-  if (((xmlNodePtr)(lib))->properties != NULL)
+    if (((xmlNodePtr)(lib))->properties != NULL)
     {
-      return AUTORELEASE([[GSXMLAttribute alloc]
-        _initFrom: ((xmlNodePtr)(lib))->properties parent: self]);
+        return AUTORELEASE([[GSXMLAttribute alloc]
+                            _initFrom:((xmlNodePtr)(lib))->properties parent:self]);
     }
-  else
+    else
     {
-      return nil;
+        return nil;
     }
 }
 
@@ -1036,22 +1042,22 @@ static NSMapTable	*nodeNames = 0;
  * through all children of the node (including non-element nodes)
  * you should use the -firstChild method instead.
  */
-- (GSXMLNode*) firstChildElement
+- (GSXMLNode*)firstChildElement
 {
-  xmlNodePtr	ptr = ((xmlNodePtr)lib)->children;
+    xmlNodePtr ptr = ((xmlNodePtr)lib)->children;
 
-  while (ptr != NULL)
+    while (ptr != NULL)
     {
-      if (ptr->type == XML_ELEMENT_NODE)
-	{
-	  GSXMLNode	*n = [GSXMLNode alloc];
+        if (ptr->type == XML_ELEMENT_NODE)
+        {
+            GSXMLNode *n = [GSXMLNode alloc];
 
-	  n = [n _initFrom: ptr parent: self];
-	  return AUTORELEASE(n);
-	}
-      ptr = ptr->next;
+            n = [n _initFrom:ptr parent:self];
+            return AUTORELEASE(n);
+        }
+        ptr = ptr->next;
     }
-  return nil;
+    return nil;
 }
 
 /**
@@ -1078,31 +1084,31 @@ static NSMapTable	*nodeNames = 0;
  *    }
  *  </example>
  */
-- (GSXMLNode*) firstChild
+- (GSXMLNode*)firstChild
 {
-  if (((xmlNodePtr)(lib))->children != NULL)
+    if (((xmlNodePtr)(lib))->children != NULL)
     {
-      GSXMLNode	*n = [GSXMLNode alloc];
+        GSXMLNode *n = [GSXMLNode alloc];
 
-      n = [n _initFrom: ((xmlNodePtr)(lib))->children parent: self];
-      return AUTORELEASE(n);
+        n = [n _initFrom:((xmlNodePtr)(lib))->children parent:self];
+        return AUTORELEASE(n);
     }
-  else
+    else
     {
-      return nil;
+        return nil;
     }
 }
 
-- (NSUInteger) hash
+- (NSUInteger)hash
 {
-  return (((NSUInteger)(intptr_t)lib) >> 3);
+    return (((NSUInteger)(intptr_t)lib) >> 3);
 }
 
-- (id) init
+- (id)init
 {
-  NSLog(@"GSXMLNode: calling -init is not legal");
-  DESTROY(self);
-  return nil;
+    NSLog(@"GSXMLNode: calling -init is not legal");
+    DESTROY(self);
+    return nil;
 }
 
 /**
@@ -1110,25 +1116,25 @@ static NSMapTable	*nodeNames = 0;
  * with the result of passing "XML_ELEMENT_NODE" to
  * +typeFromDescription: (but faster).
  */
-- (BOOL) isElement
+- (BOOL)isElement
 {
-  if ((NSInteger)((xmlNodePtr)(lib))->type == XML_ELEMENT_NODE)
+    if ((NSInteger)((xmlNodePtr)(lib))->type == XML_ELEMENT_NODE)
     {
-      return YES;
+        return YES;
     }
-  return NO;
+    return NO;
 }
 
-- (BOOL) isEqual: (id)other
+- (BOOL)isEqual:(id)other
 {
-  if ([other isKindOfClass: [self class]] == YES
-    && [other lib] == lib)
+    if ([other isKindOfClass:[self class]] == YES
+        && [other lib] == lib)
     {
-      return YES;
+        return YES;
     }
-  else
+    else
     {
-      return NO;
+        return NO;
     }
 }
 
@@ -1137,35 +1143,35 @@ static NSMapTable	*nodeNames = 0;
  * with the result of passing "XML_TEXT_NODE" to
  * +typeFromDescription: (but faster).
  */
-- (BOOL) isText
+- (BOOL)isText
 {
-  if ((NSInteger)((xmlNodePtr)(lib))->type == XML_TEXT_NODE)
+    if ((NSInteger)((xmlNodePtr)(lib))->type == XML_TEXT_NODE)
     {
-      return YES;
+        return YES;
     }
-  return NO;
+    return NO;
 }
 
 /**
  * Returns a pointer to the raw libxml data used by this document.<br />
  * Only for use by libxml experts!
  */
-- (void*) lib
+- (void*)lib
 {
-  return lib;
+    return lib;
 }
 
 /**
  * Create and return an attribute (unless the named attribute already exists,
  * in which case we update them value of the existing attribute and return it.
  */
-- (GSXMLAttribute*) makeAttributeWithName: (NSString*)name
-				    value: (NSString*)value
+- (GSXMLAttribute*)makeAttributeWithName:(NSString*)name
+    value:(NSString*)value
 {
-  void	*l;
+    void  *l;
 
-  l = xmlNewProp((xmlNodePtr)[self lib], UTF8STRING(name), UTF8STRING(value));
-  return AUTORELEASE([[GSXMLAttribute alloc] _initFrom: l parent: self]);
+    l = xmlNewProp((xmlNodePtr)[self lib], UTF8STRING(name), UTF8STRING(value));
+    return AUTORELEASE([[GSXMLAttribute alloc] _initFrom:l parent:self]);
 }
 
 /**
@@ -1198,16 +1204,16 @@ static NSMapTable	*nodeNames = 0;
  *
  * </example>
  */
-- (GSXMLNode*) makeChildWithNamespace: (GSXMLNamespace*)ns
-				 name: (NSString*)name
-			      content: (NSString*)content
+- (GSXMLNode*)makeChildWithNamespace:(GSXMLNamespace*)ns
+    name:(NSString*)name
+    content:(NSString*)content
 {
-  GSXMLNode	*n = [GSXMLNode alloc];
+    GSXMLNode *n = [GSXMLNode alloc];
 
-  n = [n _initFrom:
-    xmlNewTextChild(lib, [ns lib], UTF8STRING(name), UTF8STRING(content))
-    parent: self];
-  return AUTORELEASE(n);
+    n = [n _initFrom:
+         xmlNewTextChild(lib, [ns lib], UTF8STRING(name), UTF8STRING(content))
+         parent:self];
+    return AUTORELEASE(n);
 }
 
 /**
@@ -1222,14 +1228,14 @@ static NSMapTable	*nodeNames = 0;
  * [n1 makeText: @" this is a text "];
  * </example>
  */
-- (GSXMLNode*) makeText: (NSString*)content
+- (GSXMLNode*)makeText:(NSString*)content
 {
-  GSXMLNode	*n = [GSXMLNode alloc];
+    GSXMLNode *n = [GSXMLNode alloc];
 
-  n = [n _initFrom:
-    xmlAddChild((xmlNodePtr)lib, xmlNewText(UTF8STRING(content)))
-    parent: self];
-  return AUTORELEASE(n);
+    n = [n _initFrom:
+         xmlAddChild((xmlNodePtr)lib, xmlNewText(UTF8STRING(content)))
+         parent:self];
+    return AUTORELEASE(n);
 }
 
 /**
@@ -1244,31 +1250,31 @@ static NSMapTable	*nodeNames = 0;
  * [n1 makeComment: @" this is a comment "];
  * </example>
  */
-- (GSXMLNode*) makeComment: (NSString*)content
+- (GSXMLNode*)makeComment:(NSString*)content
 {
-  GSXMLNode	*n = [GSXMLNode alloc];
+    GSXMLNode *n = [GSXMLNode alloc];
 
-  n = [n _initFrom:
-    xmlAddChild((xmlNodePtr)lib, xmlNewComment(UTF8STRING(content)))
-    parent: self];
-  return AUTORELEASE(n);
+    n = [n _initFrom:
+         xmlAddChild((xmlNodePtr)lib, xmlNewComment(UTF8STRING(content)))
+         parent:self];
+    return AUTORELEASE(n);
 }
 
 /**
  * Create a namespace attached to this node.
  */
-- (GSXMLNamespace*) makeNamespaceHref: (NSString*)href
-			       prefix: (NSString*)prefix
+- (GSXMLNamespace*)makeNamespaceHref:(NSString*)href
+    prefix:(NSString*)prefix
 {
-  void	*data;
+    void  *data;
 
-  data = xmlNewNs((xmlNodePtr)lib, UTF8STRING(href), UTF8STRING(prefix));
-  if (data == NULL)
+    data = xmlNewNs((xmlNodePtr)lib, UTF8STRING(href), UTF8STRING(prefix));
+    if (data == NULL)
     {
-      NSLog(@"Can't create GSXMLNamespace object");
-      return nil;
+        NSLog(@"Can't create GSXMLNamespace object");
+        return nil;
     }
-  return AUTORELEASE([[GSXMLNamespace alloc] _initFrom: data parent: self]);
+    return AUTORELEASE([[GSXMLNamespace alloc] _initFrom:data parent:self]);
 }
 
 /**
@@ -1284,28 +1290,28 @@ static NSMapTable	*nodeNames = 0;
  * [n1 makePI: @"pi1" content: @"this is a process instruction"];
  * </example>
  */
-- (GSXMLNode*) makePI: (NSString*)name content: (NSString*)content
+- (GSXMLNode*)makePI:(NSString*)name content:(NSString*)content
 {
-  GSXMLNode	*n = [GSXMLNode alloc];
+    GSXMLNode *n = [GSXMLNode alloc];
 
-  n = [n _initFrom:
-    xmlAddChild((xmlNodePtr)lib, xmlNewPI(UTF8STRING(name),
-    UTF8STRING(content))) parent: self];
-  return AUTORELEASE(n);
+    n = [n _initFrom:
+         xmlAddChild((xmlNodePtr)lib, xmlNewPI(UTF8STRING(name),
+                                               UTF8STRING(content))) parent:self];
+    return AUTORELEASE(n);
 }
 
 /**
  * Return the node-name
  */
-- (NSString*) name
+- (NSString*)name
 {
-  if (lib != NULL && ((xmlNodePtr)lib)->name!=NULL)
+    if (lib != NULL && ((xmlNodePtr)lib)->name != NULL)
     {
-      return UTF8Str(((xmlNodePtr)lib)->name);
+        return UTF8Str(((xmlNodePtr)lib)->name);
     }
-  else
+    else
     {
-      return nil;
+        return nil;
     }
 }
 
@@ -1315,18 +1321,18 @@ static NSMapTable	*nodeNames = 0;
  * if you are parsing a document where you wish to ignore non-element
  * nodes such as whitespace text separating elements.
  */
-- (GSXMLNode*) next
+- (GSXMLNode*)next
 {
-  if (((xmlNodePtr)(lib))->next != NULL)
+    if (((xmlNodePtr)(lib))->next != NULL)
     {
-      GSXMLNode	*n = [GSXMLNode alloc];
+        GSXMLNode *n = [GSXMLNode alloc];
 
-      n = [n _initFrom: ((xmlNodePtr)(lib))->next parent: _parent];
-      return AUTORELEASE(n);
+        n = [n _initFrom:((xmlNodePtr)(lib))->next parent:_parent];
+        return AUTORELEASE(n);
     }
-  else
+    else
     {
-      return nil;
+        return nil;
     }
 }
 
@@ -1337,132 +1343,132 @@ static NSMapTable	*nodeNames = 0;
  * NB. This method is not available in java, as the method name conflicts
  * with that of java's Enumerator class.
  */
-- (GSXMLNode*) nextElement
+- (GSXMLNode*)nextElement
 {
-  xmlNodePtr	ptr = (xmlNodePtr)lib;
+    xmlNodePtr ptr = (xmlNodePtr)lib;
 
-  while (ptr->next != NULL)
+    while (ptr->next != NULL)
     {
-      ptr = ptr->next;
-      if (ptr->type == XML_ELEMENT_NODE)
-	{
-	  GSXMLNode	*n = [GSXMLNode alloc];
+        ptr = ptr->next;
+        if (ptr->type == XML_ELEMENT_NODE)
+        {
+            GSXMLNode *n = [GSXMLNode alloc];
 
-	  n = [n _initFrom: ptr parent: _parent];
-	  return AUTORELEASE(n);
-	}
+            n = [n _initFrom:ptr parent:_parent];
+            return AUTORELEASE(n);
+        }
     }
-  return nil;
+    return nil;
 }
 
 /**
  * Return the namespace of the node.
  */
-- (GSXMLNamespace*) namespace
+- (GSXMLNamespace*)namespace
 {
-  if (lib != NULL && ((xmlNodePtr)(lib))->ns != NULL)
+    if (lib != NULL && ((xmlNodePtr)(lib))->ns != NULL)
     {
-      GSXMLNamespace	*ns = [GSXMLNamespace alloc];
+        GSXMLNamespace    *ns = [GSXMLNamespace alloc];
 
-      ns = [ns _initFrom: ((xmlNodePtr)(lib))->ns parent: self];
-      return AUTORELEASE(ns);
+        ns = [ns _initFrom:((xmlNodePtr)(lib))->ns parent:self];
+        return AUTORELEASE(ns);
     }
-  else
+    else
     {
-      return nil;
+        return nil;
     }
 }
 
 /**
  * Return namespace definitions for the node
  */
-- (GSXMLNamespace*) namespaceDefinitions
+- (GSXMLNamespace*)namespaceDefinitions
 {
-  if (lib != NULL && ((xmlNodePtr)lib)->nsDef != NULL)
+    if (lib != NULL && ((xmlNodePtr)lib)->nsDef != NULL)
     {
-      GSXMLNamespace	*ns = [GSXMLNamespace alloc];
+        GSXMLNamespace    *ns = [GSXMLNamespace alloc];
 
-      ns = [ns _initFrom: ((xmlNodePtr)(lib))->nsDef parent: self];
-      return AUTORELEASE(ns);
+        ns = [ns _initFrom:((xmlNodePtr)(lib))->nsDef parent:self];
+        return AUTORELEASE(ns);
     }
-  else
+    else
     {
-      return nil;
+        return nil;
     }
 }
 
 /**
  * Return the attribute value for the specified key.
  */
-- (NSString*) objectForKey: (NSString*)key
+- (NSString*)objectForKey:(NSString*)key
 {
-  NSString	*value = nil;
-  xmlAttrPtr	prop;
+    NSString  *value = nil;
+    xmlAttrPtr prop;
 
-  prop = ((xmlNodePtr)(lib))->properties;
-  while (prop != NULL)
+    prop = ((xmlNodePtr)(lib))->properties;
+    while (prop != NULL)
     {
-      const void	*name = prop->name;
-      NSString		*n = UTF8Str(name);
+        const void    *name = prop->name;
+        NSString      *n = UTF8Str(name);
 
-      if ([key isEqualToString: n] == YES)
+        if ([key isEqualToString:n] == YES)
         {
-	  xmlNodePtr	child = prop->children;
+            xmlNodePtr child = prop->children;
 
-	  while (child != NULL)
-	    {
-	      const void	*content = child->content;
+            while (child != NULL)
+            {
+                const void    *content = child->content;
 
-	      if (value == nil)
-		{
-		  value = UTF8Str(content);
-		}
-	      else
-		{
-		  value = [value stringByAppendingString: UTF8Str(content)];
-		}
-	      child = child->next;
-	    }
-	  break;
-	}
-      prop = prop->next;
+                if (value == nil)
+                {
+                    value = UTF8Str(content);
+                }
+                else
+                {
+                    value = [value stringByAppendingString:UTF8Str(content)];
+                }
+                child = child->next;
+            }
+            break;
+        }
+        prop = prop->next;
     }
-  return value;
+    return value;
 }
 
 /**
  * Return the parent of this node.
  */
-- (GSXMLNode*) parent
+- (GSXMLNode*)parent
 {
-  if (((xmlNodePtr)(lib))->parent != NULL)
+    if (((xmlNodePtr)(lib))->parent != NULL)
     {
-      GSXMLNode	*n = [GSXMLNode alloc];
+        GSXMLNode *n = [GSXMLNode alloc];
 
-      n = [n _initFrom: ((xmlNodePtr)(lib))->parent parent: self];
-      return AUTORELEASE(n);
+        n = [n _initFrom:((xmlNodePtr)(lib))->parent parent:self];
+        return AUTORELEASE(n);
     }
-  else
+    else
     {
-      return nil;
+        return nil;
     }
 }
 
 /**
  * Return the previous node at this level.
  */
-- (GSXMLNode*) previous
+- (GSXMLNode*)previous
 {
-  if (((xmlNodePtr)(lib))->prev != NULL)
+    if (((xmlNodePtr)(lib))->prev != NULL)
     {
-      GSXMLNode	*n = [GSXMLNode alloc];
+        GSXMLNode *n = [GSXMLNode alloc];
 
-      n = [n _initFrom: ((xmlNodePtr)(lib))->prev parent: _parent];
-      return AUTORELEASE(n);
+        n = [n _initFrom:((xmlNodePtr)(lib))->prev parent:_parent];
+        return AUTORELEASE(n);
     }
-  else
+    else
     {
-      return nil;
+        return nil;
     }
 }
 
@@ -1471,22 +1477,22 @@ static NSMapTable	*nodeNames = 0;
  * NB. This method is not available in java, as the method name conflicts
  * with that of java's Enumerator class.
  */
-- (GSXMLNode*) previousElement
+- (GSXMLNode*)previousElement
 {
-  xmlNodePtr	ptr = (xmlNodePtr)lib;
+    xmlNodePtr ptr = (xmlNodePtr)lib;
 
-  while (ptr->prev != NULL)
+    while (ptr->prev != NULL)
     {
-      ptr = ptr->prev;
-      if (ptr->type == XML_ELEMENT_NODE)
-	{
-	  GSXMLNode	*n = [GSXMLNode alloc];
+        ptr = ptr->prev;
+        if (ptr->type == XML_ELEMENT_NODE)
+        {
+            GSXMLNode *n = [GSXMLNode alloc];
 
-	  n = [n _initFrom: ptr parent: _parent];
-	  return AUTORELEASE(n);
-	}
+            n = [n _initFrom:ptr parent:_parent];
+            return AUTORELEASE(n);
+        }
     }
-  return nil;
+    return nil;
 }
 
 
@@ -1503,37 +1509,37 @@ static NSMapTable	*nodeNames = 0;
  *   not of much use elsewhere.
  * </p>
  */
-- (NSMutableDictionary*) propertiesAsDictionaryWithKeyTransformationSel:
-  (SEL)keyTransformSel
+- (NSMutableDictionary*)propertiesAsDictionaryWithKeyTransformationSel:
+    (SEL)keyTransformSel
 {
-  xmlAttrPtr		prop;
-  NSMutableDictionary	*d = [NSMutableDictionary dictionary];
+    xmlAttrPtr prop;
+    NSMutableDictionary   *d = [NSMutableDictionary dictionary];
 
-  prop = ((xmlNodePtr)(lib))->properties;
+    prop = ((xmlNodePtr)(lib))->properties;
 
-  while (prop != NULL)
+    while (prop != NULL)
     {
-      xmlNodePtr	child = prop->children;
-      const void	*name = prop->name;
-      NSString		*key = UTF8Str(name);
-      NSString		*value = @"";
+        xmlNodePtr child = prop->children;
+        const void    *name = prop->name;
+        NSString      *key = UTF8Str(name);
+        NSString      *value = @"";
 
-      if (keyTransformSel != 0)
-	{
-	  key = [key performSelector: keyTransformSel];
-	}
-      while (child != NULL)
-	{
-	  const void	*content = child->content;
+        if (keyTransformSel != 0)
+        {
+            key = [key performSelector:keyTransformSel];
+        }
+        while (child != NULL)
+        {
+            const void    *content = child->content;
 
-	  value = [value stringByAppendingString: UTF8Str(content)];
-	  child = child->next;
-	}
-      [d setObject: value forKey: key];
-      prop = prop->next;
+            value = [value stringByAppendingString:UTF8Str(content)];
+            child = child->next;
+        }
+        [d setObject:value forKey:key];
+        prop = prop->next;
     }
 
-  return d;
+    return d;
 }
 
 /**
@@ -1544,9 +1550,9 @@ static NSMapTable	*nodeNames = 0;
  *   [n1 setObject: @"prop3" forKey: @"name3"];
  * </example>
  */
-- (void) setObject: (NSString*)value forKey: (NSString*)key
+- (void)setObject:(NSString*)value forKey:(NSString*)key
 {
-  xmlSetProp(lib, UTF8STRING(key), UTF8STRING(value));
+    xmlSetProp(lib, UTF8STRING(key), UTF8STRING(value));
 }
 
 /**
@@ -1554,24 +1560,24 @@ static NSMapTable	*nodeNames = 0;
  * use this method and compare the return value with a value you previously
  * obtained using the +typeFromDescription: method.
  */
-- (NSInteger) type
+- (NSInteger)type
 {
-  return (NSInteger)((xmlNodePtr)(lib))->type;
+    return (NSInteger)((xmlNodePtr)(lib))->type;
 }
 
 /**
  * Return node type as a string.
  */
-- (NSString*) typeDescription
+- (NSString*)typeDescription
 {
-  NSString	*desc;
+    NSString  *desc;
 
-  desc = (NSString*)NSMapGet(nodeNames, (void*)(intptr_t)[self type]);
-  if (desc == nil)
+    desc = (NSString*)NSMapGet(nodeNames, (void*)(intptr_t)[self type]);
+    if (desc == nil)
     {
-      desc = @"Unknown node type";
+        desc = @"Unknown node type";
     }
-  return desc;
+    return desc;
 }
 
 /**
@@ -1580,9 +1586,9 @@ static NSMapTable	*nodeNames = 0;
  * or any namespace that the node inherited from a parent when it
  * was created.
  */
-- (void) setNamespace: (GSXMLNamespace *)space
+- (void)setNamespace:(GSXMLNamespace *)space
 {
-  xmlSetNs (lib, [space lib]);
+    xmlSetNs (lib, [space lib]);
 }
 
 @end
@@ -1591,18 +1597,18 @@ static NSMapTable	*nodeNames = 0;
 /**
  * Initialise from raw libxml data
  */
-- (id) _initFrom: (void*)data parent: (id)p
+- (id)_initFrom:(void*)data parent:(id)p
 {
-  if (data == NULL)
+    if (data == NULL)
     {
-      NSLog(@"%@ - no data for initialization",
-	NSStringFromClass([self class]));
-      DESTROY(self);
-      return nil;
+        NSLog(@"%@ - no data for initialization",
+              NSStringFromClass([self class]));
+        DESTROY(self);
+        return nil;
     }
-  lib = data;
-  ASSIGN(_parent, p);
-  return self;
+    lib = data;
+    ASSIGN(_parent, p);
+    return self;
 }
 @end
 
@@ -1627,19 +1633,20 @@ static NSMapTable	*nodeNames = 0;
 
 /* To override location for DTDs
  */
-static NSString	*dtdPath = nil;
+static NSString *dtdPath = nil;
 
-static NSString	*endMarker = @"At end of incremental parse";
+static NSString *endMarker = @"At end of incremental parse";
 
-+ (void) initialize
++ (void)initialize
 {
-  static BOOL	beenHere = NO;
+    static BOOL beenHere = NO;
 
-  if (beenHere == NO)
+    if (beenHere == NO)
     {
-      beenHere = YES;
-      if (cacheDone == NO)
-	setupCache();
+        beenHere = YES;
+        if (cacheDone == NO) {
+            setupCache();
+        }
     }
 }
 
@@ -1671,19 +1678,19 @@ static NSString	*endMarker = @"At end of incremental parse";
  *   SAX handler returns nil.
  * </p>
  */
-+ (NSString*) loadEntity: (NSString*)publicId
-		      at: (NSString*)location
++ (NSString*)loadEntity:(NSString*)publicId
+    at:(NSString*)location
 {
-  return nil;
+    return nil;
 }
 
 /**
  * Creation of a new Parser (for incremental parsing)
  * by calling -initWithSAXHandler:
  */
-+ (GSXMLParser*) parser
++ (GSXMLParser*)parser
 {
-  return AUTORELEASE([[self alloc] initWithSAXHandler: nil]);
+    return AUTORELEASE([[self alloc] initWithSAXHandler:nil]);
 }
 
 /**
@@ -1702,30 +1709,30 @@ static NSString	*endMarker = @"At end of incremental parse";
  *   }
  * </example>
  */
-+ (GSXMLParser*) parserWithContentsOfFile: (NSString*)path
++ (GSXMLParser*)parserWithContentsOfFile:(NSString*)path
 {
-  return AUTORELEASE([[self alloc] initWithSAXHandler: nil
-				   withContentsOfFile: path]);
+    return AUTORELEASE([[self alloc] initWithSAXHandler:nil
+                        withContentsOfFile:path]);
 }
 
 /**
  * Creation of a new Parser by calling
  * -initWithSAXHandler:withContentsOfURL:
  */
-+ (GSXMLParser*) parserWithContentsOfURL: (NSURL*)url
++ (GSXMLParser*)parserWithContentsOfURL:(NSURL*)url
 {
-  return AUTORELEASE([[self alloc] initWithSAXHandler: nil
-				    withContentsOfURL: url]);
+    return AUTORELEASE([[self alloc] initWithSAXHandler:nil
+                        withContentsOfURL:url]);
 }
 
 /**
  * Creation of a new Parser by calling
  * -initWithSAXHandler:withData:
  */
-+ (GSXMLParser*) parserWithData: (NSData*)data
++ (GSXMLParser*)parserWithData:(NSData*)data
 {
-  return AUTORELEASE([[self alloc] initWithSAXHandler: nil
-					     withData: data]);
+    return AUTORELEASE([[self alloc] initWithSAXHandler:nil
+                        withData:data]);
 }
 
 /**
@@ -1738,9 +1745,9 @@ static NSString	*endMarker = @"At end of incremental parse";
  *   to get the handler to deal with the parsed elements and entities.
  * </p>
  */
-+ (GSXMLParser*) parserWithSAXHandler: (GSSAXHandler*)handler
++ (GSXMLParser*)parserWithSAXHandler:(GSSAXHandler*)handler
 {
-  return AUTORELEASE([[self alloc] initWithSAXHandler: handler]);
+    return AUTORELEASE([[self alloc] initWithSAXHandler:handler]);
 }
 
 /**
@@ -1758,200 +1765,200 @@ static NSString	*endMarker = @"At end of incremental parse";
  * RELEASE(arp);
  * </example>
  */
-+ (GSXMLParser*) parserWithSAXHandler: (GSSAXHandler*)handler
-		   withContentsOfFile: (NSString*)path
++ (GSXMLParser*)parserWithSAXHandler:(GSSAXHandler*)handler
+    withContentsOfFile:(NSString*)path
 {
-  return AUTORELEASE([[self alloc] initWithSAXHandler: handler
-				   withContentsOfFile: path]);
+    return AUTORELEASE([[self alloc] initWithSAXHandler:handler
+                        withContentsOfFile:path]);
 }
 
 /**
  * Creation of a new Parser by calling
  * -initWithSAXHandler:withContentsOfURL:
  */
-+ (GSXMLParser*) parserWithSAXHandler: (GSSAXHandler*)handler
-		    withContentsOfURL: (NSURL*)url
++ (GSXMLParser*)parserWithSAXHandler:(GSSAXHandler*)handler
+    withContentsOfURL:(NSURL*)url
 {
-  return AUTORELEASE([[self alloc] initWithSAXHandler: handler
-				    withContentsOfURL: url]);
+    return AUTORELEASE([[self alloc] initWithSAXHandler:handler
+                        withContentsOfURL:url]);
 }
 
 /**
  * Creation of a new Parser by calling
  * -initWithSAXHandler:withData:
  */
-+ (GSXMLParser*) parserWithSAXHandler: (GSSAXHandler*)handler
-			     withData: (NSData*)data
++ (GSXMLParser*)parserWithSAXHandler:(GSSAXHandler*)handler
+    withData:(NSData*)data
 {
-  return AUTORELEASE([[self alloc] initWithSAXHandler: handler
-					     withData: data]);
+    return AUTORELEASE([[self alloc] initWithSAXHandler:handler
+                        withData:data]);
 }
 
 /** Sets a directory in which to look for DTDs when resolving external
  * references.  Can be used whjen DTDs have not been installed in the
  * normal locatioons.
  */
-+ (void) setDTDs: (NSString*)aPath
++ (void)setDTDs:(NSString*)aPath
 {
-  ASSIGNCOPY(dtdPath, aPath);
+    ASSIGNCOPY(dtdPath, aPath);
 }
 
 /**
  * Return the name of the string encoding (for XML) to use for the
  * specified OpenStep encoding.
  */
-+ (NSString*) xmlEncodingStringForStringEncoding: (NSStringEncoding)encoding
++ (NSString*)xmlEncodingStringForStringEncoding:(NSStringEncoding)encoding
 {
-  NSString	*xmlEncodingString = nil;
+    NSString  *xmlEncodingString = nil;
 
-  switch (encoding)
+    switch (encoding)
     {
-      case NSUnicodeStringEncoding:
-	NSLog(@"NSUnicodeStringEncoding not supported for XML");//??
-	break;
-      case NSNEXTSTEPStringEncoding:
-	NSLog(@"NSNEXTSTEPStringEncoding not supported for XML");//??
-	break;
-      case NSJapaneseEUCStringEncoding:
-	xmlEncodingString = @"EUC-JP";
-	break;
-      case NSShiftJISStringEncoding:
-	xmlEncodingString = @"Shift-JIS";
-	break;
-      case NSISO2022JPStringEncoding:
-	xmlEncodingString = @"ISO-2022-JP";
-	break;
-      case NSUTF8StringEncoding:
-	xmlEncodingString = @"UTF-8";
-	break;
-      case NSWindowsCP1251StringEncoding:
-	NSLog(@"NSWindowsCP1251StringEncoding not supported for XML");//??
-	break;
-      case NSWindowsCP1252StringEncoding:
-	NSLog(@"NSWindowsCP1252StringEncoding not supported for XML");//??
-	break;
-      case NSWindowsCP1253StringEncoding:
-	NSLog(@"NSWindowsCP1253StringEncoding not supported for XML");//??
-	break;
-      case NSWindowsCP1254StringEncoding:
-	NSLog(@"NSWindowsCP1254StringEncoding not supported for XML");//??
-	break;
-      case NSWindowsCP1250StringEncoding:
-	NSLog(@"NSWindowsCP1250StringEncoding not supported for XML");//??
-	break;
-      case NSISOLatin1StringEncoding:
-	xmlEncodingString = @"ISO-8859-1";
-	break;
-      case NSISOLatin2StringEncoding:
-	xmlEncodingString = @"ISO-8859-2";
-	break;
-      case NSSymbolStringEncoding:
-	NSLog(@"NSSymbolStringEncoding not supported for XML");//??
-	break;
-      default:
-	NSLog(@"Encoding not supported for XML");//??
-	xmlEncodingString = nil;
-	break;
+    case NSUnicodeStringEncoding:
+        NSLog(@"NSUnicodeStringEncoding not supported for XML"); //??
+        break;
+    case NSNEXTSTEPStringEncoding:
+        NSLog(@"NSNEXTSTEPStringEncoding not supported for XML"); //??
+        break;
+    case NSJapaneseEUCStringEncoding:
+        xmlEncodingString = @"EUC-JP";
+        break;
+    case NSShiftJISStringEncoding:
+        xmlEncodingString = @"Shift-JIS";
+        break;
+    case NSISO2022JPStringEncoding:
+        xmlEncodingString = @"ISO-2022-JP";
+        break;
+    case NSUTF8StringEncoding:
+        xmlEncodingString = @"UTF-8";
+        break;
+    case NSWindowsCP1251StringEncoding:
+        NSLog(@"NSWindowsCP1251StringEncoding not supported for XML"); //??
+        break;
+    case NSWindowsCP1252StringEncoding:
+        NSLog(@"NSWindowsCP1252StringEncoding not supported for XML"); //??
+        break;
+    case NSWindowsCP1253StringEncoding:
+        NSLog(@"NSWindowsCP1253StringEncoding not supported for XML"); //??
+        break;
+    case NSWindowsCP1254StringEncoding:
+        NSLog(@"NSWindowsCP1254StringEncoding not supported for XML"); //??
+        break;
+    case NSWindowsCP1250StringEncoding:
+        NSLog(@"NSWindowsCP1250StringEncoding not supported for XML"); //??
+        break;
+    case NSISOLatin1StringEncoding:
+        xmlEncodingString = @"ISO-8859-1";
+        break;
+    case NSISOLatin2StringEncoding:
+        xmlEncodingString = @"ISO-8859-2";
+        break;
+    case NSSymbolStringEncoding:
+        NSLog(@"NSSymbolStringEncoding not supported for XML"); //??
+        break;
+    default:
+        NSLog(@"Encoding not supported for XML"); //??
+        xmlEncodingString = nil;
+        break;
     }
-  return xmlEncodingString;
+    return xmlEncodingString;
 }
 
 /**
  * If called by a SAX callback routine, this method will terminate
  * the parsiong process.
  */
-- (void) abortParsing
+- (void)abortParsing
 {
-  if (lib != NULL)
+    if (lib != NULL)
     {
-      xmlParserCtxtPtr	ctxt = (xmlParserCtxtPtr)lib;
+        xmlParserCtxtPtr ctxt = (xmlParserCtxtPtr)lib;
 
-      // Stop SAX callbacks
-      ctxt->disableSAX = 1;
-      // Stop incoming data being parsed.
-      ctxt->instate = XML_PARSER_EOF;
-      // Pretend we are at end of file (nul byte).
-      if (ctxt->input != NULL) ctxt->input->cur = (const unsigned char*)"";
+        // Stop SAX callbacks
+        ctxt->disableSAX = 1;
+        // Stop incoming data being parsed.
+        ctxt->instate = XML_PARSER_EOF;
+        // Pretend we are at end of file (nul byte).
+        if (ctxt->input != NULL) { ctxt->input->cur = (const unsigned char*)""; }
     }
 }
 
 /**
  * If executed during a parse operation, returns the current column number.
  */
-- (NSInteger) columnNumber
+- (NSInteger)columnNumber
 {
-  return  xmlSAX2GetColumnNumber(lib);
+    return xmlSAX2GetColumnNumber(lib);
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  RELEASE(messages);
-  RELEASE(src);
-  RELEASE(saxHandler);
-  if (lib != NULL)
+    RELEASE(messages);
+    RELEASE(src);
+    RELEASE(saxHandler);
+    if (lib != NULL)
     {
-      xmlFreeDoc(((xmlParserCtxtPtr)lib)->myDoc);
-      xmlFreeParserCtxt(lib);
+        xmlFreeDoc(((xmlParserCtxtPtr)lib)->myDoc);
+        xmlFreeParserCtxt(lib);
     }
-  [super dealloc];
+    [super dealloc];
 }
 
 /**
  * Sets whether the document needs to be validated.
  */
-- (BOOL) doValidityChecking: (BOOL)yesno
+- (BOOL)doValidityChecking:(BOOL)yesno
 {
-  BOOL	old;
+    BOOL old;
 
-  old = (((xmlParserCtxtPtr)lib)->validate) ? YES : NO;
-  ((xmlParserCtxtPtr)lib)->validate = (yesno ? 1 : 0);
-  return old;
+    old = (((xmlParserCtxtPtr)lib)->validate) ? YES : NO;
+    ((xmlParserCtxtPtr)lib)->validate = (yesno ? 1 : 0);
+    return old;
 }
 
 /**
  * Return the document produced as a result of parsing data.
  */
-- (GSXMLDocument*) document
+- (GSXMLDocument*)document
 {
-  GSXMLDocument	*d = [GSXMLDocument alloc];
+    GSXMLDocument *d = [GSXMLDocument alloc];
 
-  d = [d _initFrom: ((xmlParserCtxtPtr)lib)->myDoc parent: self ownsLib: NO];
-  return AUTORELEASE(d);
+    d = [d _initFrom:((xmlParserCtxtPtr)lib)->myDoc parent:self ownsLib:NO];
+    return AUTORELEASE(d);
 }
 
 /**
  * Return error code for last parse operation.
  */
-- (NSInteger) errNo
+- (NSInteger)errNo
 {
-  return ((xmlParserCtxtPtr)lib)->errNo;
+    return ((xmlParserCtxtPtr)lib)->errNo;
 }
 
 /**
  * Sets whether warnings are generated.
  */
-- (BOOL) getWarnings: (BOOL)yesno
+- (BOOL)getWarnings:(BOOL)yesno
 {
-  BOOL	old = (((xmlParserCtxtPtr)lib)->vctxt.warning) ? YES : NO;
+    BOOL old = (((xmlParserCtxtPtr)lib)->vctxt.warning) ? YES : NO;
 
-  if (yesno == YES)
+    if (yesno == YES)
     {
-      ((xmlParserCtxtPtr)lib)->vctxt.warning = xmlParserValidityWarning;
+        ((xmlParserCtxtPtr)lib)->vctxt.warning = xmlParserValidityWarning;
     }
-  else
+    else
     {
-      ((xmlParserCtxtPtr)lib)->vctxt.warning = 0;
+        ((xmlParserCtxtPtr)lib)->vctxt.warning = 0;
     }
 
-  return old;
+    return old;
 }
 
 /**
  * Initialises by calling -initWithSAXHandler: with a nil argument.
  */
-- (id) init
+- (id)init
 {
-  return [self initWithSAXHandler: nil];
+    return [self initWithSAXHandler:nil];
 }
 
 /** <init />
@@ -1970,29 +1977,29 @@ static NSString	*endMarker = @"At end of incremental parse";
  *   parser.
  * </p>
  */
-- (id) initWithSAXHandler: (GSSAXHandler*)handler
+- (id)initWithSAXHandler:(GSSAXHandler*)handler
 {
-  if (handler == nil)
+    if (handler == nil)
     {
-      saxHandler = [GSTreeSAXHandler new];
+        saxHandler = [GSTreeSAXHandler new];
     }
-  else if ([handler isKindOfClass: [GSSAXHandler class]] == YES)
+    else if ([handler isKindOfClass:[GSSAXHandler class]] == YES)
     {
-      saxHandler = RETAIN(handler);
+        saxHandler = RETAIN(handler);
     }
-  else
+    else
     {
-      NSLog(@"Bad GSSAXHandler object passed to GSXMLParser initialiser");
-      DESTROY(self);
-      return nil;
+        NSLog(@"Bad GSSAXHandler object passed to GSXMLParser initialiser");
+        DESTROY(self);
+        return nil;
     }
-  [saxHandler _setParser: self];
-  if ([self _initLibXML] == NO)
+    [saxHandler _setParser:self];
+    if ([self _initLibXML] == NO)
     {
-      DESTROY(self);
-      return nil;
+        DESTROY(self);
+        return nil;
     }
-  return self;
+    return self;
 }
 
 /**
@@ -2006,18 +2013,18 @@ static NSString	*endMarker = @"At end of incremental parse";
  *   incremental parsing.
  * </p>
  */
-- (id) initWithSAXHandler: (GSSAXHandler*)handler
-       withContentsOfFile: (NSString*)path
+- (id)initWithSAXHandler:(GSSAXHandler*)handler
+    withContentsOfFile:(NSString*)path
 {
-  if (path == nil || [path isKindOfClass: NSString_class] == NO)
+    if (path == nil || [path isKindOfClass:NSString_class] == NO)
     {
-      NSLog(@"Bad file path passed to initialize GSXMLParser");
-      DESTROY(self);
-      return nil;
+        NSLog(@"Bad file path passed to initialize GSXMLParser");
+        DESTROY(self);
+        return nil;
     }
-  src = [path copy];
-  self = [self initWithSAXHandler: handler];
-  return self;
+    src = [path copy];
+    self = [self initWithSAXHandler:handler];
+    return self;
 }
 
 /**
@@ -2031,18 +2038,18 @@ static NSString	*endMarker = @"At end of incremental parse";
  *   incremental parsing.
  * </p>
  */
-- (id) initWithSAXHandler: (GSSAXHandler*)handler
-	withContentsOfURL: (NSURL*)url
+- (id)initWithSAXHandler:(GSSAXHandler*)handler
+    withContentsOfURL:(NSURL*)url
 {
-  if (url == nil || [url isKindOfClass: [NSURL class]] == NO)
+    if (url == nil || [url isKindOfClass:[NSURL class]] == NO)
     {
-      NSLog(@"Bad NSURL passed to initialize GSXMLParser");
-      DESTROY(self);
-      return nil;
+        NSLog(@"Bad NSURL passed to initialize GSXMLParser");
+        DESTROY(self);
+        return nil;
     }
-  src = [url copy];
-  self = [self initWithSAXHandler: handler];
-  return self;
+    src = [url copy];
+    self = [self initWithSAXHandler:handler];
+    return self;
 }
 
 /**
@@ -2056,18 +2063,18 @@ static NSString	*endMarker = @"At end of incremental parse";
  *   entire document will be performed rather than incremental parsing.
  * </p>
  */
-- (id) initWithSAXHandler: (GSSAXHandler*)handler
-		 withData: (NSData*)data
+- (id)initWithSAXHandler:(GSSAXHandler*)handler
+    withData:(NSData*)data
 {
-  if (data == nil || [data isKindOfClass: [NSData class]] == NO)
+    if (data == nil || [data isKindOfClass:[NSData class]] == NO)
     {
-      NSLog(@"Bad NSData passed to initialize GSXMLParser");
-      DESTROY(self);
-      return nil;
+        NSLog(@"Bad NSData passed to initialize GSXMLParser");
+        DESTROY(self);
+        return nil;
     }
-  src = [data copy];
-  self = [self initWithSAXHandler: handler];
-  return self;
+    src = [data copy];
+    self = [self initWithSAXHandler:handler];
+    return self;
 }
 
 /**
@@ -2076,30 +2083,30 @@ static NSString	*endMarker = @"At end of incremental parse";
  * the parser in validating mode and when the current element
  * doesn't allow CDATA or mixed content.
  */
-- (BOOL) keepBlanks: (BOOL)yesno
+- (BOOL)keepBlanks:(BOOL)yesno
 {
-  BOOL	old;
+    BOOL old;
 
-  old = (((xmlParserCtxtPtr)lib)->keepBlanks) ? YES : NO;
-  ((xmlParserCtxtPtr)lib)->keepBlanks = (yesno ? 1 : 0);
-  return old;
+    old = (((xmlParserCtxtPtr)lib)->keepBlanks) ? YES : NO;
+    ((xmlParserCtxtPtr)lib)->keepBlanks = (yesno ? 1 : 0);
+    return old;
 }
 
 /**
  * If executed during a parse operation, returns the current line number.
  */
-- (NSInteger) lineNumber
+- (NSInteger)lineNumber
 {
-  return  xmlSAX2GetLineNumber(lib);
+    return xmlSAX2GetLineNumber(lib);
 }
 
 /**
  * Returns the string into which warning and error messages are saved,
  * or nil if they are being written to stderr.
  */
-- (NSString*) messages
+- (NSString*)messages
 {
-  return messages;
+    return messages;
 }
 
 /**
@@ -2118,62 +2125,64 @@ static NSString	*endMarker = @"At end of incremental parse";
  *   }
  * </example>
  */
-- (BOOL) parse
+- (BOOL)parse
 {
-  id	tmp;
+    id tmp;
 
-  if (src == endMarker)
+    if (src == endMarker)
     {
-      NSLog(@"GSXMLParser -parse called on object that is already parsed");
-      return NO;
+        NSLog(@"GSXMLParser -parse called on object that is already parsed");
+        return NO;
     }
-  if (src == nil)
+    if (src == nil)
     {
-      NSLog(@"GSXMLParser -parse called on object with no source");
-      return NO;
-    }
-
-  if ([src isKindOfClass: [NSData class]])
-    {
-    }
-  else if ([src isKindOfClass: NSString_class])
-    {
-      NSData	*data = [NSData dataWithContentsOfFile: src];
-
-      if (data == nil)
-	{
-	  NSLog(@"File to parse (%@) is not readable", src);
-          return NO;
-	}
-      ASSIGN(src, data);
-    }
-  else if ([src isKindOfClass: [NSURL class]])
-    {
-      NSData	*data = [src resourceDataUsingCache: YES];
-
-      if (data == nil)
-	{
-	  NSLog(@"URL to parse (%@) is not readable", src);
-          return NO;
-	}
-      ASSIGN(src, data);
-    }
-  else
-    {
-       NSLog(@"source for [-parse] must be NSString, NSData or NSURL type");
-       return NO;
+        NSLog(@"GSXMLParser -parse called on object with no source");
+        return NO;
     }
 
-  tmp = RETAIN(src);
-  ASSIGN(src, endMarker);
-  [self _parseChunk: tmp];
-  [self _parseChunk: nil];
-  RELEASE(tmp);
+    if ([src isKindOfClass:[NSData class]])
+    {
+    }
+    else if ([src isKindOfClass:NSString_class])
+    {
+        NSData    *data = [NSData dataWithContentsOfFile:src];
 
-  if (((xmlParserCtxtPtr)lib)->wellFormed)
-    return YES;
-  else
-    return NO;
+        if (data == nil)
+        {
+            NSLog(@"File to parse (%@) is not readable", src);
+            return NO;
+        }
+        ASSIGN(src, data);
+    }
+    else if ([src isKindOfClass:[NSURL class]])
+    {
+        NSData    *data = [src resourceDataUsingCache:YES];
+
+        if (data == nil)
+        {
+            NSLog(@"URL to parse (%@) is not readable", src);
+            return NO;
+        }
+        ASSIGN(src, data);
+    }
+    else
+    {
+        NSLog(@"source for [-parse] must be NSString, NSData or NSURL type");
+        return NO;
+    }
+
+    tmp = RETAIN(src);
+    ASSIGN(src, endMarker);
+    [self _parseChunk:tmp];
+    [self _parseChunk:nil];
+    RELEASE(tmp);
+
+    if (((xmlParserCtxtPtr)lib)->wellFormed) {
+        return YES;
+    }
+    else{
+        return NO;
+    }
 }
 
 /**
@@ -2200,52 +2209,54 @@ static NSString	*endMarker = @"At end of incremental parse";
  * [p parse: nil];  // Completed parsing of document.
  * </example>
  */
-- (BOOL) parse: (NSData*)data
+- (BOOL)parse:(NSData*)data
 {
-  if (src == endMarker)
+    if (src == endMarker)
     {
-      NSLog(@"GSXMLParser -parse: called on object that is fully parsed");
-      return NO;
+        NSLog(@"GSXMLParser -parse: called on object that is fully parsed");
+        return NO;
     }
-  if (src != nil)
+    if (src != nil)
     {
-       NSLog(@"XMLParser -parse: called for parser not initialised with nil");
-       return NO;
+        NSLog(@"XMLParser -parse: called for parser not initialised with nil");
+        return NO;
     }
 
-  if (data == nil || [data length] == 0)
+    if (data == nil || [data length] == 0)
     {
-      /*
-       * At end of incremental parse.
-       */
-      if (lib != NULL)
-	{
-	  [self _parseChunk: nil];
-	  src = endMarker;
-	  if (((xmlParserCtxtPtr)lib)->wellFormed)
-	    return YES;
-	  else
-	    return NO;
-	}
-      else
-	{
-	  NSLog(@"GSXMLParser -parse: terminated with no data");
-	  return NO;
-	}
+        /*
+         * At end of incremental parse.
+         */
+        if (lib != NULL)
+        {
+            [self _parseChunk:nil];
+            src = endMarker;
+            if (((xmlParserCtxtPtr)lib)->wellFormed) {
+                return YES;
+            }
+            else{
+                return NO;
+            }
+        }
+        else
+        {
+            NSLog(@"GSXMLParser -parse: terminated with no data");
+            return NO;
+        }
     }
-  else
+    else
     {
-      [self _parseChunk: data];
-      return YES;
+        [self _parseChunk:data];
+        return YES;
     }
 }
 
 /**
  * Return the public ID of the document being parsed.
  */
-- (NSString*) publicID
+- (NSString*)publicID
 {
-  return UTF8Str(xmlSAX2GetPublicId(lib));
+    return UTF8Str(xmlSAX2GetPublicId(lib));
 }
 
 /**
@@ -2255,15 +2266,15 @@ static NSString	*endMarker = @"At end of incremental parse";
  * NB. A SAX handler which overrides the error and warning logging
  * messages may stop this mechanism operating.
  */
-- (void) saveMessages: (BOOL)yesno
+- (void)saveMessages:(BOOL)yesno
 {
-  if (yesno == YES)
+    if (yesno == YES)
     {
-      ASSIGN(messages, [NSMutableString stringWithCapacity: 256]);
+        ASSIGN(messages, [NSMutableString stringWithCapacity:256]);
     }
-  else
+    else
     {
-      DESTROY(messages);
+        DESTROY(messages);
     }
 }
 
@@ -2272,78 +2283,78 @@ static NSString	*endMarker = @"At end of incremental parse";
  * Initially the parser always keeps entity references instead
  * of substituting entity values in the output.
  */
-- (BOOL) substituteEntities: (BOOL)yesno
+- (BOOL)substituteEntities:(BOOL)yesno
 {
-  BOOL	old;
+    BOOL old;
 
-  old = (((xmlParserCtxtPtr)lib)->replaceEntities) ? YES : NO;
-  ((xmlParserCtxtPtr)lib)->replaceEntities = (yesno ? 1 : 0);
-  return old;
+    old = (((xmlParserCtxtPtr)lib)->replaceEntities) ? YES : NO;
+    ((xmlParserCtxtPtr)lib)->replaceEntities = (yesno ? 1 : 0);
+    return old;
 }
 
 /**
  * Return the system ID of the document being parsed.
  */
-- (NSString*) systemID
+- (NSString*)systemID
 {
-  return UTF8Str(xmlSAX2GetSystemId(lib));
+    return UTF8Str(xmlSAX2GetSystemId(lib));
 }
 
 /*
  * Private methods - internal use only.
  */
 
-- (BOOL) _initLibXML
+- (BOOL)_initLibXML
 {
-  const char	*file;
+    const char    *file;
 
-  if ([src isKindOfClass: NSString_class])
+    if ([src isKindOfClass:NSString_class])
     {
-      file = [src lossyCString];
+        file = [src lossyCString];
     }
-  else if ([src isKindOfClass: [NSURL class]])
+    else if ([src isKindOfClass:[NSURL class]])
     {
-      file = [[src absoluteString] lossyCString];
+        file = [[src absoluteString] lossyCString];
     }
-  else
+    else
     {
-      file = ".";
+        file = ".";
     }
-  lib = (void*)xmlCreatePushParserCtxt([saxHandler lib], NULL, 0, 0, file);
-  if (lib == NULL)
+    lib = (void*)xmlCreatePushParserCtxt([saxHandler lib], NULL, 0, 0, file);
+    if (lib == NULL)
     {
-      NSLog(@"Failed to create libxml parser context");
-      return NO;
+        NSLog(@"Failed to create libxml parser context");
+        return NO;
     }
-  else
+    else
     {
-      /*
-       * Put saxHandler address in _private member, so we can retrieve
-       * the GSSAXHandler to use in our SAX C Functions.
-       */
-      ((xmlParserCtxtPtr)lib)->_private = saxHandler;
+        /*
+         * Put saxHandler address in _private member, so we can retrieve
+         * the GSSAXHandler to use in our SAX C Functions.
+         */
+        ((xmlParserCtxtPtr)lib)->_private = saxHandler;
 
-      /*
-       * Set the entity loading function for this parser to be our one.
-       */
-      ((xmlParserCtxtPtr)lib)->sax->resolveEntity = loadEntityFunction;
+        /*
+         * Set the entity loading function for this parser to be our one.
+         */
+        ((xmlParserCtxtPtr)lib)->sax->resolveEntity = loadEntityFunction;
     }
-  return YES;
+    return YES;
 }
 
-- (NSMutableString*) _messages
+- (NSMutableString*)_messages
 {
-  return messages;
+    return messages;
 }
 
 // nil data allowed
-- (void) _parseChunk: (NSData*)data
+- (void)_parseChunk:(NSData*)data
 {
-  if (lib == NULL || ((xmlParserCtxtPtr)lib)->disableSAX != 0)
+    if (lib == NULL || ((xmlParserCtxtPtr)lib)->disableSAX != 0)
     {
-      return;	// Parsing impossible or disabled.
+        return; // Parsing impossible or disabled.
     }
-  xmlParseChunk(lib, [data bytes], [data length], data == nil);
+    xmlParseChunk(lib, [data bytes], [data length], data == nil);
 }
 
 @end
@@ -2356,29 +2367,29 @@ static NSString	*endMarker = @"At end of incremental parse";
  */
 @implementation GSHTMLParser
 
-- (BOOL) _initLibXML
+- (BOOL)_initLibXML
 {
-  lib = (void*)htmlCreatePushParserCtxt([saxHandler lib], NULL, 0, 0, ".",
-    XML_CHAR_ENCODING_NONE);
-  if (lib == NULL)
+    lib = (void*)htmlCreatePushParserCtxt([saxHandler lib], NULL, 0, 0, ".",
+                                          XML_CHAR_ENCODING_NONE);
+    if (lib == NULL)
     {
-      NSLog(@"Failed to create libxml parser context");
-      return NO;
+        NSLog(@"Failed to create libxml parser context");
+        return NO;
     }
-  else
+    else
     {
-      /*
-       * Put saxHandler address in _private member, so we can retrieve
-       * the GSSAXHandler to use in our SAX C Functions.
-       */
-      ((htmlParserCtxtPtr)lib)->_private = saxHandler;
+        /*
+         * Put saxHandler address in _private member, so we can retrieve
+         * the GSSAXHandler to use in our SAX C Functions.
+         */
+        ((htmlParserCtxtPtr)lib)->_private = saxHandler;
     }
-  return YES;
+    return YES;
 }
 
-- (void) _parseChunk: (NSData*)data
+- (void)_parseChunk:(NSData*)data
 {
-  htmlParseChunk(lib, [data bytes], [data length], data == nil);
+    htmlParseChunk(lib, [data bytes], [data length], data == nil);
 }
 
 @end
@@ -2414,11 +2425,11 @@ static NSString	*endMarker = @"At end of incremental parse";
  */
 @implementation GSSAXHandler
 
-+ (void) initialize
++ (void)initialize
 {
-  if (cacheDone == NO)
+    if (cacheDone == NO)
     {
-      setupCache();
+        setupCache();
     }
 }
 
@@ -2428,1015 +2439,1015 @@ static NSString	*endMarker = @"At end of incremental parse";
  * We can use a (xmlParserCtxtPtr) cast because xmlParserCtxt and
  * htmlParserCtxt are the same structure (and will remain, cf libxml author).
  */
-#define	HANDLER	((GSSAXHandler*)(((xmlParserCtxtPtr)ctx)->_private))
+#define HANDLER ((GSSAXHandler*)(((xmlParserCtxtPtr)ctx)->_private))
 
 static xmlParserInputPtr
 loadEntityFunction(void *ctx,
-  const unsigned char *eid, const unsigned char *url)
+                   const unsigned char *eid, const unsigned char *url)
 {
-  NSString			*file = nil;
-  NSString			*entityId;
-  NSString			*location;
-  NSArray			*components;
-  NSMutableString		*local;
-  unsigned			count;
-  unsigned			index;
+    NSString          *file = nil;
+    NSString          *entityId;
+    NSString          *location;
+    NSArray           *components;
+    NSMutableString       *local;
+    unsigned count;
+    unsigned index;
 
-  NSCAssert(ctx, @"No Context");
-  if (url == NULL)
-    return NULL;
-
-  entityId = (eid != NULL) ? (id)UTF8Str(eid) : nil;
-  location = UTF8Str(url);
-  components = [location pathComponents];
-  local = (NSMutableString *) [NSMutableString string];
-
-  /*
-   * Build a local filename by replacing path separator characters with
-   * something else.
-   */
-  count = [components count];
-  if (count > 0)
-    {
-      count--;
-      for (index = 0; index < count; index++)
-	{
-	  [local appendString: [components objectAtIndex: index]];
-	  [local appendString: @"_"];
-	}
-      [local appendString: [components objectAtIndex: index]];
+    NSCAssert(ctx, @"No Context");
+    if (url == NULL) {
+        return NULL;
     }
-  /* Also replace ':' which isn't legal on some file systems */
-  [local replaceOccurrencesOfString: @":" withString: @"+"
-                            options: NSLiteralSearch
-                            range: NSMakeRange(0, [local length])];
+
+    entityId = (eid != NULL) ? (id)UTF8Str(eid) : nil;
+    location = UTF8Str(url);
+    components = [location pathComponents];
+    local = (NSMutableString *) [NSMutableString string];
+
+    /*
+     * Build a local filename by replacing path separator characters with
+     * something else.
+     */
+    count = [components count];
+    if (count > 0)
+    {
+        count--;
+        for (index = 0; index < count; index++)
+        {
+            [local appendString:[components objectAtIndex:index]];
+            [local appendString:@"_"];
+        }
+        [local appendString:[components objectAtIndex:index]];
+    }
+    /* Also replace ':' which isn't legal on some file systems */
+    [local replaceOccurrencesOfString:@":" withString:@"+"
+     options:NSLiteralSearch
+     range:NSMakeRange(0, [local length])];
 
 #ifdef GNUSTEP
-  if ([location rangeOfString: @"/DTDs/PropertyList"].length > 0)
+    if ([location rangeOfString:@"/DTDs/PropertyList"].length > 0)
     {
-      file = [location substringFromIndex: 6];
-      if ([[NSFileManager defaultManager] fileExistsAtPath: file] == NO)
+        file = [location substringFromIndex:6];
+        if ([[NSFileManager defaultManager] fileExistsAtPath:file] == NO)
         {
-	  location = [NSBundle pathForLibraryResource: @"plist-0_9"
-					       ofType: @"dtd"
-					  inDirectory: @"DTDs"];
-	  entityId = @"-//GNUstep//DTD plist 0.9//EN";
-	  file = nil;
-	}
+            location = [NSBundle pathForLibraryResource:@"plist-0_9"
+                        ofType:@"dtd"
+                        inDirectory:@"DTDs"];
+            entityId = @"-//GNUstep//DTD plist 0.9//EN";
+            file = nil;
+        }
     }
 #endif
 
-  if (file == nil)
+    if (file == nil)
     {
-      /*
-       * Now ask the SAXHandler callback for the name of a local file
-       */
-      file = [HANDLER loadEntity: entityId at: location];
-      if (file == nil)
-	{
-	  file = [GSXMLParser loadEntity: entityId at: location];
-	}
+        /*
+         * Now ask the SAXHandler callback for the name of a local file
+         */
+        file = [HANDLER loadEntity:entityId at:location];
+        if (file == nil)
+        {
+            file = [GSXMLParser loadEntity:entityId at:location];
+        }
     }
 
-  if (file == nil)
+    if (file == nil)
     {
-      /*
-       * Special case - GNUstep DTDs - should be installed in the GNUstep
-       * system bundle - so we look for them there.
-       */
-      if ([entityId hasPrefix: @"-//GNUstep//DTD "] == YES)
-	{
-	  NSCharacterSet	*ws = [NSCharacterSet whitespaceCharacterSet];
-	  NSString		*found = nil;
-	  NSMutableString	*name;
-	  unsigned		len;
-	  NSRange		r;
+        /*
+         * Special case - GNUstep DTDs - should be installed in the GNUstep
+         * system bundle - so we look for them there.
+         */
+        if ([entityId hasPrefix:@"-//GNUstep//DTD "] == YES)
+        {
+            NSCharacterSet    *ws = [NSCharacterSet whitespaceCharacterSet];
+            NSString      *found = nil;
+            NSMutableString   *name;
+            unsigned len;
+            NSRange r;
 
-	  /*
-	   * Extract the relevent DTD name
-	   */
-	  name = AUTORELEASE([entityId mutableCopy]);
-	  r = NSMakeRange(0, 16);
-	  [name deleteCharactersInRange: r];
-	  len = [name length];
-	  r = [name rangeOfString: @"/" options: NSLiteralSearch];
-	  if (r.length > 0)
-	    {
-	      r.length = len - r.location;
-	      [name deleteCharactersInRange: r];
-	      len = [name length];
-	    }
+            /*
+             * Extract the relevent DTD name
+             */
+            name = AUTORELEASE([entityId mutableCopy]);
+            r = NSMakeRange(0, 16);
+            [name deleteCharactersInRange:r];
+            len = [name length];
+            r = [name rangeOfString:@"/" options:NSLiteralSearch];
+            if (r.length > 0)
+            {
+                r.length = len - r.location;
+                [name deleteCharactersInRange:r];
+                len = [name length];
+            }
 
-	  /*
-	   * Convert dots to underscores.
-	   */
-	  r = [name rangeOfString: @"." options: NSLiteralSearch];
-	  while (r.length > 0)
-	    {
-	      [name replaceCharactersInRange: r withString: @"_"];
-	      r.location++;
-	      r.length = len - r.location;
-	      r = [name rangeOfString: @"."
-			     options: NSLiteralSearch
-			       range: r];
-	    }
+            /*
+             * Convert dots to underscores.
+             */
+            r = [name rangeOfString:@"." options:NSLiteralSearch];
+            while (r.length > 0)
+            {
+                [name replaceCharactersInRange:r withString:@"_"];
+                r.location++;
+                r.length = len - r.location;
+                r = [name rangeOfString:@"."
+                     options:NSLiteralSearch
+                     range:r];
+            }
 
-	  /*
-	   * Convert whitespace to hyphens.
-	   */
-	  r = [name rangeOfCharacterFromSet: ws options: NSLiteralSearch];
-	  while (r.length > 0)
-	    {
-	      [name replaceCharactersInRange: r withString: @"-"];
-	      r.location++;
-	      r.length = len - r.location;
-	      r = [name rangeOfCharacterFromSet: ws
-				       options: NSLiteralSearch
-					 range: r];
-	    }
+            /*
+             * Convert whitespace to hyphens.
+             */
+            r = [name rangeOfCharacterFromSet:ws options:NSLiteralSearch];
+            while (r.length > 0)
+            {
+                [name replaceCharactersInRange:r withString:@"-"];
+                r.location++;
+                r.length = len - r.location;
+                r = [name rangeOfCharacterFromSet:ws
+                     options:NSLiteralSearch
+                     range:r];
+            }
 
-	  if (dtdPath != nil)
-	    {
-	      found = [dtdPath stringByAppendingPathComponent: name];
-	      found = [found stringByAppendingPathExtension: @"dtd"];
-	      if (![[NSFileManager defaultManager] fileExistsAtPath: found])
-		{
-		  found = nil;
-		}
-	    }
-	  if (found == nil)
-	    {
+            if (dtdPath != nil)
+            {
+                found = [dtdPath stringByAppendingPathComponent:name];
+                found = [found stringByAppendingPathExtension:@"dtd"];
+                if (![[NSFileManager defaultManager] fileExistsAtPath:found])
+                {
+                    found = nil;
+                }
+            }
+            if (found == nil)
+            {
 #ifndef NeXT_Foundation_LIBRARY
-	      found = [NSBundle pathForLibraryResource: name
-						ofType: @"dtd"
-					   inDirectory: @"DTDs"];
+                found = [NSBundle pathForLibraryResource:name
+                         ofType:@"dtd"
+                         inDirectory:@"DTDs"];
 #else
-	      found = [[NSBundle bundleForClass: [GSXMLNode class]]
-		pathForResource: name
-		ofType: @"dtd"
-		inDirectory: @"DTDs"];
+                found = [[NSBundle bundleForClass:[GSXMLNode class]]
+                         pathForResource:name
+                         ofType:@"dtd"
+                         inDirectory:@"DTDs"];
 #endif
-	    }
-	  if (found == nil)
-	    {
-	      NSLog(@"unable to find GNUstep DTD - '%@' for '%s'", name, eid);
-	    }
-	  else
-	    {
-	      file = found;
-	    }
-	}
+            }
+            if (found == nil)
+            {
+                NSLog(@"unable to find GNUstep DTD - '%@' for '%s'", name, eid);
+            }
+            else
+            {
+                file = found;
+            }
+        }
 
-      /*
-       * DTD not found - so we look for it in standard locations.
-       */
-      if (file == nil)
-	{
-	  if (dtdPath != nil)
-	    {
-	      file = [dtdPath stringByAppendingPathComponent: local];
-	      if (![[NSFileManager defaultManager] fileExistsAtPath: local])
-		{
-		  file = nil;
-		}
-	    }
-	  if (file == nil)
-	    {
-	      file = [[NSBundle mainBundle] pathForResource: local
-						     ofType: @""
-					        inDirectory: @"DTDs"];
-	    }
-	  if (file == nil)
-	    {
+        /*
+         * DTD not found - so we look for it in standard locations.
+         */
+        if (file == nil)
+        {
+            if (dtdPath != nil)
+            {
+                file = [dtdPath stringByAppendingPathComponent:local];
+                if (![[NSFileManager defaultManager] fileExistsAtPath:local])
+                {
+                    file = nil;
+                }
+            }
+            if (file == nil)
+            {
+                file = [[NSBundle mainBundle] pathForResource:local
+                        ofType:@""
+                        inDirectory:@"DTDs"];
+            }
+            if (file == nil)
+            {
 #ifndef NeXT_Foundation_LIBRARY
-	      file = [NSBundle pathForLibraryResource: local
-					       ofType: @""
-					  inDirectory: @"DTDs"];
+                file = [NSBundle pathForLibraryResource:local
+                        ofType:@""
+                        inDirectory:@"DTDs"];
 #else
-	      file = [[NSBundle bundleForClass: [GSXMLNode class]]
-		pathForResource: local
-		ofType: @""
-		inDirectory: @"DTDs"];
+                file = [[NSBundle bundleForClass:[GSXMLNode class]]
+                        pathForResource:local
+                        ofType:@""
+                        inDirectory:@"DTDs"];
 #endif
-	    }
-	}
+            }
+        }
     }
 
-  /*
-   * If we found the DTD somewhere, add it to the catalog.
-   */
-  if ([file length] > 0)
+    /*
+     * If we found the DTD somewhere, add it to the catalog.
+     */
+    if ([file length] > 0)
     {
-      NSURL *theURL = [NSURL fileURLWithPath: file];
-      xmlCatalogAdd((const unsigned char*)"public", eid,
-        UTF8STRING([theURL absoluteString]));
+        NSURL *theURL = [NSURL fileURLWithPath:file];
+        xmlCatalogAdd((const unsigned char*)"public", eid,
+                      UTF8STRING([theURL absoluteString]));
     }
-    
-  /*
-   * A local DTD will now be in the catalog: The builtin entity resolver can
-   * take over.
-   */
-  return xmlSAX2ResolveEntity(ctx, eid, url);
+
+    /*
+     * A local DTD will now be in the catalog: The builtin entity resolver can
+     * take over.
+     */
+    return xmlSAX2ResolveEntity(ctx, eid, url);
 }
 
 
-#define	TREEFUN(NAME,ARGS) ((HANDLER->isHtmlHandler == YES) ? (*(htmlDefaultSAXHandler.NAME))ARGS : (*(xmlDefaultSAXHandler.NAME))ARGS)
-#define	START(SELNAME, RET, ARGS) \
-  static SEL sel; \
-  static RET (*treeImp)ARGS = 0; \
-  RET (*imp)ARGS; \
+#define TREEFUN(NAME,ARGS) ((HANDLER->isHtmlHandler == YES) ? (*(htmlDefaultSAXHandler.NAME))ARGS:(*(xmlDefaultSAXHandler.NAME))ARGS)
+#define START(SELNAME, RET, ARGS) \
+    static SEL sel; \
+    static RET (*treeImp) ARGS = 0; \
+    RET (*imp) ARGS; \
 \
-  NSCAssert(ctx,@"No Context"); \
+    NSCAssert(ctx,@"No Context"); \
 \
-  if (treeImp == 0) \
+    if (treeImp == 0) \
     { \
-      sel = @selector(SELNAME); \
-      treeImp = (RET (*)ARGS)[treeClass instanceMethodForSelector: sel];\
+        sel = @selector(SELNAME); \
+        treeImp = (RET (*) ARGS)[treeClass instanceMethodForSelector : sel]; \
     } \
-  imp = (RET (*)ARGS)[HANDLER methodForSelector: sel]
+    imp = (RET (*) ARGS)[HANDLER methodForSelector:sel]
 
 
 static void
 startDocumentFunction(void *ctx)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER startDocument];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER startDocument];
 }
 
 static void
 endDocumentFunction(void *ctx)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER endDocument];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER endDocument];
 }
 
 static int
 isStandaloneFunction(void *ctx)
 {
-  NSCAssert(ctx,@"No Context");
-  return [HANDLER isStandalone];
+    NSCAssert(ctx,@"No Context");
+    return [HANDLER isStandalone];
 }
 
 static int
 hasInternalSubsetFunction(void *ctx)
 {
-  int	has;
+    int has;
 
-  NSCAssert(ctx,@"No Context");
-  has = [HANDLER hasInternalSubset];
-  if (has < 0)
+    NSCAssert(ctx,@"No Context");
+    has = [HANDLER hasInternalSubset];
+    if (has < 0)
     {
-      has = TREEFUN(hasInternalSubset, (ctx));
+        has = TREEFUN(hasInternalSubset, (ctx));
     }
-  return has;
+    return has;
 }
 
 static int
 hasExternalSubsetFunction(void *ctx)
 {
-  int	has;
+    int has;
 
-  NSCAssert(ctx,@"No Context");
-  has = [HANDLER hasExternalSubset];
-  if (has < 0)
+    NSCAssert(ctx,@"No Context");
+    has = [HANDLER hasExternalSubset];
+    if (has < 0)
     {
-      has = TREEFUN(hasExternalSubset, (ctx));
+        has = TREEFUN(hasExternalSubset, (ctx));
     }
-  return has;
+    return has;
 }
 
 static void
 internalSubsetFunction(void *ctx, const unsigned char *name,
-  const xmlChar *ExternalID, const xmlChar *SystemID)
+                       const xmlChar *ExternalID, const xmlChar *SystemID)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER internalSubset: UTF8Str(name)
-	       externalID: UTF8Str(ExternalID)
-		 systemID: UTF8Str(SystemID)];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER internalSubset:UTF8Str(name)
+     externalID:UTF8Str(ExternalID)
+     systemID:UTF8Str(SystemID)];
 }
 
 static void
 externalSubsetFunction(void *ctx, const unsigned char *name,
-  const xmlChar *ExternalID, const xmlChar *SystemID)
+                       const xmlChar *ExternalID, const xmlChar *SystemID)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER externalSubset: UTF8Str(name)
-	       externalID: UTF8Str(ExternalID)
-		 systemID: UTF8Str(SystemID)];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER externalSubset:UTF8Str(name)
+     externalID:UTF8Str(ExternalID)
+     systemID:UTF8Str(SystemID)];
 }
 
 static xmlEntityPtr
 getEntityFunction(void *ctx, const unsigned char *name)
 {
-  NSCAssert(ctx,@"No Context");
-  return [HANDLER getEntity: UTF8Str(name)];
+    NSCAssert(ctx,@"No Context");
+    return [HANDLER getEntity:UTF8Str(name)];
 }
 
 static xmlEntityPtr
 getParameterEntityFunction(void *ctx, const unsigned char *name)
 {
-  NSCAssert(ctx,@"No Context");
-  return [HANDLER getParameterEntity: UTF8Str(name)];
+    NSCAssert(ctx,@"No Context");
+    return [HANDLER getParameterEntity:UTF8Str(name)];
 }
 
 static void
 entityDeclFunction(void *ctx, const unsigned char *name, int type,
-  const unsigned char *publicId, const unsigned char *systemId,
-  unsigned char *content)
+                   const unsigned char *publicId, const unsigned char *systemId,
+                   unsigned char *content)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER entityDecl: UTF8Str(name)
-		 type: type
-	       public: UTF8Str(publicId)
-	       system: UTF8Str(systemId)
-	      content: UTF8Str(content)];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER entityDecl:UTF8Str(name)
+     type:type
+     public: UTF8Str(publicId)
+     system:UTF8Str(systemId)
+     content:UTF8Str(content)];
 }
 
 static void
 attributeDeclFunction(void *ctx, const unsigned char *elem,
-  const unsigned char *name, int type, int def,
-  const unsigned char *defaultValue, xmlEnumerationPtr tree)
+                      const unsigned char *name, int type, int def,
+                      const unsigned char *defaultValue, xmlEnumerationPtr tree)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER attributeDecl: UTF8Str(elem)
-		    name: UTF8Str(name)
-		    type: type
-	    typeDefValue: def
-	    defaultValue: UTF8Str(defaultValue)];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER attributeDecl:UTF8Str(elem)
+     name:UTF8Str(name)
+     type:type
+     typeDefValue:def
+     defaultValue:UTF8Str(defaultValue)];
 }
 
 static void
 elementDeclFunction(void *ctx, const unsigned char *name, int type,
-  xmlElementContentPtr content)
+                    xmlElementContentPtr content)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER elementDecl: UTF8Str(name) type: type];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER elementDecl:UTF8Str(name) type:type];
 }
 
 static void
 notationDeclFunction(void *ctx, const unsigned char *name,
-  const unsigned char *publicId, const unsigned char *systemId)
+                     const unsigned char *publicId, const unsigned char *systemId)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER notationDecl: UTF8Str(name)
-		 public: UTF8Str(publicId)
-		 system: UTF8Str(systemId)];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER notationDecl:UTF8Str(name)
+     public: UTF8Str(publicId)
+     system:UTF8Str(systemId)];
 }
 
 static void
 unparsedEntityDeclFunction(void *ctx, const unsigned char *name,
-  const unsigned char *publicId, const unsigned char *systemId,
-  const unsigned char *notationName)
+                           const unsigned char *publicId, const unsigned char *systemId,
+                           const unsigned char *notationName)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER unparsedEntityDecl: UTF8Str(name)
-		       public: UTF8Str(publicId)
-		       system: UTF8Str(systemId)
-		 notationName: UTF8Str(notationName)];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER unparsedEntityDecl:UTF8Str(name)
+     public: UTF8Str(publicId)
+     system:UTF8Str(systemId)
+     notationName:UTF8Str(notationName)];
 }
 
 static void
 startElementFunction(void *ctx, const unsigned char *name,
-  const unsigned char **atts)
+                     const unsigned char **atts)
 {
-  NSMutableDictionary *dict;
+    NSMutableDictionary *dict;
 
-  NSCAssert(ctx,@"No Context");
-  dict = [NSMutableDictionary dictionary];
-  if (atts != NULL)
+    NSCAssert(ctx,@"No Context");
+    dict = [NSMutableDictionary dictionary];
+    if (atts != NULL)
     {
-      int i = 0;
+        int i = 0;
 
-      while (atts[i] != NULL)
-	{
-	  NSString		*key = UTF8Str(atts[i++]);
-	  NSString		*obj;
-	  const unsigned char	*val = atts[i++];
+        while (atts[i] != NULL)
+        {
+            NSString      *key = UTF8Str(atts[i++]);
+            NSString      *obj;
+            const unsigned char   *val = atts[i++];
 
-	  if (0 == val)
-	    {
-	      /* No value ... assume tis is a minimised attribute in html.
-	       */
-	      obj = key;
-	    }
-	  else
-	    {
-	      obj = UTF8Str(val);
-	    }
-	  [dict setObject: obj forKey: key];
-	}
+            if (0 == val)
+            {
+                /* No value ... assume tis is a minimised attribute in html.
+                 */
+                obj = key;
+            }
+            else
+            {
+                obj = UTF8Str(val);
+            }
+            [dict setObject:obj forKey:key];
+        }
     }
-  [HANDLER startElement: UTF8Str(name)
-	     attributes: dict];
+    [HANDLER startElement:UTF8Str(name)
+     attributes:dict];
 }
 
 static void
 endElementFunction(void *ctx, const unsigned char *name)
 {
-  [HANDLER endElement: UTF8Str(name)];
+    [HANDLER endElement:UTF8Str(name)];
 }
 
-#if	HAVE_LIBXML_SAX2_H
+#if HAVE_LIBXML_SAX2_H
 static void
 startElementNsFunction(void *ctx, const unsigned char *name,
-  const unsigned char *prefix, const unsigned char *href,
-  int nb_namespaces, const unsigned char **namespaces,
-  int nb_attributes, int nb_defaulted,
-  const unsigned char **atts)
+                       const unsigned char *prefix, const unsigned char *href,
+                       int nb_namespaces, const unsigned char **namespaces,
+                       int nb_attributes, int nb_defaulted,
+                       const unsigned char **atts)
 {
-  NSMutableDictionary	*adict = nil;
-  NSMutableDictionary	*ndict = nil;
-  NSString		*elem;
+    NSMutableDictionary   *adict = nil;
+    NSMutableDictionary   *ndict = nil;
+    NSString      *elem;
 
-  NSCAssert(ctx,@"No Context");
-  elem = UTF8Str(name);
-  if (atts != NULL)
+    NSCAssert(ctx,@"No Context");
+    elem = UTF8Str(name);
+    if (atts != NULL)
     {
-      int 	i;
-      int	j;
+        int i;
+        int j;
 
-      adict = [NSMutableDictionary dictionaryWithCapacity: nb_attributes];
-      for (i = j = 0; i < nb_attributes; i++, j += 5)
-	{
-	  NSString	*key = UTF8Str(atts[j]);
-	  NSString	*obj = UTF8StrLen(atts[j+3], atts[j+4]-atts[j+3]);
-
-	  [adict setObject: obj forKey: key];
-	}
-    }
-  if (nb_namespaces > 0)
-    {
-      int       i;
-      int       pos = 0;
-
-      ndict = [NSMutableDictionary dictionaryWithCapacity: nb_namespaces];
-      for (i = 0; i < nb_namespaces; i++)
+        adict = [NSMutableDictionary dictionaryWithCapacity:nb_attributes];
+        for (i = j = 0; i < nb_attributes; i++, j += 5)
         {
-          NSString      *key;
-          NSString      *obj;
+            NSString  *key = UTF8Str(atts[j]);
+            NSString  *obj = UTF8StrLen(atts[j+3], atts[j+4]-atts[j+3]);
 
-          if (namespaces[pos] == 0)
-            {
-              key = @"";
-            }
-          else
-            {
-              key = UTF8Str(namespaces[pos]);
-            }
-          pos++;
-          if (namespaces[pos] == 0)
-            {
-              obj = @"";
-            }
-          else
-            {
-              obj = UTF8Str(namespaces[pos]);
-            }
-          pos++;
-          [ndict setObject: obj forKey: key];
+            [adict setObject:obj forKey:key];
         }
     }
-  [HANDLER startElement: elem
-		 prefix: UTF8Str(prefix)
-		   href: UTF8Str(href)
-	     attributes: adict
-             namespaces: ndict];
+    if (nb_namespaces > 0)
+    {
+        int i;
+        int pos = 0;
+
+        ndict = [NSMutableDictionary dictionaryWithCapacity:nb_namespaces];
+        for (i = 0; i < nb_namespaces; i++)
+        {
+            NSString      *key;
+            NSString      *obj;
+
+            if (namespaces[pos] == 0)
+            {
+                key = @"";
+            }
+            else
+            {
+                key = UTF8Str(namespaces[pos]);
+            }
+            pos++;
+            if (namespaces[pos] == 0)
+            {
+                obj = @"";
+            }
+            else
+            {
+                obj = UTF8Str(namespaces[pos]);
+            }
+            pos++;
+            [ndict setObject:obj forKey:key];
+        }
+    }
+    [HANDLER startElement:elem
+     prefix:UTF8Str(prefix)
+     href:UTF8Str(href)
+     attributes:adict
+     namespaces:ndict];
 }
 
 static void
 endElementNsFunction(void *ctx, const unsigned char *name,
-  const unsigned char *prefix, const unsigned char *href)
+                     const unsigned char *prefix, const unsigned char *href)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER endElement: UTF8Str(name)
-	       prefix: UTF8Str(prefix)
-		 href: UTF8Str(href)];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER endElement:UTF8Str(name)
+     prefix:UTF8Str(prefix)
+     href:UTF8Str(href)];
 }
 #endif
 
 static void
 charactersFunction(void *ctx, const unsigned char *ch, int len)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER characters: UTF8StrLen(ch, len)];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER characters:UTF8StrLen(ch, len)];
 }
 
 static void
 referenceFunction(void *ctx, const unsigned char *name)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER reference: UTF8Str(name)];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER reference:UTF8Str(name)];
 }
 
 static void
 ignorableWhitespaceFunction(void *ctx, const unsigned char *ch, int len)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER ignoreWhitespace: UTF8StrLen(ch, len)];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER ignoreWhitespace:UTF8StrLen(ch, len)];
 }
 
 static void
 processingInstructionFunction(void *ctx, const unsigned char *target,
-  const char *data)
+                              const char *data)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER processInstruction: UTF8Str(target)
-			 data: UTF8Str((const unsigned char*)data)];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER processInstruction:UTF8Str(target)
+     data:UTF8Str((const unsigned char*)data)];
 }
 
 static void
 cdataBlockFunction(void *ctx, const unsigned char *value, int len)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER cdataBlock: [NSData dataWithBytes: value length: len]];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER cdataBlock:[NSData dataWithBytes:value length:len]];
 }
 
 static void
 commentFunction(void *ctx, const unsigned char *value)
 {
-  NSCAssert(ctx,@"No Context");
-  [HANDLER comment: UTF8Str(value)];
+    NSCAssert(ctx,@"No Context");
+    [HANDLER comment:UTF8Str(value)];
 }
 
 static void
 warningFunction(void *ctx, const unsigned char *msg, ...)
 {
-  NSString	*estr;
-  va_list	args;
-  int		lineNumber = -1;
-  int		colNumber = -1;
+    NSString  *estr;
+    va_list args;
+    int lineNumber = -1;
+    int colNumber = -1;
 
-  va_start(args, msg);
-  estr = [[[NSString alloc]
-    initWithFormat: UTF8Str(msg) arguments: args] autorelease];
-  va_end(args);
+    va_start(args, msg);
+    estr = [[[NSString alloc]
+             initWithFormat:UTF8Str(msg) arguments:args] autorelease];
+    va_end(args);
 
-  NSCAssert(ctx,@"No Context");
-  lineNumber = getLineNumber(ctx);
-  colNumber = xmlSAX2GetColumnNumber(ctx);
-  [HANDLER warning: estr
-	 colNumber: colNumber
-	lineNumber: lineNumber];
+    NSCAssert(ctx,@"No Context");
+    lineNumber = getLineNumber(ctx);
+    colNumber = xmlSAX2GetColumnNumber(ctx);
+    [HANDLER warning:estr
+     colNumber:colNumber
+     lineNumber:lineNumber];
 }
 
 static void
 errorFunction(void *ctx, const unsigned char *msg, ...)
 {
-  NSString	*estr;
-  va_list	args;
-  int		lineNumber = -1;
-  int		colNumber = -1;
+    NSString  *estr;
+    va_list args;
+    int lineNumber = -1;
+    int colNumber = -1;
 
-  va_start(args, msg);
-  estr = [[[NSString alloc]
-    initWithFormat: UTF8Str(msg) arguments: args] autorelease];
-  va_end(args);
-  NSCAssert(ctx,@"No Context");
-  lineNumber = xmlSAX2GetLineNumber(ctx);
-  colNumber = xmlSAX2GetColumnNumber(ctx);
-  [HANDLER error: estr
-       colNumber: colNumber
-      lineNumber: lineNumber];
+    va_start(args, msg);
+    estr = [[[NSString alloc]
+             initWithFormat:UTF8Str(msg) arguments:args] autorelease];
+    va_end(args);
+    NSCAssert(ctx,@"No Context");
+    lineNumber = xmlSAX2GetLineNumber(ctx);
+    colNumber = xmlSAX2GetColumnNumber(ctx);
+    [HANDLER error:estr
+     colNumber:colNumber
+     lineNumber:lineNumber];
 }
 
 static void
 fatalErrorFunction(void *ctx, const unsigned char *msg, ...)
 {
-  NSString	*estr;
-  va_list	args;
-  int		lineNumber = -1;
-  int		colNumber = -1;
+    NSString  *estr;
+    va_list args;
+    int lineNumber = -1;
+    int colNumber = -1;
 
-  va_start(args, msg);
-  estr = [[[NSString alloc]
-    initWithFormat: UTF8Str(msg) arguments: args] autorelease];
-  va_end(args);
-  NSCAssert(ctx, @"No Context");
-  lineNumber = xmlSAX2GetLineNumber(ctx);
-  colNumber = xmlSAX2GetColumnNumber(ctx);
-  [HANDLER fatalError: estr
-            colNumber: colNumber
-           lineNumber: lineNumber];
+    va_start(args, msg);
+    estr = [[[NSString alloc]
+             initWithFormat:UTF8Str(msg) arguments:args] autorelease];
+    va_end(args);
+    NSCAssert(ctx, @"No Context");
+    lineNumber = xmlSAX2GetLineNumber(ctx);
+    colNumber = xmlSAX2GetColumnNumber(ctx);
+    [HANDLER fatalError:estr
+     colNumber:colNumber
+     lineNumber:lineNumber];
 }
 
-#undef	HANDLER
+#undef  HANDLER
 
 /**
  * Create a new SAX handler.
  */
-+ (GSSAXHandler*) handler
++ (GSSAXHandler*)handler
 {
-  return AUTORELEASE([[self alloc] init]);
+    return AUTORELEASE([[self alloc] init]);
 }
 
-- (id) init
+- (id)init
 {
-  NSAssert(lib == 0, @"Already created lib");
-  self = [super init];
-  if (self != nil)
+    NSAssert(lib == 0, @"Already created lib");
+    self = [super init];
+    if (self != nil)
     {
-      if ([self _initLibXML] == NO)
+        if ([self _initLibXML] == NO)
         {
-          NSLog(@"GSSAXHandler: out of memory\n");
-	  DESTROY(self);
-	  return nil;
+            NSLog(@"GSSAXHandler: out of memory\n");
+            DESTROY(self);
+            return nil;
         }
     }
-  return self;
+    return self;
 }
 
 /**
  * Returns a pointer to the raw libxml data used by this document.<br />
  * Only for use by libxml experts!
  */
-- (void*) lib
+- (void*)lib
 {
-  return lib;
+    return lib;
 }
 
 /**
  * Return the parser object with which this handler is
  * associated.  This may occasionally be useful.
  */
-- (GSXMLParser*) parser
+- (GSXMLParser*)parser
 {
-  return parser;
+    return parser;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  if (lib != NULL)
+    if (lib != NULL)
     {
-      free(lib);
+        free(lib);
     }
-  [super dealloc];
+    [super dealloc];
 }
 
 /**
  * Called when the document starts being processed.
  */
-- (void) startDocument
+- (void)startDocument
 {
 }
 
 /**
  * Called when the document end has been detected.
  */
-- (void) endDocument
+- (void)endDocument
 {
 }
 
 /**
  * Called to detemrine if the document is standalone.
  */
-- (NSInteger) isStandalone
+- (NSInteger)isStandalone
 {
-  return 1;
+    return 1;
 }
 
 /**
  * Called when an opening tag has been processed.
  */
-- (void) startElement: (NSString*)elementName
-	   attributes: (NSMutableDictionary*)elementAttributes
+- (void)startElement:(NSString*)elementName
+    attributes:(NSMutableDictionary*)elementAttributes
 {
 }
 
-- (void) startElement: (NSString*)elementName
-               prefix: (NSString*)prefix
-		 href: (NSString*)href
-	   attributes: (NSMutableDictionary*)elementAttributes
+- (void)startElement:(NSString*)elementName
+    prefix:(NSString*)prefix
+    href:(NSString*)href
+    attributes:(NSMutableDictionary*)elementAttributes
 {
-  [self startElement: elementName attributes: elementAttributes];
+    [self startElement:elementName attributes:elementAttributes];
 }
 
-- (void) startElement: (NSString*)elementName
-               prefix: (NSString*)prefix
-		 href: (NSString*)href
-	   attributes: (NSMutableDictionary*)elementAttributes
-           namespaces: (NSMutableDictionary*)elementNamespaces
+- (void)startElement:(NSString*)elementName
+    prefix:(NSString*)prefix
+    href:(NSString*)href
+    attributes:(NSMutableDictionary*)elementAttributes
+    namespaces:(NSMutableDictionary*)elementNamespaces
 {
-  [self startElement: elementName
-              prefix: prefix
-                href: href
-          attributes: elementAttributes];
-}
-
-/**
- * Called when a closing tag has been processed.
- */
-- (void) endElement: (NSString*)elementName
-{
+    [self startElement:elementName
+     prefix:prefix
+     href:href
+     attributes:elementAttributes];
 }
 
 /**
  * Called when a closing tag has been processed.
  */
-- (void) endElement: (NSString*)elementName
-	     prefix: (NSString*)prefix
-	       href: (NSString*)href
+- (void)endElement:(NSString*)elementName
 {
-  [self endElement: elementName];
+}
+
+/**
+ * Called when a closing tag has been processed.
+ */
+- (void)endElement:(NSString*)elementName
+    prefix:(NSString*)prefix
+    href:(NSString*)href
+{
+    [self endElement:elementName];
 }
 
 /**
  * Handle an attribute that has been read by the parser.
  */
-- (void) attribute: (NSString*) name value: (NSString*)value
+- (void)attribute:(NSString*)name value:(NSString*)value
 {
 }
 
 /**
  * Receiving some chars from the parser.
  */
-- (void) characters: (NSString*) name
+- (void)characters:(NSString*)name
 {
 }
 
 /**
  * Receiving some ignorable whitespaces from the parser.
  */
-- (void) ignoreWhitespace: (NSString*) ch
+- (void)ignoreWhitespace:(NSString*)ch
 {
 }
 
 /**
  * A processing instruction has been parsed.
  */
-- (void) processInstruction: (NSString*)targetName data: (NSString*)PIdata
+- (void)processInstruction:(NSString*)targetName data:(NSString*)PIdata
 {
 }
 
 /**
  * A comment has been parsed.
  */
-- (void) comment: (NSString*) value
+- (void)comment:(NSString*)value
 {
 }
 
 /**
  * Called when a cdata block has been parsed.
  */
-- (void) cdataBlock: (NSData*)value
+- (void)cdataBlock:(NSData*)value
 {
 }
 
 /**
  * Called to return the filename from which an entity should be loaded.
  */
-- (NSString*) loadEntity: (NSString*)publicId
-		      at: (NSString*)location
+- (NSString*)loadEntity:(NSString*)publicId
+    at:(NSString*)location
 {
-  return nil;
+    return nil;
 }
 
 /**
  * An old global namespace has been parsed.
  */
-- (void) namespaceDecl: (NSString*)name
-		  href: (NSString*)href
-		prefix: (NSString*)prefix
+- (void)namespaceDecl:(NSString*)name
+    href:(NSString*)href
+    prefix:(NSString*)prefix
 {
 }
 
 /**
  * What to do when a notation declaration has been parsed.
  */
-- (void) notationDecl: (NSString*)name
-	       public: (NSString*)publicId
-	       system: (NSString*)systemId
+- (void)notationDecl:(NSString*)name
+    public: (NSString*)publicId
+    system:(NSString*)systemId
 {
 }
 
 /**
  * An entity definition has been parsed.
  */
-- (void) entityDecl: (NSString*)name
-	       type: (NSInteger)type
-	     public: (NSString*)publicId
-	     system: (NSString*)systemId
-	    content: (NSString*)content
+- (void)entityDecl:(NSString*)name
+    type:(NSInteger)type
+    public: (NSString*)publicId
+    system:(NSString*)systemId
+    content:(NSString*)content
 {
 }
 
 /**
  * An attribute definition has been parsed.
  */
-- (void) attributeDecl: (NSString*)nameElement
-		  name: (NSString*)name
-		  type: (NSInteger)type
-	  typeDefValue: (NSInteger)defType
-	  defaultValue: (NSString*)value
+- (void)attributeDecl:(NSString*)nameElement
+    name:(NSString*)name
+    type:(NSInteger)type
+    typeDefValue:(NSInteger)defType
+    defaultValue:(NSString*)value
 {
 }
 
 /**
  * An element definition has been parsed.
  */
-- (void) elementDecl: (NSString*)name
-		type: (NSInteger)type
+- (void)elementDecl:(NSString*)name
+    type:(NSInteger)type
 {
 }
 
 /**
  * What to do when an unparsed entity declaration is parsed.
  */
-- (void) unparsedEntityDecl: (NSString*)name
-		     public: (NSString*)publicId
-		     system: (NSString*)systemId
-	       notationName: (NSString*)notation
+- (void)unparsedEntityDecl:(NSString*)name
+    public: (NSString*)publicId
+    system:(NSString*)systemId
+    notationName:(NSString*)notation
 {
 }
 
 /**
  * Called when an entity reference is detected.
  */
-- (void) reference: (NSString*) name
+- (void)reference:(NSString*)name
 {
 }
 
 /**
  * An old global namespace has been parsed.
  */
-- (void) globalNamespace: (NSString*)name
-		    href: (NSString*)href
-		  prefix: (NSString*)prefix
+- (void)globalNamespace:(NSString*)name
+    href:(NSString*)href
+    prefix:(NSString*)prefix
 {
 }
 
 /**
  * Called when a warning message needs to be output.
  */
-- (void) warning: (NSString*)e
+- (void)warning:(NSString*)e
 {
-  GSPrintf(stderr, @"%@", e);
+    GSPrintf(stderr, @"%@", e);
 }
 
 /**
  * Called when an error message needs to be output.
  */
-- (void) error: (NSString*)e
+- (void)error:(NSString*)e
 {
-  GSPrintf(stderr, @"%@", e);
+    GSPrintf(stderr, @"%@", e);
 }
 
 /**
  * Called when a fatal error message needs to be output.
  */
-- (void) fatalError: (NSString*)e
+- (void)fatalError:(NSString*)e
 {
-  GSPrintf(stderr, @"%@", e);
+    GSPrintf(stderr, @"%@", e);
 }
 
 /**
  * Called when a warning message needs to be output.
  */
-- (void) warning: (NSString*)e
-       colNumber: (NSInteger)colNumber
-      lineNumber: (NSInteger)lineNumber
+- (void)warning:(NSString*)e
+    colNumber:(NSInteger)colNumber
+    lineNumber:(NSInteger)lineNumber
 {
-  e = [NSString stringWithFormat: @"at line: %d column: %d ... %@",
-    lineNumber, colNumber, e];
-  [self warning: e];
+    e = [NSString stringWithFormat:@"at line: %d column: %d ... %@",
+         lineNumber, colNumber, e];
+    [self warning:e];
 }
 
 /**
  * Called when an error message needs to be output.
  */
-- (void) error: (NSString*)e
-     colNumber: (NSInteger)colNumber
-    lineNumber: (NSInteger)lineNumber
+- (void)error:(NSString*)e
+    colNumber:(NSInteger)colNumber
+    lineNumber:(NSInteger)lineNumber
 {
-  e = [NSString stringWithFormat: @"at line: %d column: %d ... %@",
-    lineNumber, colNumber, e];
-  [self error: e];
+    e = [NSString stringWithFormat:@"at line: %d column: %d ... %@",
+         lineNumber, colNumber, e];
+    [self error:e];
 }
 
 /**
  * Called when a fatal error message needs to be output.
  */
-- (void) fatalError: (NSString*)e
-          colNumber: (NSInteger)colNumber
-         lineNumber: (NSInteger)lineNumber
+- (void)fatalError:(NSString*)e
+    colNumber:(NSInteger)colNumber
+    lineNumber:(NSInteger)lineNumber
 {
-  e = [NSString stringWithFormat: @"at line: %d column: %d ... %@",
-    lineNumber, colNumber, e];
-  [self fatalError: e];
+    e = [NSString stringWithFormat:@"at line: %d column: %d ... %@",
+         lineNumber, colNumber, e];
+    [self fatalError:e];
 }
 
 /**
  * Called to find out whether there is an internal subset.
  */
-- (NSInteger) hasInternalSubset
+- (NSInteger)hasInternalSubset
 {
-  return 0;
+    return 0;
 }
 
 /**
  * Called to find out whether there is an internal subset.
  */
-- (BOOL) internalSubset: (NSString*)name
-	     externalID: (NSString*)externalID
-	       systemID: (NSString*)systemID
+- (BOOL)internalSubset:(NSString*)name
+    externalID:(NSString*)externalID
+    systemID:(NSString*)systemID
 {
-  return NO;
+    return NO;
 }
 
 /**
  * Called to find out whether there is an external subset.
  */
-- (NSInteger) hasExternalSubset
+- (NSInteger)hasExternalSubset
 {
-  return 0;
+    return 0;
 }
 
 /**
  * Called to find out whether there is an external subset.
  */
-- (BOOL) externalSubset: (NSString*)name
-	     externalID: (NSString*)externalID
-	       systemID: (NSString*)systemID
+- (BOOL)externalSubset:(NSString*)name
+    externalID:(NSString*)externalID
+    systemID:(NSString*)systemID
 {
-  return NO;
+    return NO;
 }
 
 /**
  * get an entity by name
  */
-- (void*) getEntity: (NSString*)name
+- (void*)getEntity:(NSString*)name
 {
-  return 0;
+    return 0;
 }
 
 /**
  * get a parameter entity by name
  */
-- (void*) getParameterEntity: (NSString*)name
+- (void*)getParameterEntity:(NSString*)name
 {
-  return 0;
+    return 0;
 }
 
 /*
  * Private methods - internal use only.
  */
-- (BOOL) _initLibXML
+- (BOOL)_initLibXML
 {
-  lib = (xmlSAXHandler*)malloc(sizeof(xmlSAXHandler));
-  if (lib == NULL)
+    lib = (xmlSAXHandler*)malloc(sizeof(xmlSAXHandler));
+    if (lib == NULL)
     {
-      return NO;
+        return NO;
     }
-  else
+    else
     {
-      memcpy(lib, &xmlDefaultSAXHandler, sizeof(xmlSAXHandler));
+        memcpy(lib, &xmlDefaultSAXHandler, sizeof(xmlSAXHandler));
 
-#define	LIB	((xmlSAXHandlerPtr)lib)
-#if	HAVE_LIBXML_SAX2_H
-      /*
-       * We must call xmlSAXVersion() BEFORE setting any functions as it
-       * sets up default values and would trash our settings.
-       */
-      xmlSAXVersion(LIB, 2);	// Set SAX2
-      LIB->startElementNs         = (void*) startElementNsFunction;
-      LIB->endElementNs           = (void*) endElementNsFunction;
+#define LIB ((xmlSAXHandlerPtr)lib)
+#if HAVE_LIBXML_SAX2_H
+        /*
+         * We must call xmlSAXVersion() BEFORE setting any functions as it
+         * sets up default values and would trash our settings.
+         */
+        xmlSAXVersion(LIB, 2);  // Set SAX2
+        LIB->startElementNs         = (void*) startElementNsFunction;
+        LIB->endElementNs           = (void*) endElementNsFunction;
 #endif
-      LIB->startElement           = (void*) startElementFunction;
-      LIB->endElement             = (void*) endElementFunction;
-      LIB->internalSubset         = (void*) internalSubsetFunction;
-      LIB->externalSubset         = (void*) externalSubsetFunction;
-      LIB->isStandalone           = (void*) isStandaloneFunction;
-      LIB->hasInternalSubset      = (void*) hasInternalSubsetFunction;
-      LIB->hasExternalSubset      = (void*) hasExternalSubsetFunction;
-      LIB->getEntity              = (void*) getEntityFunction;
-      LIB->entityDecl             = (void*) entityDeclFunction;
-      LIB->notationDecl           = (void*) notationDeclFunction;
-      LIB->attributeDecl          = (void*) attributeDeclFunction;
-      LIB->elementDecl            = (void*) elementDeclFunction;
-      LIB->unparsedEntityDecl     = (void*) unparsedEntityDeclFunction;
-      LIB->startDocument          = (void*) startDocumentFunction;
-      LIB->endDocument            = (void*) endDocumentFunction;
-      LIB->reference              = (void*) referenceFunction;
-      LIB->characters             = (void*) charactersFunction;
-      LIB->ignorableWhitespace    = (void*) ignorableWhitespaceFunction;
-      LIB->processingInstruction  = (void*) processingInstructionFunction;
-      LIB->comment                = (void*) commentFunction;
-      LIB->warning                = (void*) warningFunction;
-      LIB->error                  = (void*) errorFunction;
-      LIB->fatalError             = (void*) fatalErrorFunction;
-      LIB->getParameterEntity     = (void*) getParameterEntityFunction;
-      LIB->cdataBlock             = (void*) cdataBlockFunction;
-#undef	LIB
-      return YES;
+        LIB->startElement           = (void*) startElementFunction;
+        LIB->endElement             = (void*) endElementFunction;
+        LIB->internalSubset         = (void*) internalSubsetFunction;
+        LIB->externalSubset         = (void*) externalSubsetFunction;
+        LIB->isStandalone           = (void*) isStandaloneFunction;
+        LIB->hasInternalSubset      = (void*) hasInternalSubsetFunction;
+        LIB->hasExternalSubset      = (void*) hasExternalSubsetFunction;
+        LIB->getEntity              = (void*) getEntityFunction;
+        LIB->entityDecl             = (void*) entityDeclFunction;
+        LIB->notationDecl           = (void*) notationDeclFunction;
+        LIB->attributeDecl          = (void*) attributeDeclFunction;
+        LIB->elementDecl            = (void*) elementDeclFunction;
+        LIB->unparsedEntityDecl     = (void*) unparsedEntityDeclFunction;
+        LIB->startDocument          = (void*) startDocumentFunction;
+        LIB->endDocument            = (void*) endDocumentFunction;
+        LIB->reference              = (void*) referenceFunction;
+        LIB->characters             = (void*) charactersFunction;
+        LIB->ignorableWhitespace    = (void*) ignorableWhitespaceFunction;
+        LIB->processingInstruction  = (void*) processingInstructionFunction;
+        LIB->comment                = (void*) commentFunction;
+        LIB->warning                = (void*) warningFunction;
+        LIB->error                  = (void*) errorFunction;
+        LIB->fatalError             = (void*) fatalErrorFunction;
+        LIB->getParameterEntity     = (void*) getParameterEntityFunction;
+        LIB->cdataBlock             = (void*) cdataBlockFunction;
+#undef  LIB
+        return YES;
     }
 }
 
-- (void) _setParser: (GSXMLParser*)value
+- (void)_setParser:(GSXMLParser*)value
 {
-  parser = value;
+    parser = value;
 }
 @end
 
-
 /**
  * The default handler for parsing documents ... this will build a
  * GSXMLDocument for you. This handler may not currently be subclassed,
@@ -3448,17 +3459,17 @@ fatalErrorFunction(void *ctx, const unsigned char *msg, ...)
  * Called when a warning message needs to be output.<br />
  * See [GSXMLParser-setErrors:] for the mechanism implemented by this.
  */
-- (void) warning: (NSString*)e
+- (void)warning:(NSString*)e
 {
-  NSMutableString	*m = [parser _messages];
+    NSMutableString   *m = [parser _messages];
 
-  if (m == nil)
+    if (m == nil)
     {
-      GSPrintf(stderr, @"%@", e);
+        GSPrintf(stderr, @"%@", e);
     }
-  else
+    else
     {
-      [m appendString: e];
+        [m appendString:e];
     }
 }
 
@@ -3466,17 +3477,17 @@ fatalErrorFunction(void *ctx, const unsigned char *msg, ...)
  * Called when an error message needs to be output.<br />
  * See [GSXMLParser-setErrors:] for the mechanism implemented by this.
  */
-- (void) error: (NSString*)e
+- (void)error:(NSString*)e
 {
-  NSMutableString	*m = [parser _messages];
+    NSMutableString   *m = [parser _messages];
 
-  if (m == nil)
+    if (m == nil)
     {
-      GSPrintf(stderr, @"%@", e);
+        GSPrintf(stderr, @"%@", e);
     }
-  else
+    else
     {
-      [m appendString: e];
+        [m appendString:e];
     }
 }
 
@@ -3484,77 +3495,76 @@ fatalErrorFunction(void *ctx, const unsigned char *msg, ...)
  * Called when a fatal error message needs to be output.<br />
  * See [GSXMLParser-setErrors:] for the mechanism implemented by this.
  */
-- (void) fatalError: (NSString*)e
+- (void)fatalError:(NSString*)e
 {
-  NSMutableString	*m = [parser _messages];
+    NSMutableString   *m = [parser _messages];
 
-  if (m == nil)
+    if (m == nil)
     {
-      GSPrintf(stderr, @"%@", e);
+        GSPrintf(stderr, @"%@", e);
     }
-  else
+    else
     {
-      [m appendString: e];
+        [m appendString:e];
     }
 }
 
 
-- (BOOL) _initLibXML
+- (BOOL)_initLibXML
 {
-  lib = (xmlSAXHandler*)malloc(sizeof(xmlSAXHandler));
-  if (lib == NULL)
+    lib = (xmlSAXHandler*)malloc(sizeof(xmlSAXHandler));
+    if (lib == NULL)
     {
-      return NO;
+        return NO;
     }
-  else
+    else
     {
-      memcpy(lib, &xmlDefaultSAXHandler, sizeof(xmlSAXHandler));
+        memcpy(lib, &xmlDefaultSAXHandler, sizeof(xmlSAXHandler));
 
-#define	LIB	((xmlSAXHandlerPtr)lib)
-#define	SETCB(NAME,SEL) if ([self methodForSelector: @selector(SEL)] != [treeClass instanceMethodForSelector: @selector(SEL)]) LIB->NAME = (void*)NAME ## Function
-#if	HAVE_LIBXML_SAX2_H
-      /*
-       * We must call xmlSAXVersion() BEFORE setting any functions as it
-       * sets up default values and would trash our settings.
-       */
-      xmlSAXVersion(LIB, 2);	// Set SAX2
-      SETCB(startElementNs, startElement:prefix:href:attributes:);
-      SETCB(endElementNs, endElement:prefix:href:);
+#define LIB ((xmlSAXHandlerPtr)lib)
+#define SETCB(NAME,SEL) if ([self methodForSelector:@selector(SEL)] != [treeClass instanceMethodForSelector:@selector(SEL)]) LIB->NAME = (void*)NAME ## Function
+#if HAVE_LIBXML_SAX2_H
+        /*
+         * We must call xmlSAXVersion() BEFORE setting any functions as it
+         * sets up default values and would trash our settings.
+         */
+        xmlSAXVersion(LIB, 2);  // Set SAX2
+        SETCB(startElementNs, startElement: prefix: href: attributes:);
+        SETCB(endElementNs, endElement: prefix: href:);
 #endif
-      SETCB(startElement, startElement:attributes:);
-      SETCB(endElement, endElement:);
-      SETCB(internalSubset, internalSubset:externalID:systemID:);
-      SETCB(externalSubset, externalSubset:externalID:systemID:);
-      SETCB(isStandalone, isStandalone);
-      SETCB(hasInternalSubset, hasInternalSubset);
-      SETCB(hasExternalSubset, hasExternalSubset);
-      SETCB(getEntity, getEntity:);
-      SETCB(entityDecl, entityDecl:type:public:system:content:);
-      SETCB(notationDecl, notationDecl:public:system:);
-      SETCB(attributeDecl, attributeDecl:name:type:typeDefValue:defaultValue:);
-      SETCB(elementDecl, elementDecl:type:);
-      SETCB(unparsedEntityDecl, unparsedEntityDecl:public:system:notationName:);
-      SETCB(startDocument, startDocument);
-      SETCB(endDocument, endDocument);
-      SETCB(reference, reference:);
-      SETCB(characters, characters:);
-      SETCB(ignorableWhitespace, ignoreWhitespace:);
-      SETCB(processingInstruction, processInstruction:data:);
-      SETCB(comment, comment:);
-      SETCB(getParameterEntity, getParameterEntity:);
-      SETCB(cdataBlock, cdataBlock:);
+        SETCB(startElement, startElement: attributes:);
+        SETCB(endElement, endElement:);
+        SETCB(internalSubset, internalSubset: externalID: systemID:);
+        SETCB(externalSubset, externalSubset: externalID: systemID:);
+        SETCB(isStandalone, isStandalone);
+        SETCB(hasInternalSubset, hasInternalSubset);
+        SETCB(hasExternalSubset, hasExternalSubset);
+        SETCB(getEntity, getEntity:);
+        SETCB(entityDecl, entityDecl: type: public: system: content:);
+        SETCB(notationDecl, notationDecl: public: system:);
+        SETCB(attributeDecl, attributeDecl: name: type: typeDefValue: defaultValue:);
+        SETCB(elementDecl, elementDecl: type:);
+        SETCB(unparsedEntityDecl, unparsedEntityDecl: public: system: notationName:);
+        SETCB(startDocument, startDocument);
+        SETCB(endDocument, endDocument);
+        SETCB(reference, reference:);
+        SETCB(characters, characters:);
+        SETCB(ignorableWhitespace, ignoreWhitespace:);
+        SETCB(processingInstruction, processInstruction: data:);
+        SETCB(comment, comment:);
+        SETCB(getParameterEntity, getParameterEntity:);
+        SETCB(cdataBlock, cdataBlock:);
 
-      LIB->warning                = (void*)warningFunction;
-      LIB->error                  = (void*)errorFunction;
-      LIB->fatalError             = (void*)fatalErrorFunction;
+        LIB->warning                = (void*)warningFunction;
+        LIB->error                  = (void*)errorFunction;
+        LIB->fatalError             = (void*)fatalErrorFunction;
 
-#undef	LIB
-      return YES;
+#undef  LIB
+        return YES;
     }
 }
 @end
 
-
 
 /**
  * You may create a subclass of this class to handle incremental parsing
@@ -3563,51 +3573,50 @@ fatalErrorFunction(void *ctx, const unsigned char *msg, ...)
  * simply subclass [GSSAXHandler]
  */
 @implementation GSHTMLSAXHandler
-- (BOOL) _initLibXML
+- (BOOL)_initLibXML
 {
-  isHtmlHandler = YES;
-  lib = (xmlSAXHandler*)malloc(sizeof(htmlSAXHandler));
-  if (lib == NULL)
+    isHtmlHandler = YES;
+    lib = (xmlSAXHandler*)malloc(sizeof(htmlSAXHandler));
+    if (lib == NULL)
     {
-      return NO;
+        return NO;
     }
-  else
+    else
     {
-      memcpy(lib, &htmlDefaultSAXHandler, sizeof(htmlSAXHandler));
+        memcpy(lib, &htmlDefaultSAXHandler, sizeof(htmlSAXHandler));
 
-#define	LIB	((htmlSAXHandlerPtr)lib)
-      LIB->internalSubset         = (void*)internalSubsetFunction;
-      LIB->externalSubset         = (void*)externalSubsetFunction;
-      LIB->isStandalone           = (void*)isStandaloneFunction;
-      LIB->hasInternalSubset      = (void*)hasInternalSubsetFunction;
-      LIB->hasExternalSubset      = (void*)hasExternalSubsetFunction;
-      LIB->getEntity              = (void*)getEntityFunction;
-      LIB->entityDecl             = (void*)entityDeclFunction;
-      LIB->notationDecl           = (void*)notationDeclFunction;
-      LIB->attributeDecl          = (void*)attributeDeclFunction;
-      LIB->elementDecl            = (void*)elementDeclFunction;
-      LIB->unparsedEntityDecl     = (void*)unparsedEntityDeclFunction;
-      LIB->startDocument          = (void*)startDocumentFunction;
-      LIB->endDocument            = (void*)endDocumentFunction;
-      LIB->startElement           = (void*)startElementFunction;
-      LIB->endElement             = (void*)endElementFunction;
-      LIB->reference              = (void*)referenceFunction;
-      LIB->characters             = (void*)charactersFunction;
-      LIB->ignorableWhitespace    = (void*)ignorableWhitespaceFunction;
-      LIB->processingInstruction  = (void*)processingInstructionFunction;
-      LIB->comment                = (void*)commentFunction;
-      LIB->warning                = (void*)warningFunction;
-      LIB->error                  = (void*)errorFunction;
-      LIB->fatalError             = (void*)fatalErrorFunction;
-      LIB->getParameterEntity     = (void*)getParameterEntityFunction;
-      LIB->cdataBlock             = (void*)cdataBlockFunction;
-#undef	LIB
-      return YES;
+#define LIB ((htmlSAXHandlerPtr)lib)
+        LIB->internalSubset         = (void*)internalSubsetFunction;
+        LIB->externalSubset         = (void*)externalSubsetFunction;
+        LIB->isStandalone           = (void*)isStandaloneFunction;
+        LIB->hasInternalSubset      = (void*)hasInternalSubsetFunction;
+        LIB->hasExternalSubset      = (void*)hasExternalSubsetFunction;
+        LIB->getEntity              = (void*)getEntityFunction;
+        LIB->entityDecl             = (void*)entityDeclFunction;
+        LIB->notationDecl           = (void*)notationDeclFunction;
+        LIB->attributeDecl          = (void*)attributeDeclFunction;
+        LIB->elementDecl            = (void*)elementDeclFunction;
+        LIB->unparsedEntityDecl     = (void*)unparsedEntityDeclFunction;
+        LIB->startDocument          = (void*)startDocumentFunction;
+        LIB->endDocument            = (void*)endDocumentFunction;
+        LIB->startElement           = (void*)startElementFunction;
+        LIB->endElement             = (void*)endElementFunction;
+        LIB->reference              = (void*)referenceFunction;
+        LIB->characters             = (void*)charactersFunction;
+        LIB->ignorableWhitespace    = (void*)ignorableWhitespaceFunction;
+        LIB->processingInstruction  = (void*)processingInstructionFunction;
+        LIB->comment                = (void*)commentFunction;
+        LIB->warning                = (void*)warningFunction;
+        LIB->error                  = (void*)errorFunction;
+        LIB->fatalError             = (void*)fatalErrorFunction;
+        LIB->getParameterEntity     = (void*)getParameterEntityFunction;
+        LIB->cdataBlock             = (void*)cdataBlockFunction;
+#undef  LIB
+        return YES;
     }
 }
 @end
 
-
 
 /**
  * <p>You don't create GSXPathObject instances, instead the XPATH system
@@ -3616,22 +3625,22 @@ fatalErrorFunction(void *ctx, const unsigned char *msg, ...)
  * </p>
  */
 @implementation GSXPathObject
-- (id) init
+- (id)init
 {
-  DESTROY(self);
-  return nil;
+    DESTROY(self);
+    return nil;
 }
 
 /* Internal method.  */
-- (id) _initWithNativePointer: (xmlXPathObject *)lib
-		      context: (GSXPathContext *)context
+- (id)_initWithNativePointer:(xmlXPathObject *)lib
+    context:(GSXPathContext *)context
 {
-  _lib = lib;
-  /* We RETAIN our context because we might be holding references to nodes
-   * which belong to the document, and we must make sure the document is
-   * not freed before we are.  */
-  ASSIGN (_context, context);
-  return self;
+    _lib = lib;
+    /* We RETAIN our context because we might be holding references to nodes
+     * which belong to the document, and we must make sure the document is
+     * not freed before we are.  */
+    ASSIGN (_context, context);
+    return self;
 }
 
 /* This method is called by GSXPathContext when creating a
@@ -3639,45 +3648,45 @@ fatalErrorFunction(void *ctx, const unsigned char *msg, ...)
  * is a pointer created by xmlXPathEval (), and that we are now taking
  * on responsibility for freeing it.  It then examines lib, and
  * replaces itself with an object of the appropriate subclass.  */
-+ (id) _newWithNativePointer: (xmlXPathObject *)lib
-		     context: (GSXPathContext *)context
++ (id)_newWithNativePointer:(xmlXPathObject *)lib
+    context:(GSXPathContext *)context
 {
-  switch (lib->type)
+    switch (lib->type)
     {
-      case XPATH_NODESET:
-	return [[GSXPathNodeSet alloc] _initWithNativePointer: lib
-						      context: context];
-	break;
-      case XPATH_BOOLEAN:
-	return [[GSXPathBoolean alloc] _initWithNativePointer: lib
-						      context: context];
-	break;
-      case XPATH_NUMBER:
-	return [[GSXPathNumber alloc] _initWithNativePointer: lib
-						     context: context];
-	break;
-      case XPATH_STRING:
-	return [[GSXPathString alloc] _initWithNativePointer: lib
-						     context: context];
-	break;
-      default:
-	/* This includes:
-	   case XPATH_UNDEFINED:
-	   case XPATH_POINT:
-	   case XPATH_RANGE:
-	   case XPATH_LOCATIONSET:
-	   case XPATH_USERS:
-	   case XPATH_XSLT_TREE:
-	*/
-	return [[self alloc] _initWithNativePointer: lib  context: context];
+    case XPATH_NODESET:
+        return [[GSXPathNodeSet alloc] _initWithNativePointer:lib
+                context:context];
+        break;
+    case XPATH_BOOLEAN:
+        return [[GSXPathBoolean alloc] _initWithNativePointer:lib
+                context:context];
+        break;
+    case XPATH_NUMBER:
+        return [[GSXPathNumber alloc] _initWithNativePointer:lib
+                context:context];
+        break;
+    case XPATH_STRING:
+        return [[GSXPathString alloc] _initWithNativePointer:lib
+                context:context];
+        break;
+    default:
+        /* This includes:
+           case XPATH_UNDEFINED:
+           case XPATH_POINT:
+           case XPATH_RANGE:
+           case XPATH_LOCATIONSET:
+           case XPATH_USERS:
+           case XPATH_XSLT_TREE:
+         */
+        return [[self alloc] _initWithNativePointer:lib context:context];
     }
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  xmlXPathFreeObject (_lib);
-  RELEASE (_context);
-  [super dealloc];
+    xmlXPathFreeObject (_lib);
+    RELEASE (_context);
+    [super dealloc];
 }
 @end
 
@@ -3685,13 +3694,13 @@ fatalErrorFunction(void *ctx, const unsigned char *msg, ...)
 /**
  * Returns the the value of the receiver ... YES/NO, true/false.
  */
-- (BOOL) booleanValue
+- (BOOL)booleanValue
 {
-  return ((xmlXPathObject*)_lib)->boolval;
+    return ((xmlXPathObject*)_lib)->boolval;
 }
-- (NSString *) description
+- (NSString *)description
 {
-  return ([self booleanValue] ? @"true" : @"false");
+    return ([self booleanValue] ? @"true" : @"false");
 }
 @end
 
@@ -3699,13 +3708,13 @@ fatalErrorFunction(void *ctx, const unsigned char *msg, ...)
 /**
  * Returns the floating point (double) value of the receiver.
  */
-- (double) doubleValue
+- (double)doubleValue
 {
-  return ((xmlXPathObject*)_lib)->floatval;
+    return ((xmlXPathObject*)_lib)->floatval;
 }
-- (NSString *) description
+- (NSString *)description
 {
-  return [NSString_class stringWithFormat: @"%f", [self doubleValue]];
+    return [NSString_class stringWithFormat:@"%f", [self doubleValue]];
 }
 @end
 
@@ -3713,14 +3722,14 @@ fatalErrorFunction(void *ctx, const unsigned char *msg, ...)
 /**
  * Returns the string value of the receiver.
  */
-- (NSString *) stringValue
+- (NSString *)stringValue
 {
-  xmlChar *string = ((xmlXPathObject*)_lib)->stringval;
-  return [NSString_class stringWithUTF8String: (const char*)string];
+    xmlChar *string = ((xmlXPathObject*)_lib)->stringval;
+    return [NSString_class stringWithUTF8String:(const char*)string];
 }
-- (NSString *) description
+- (NSString *)description
 {
-  return [NSString_class stringWithFormat: @"%@", [self stringValue]];
+    return [NSString_class stringWithFormat:@"%@", [self stringValue]];
 }
 @end
 
@@ -3734,53 +3743,53 @@ fatalErrorFunction(void *ctx, const unsigned char *msg, ...)
 /**
  * Returns the number of nodes in the receiver.
  */
-- (NSUInteger) count
+- (NSUInteger)count
 {
-  if (xmlXPathNodeSetIsEmpty (((xmlXPathObject*)_lib)->nodesetval))
+    if (xmlXPathNodeSetIsEmpty (((xmlXPathObject*)_lib)->nodesetval))
     {
-      return 0;
+        return 0;
     }
-  return xmlXPathNodeSetGetLength (((xmlXPathObject*)_lib)->nodesetval);
+    return xmlXPathNodeSetGetLength (((xmlXPathObject*)_lib)->nodesetval);
 }
 
 /**
  * Deprecated
  */
-- (NSUInteger) length
+- (NSUInteger)length
 {
-  if (xmlXPathNodeSetIsEmpty (((xmlXPathObject*)_lib)->nodesetval))
+    if (xmlXPathNodeSetIsEmpty (((xmlXPathObject*)_lib)->nodesetval))
     {
-      return 0;
+        return 0;
     }
 
-  return xmlXPathNodeSetGetLength (((xmlXPathObject*)_lib)->nodesetval);
+    return xmlXPathNodeSetGetLength (((xmlXPathObject*)_lib)->nodesetval);
 }
 
 /**
  * Returns the node from the receiver at the specified index, or nil
  * if no such node exists.
  */
-- (GSXMLNode *) nodeAtIndex: (NSUInteger)index
+- (GSXMLNode *)nodeAtIndex:(NSUInteger)index
 {
-  if (xmlXPathNodeSetIsEmpty (((xmlXPathObject*)_lib)->nodesetval))
+    if (xmlXPathNodeSetIsEmpty (((xmlXPathObject*)_lib)->nodesetval))
     {
-      return nil;
+        return nil;
     }
-  else
+    else
     {
-      xmlNode	*node;
-      GSXMLNode *n;
+        xmlNode   *node;
+        GSXMLNode *n;
 
-      node = xmlXPathNodeSetItem (((xmlXPathObject*)_lib)->nodesetval,
-	(NSInteger)index);
-      n = [GSXMLNode alloc];
-      n = [n _initFrom: node  parent: self];
-      return AUTORELEASE(n);
+        node = xmlXPathNodeSetItem (((xmlXPathObject*)_lib)->nodesetval,
+                                    (NSInteger)index);
+        n = [GSXMLNode alloc];
+        n = [n _initFrom:node parent:self];
+        return AUTORELEASE(n);
     }
 }
-- (NSString *) description
+- (NSString *)description
 {
-  return [NSString_class stringWithFormat: @"NodeSet (count %u)", [self count]];
+    return [NSString_class stringWithFormat:@"NodeSet (count %u)", [self count]];
 }
 @end
 
@@ -3812,68 +3821,67 @@ fatalErrorFunction(void *ctx, const unsigned char *msg, ...)
 /**
  * Initialises the receiver as an xpath parser for the supplied document.
  */
-- (id) initWithDocument: (GSXMLDocument *)d
+- (id)initWithDocument:(GSXMLDocument *)d
 {
-  ASSIGN (_document, d);
-  _lib = xmlXPathNewContext ([_document lib]);
-  ((xmlXPathContext*)_lib)->node = xmlDocGetRootElement ([_document lib]);
+    ASSIGN (_document, d);
+    _lib = xmlXPathNewContext ([_document lib]);
+    ((xmlXPathContext*)_lib)->node = xmlDocGetRootElement ([_document lib]);
 
-  return self;
+    return self;
 }
 
 /**
  * Evaluates the supplied expression and returns the resulting node or
  * node set.  If the expression is invalid, returns nil.
  */
-- (GSXPathObject *) evaluateExpression: (NSString *)XPathExpression
+- (GSXPathObject *)evaluateExpression:(NSString *)XPathExpression
 {
-  xmlXPathCompExpr *comp;
-  xmlXPathObject   *res;
-  GSXPathObject *result;
+    xmlXPathCompExpr *comp;
+    xmlXPathObject   *res;
+    GSXPathObject *result;
 
-  comp = xmlXPathCompile (UTF8STRING(XPathExpression));
-  if (comp == NULL)
+    comp = xmlXPathCompile (UTF8STRING(XPathExpression));
+    if (comp == NULL)
     {
-      /* Maybe an exception would be better ? */
-      return nil;
+        /* Maybe an exception would be better ? */
+        return nil;
     }
 
-  res = xmlXPathCompiledEval (comp, ((xmlXPathContext*)_lib));
-  if (res == NULL)
+    res = xmlXPathCompiledEval (comp, ((xmlXPathContext*)_lib));
+    if (res == NULL)
     {
-      result = nil;
+        result = nil;
     }
-  else
+    else
     {
-      result = [GSXPathObject _newWithNativePointer: res  context: self];
-      IF_NO_GC ([result autorelease];)
+        result = [GSXPathObject _newWithNativePointer:res context:self];
+        IF_NO_GC ([result autorelease]; )
     }
-  xmlXPathFreeCompExpr (comp);
+    xmlXPathFreeCompExpr (comp);
 
-  return result;
+    return result;
 }
 
-- (BOOL) registerNamespaceWithPrefix: (NSString *)prefix
-				href: (NSString *)href
+- (BOOL)registerNamespaceWithPrefix:(NSString *)prefix
+    href:(NSString *)href
 {
-  if (xmlXPathRegisterNs (_lib, UTF8STRING(prefix), UTF8STRING(href)) != 0)
+    if (xmlXPathRegisterNs (_lib, UTF8STRING(prefix), UTF8STRING(href)) != 0)
     {
-      return NO;
+        return NO;
     }
-  else
+    else
     {
-      return YES;
+        return YES;
     }
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  xmlXPathFreeContext (_lib);
-  RELEASE (_document);
-  [super dealloc];
+    xmlXPathFreeContext (_lib);
+    RELEASE (_document);
+    [super dealloc];
 }
 @end
-
 
 
 /*
@@ -3886,21 +3894,35 @@ fatalErrorFunction(void *ctx, const unsigned char *msg, ...)
 
 
 @implementation GSXMLNode (Deprecated)
-- (GSXMLNode*) childElement { static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); } return [self firstChildElement]; }
-- (GSXMLNode*) children { static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); } return [self firstChild]; }
-- (GSXMLDocument*) doc { static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); } return [self document]; }
-- (GSXMLNamespace*) ns { static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); } return [self namespace]; }
-- (GSXMLNamespace*) nsDefs { static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); } return [self namespaceDefinitions]; }
-- (GSXMLNode*) prev { static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); } return [self previous]; }
-- (NSMutableDictionary*) propertiesAsDictionary
+- (GSXMLNode*)childElement {
+    static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); } return [self firstChildElement];
+}
+- (GSXMLNode*)children {
+    static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); } return [self firstChild];
+}
+- (GSXMLDocument*)doc {
+    static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); } return [self document];
+}
+- (GSXMLNamespace*)ns {
+    static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); } return [self namespace];
+}
+- (GSXMLNamespace*)nsDefs {
+    static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); } return [self namespaceDefinitions];
+}
+- (GSXMLNode*)prev {
+    static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); } return [self previous];
+}
+- (NSMutableDictionary*)propertiesAsDictionary
 {
-static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); }
-  return [self propertiesAsDictionaryWithKeyTransformationSel: NULL];
+    static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); }
+    return [self propertiesAsDictionaryWithKeyTransformationSel:NULL];
 }
 
 @end
 @implementation GSXMLParser (Deprecated)
-- (GSXMLDocument*) doc { static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); } return [self document]; }
+- (GSXMLDocument*)doc {
+    static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use of deprecated method ... [%@ -%@]", NSStringFromClass([self class]), NSStringFromSelector(_cmd)); } return [self document];
+}
 @end
 
 @implementation GSXMLDocument (XSLT)
@@ -3912,12 +3934,12 @@ static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use 
  * Returns an autoreleased GSXMLDocument containing the transformed
  * XML, or nil on failure.
  */
-+ (GSXMLDocument*) xsltTransformFile: (NSString*)xmlFile
-                          stylesheet: (NSString*)xsltStylesheet
++ (GSXMLDocument*)xsltTransformFile:(NSString*)xmlFile
+    stylesheet:(NSString*)xsltStylesheet
 {
-  return [GSXMLDocument xsltTransformFile: xmlFile
-                               stylesheet: xsltStylesheet
-			           params: nil];
+    return [GSXMLDocument xsltTransformFile:xmlFile
+            stylesheet:xsltStylesheet
+            params:nil];
 }
 
 /**
@@ -3928,37 +3950,37 @@ static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use 
  * Returns an autoreleased GSXMLDocument containing the transformed
  * XML, or nil on failure.
  */
-+ (GSXMLDocument*) xsltTransformFile: (NSString*)xmlFile
-                          stylesheet: (NSString*)xsltStylesheet
-		              params: (NSDictionary*)params
++ (GSXMLDocument*)xsltTransformFile:(NSString*)xmlFile
+    stylesheet:(NSString*)xsltStylesheet
+    params:(NSDictionary*)params
 {
-  GSXMLDocument	*newdoc;
+    GSXMLDocument *newdoc;
 
-  NS_DURING
+    NS_DURING
     {
-      NSData	*xml;
-      NSData	*ss;
+        NSData    *xml;
+        NSData    *ss;
 
-      xml = [NSData dataWithContentsOfFile: xmlFile];
-      ss = [NSData dataWithContentsOfFile: xsltStylesheet];
-      if (xml == nil || ss == nil)
-	{
-	  newdoc = nil;
-	}
-      else
-	{
-	  newdoc = [GSXMLDocument xsltTransformXml: xml
-					stylesheet: ss
-					    params: params];
-	}
+        xml = [NSData dataWithContentsOfFile:xmlFile];
+        ss = [NSData dataWithContentsOfFile:xsltStylesheet];
+        if (xml == nil || ss == nil)
+        {
+            newdoc = nil;
+        }
+        else
+        {
+            newdoc = [GSXMLDocument xsltTransformXml:xml
+                      stylesheet:ss
+                      params:params];
+        }
     }
-  NS_HANDLER
+    NS_HANDLER
     {
-      newdoc = nil;
+        newdoc = nil;
     }
-  NS_ENDHANDLER
+    NS_ENDHANDLER
 
-  return newdoc;
+    return newdoc;
 }
 /**
  * Performs an XSLT transformation on the specified file using the
@@ -3967,14 +3989,14 @@ static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use 
  * Returns an autoreleased GSXMLDocument containing the transformed
  * XML, or nil on failure.
  */
-+ (GSXMLDocument*) xsltTransformXml: (NSData*)xmlData
-                         stylesheet: (NSData*)xsltStylesheet
++ (GSXMLDocument*)xsltTransformXml:(NSData*)xmlData
+    stylesheet:(NSData*)xsltStylesheet
 {
-  return [GSXMLDocument xsltTransformXml: xmlData
-                              stylesheet: xsltStylesheet
-			          params: nil];
+    return [GSXMLDocument xsltTransformXml:xmlData
+            stylesheet:xsltStylesheet
+            params:nil];
 }
-			
+
 /**
  * Performs an XSLT transformation on the specified file using the
  * stylesheet and parameters provided.See the libxslt documentation
@@ -3983,39 +4005,39 @@ static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use 
  * Returns an autoreleased GSXMLDocument containing the transformed
  * XML, or nil on failure.
  */
-+ (GSXMLDocument*) xsltTransformXml: (NSData*)xmlData
-                         stylesheet: (NSData*)xsltStylesheet
-		             params: (NSDictionary*)params
++ (GSXMLDocument*)xsltTransformXml:(NSData*)xmlData
+    stylesheet:(NSData*)xsltStylesheet
+    params:(NSDictionary*)params
 {
-  GSXMLDocument	*newdoc;
+    GSXMLDocument *newdoc;
 
-  NS_DURING
+    NS_DURING
     {
-      GSXMLParser	*xmlParser;
-      GSXMLDocument	*xml;
-      GSXMLParser	*ssParser;
-      GSXMLDocument	*ss;
+        GSXMLParser   *xmlParser;
+        GSXMLDocument *xml;
+        GSXMLParser   *ssParser;
+        GSXMLDocument *ss;
 
-      newdoc = nil;
-      xmlParser = [GSXMLParser parserWithData: xmlData];
-      if ([xmlParser parse] == YES)
-	{
-	  xml = [xmlParser document];
-	  ssParser = [GSXMLParser parserWithData: xsltStylesheet];
-	  if ([ssParser parse] == YES)
-	    {
-	      ss = [ssParser document];
-	      newdoc = [xml xsltTransform: ss params: params];
-	    }
-	}
+        newdoc = nil;
+        xmlParser = [GSXMLParser parserWithData:xmlData];
+        if ([xmlParser parse] == YES)
+        {
+            xml = [xmlParser document];
+            ssParser = [GSXMLParser parserWithData:xsltStylesheet];
+            if ([ssParser parse] == YES)
+            {
+                ss = [ssParser document];
+                newdoc = [xml xsltTransform:ss params:params];
+            }
+        }
     }
-  NS_HANDLER
+    NS_HANDLER
     {
-      newdoc = nil;
+        newdoc = nil;
     }
-  NS_ENDHANDLER
+    NS_ENDHANDLER
 
-  return newdoc;
+    return newdoc;
 }
 
 /**
@@ -4025,9 +4047,9 @@ static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use 
  * Returns an autoreleased GSXMLDocument containing the transformed
  * XML, or nil on failure.
  */
-- (GSXMLDocument*) xsltTransform: (GSXMLDocument*)xsltStylesheet
+- (GSXMLDocument*)xsltTransform:(GSXMLDocument*)xsltStylesheet
 {
-  return [self xsltTransform: xsltStylesheet params: nil];
+    return [self xsltTransform:xsltStylesheet params:nil];
 }
 
 /**
@@ -4038,107 +4060,107 @@ static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use 
  * Returns an autoreleased GSXMLDocument containing the transformed
  * XML, or nil on failure.
  */
-- (GSXMLDocument*) xsltTransform: (GSXMLDocument*)xsltStylesheet
-                          params: (NSDictionary*)params
+- (GSXMLDocument*)xsltTransform:(GSXMLDocument*)xsltStylesheet
+    params:(NSDictionary*)params
 {
-  GSXMLDocument		*newdoc = nil;
+    GSXMLDocument     *newdoc = nil;
 
-  NS_DURING
+    NS_DURING
     {
-      xsltStylesheetPtr ss = NULL;
-      xmlDocPtr		ssXml = (xmlDocPtr)[xsltStylesheet lib];
-      int		pSize = params == nil ? 1 : ([params count] * 2) + 1;
-      int		pNum = 0;
-      const char	*parameters[pSize];
+        xsltStylesheetPtr ss = NULL;
+        xmlDocPtr ssXml = (xmlDocPtr)[xsltStylesheet lib];
+        int pSize = params == nil ? 1 : ([params count] * 2) + 1;
+        int pNum = 0;
+        const char    *parameters[pSize];
 
-      if (params != nil)
-	{
-	  NSEnumerator	*keys = [params keyEnumerator];
-	  if (keys != nil)
-	    {
-	      NSString	*key = [keys nextObject];
-	      while (key != nil)
-		{
-		  NSString	*value = [params objectForKey: key];
-		  parameters[pNum++] = [key cString];
-		  parameters[pNum++] = [value cString];
-		  key = [keys nextObject];
-		}
-	    }
-	}
-      parameters[pNum] = NULL;
+        if (params != nil)
+        {
+            NSEnumerator  *keys = [params keyEnumerator];
+            if (keys != nil)
+            {
+                NSString  *key = [keys nextObject];
+                while (key != nil)
+                {
+                    NSString  *value = [params objectForKey:key];
+                    parameters[pNum++] = [key cString];
+                    parameters[pNum++] = [value cString];
+                    key = [keys nextObject];
+                }
+            }
+        }
+        parameters[pNum] = NULL;
 
-      ss = xsltParseStylesheetDoc(ssXml);
-      if (xsltStylesheet != NULL)
-	{
-	  xmlDocPtr	res = NULL;
+        ss = xsltParseStylesheetDoc(ssXml);
+        if (xsltStylesheet != NULL)
+        {
+            xmlDocPtr res = NULL;
 
-	  res = xsltApplyStylesheet(ss, lib, parameters);
-	  if (res != NULL)
-	    {
-	      newdoc = [GSXMLDocument alloc];
-	      newdoc = [newdoc _initFrom: res
-				  parent: self
-				 ownsLib: YES];
-	      IF_NO_GC([newdoc autorelease];)
-	    }
-	}
-      /*
-       * N.B. We don't want to call xsltFreeStylesheet() to free the
-       * stylesheet xmlDocPtr because that will destroy the lib which
-       * is owned by the xsltStylesheet object.
-       */
-      xsltCleanupGlobals();
+            res = xsltApplyStylesheet(ss, lib, parameters);
+            if (res != NULL)
+            {
+                newdoc = [GSXMLDocument alloc];
+                newdoc = [newdoc _initFrom:res
+                          parent:self
+                          ownsLib:YES];
+                IF_NO_GC([newdoc autorelease]; )
+            }
+        }
+        /*
+         * N.B. We don't want to call xsltFreeStylesheet() to free the
+         * stylesheet xmlDocPtr because that will destroy the lib which
+         * is owned by the xsltStylesheet object.
+         */
+        xsltCleanupGlobals();
     }
-  NS_HANDLER
+    NS_HANDLER
     {
-      newdoc=  nil;
+        newdoc =  nil;
     }
-  NS_ENDHANDLER
-  return newdoc;
+    NS_ENDHANDLER
+    return newdoc;
 }
 #else /* HAVE_LIBXSLT */
-+ (GSXMLDocument*) xsltTransformFile: (NSString*)xmlFile
-                          stylesheet: (NSString*)xsltStylesheet
-		              params: (NSDictionary*)params
++ (GSXMLDocument*)xsltTransformFile:(NSString*)xmlFile
+    stylesheet:(NSString*)xsltStylesheet
+    params:(NSDictionary*)params
 {
-  NSLog(@"libxslt is not available");
-  return nil;
-}
-			
-+ (GSXMLDocument*) xsltTransformFile: (NSString*)xmlFile
-                          stylesheet: (NSString*)xsltStylesheet
-{
-  NSLog(@"libxslt is not available");
-  return nil;
-}
-			
-+ (GSXMLDocument*) xsltTransformXml: (NSData*)xmlData
-                         stylesheet: (NSData*)xsltStylesheet
-		             params: (NSDictionary*)params
-{
-  NSLog(@"libxslt is not available");
-  return nil;
+    NSLog(@"libxslt is not available");
+    return nil;
 }
 
-+ (GSXMLDocument*) xsltTransformXml: (NSData*)xmlData
-                         stylesheet: (NSData*)xsltStylesheet
++ (GSXMLDocument*)xsltTransformFile:(NSString*)xmlFile
+    stylesheet:(NSString*)xsltStylesheet
 {
-  NSLog(@"libxslt is not available");
-  return nil;
-}
-			
-- (GSXMLDocument*) xsltTransform: (GSXMLDocument*)xsltStylesheet
-                          params: (NSDictionary*)params
-{
-  NSLog(@"libxslt is not available");
-  return nil;
+    NSLog(@"libxslt is not available");
+    return nil;
 }
 
-- (GSXMLDocument*) xsltTransform: (GSXMLDocument*)xsltStylesheet
++ (GSXMLDocument*)xsltTransformXml:(NSData*)xmlData
+    stylesheet:(NSData*)xsltStylesheet
+    params:(NSDictionary*)params
 {
-  NSLog(@"libxslt is not available");
-  return nil;
+    NSLog(@"libxslt is not available");
+    return nil;
+}
+
++ (GSXMLDocument*)xsltTransformXml:(NSData*)xmlData
+    stylesheet:(NSData*)xsltStylesheet
+{
+    NSLog(@"libxslt is not available");
+    return nil;
+}
+
+- (GSXMLDocument*)xsltTransform:(GSXMLDocument*)xsltStylesheet
+    params:(NSDictionary*)params
+{
+    NSLog(@"libxslt is not available");
+    return nil;
+}
+
+- (GSXMLDocument*)xsltTransform:(GSXMLDocument*)xsltStylesheet
+{
+    NSLog(@"libxslt is not available");
+    return nil;
 }
 #endif /* HAVE_LIBXSLT */
 @end
@@ -4146,8 +4168,8 @@ static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use 
 #else
 
 #ifndef NeXT_Foundation_LIBRARY
-#import	"Foundation/NSCoder.h"
-#import	"Foundation/NSInvocation.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSInvocation.h"
 #else
 #import <Foundation/Foundation.h>
 #endif
@@ -4170,32 +4192,32 @@ static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use 
 @interface GSXMLAttribute : GSXMLNode
 @end
 @implementation GSXMLDummy
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
-  NSLog(@"Not built with libxml ... %@ unusable in %@",
-    NSStringFromClass(self), NSStringFromSelector(_cmd));
-  return nil;
+    NSLog(@"Not built with libxml ... %@ unusable in %@",
+          NSStringFromClass(self), NSStringFromSelector(_cmd));
+    return nil;
 }
-+ (void) forwardInvocation: (NSInvocation*)anInvocation
++ (void)forwardInvocation:(NSInvocation*)anInvocation
 {
-  NSLog(@"Not built with libxml ... %@ unusable in %@",
-    NSStringFromClass([self class]),
-    NSStringFromSelector([anInvocation selector]));
-  return;
+    NSLog(@"Not built with libxml ... %@ unusable in %@",
+          NSStringFromClass([self class]),
+          NSStringFromSelector([anInvocation selector]));
+    return;
 }
-- (id) init
+- (id)init
 {
-  NSLog(@"Not built with libxml ... %@ unusable in %@",
-    NSStringFromClass([self class]), NSStringFromSelector(_cmd));
-  DESTROY(self);
-  return nil;
+    NSLog(@"Not built with libxml ... %@ unusable in %@",
+          NSStringFromClass([self class]), NSStringFromSelector(_cmd));
+    DESTROY(self);
+    return nil;
 }
-- (id) initWithCoder: (NSCoder*)aCoder
+- (id)initWithCoder:(NSCoder*)aCoder
 {
-  NSLog(@"Not built with libxml ... %@ unusable in %@",
-    NSStringFromClass([self class]), NSStringFromSelector(_cmd));
-  DESTROY(self);
-  return nil;
+    NSLog(@"Not built with libxml ... %@ unusable in %@",
+          NSStringFromClass([self class]), NSStringFromSelector(_cmd));
+    DESTROY(self);
+    return nil;
 }
 @end
 @implementation GSXMLDocument
@@ -4213,1450 +4235,1443 @@ static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use 
 
 #endif
 
-
 
-@implementation	NSString (GSXML)
-- (NSString*) stringByEscapingXML
+@implementation NSString (GSXML)
+- (NSString*)stringByEscapingXML
 {
-  unsigned	length = [self length];
-  unsigned	output = 0;
-  unichar	*from;
-  unsigned	i = 0;
-  BOOL		escape = NO;
+    unsigned length = [self length];
+    unsigned output = 0;
+    unichar   *from;
+    unsigned i = 0;
+    BOOL escape = NO;
 
-  from = NSZoneMalloc (NSDefaultMallocZone(), sizeof(unichar) * length);
-  [self getCharacters: from];
+    from = NSZoneMalloc (NSDefaultMallocZone(), sizeof(unichar) * length);
+    [self getCharacters:from];
 
-  for (i = 0; i < length; i++)
+    for (i = 0; i < length; i++)
     {
-      unichar	c = from[i];
+        unichar c = from[i];
 
-      if ((c >= 0x20 && c <= 0xd7ff)
-	|| c == 0x9 || c == 0xd || c == 0xa
-	|| (c >= 0xe000 && c <= 0xfffd))
-	{
-	  switch (c)
-	    {
-	      case '"':
-	      case '\'':
-		output += 6;
-		escape = YES;
-	        break;
+        if ((c >= 0x20 && c <= 0xd7ff)
+            || c == 0x9 || c == 0xd || c == 0xa
+            || (c >= 0xe000 && c <= 0xfffd))
+        {
+            switch (c)
+            {
+            case '"':
+            case '\'':
+                output += 6;
+                escape = YES;
+                break;
 
-	      case '&':
-		output += 5;
-		escape = YES;
-	        break;
+            case '&':
+                output += 5;
+                escape = YES;
+                break;
 
-	      case '<':
-	      case '>':
-		output += 4;
-		escape = YES;
-	        break;
+            case '<':
+            case '>':
+                output += 4;
+                escape = YES;
+                break;
 
-	      default:
-		/*
-		 * For non-ascii characters, we can use &#nnnn; escapes
-		 */
-		if (c > 127)
-		  {
-		    output += 5;
-		    while (c >= 1000)
-		      {
-			output++;
-			c /= 10;
-		      }
-		    escape = YES;
-		  }
-		output++;
-		break;
-	    }
-	}
-      else
-	{
-	  escape = YES;	// Need to remove bad characters
-	}
+            default:
+                /*
+                 * For non-ascii characters, we can use &#nnnn; escapes
+                 */
+                if (c > 127)
+                {
+                    output += 5;
+                    while (c >= 1000)
+                    {
+                        output++;
+                        c /= 10;
+                    }
+                    escape = YES;
+                }
+                output++;
+                break;
+            }
+        }
+        else
+        {
+            escape = YES; // Need to remove bad characters
+        }
     }
 
-  if (escape == YES)
+    if (escape == YES)
     {
-      unichar	*to;
-      unsigned	j = 0;
+        unichar   *to;
+        unsigned j = 0;
 
-      to = NSZoneMalloc (NSDefaultMallocZone(), sizeof(unichar) * output);
+        to = NSZoneMalloc (NSDefaultMallocZone(), sizeof(unichar) * output);
 
-      for (i = 0; i < length; i++)
-	{
-	  unichar	c = from[i];
+        for (i = 0; i < length; i++)
+        {
+            unichar c = from[i];
 
-	  if ((c >= 0x20 && c <= 0xd7ff)
-	    || c == 0x9 || c == 0xd || c == 0xa
-	    || (c >= 0xe000 && c <= 0xfffd))
-	    {
-	      switch (c)
-		{
-		  case '"':
-		    to[j++] = '&';
-		    to[j++] = 'q';
-		    to[j++] = 'u';
-		    to[j++] = 'o';
-		    to[j++] = 't';
-		    to[j++] = ';';
-		    break;
+            if ((c >= 0x20 && c <= 0xd7ff)
+                || c == 0x9 || c == 0xd || c == 0xa
+                || (c >= 0xe000 && c <= 0xfffd))
+            {
+                switch (c)
+                {
+                case '"':
+                    to[j++] = '&';
+                    to[j++] = 'q';
+                    to[j++] = 'u';
+                    to[j++] = 'o';
+                    to[j++] = 't';
+                    to[j++] = ';';
+                    break;
 
-		  case '\'':
-		    to[j++] = '&';
-		    to[j++] = 'a';
-		    to[j++] = 'p';
-		    to[j++] = 'o';
-		    to[j++] = 's';
-		    to[j++] = ';';
-		    break;
+                case '\'':
+                    to[j++] = '&';
+                    to[j++] = 'a';
+                    to[j++] = 'p';
+                    to[j++] = 'o';
+                    to[j++] = 's';
+                    to[j++] = ';';
+                    break;
 
-		  case '&':
-		    to[j++] = '&';
-		    to[j++] = 'a';
-		    to[j++] = 'm';
-		    to[j++] = 'p';
-		    to[j++] = ';';
-		    break;
+                case '&':
+                    to[j++] = '&';
+                    to[j++] = 'a';
+                    to[j++] = 'm';
+                    to[j++] = 'p';
+                    to[j++] = ';';
+                    break;
 
-		  case '<':
-		    to[j++] = '&';
-		    to[j++] = 'l';
-		    to[j++] = 't';
-		    to[j++] = ';';
-		    break;
+                case '<':
+                    to[j++] = '&';
+                    to[j++] = 'l';
+                    to[j++] = 't';
+                    to[j++] = ';';
+                    break;
 
-		  case '>':
-		    to[j++] = '&';
-		    to[j++] = 'g';
-		    to[j++] = 't';
-		    to[j++] = ';';
-		    break;
+                case '>':
+                    to[j++] = '&';
+                    to[j++] = 'g';
+                    to[j++] = 't';
+                    to[j++] = ';';
+                    break;
 
-		  default:
-		    if (c > 127)
-		      {
-			char	buf[12];
-			char	*ptr = buf;
+                default:
+                    if (c > 127)
+                    {
+                        char buf[12];
+                        char    *ptr = buf;
 
-			to[j++] = '&';
-			to[j++] = '#';
-			sprintf(buf, "%u", c);
-			while (*ptr != '\0')
-			  {
-			    to[j++] = *ptr++;
-			  }
-			to[j++] = ';';
-		      }
-		    else
-		      {
-			to[j++] = c;
-		      }
-		    break;
-		}
-	    }
-	}
-      self = [[NSString alloc] initWithCharacters: to length: output];
-      NSZoneFree (NSDefaultMallocZone (), to);
-      IF_NO_GC([self autorelease];)
+                        to[j++] = '&';
+                        to[j++] = '#';
+                        sprintf(buf, "%u", c);
+                        while (*ptr != '\0')
+                        {
+                            to[j++] = *ptr++;
+                        }
+                        to[j++] = ';';
+                    }
+                    else
+                    {
+                        to[j++] = c;
+                    }
+                    break;
+                }
+            }
+        }
+        self = [[NSString alloc] initWithCharacters:to length:output];
+        NSZoneFree (NSDefaultMallocZone (), to);
+        IF_NO_GC([self autorelease]; )
     }
-  else
+    else
     {
-      self = AUTORELEASE([self copyWithZone: NSDefaultMallocZone()]);
+        self = AUTORELEASE([self copyWithZone:NSDefaultMallocZone()]);
     }
-  NSZoneFree (NSDefaultMallocZone (), from);
-  return self;
+    NSZoneFree (NSDefaultMallocZone (), from);
+    return self;
 }
 
-- (NSString*) stringByUnescapingXML
+- (NSString*)stringByUnescapingXML
 {
-  unsigned		length = [self length];
-  NSRange		r = NSMakeRange(0, length);
+    unsigned length = [self length];
+    NSRange r = NSMakeRange(0, length);
 
-  r = [self rangeOfString: @"&" options: NSLiteralSearch range: r];
-  if (r.length > 0)
+    r = [self rangeOfString:@"&" options:NSLiteralSearch range:r];
+    if (r.length > 0)
     {
-      NSMutableString	*m = [self mutableCopy];
+        NSMutableString   *m = [self mutableCopy];
 
-      while (r.length > 0)
-	{
-	  NSRange	e;
-	  unsigned	s0 = NSMaxRange(r);
+        while (r.length > 0)
+        {
+            NSRange e;
+            unsigned s0 = NSMaxRange(r);
 
-	  e = [m rangeOfString: @";"
-		       options: NSLiteralSearch
-			 range: NSMakeRange(s0, length - s0)];
-	  if (e.length > 0)
-	    {
-	      unsigned	s1 = NSMaxRange(e);
-	      NSString	*s = [m substringWithRange: NSMakeRange(s0, s1 - s0)];
+            e = [m rangeOfString:@";"
+                 options:NSLiteralSearch
+                 range:NSMakeRange(s0, length - s0)];
+            if (e.length > 0)
+            {
+                unsigned s1 = NSMaxRange(e);
+                NSString  *s = [m substringWithRange:NSMakeRange(s0, s1 - s0)];
 
-	      if ([s hasPrefix: @"&#"] == YES)
-		{
-		  unichar	u;
+                if ([s hasPrefix:@"&#"] == YES)
+                {
+                    unichar u;
 
-		  if ([s hasPrefix: @"&#x"] || [s hasPrefix: @"&#X"])
-		    {
-		      unsigned	val = 0;
+                    if ([s hasPrefix:@"&#x"] || [s hasPrefix:@"&#X"])
+                    {
+                        unsigned val = 0;
 
-		      s = [s substringFromIndex: 3];
-		      sscanf([s UTF8String], "%x", &val);
-		      u = val;
-		    }
-		  else if ([s hasPrefix: @"&#0x"] || [s hasPrefix: @"&#0X"])
-		    {
-		      unsigned	val = 0;
+                        s = [s substringFromIndex:3];
+                        sscanf([s UTF8String], "%x", &val);
+                        u = val;
+                    }
+                    else if ([s hasPrefix:@"&#0x"] || [s hasPrefix:@"&#0X"])
+                    {
+                        unsigned val = 0;
 
-		      s = [s substringFromIndex: 4];
-		      sscanf([s UTF8String], "%x", &val);
-		      u = val;
-		    }
-		  else
-		    {
-		      s = [s substringFromIndex: 2];
-		      u = [s intValue];
-		    }
-		  if (u == 0)
-		    {
-		      u = ' ';
-		    }
-		  s = [[NSString alloc] initWithCharacters: &u length: 1];
-		  s = AUTORELEASE(s);
-		}
-	      else if ([s isEqualToString: @"amp"])
-		{
-		  s = @"&";
-		}
-	      else if ([s isEqualToString: @"apos"])
-		{
-		  s = @"'";
-		}
-	      else if ([s isEqualToString: @"quot"])
-		{
-		  s = @"\"";
-		}
-	      else if ([s isEqualToString: @"lt"])
-		{
-		  s = @"<";
-		}
-	      else if ([s isEqualToString: @"gt"])
-		{
-		  s = @">";
-		}
-	      else
-		{
-		  // Unknown escape ... don't change.
-		  s = [NSString stringWithFormat: @"&%@;", s];
-		}
+                        s = [s substringFromIndex:4];
+                        sscanf([s UTF8String], "%x", &val);
+                        u = val;
+                    }
+                    else
+                    {
+                        s = [s substringFromIndex:2];
+                        u = [s intValue];
+                    }
+                    if (u == 0)
+                    {
+                        u = ' ';
+                    }
+                    s = [[NSString alloc] initWithCharacters:&u length:1];
+                    s = AUTORELEASE(s);
+                }
+                else if ([s isEqualToString:@"amp"])
+                {
+                    s = @"&";
+                }
+                else if ([s isEqualToString:@"apos"])
+                {
+                    s = @"'";
+                }
+                else if ([s isEqualToString:@"quot"])
+                {
+                    s = @"\"";
+                }
+                else if ([s isEqualToString:@"lt"])
+                {
+                    s = @"<";
+                }
+                else if ([s isEqualToString:@"gt"])
+                {
+                    s = @">";
+                }
+                else
+                {
+                    // Unknown escape ... don't change.
+                    s = [NSString stringWithFormat:@"&%@;", s];
+                }
 
 
-	      [m replaceCharactersInRange: NSMakeRange(s0, s1 - s0)
-			       withString: s];
-	      r.length = [s length];
-	      length += r.length - (s1 - s0);
-	      r.location = NSMaxRange(r);
-	      r.length = length - r.location;
-	      r = [m rangeOfString: @"&" options: NSLiteralSearch range: r];
-	    }
-	  else
-	    {
-	      r.length = 0;
-	    }
-	}
-      self = AUTORELEASE(m);
+                [m replaceCharactersInRange:NSMakeRange(s0, s1 - s0)
+                 withString:s];
+                r.length = [s length];
+                length += r.length - (s1 - s0);
+                r.location = NSMaxRange(r);
+                r.length = length - r.location;
+                r = [m rangeOfString:@"&" options:NSLiteralSearch range:r];
+            }
+            else
+            {
+                r.length = 0;
+            }
+        }
+        self = AUTORELEASE(m);
     }
-  else
+    else
     {
-      self = AUTORELEASE([self copyWithZone: NSDefaultMallocZone()]);
+        self = AUTORELEASE([self copyWithZone:NSDefaultMallocZone()]);
     }
 
-  return self;
+    return self;
 }
 @end
 
-
 
-#ifdef	HAVE_LIBXML
+#ifdef  HAVE_LIBXML
 
 /*
  * Categories on other classes which are required for XMLRPC
  */
-@interface	NSArray (GSXMLRPC)
-- (void) appendToXMLRPC: (NSMutableString*)str
-		 indent: (NSUInteger)indent
-		    for: (GSXMLRPC*)rpc;
+@interface  NSArray (GSXMLRPC)
+- (void)appendToXMLRPC:(NSMutableString*)str
+    indent:(NSUInteger)indent
+    for:(GSXMLRPC*)rpc;
 @end
 
-@interface	NSData (GSXMLRPC)
-- (void) appendToXMLRPC: (NSMutableString*)str
-		 indent: (NSUInteger)indent
-		    for: (GSXMLRPC*)rpc;
+@interface  NSData (GSXMLRPC)
+- (void)appendToXMLRPC:(NSMutableString*)str
+    indent:(NSUInteger)indent
+    for:(GSXMLRPC*)rpc;
 @end
 
-@interface	NSDate (GSXMLRPC)
-- (void) appendToXMLRPC: (NSMutableString*)str
-		 indent: (NSUInteger)indent
-		    for: (GSXMLRPC*)rpc;
+@interface  NSDate (GSXMLRPC)
+- (void)appendToXMLRPC:(NSMutableString*)str
+    indent:(NSUInteger)indent
+    for:(GSXMLRPC*)rpc;
 @end
 
-@interface	NSDictionary (GSXMLRPC)
-- (void) appendToXMLRPC: (NSMutableString*)str
-		 indent: (NSUInteger)indent
-		    for: (GSXMLRPC*)rpc;
+@interface  NSDictionary (GSXMLRPC)
+- (void)appendToXMLRPC:(NSMutableString*)str
+    indent:(NSUInteger)indent
+    for:(GSXMLRPC*)rpc;
 @end
 
-@interface	NSObject (GSXMLRPC)
-- (void) appendToXMLRPC: (NSMutableString*)str
-		 indent: (NSUInteger)indent
-		    for: (GSXMLRPC*)rpc;
+@interface  NSObject (GSXMLRPC)
+- (void)appendToXMLRPC:(NSMutableString*)str
+    indent:(NSUInteger)indent
+    for:(GSXMLRPC*)rpc;
 @end
 
-@interface	NSNumber (GSXMLRPC)
-- (void) appendToXMLRPC: (NSMutableString*)str
-		 indent: (NSUInteger)indent
-		    for: (GSXMLRPC*)rpc;
+@interface  NSNumber (GSXMLRPC)
+- (void)appendToXMLRPC:(NSMutableString*)str
+    indent:(NSUInteger)indent
+    for:(GSXMLRPC*)rpc;
 @end
 
-@interface	NSString (GSXMLRPC)
-- (void) appendToXMLRPC: (NSMutableString*)str
-		 indent: (NSUInteger)indent
-		    for: (GSXMLRPC*)rpc;
+@interface  NSString (GSXMLRPC)
+- (void)appendToXMLRPC:(NSMutableString*)str
+    indent:(NSUInteger)indent
+    for:(GSXMLRPC*)rpc;
 @end
 
-
-
 
 /*
  * A little code to handle indentation.
  */
-static NSString	*indentations[] = {
-  @"  ",
-  @"    ",
-  @"      ",
-  @"\t",
-  @"\t  ",
-  @"\t    ",
-  @"\t      ",
-  @"\t\t",
-  @"\t\t  ",
-  @"\t\t    ",
-  @"\t\t      ",
-  @"\t\t\t",
-  @"\t\t\t  ",
-  @"\t\t\t    ",
-  @"\t\t\t      ",
-  @"\t\t\t\t"
+static NSString *indentations[] = {
+    @"  ",
+    @"    ",
+    @"      ",
+    @"\t",
+    @"\t  ",
+    @"\t    ",
+    @"\t      ",
+    @"\t\t",
+    @"\t\t  ",
+    @"\t\t    ",
+    @"\t\t      ",
+    @"\t\t\t",
+    @"\t\t\t  ",
+    @"\t\t\t    ",
+    @"\t\t\t      ",
+    @"\t\t\t\t"
 };
 static void indentation(unsigned level, NSMutableString *str)
 {
-  if (level > 0)
+    if (level > 0)
     {
-      if (level >= sizeof(indentations)/sizeof(*indentations))
-	{
-	  level = sizeof(indentations)/sizeof(*indentations) - 1;
-	}
-      [str appendString: indentations[level]];
+        if (level >= sizeof(indentations)/sizeof(*indentations))
+        {
+            level = sizeof(indentations)/sizeof(*indentations) - 1;
+        }
+        [str appendString:indentations[level]];
     }
 }
 
-#define	INDENT(I)	if (compact == NO) indentation(I, str)
-#define	NL		if (compact == NO) [str appendString: @"\n"]
+#define INDENT(I)   if (compact == NO) indentation(I, str)
+#define NL      if (compact == NO) [str appendString:@"\n"]
 
-
 
 /*
  * Implementation of categories to output objects for XMLRPC
  */
 
-@implementation	NSArray (GSXMLRPC)
-- (void) appendToXMLRPC: (NSMutableString*)str
-		 indent: (NSUInteger)indent
-		    for: (GSXMLRPC*)rpc
+@implementation NSArray (GSXMLRPC)
+- (void)appendToXMLRPC:(NSMutableString*)str
+    indent:(NSUInteger)indent
+    for:(GSXMLRPC*)rpc
 {
-  unsigned 		i;
-  unsigned		c = [self count];
-  BOOL			compact = [rpc compact];
-  
-  INDENT(indent++);
-  [str appendString: @"<array>"];
-  NL;
-  INDENT(indent++);
-  [str appendString: @"<data>"];
-  NL;
-  for (i = 0; i < c; i++)
-    {
-      id	value = [self objectAtIndex: i];
+    unsigned i;
+    unsigned c = [self count];
+    BOOL compact = [rpc compact];
 
-      INDENT(indent++);
-      [str appendString: @"<value>"];
-      NL;
-      [value appendToXMLRPC: str indent: indent for: rpc];
-      NL;
-      INDENT(--indent);
-      [str appendString: @"</value>"];
-      NL;
+    INDENT(indent++);
+    [str appendString:@"<array>"];
+    NL;
+    INDENT(indent++);
+    [str appendString:@"<data>"];
+    NL;
+    for (i = 0; i < c; i++)
+    {
+        id value = [self objectAtIndex:i];
+
+        INDENT(indent++);
+        [str appendString:@"<value>"];
+        NL;
+        [value appendToXMLRPC:str indent:indent for:rpc];
+        NL;
+        INDENT(--indent);
+        [str appendString:@"</value>"];
+        NL;
     }
-  INDENT(--indent);
-  [str appendString: @"</data>"];
-  NL;
-  INDENT(--indent);
-  [str appendString: @"</array>"];
+    INDENT(--indent);
+    [str appendString:@"</data>"];
+    NL;
+    INDENT(--indent);
+    [str appendString:@"</array>"];
 }
 @end
 
-@implementation	NSData (GSXMLRPC)
-- (void) appendToXMLRPC: (NSMutableString*)str
-		 indent: (NSUInteger)indent
-		    for: (GSXMLRPC*)rpc
+@implementation NSData (GSXMLRPC)
+- (void)appendToXMLRPC:(NSMutableString*)str
+    indent:(NSUInteger)indent
+    for:(GSXMLRPC*)rpc
 {
-  NSData	*d;
-  NSString	*s;
+    NSData    *d;
+    NSString  *s;
 
-  d = [GSMimeDocument encodeBase64: self];
-  s = [[NSString alloc] initWithData: d encoding: NSASCIIStringEncoding];
-  [str appendString: @"<base64>"];
-  [str appendString: s];
-  [str appendString: @"</base64>"];
-  RELEASE(s);
+    d = [GSMimeDocument encodeBase64:self];
+    s = [[NSString alloc] initWithData:d encoding:NSASCIIStringEncoding];
+    [str appendString:@"<base64>"];
+    [str appendString:s];
+    [str appendString:@"</base64>"];
+    RELEASE(s);
 }
 @end
 
-@implementation	NSDate (GSXMLRPC)
-- (void) appendToXMLRPC: (NSMutableString*)str
-		 indent: (NSUInteger)indent
-		    for: (GSXMLRPC*)rpc
+@implementation NSDate (GSXMLRPC)
+- (void)appendToXMLRPC:(NSMutableString*)str
+    indent:(NSUInteger)indent
+    for:(GSXMLRPC*)rpc
 {
-  NSString		*s;
+    NSString      *s;
 
-  s = [self descriptionWithCalendarFormat: @"%Y%m%dT%H:%M:%S"
-				 timeZone: [rpc timeZone]
-				   locale: nil];
-  [str appendString: @"<dateTime.iso8601>"];
-  [str appendString: s];
-  [str appendString: @"</dateTime.iso8601>"];
+    s = [self descriptionWithCalendarFormat:@"%Y%m%dT%H:%M:%S"
+         timeZone:[rpc timeZone]
+         locale:nil];
+    [str appendString:@"<dateTime.iso8601>"];
+    [str appendString:s];
+    [str appendString:@"</dateTime.iso8601>"];
 }
 @end
 
-@implementation	NSDictionary (GSXMLRPC)
-- (void) appendToXMLRPC: (NSMutableString*)str
-		 indent: (NSUInteger)indent
-		    for: (GSXMLRPC*)rpc
+@implementation NSDictionary (GSXMLRPC)
+- (void)appendToXMLRPC:(NSMutableString*)str
+    indent:(NSUInteger)indent
+    for:(GSXMLRPC*)rpc
 {
-  NSEnumerator	*kEnum = [self keyEnumerator];
-  NSString	*key;
-  BOOL		compact = [rpc compact];
+    NSEnumerator  *kEnum = [self keyEnumerator];
+    NSString  *key;
+    BOOL compact = [rpc compact];
 
-  INDENT(indent++);
-  [str appendString: @"<struct>"];
-  NL;
-  while ((key = [kEnum nextObject]))
+    INDENT(indent++);
+    [str appendString:@"<struct>"];
+    NL;
+    while ((key = [kEnum nextObject]))
     {
-      id	value = [self objectForKey: key];
+        id value = [self objectForKey:key];
 
-      INDENT(indent++);
-      [str appendString: @"<member>"];
-      NL;
-      INDENT(indent);
-      [str appendString: @"<name>"];
-      [str appendString: [[key description] stringByEscapingXML]];
-      [str appendString: @"</name>"];
-      NL;
-      INDENT(indent++);
-      [str appendString: @"<value>"];
-      NL;
-      [value appendToXMLRPC: str indent: indent-- for: rpc];
-      NL;
-      INDENT(indent--);
-      [str appendString: @"</value>"];
-      NL;
-      INDENT(indent);
-      [str appendString: @"</member>"];
-      NL;
+        INDENT(indent++);
+        [str appendString:@"<member>"];
+        NL;
+        INDENT(indent);
+        [str appendString:@"<name>"];
+        [str appendString:[[key description] stringByEscapingXML]];
+        [str appendString:@"</name>"];
+        NL;
+        INDENT(indent++);
+        [str appendString:@"<value>"];
+        NL;
+        [value appendToXMLRPC:str indent:indent-- for:rpc];
+        NL;
+        INDENT(indent--);
+        [str appendString:@"</value>"];
+        NL;
+        INDENT(indent);
+        [str appendString:@"</member>"];
+        NL;
     }
-  INDENT(--indent);
-  [str appendString: @"</struct>"];
+    INDENT(--indent);
+    [str appendString:@"</struct>"];
 }
 @end
 
-@implementation	NSNumber (GSXMLRPC)
-- (void) appendToXMLRPC: (NSMutableString*)str
-		 indent: (NSUInteger)indent
-		    for: (GSXMLRPC*)rpc
+@implementation NSNumber (GSXMLRPC)
+- (void)appendToXMLRPC:(NSMutableString*)str
+    indent:(NSUInteger)indent
+    for:(GSXMLRPC*)rpc
 {
-  const char	*t = [self objCType];
-  BOOL		compact = [rpc compact];
+    const char    *t = [self objCType];
+    BOOL compact = [rpc compact];
 
-  INDENT(indent);
-  if (strchr("cCsSiIlL", *t) != 0)
+    INDENT(indent);
+    if (strchr("cCsSiIlL", *t) != 0)
     {
-      long	i = [self longValue];
+        long i = [self longValue];
 
-      if ((i == 0 || i == 1) && (*t == 'c' || *t == 'C'))
+        if ((i == 0 || i == 1) && (*t == 'c' || *t == 'C'))
         {
-	  if (i == 0)
-	    {
-	      [str appendString: @"<boolean>0</boolean>"];
-	    }
-	  else
-	    {
-	      [str appendString: @"<boolean>1</boolean>"];
-	    }
-	}
-      else
-	{
-	  [str appendFormat: @"<i4>%ld</i4>", i];
-	}
+            if (i == 0)
+            {
+                [str appendString:@"<boolean>0</boolean>"];
+            }
+            else
+            {
+                [str appendString:@"<boolean>1</boolean>"];
+            }
+        }
+        else
+        {
+            [str appendFormat:@"<i4>%ld</i4>", i];
+        }
     }
-  else
+    else
     {
-      [str appendFormat: @"<double>%f</double>", [self doubleValue]];
+        [str appendFormat:@"<double>%f</double>", [self doubleValue]];
     }
 }
 @end
 
-@implementation	NSObject (GSXMLRPC)
-- (void) appendToXMLRPC: (NSMutableString*)str
-		 indent: (NSUInteger)indent
-		    for: (GSXMLRPC*)rpc
+@implementation NSObject (GSXMLRPC)
+- (void)appendToXMLRPC:(NSMutableString*)str
+    indent:(NSUInteger)indent
+    for:(GSXMLRPC*)rpc
 {
-  [[self description] appendToXMLRPC: str indent: indent for: rpc];
+    [[self description] appendToXMLRPC:str indent:indent for:rpc];
 }
 @end
 
-@implementation	NSString (GSXMLRPC)
-- (void) appendToXMLRPC: (NSMutableString*)str
-		 indent: (NSUInteger)indent
-		    for: (GSXMLRPC*)rpc
+@implementation NSString (GSXMLRPC)
+- (void)appendToXMLRPC:(NSMutableString*)str
+    indent:(NSUInteger)indent
+    for:(GSXMLRPC*)rpc
 {
-  BOOL	compact = [rpc compact];
+    BOOL compact = [rpc compact];
 
-  if (compact == YES)
+    if (compact == YES)
     {
-      [str appendString: [self stringByEscapingXML]];
+        [str appendString:[self stringByEscapingXML]];
     }
-  else
+    else
     {
-      INDENT(indent);
-      [str appendFormat: @"<string>%@</string>", [self stringByEscapingXML]];
+        INDENT(indent);
+        [str appendFormat:@"<string>%@</string>", [self stringByEscapingXML]];
     }
 }
 @end
 
-
 
 /*
  * Convert incoming XMLRPC value to a normal Objective-C object.
  */
-@interface	GSXMLRPC (Private)
-- (id) _parseValue: (GSXMLNode*)node;
+@interface  GSXMLRPC (Private)
+- (id)_parseValue:(GSXMLNode*)node;
 @end
 
-@implementation	GSXMLRPC (Private)
-- (id) _parseValue: (GSXMLNode*)node
+@implementation GSXMLRPC (Private)
+- (id)_parseValue:(GSXMLNode*)node
 {
-  NSString	*name = [node name];
-  NSString	*str;
+    NSString  *name = [node name];
+    NSString  *str;
 
-  if ([name isEqualToString: @"value"])
+    if ([name isEqualToString:@"value"])
     {
-      GSXMLNode	*type = [node firstChildElement];
+        GSXMLNode *type = [node firstChildElement];
 
-      /*
-       * A value with no type element is just a string.
-       */
-      if (type == nil)
-	{
-	  name = @"string";
-	}
-      else
-	{
-	  node = type;
-	  name = [node name];
-	}
-    }
-
-  if ([name length] == 0)
-    {
-      return nil;
-    }
-
-  if ([name isEqualToString: @"i4"] || [name isEqualToString: @"int"])
-    {
-      str = [node content];
-      if (str == nil)
-	{
-	  [NSException raise: NSInvalidArgumentException
-		      format: @"missing %@ value", name];
-	}
-      return [NSNumber numberWithInt: [str intValue]];
-    }
-
-  if ([name isEqualToString: @"string"])
-    {
-      str = [node content];
-      if (str == nil)
-	{
-	  str = @"";
-	}
-      return str;
-    }
-
-  if ([name isEqualToString: @"boolean"])
-    {
-      char	c;
-
-      str = [node content];
-      if (str == nil)
-	{
-	  [NSException raise: NSInvalidArgumentException
-		      format: @"missing %@ value", name];
-	}
-      c = [str intValue];
-      return [NSNumber numberWithBool: c == 0 ? NO : YES];
-    }
-
-  if ([name isEqualToString: @"double"])
-    {
-      str = [node content];
-      if (str == nil)
-	{
-	  [NSException raise: NSInvalidArgumentException
-		      format: @"missing %@ value", name];
-	}
-      return [NSNumber numberWithDouble: [str doubleValue]];
-    }
-
-  if ([name isEqualToString: @"base64"])
-    {
-      NSData	*d;
-
-      str = [node content];
-      if (str == nil)
-	{
-	  [NSException raise: NSInvalidArgumentException
-		      format: @"missing %@ value", name];
-	}
-      d = [str dataUsingEncoding: NSASCIIStringEncoding];
-      return [GSMimeDocument decodeBase64: d];
-    }
-
-  if ([name isEqualToString: @"dateTime.iso8601"])
-    {
-      NSCalendarDate	*d;
-      const char	*s;
-      int		year;
-      int		month;
-      int		day;
-      int		hour;
-      int		minute;
-      int		second;
-
-      str = [node content];
-      if (str == nil)
-	{
-	  [NSException raise: NSInvalidArgumentException
-		      format: @"missing %@ value", name];
-	}
-      s = [str UTF8String];
-      if (sscanf(s, "%04d%02d%02dT%02d:%02d:%02d",
-        &year, &month, &day, &hour, &minute, &second) != 6)
-	{
-	  [NSException raise: NSInvalidArgumentException
-		      format: @"bad date/time format '%@'", str];
-	}
-      d = [[NSCalendarDate alloc] initWithYear: year
-					 month: month
-					   day: day
-					  hour: hour
-					minute: minute
-					second: second 
-				      timeZone: tz]; 
-      return AUTORELEASE(d);
-    }
-
-  if ([name isEqualToString: @"array"])
-    {
-      NSMutableArray		*arr = [NSMutableArray array];
-
-      node = [node firstChildElement];
-      while (node != nil && [[node name] isEqualToString: @"data"] == NO)
+        /*
+         * A value with no type element is just a string.
+         */
+        if (type == nil)
         {
-	  node = [node nextElement];
-	}
-      if ([[node name] isEqualToString: @"data"] == YES)
+            name = @"string";
+        }
+        else
         {
-	  node = [node firstChildElement];
-	  while (node != nil)
-	    {
-	      if ([[node name] isEqualToString: @"value"] == YES)
-	        {
-		  id	v;
-
-		  v = [self _parseValue: node];
-		  if (v != nil)
-		    {
-		      [arr addObject: v];
-		    }
-		}
-	      node = [node nextElement];
-	    }
-	}
-      return arr;
+            node = type;
+            name = [node name];
+        }
     }
 
-  if ([name isEqualToString: @"struct"])
+    if ([name length] == 0)
     {
-      NSMutableDictionary	*dict = [NSMutableDictionary dictionary];
-
-      node = [node firstChildElement];
-      while (node != nil)
-        {
-	  if ([[node name] isEqualToString: @"member"] == YES)
-	    {
-	      GSXMLNode	*member = [node firstChildElement];
-	      NSString	*key = nil;
-	      id	val = nil;
-
-	      while (member != nil)
-	        {
-		  if ([[member name] isEqualToString: @"name"] == YES)
-		    {
-		      key = [member content];
-		    }
-		  else if ([[member name] isEqualToString: @"value"] == YES)
-		    {
-		      val = [self _parseValue: member];
-		    }
-		  if (key != nil && val != nil)
-		    {
-		      [dict setObject: val forKey: key];
-		      break;
-		    }
-		  member = [member nextElement];
-		}
-	    }
-	  node = [node nextElement];
-	}
-      return dict;
+        return nil;
     }
 
-  [NSException raise: NSInvalidArgumentException
-	      format: @"Unknown value type: %@", name];
-  return nil;
+    if ([name isEqualToString:@"i4"] || [name isEqualToString:@"int"])
+    {
+        str = [node content];
+        if (str == nil)
+        {
+            [NSException raise:NSInvalidArgumentException
+             format:@"missing %@ value", name];
+        }
+        return [NSNumber numberWithInt:[str intValue]];
+    }
+
+    if ([name isEqualToString:@"string"])
+    {
+        str = [node content];
+        if (str == nil)
+        {
+            str = @"";
+        }
+        return str;
+    }
+
+    if ([name isEqualToString:@"boolean"])
+    {
+        char c;
+
+        str = [node content];
+        if (str == nil)
+        {
+            [NSException raise:NSInvalidArgumentException
+             format:@"missing %@ value", name];
+        }
+        c = [str intValue];
+        return [NSNumber numberWithBool:c == 0 ? NO:YES];
+    }
+
+    if ([name isEqualToString:@"double"])
+    {
+        str = [node content];
+        if (str == nil)
+        {
+            [NSException raise:NSInvalidArgumentException
+             format:@"missing %@ value", name];
+        }
+        return [NSNumber numberWithDouble:[str doubleValue]];
+    }
+
+    if ([name isEqualToString:@"base64"])
+    {
+        NSData    *d;
+
+        str = [node content];
+        if (str == nil)
+        {
+            [NSException raise:NSInvalidArgumentException
+             format:@"missing %@ value", name];
+        }
+        d = [str dataUsingEncoding:NSASCIIStringEncoding];
+        return [GSMimeDocument decodeBase64:d];
+    }
+
+    if ([name isEqualToString:@"dateTime.iso8601"])
+    {
+        NSCalendarDate    *d;
+        const char    *s;
+        int year;
+        int month;
+        int day;
+        int hour;
+        int minute;
+        int second;
+
+        str = [node content];
+        if (str == nil)
+        {
+            [NSException raise:NSInvalidArgumentException
+             format:@"missing %@ value", name];
+        }
+        s = [str UTF8String];
+        if (sscanf(s, "%04d%02d%02dT%02d:%02d:%02d",
+                   &year, &month, &day, &hour, &minute, &second) != 6)
+        {
+            [NSException raise:NSInvalidArgumentException
+             format:@"bad date/time format '%@'", str];
+        }
+        d = [[NSCalendarDate alloc] initWithYear:year
+             month:month
+             day:day
+             hour:hour
+             minute:minute
+             second:second
+             timeZone:tz];
+        return AUTORELEASE(d);
+    }
+
+    if ([name isEqualToString:@"array"])
+    {
+        NSMutableArray        *arr = [NSMutableArray array];
+
+        node = [node firstChildElement];
+        while (node != nil && [[node name] isEqualToString:@"data"] == NO)
+        {
+            node = [node nextElement];
+        }
+        if ([[node name] isEqualToString:@"data"] == YES)
+        {
+            node = [node firstChildElement];
+            while (node != nil)
+            {
+                if ([[node name] isEqualToString:@"value"] == YES)
+                {
+                    id v;
+
+                    v = [self _parseValue:node];
+                    if (v != nil)
+                    {
+                        [arr addObject:v];
+                    }
+                }
+                node = [node nextElement];
+            }
+        }
+        return arr;
+    }
+
+    if ([name isEqualToString:@"struct"])
+    {
+        NSMutableDictionary   *dict = [NSMutableDictionary dictionary];
+
+        node = [node firstChildElement];
+        while (node != nil)
+        {
+            if ([[node name] isEqualToString:@"member"] == YES)
+            {
+                GSXMLNode *member = [node firstChildElement];
+                NSString  *key = nil;
+                id val = nil;
+
+                while (member != nil)
+                {
+                    if ([[member name] isEqualToString:@"name"] == YES)
+                    {
+                        key = [member content];
+                    }
+                    else if ([[member name] isEqualToString:@"value"] == YES)
+                    {
+                        val = [self _parseValue:member];
+                    }
+                    if (key != nil && val != nil)
+                    {
+                        [dict setObject:val forKey:key];
+                        break;
+                    }
+                    member = [member nextElement];
+                }
+            }
+            node = [node nextElement];
+        }
+        return dict;
+    }
+
+    [NSException raise:NSInvalidArgumentException
+     format:@"Unknown value type: %@", name];
+    return nil;
 }
 @end
 
-
 
 /*
  * And now, the actual GSXMLRPC class.
  */
-@implementation	GSXMLRPC
+@implementation GSXMLRPC
 
-- (NSData*) buildMethod: (NSString*)method 
-	         params: (NSArray*)params
+- (NSData*)buildMethod:(NSString*)method
+    params:(NSArray*)params
 {
-  return [[self buildMethodCall: method params: params] dataUsingEncoding:
-    NSUTF8StringEncoding];
+    return [[self buildMethodCall:method params:params] dataUsingEncoding:
+            NSUTF8StringEncoding];
 }
 
-- (NSString*) buildMethodCall: (NSString*)method 
-                       params: (NSArray*)params
+- (NSString*)buildMethodCall:(NSString*)method
+    params:(NSArray*)params
 {
-  NSMutableString	*str = [NSMutableString stringWithCapacity: 1024];
-  unsigned		c = [params count];
-  unsigned		i;
-  
-  if ([method length] == 0)
+    NSMutableString   *str = [NSMutableString stringWithCapacity:1024];
+    unsigned c = [params count];
+    unsigned i;
+
+    if ([method length] == 0)
     {
-      return nil;
+        return nil;
     }
-  else
+    else
     {
-      static NSCharacterSet	*illegal = nil;
-      NSRange			r;
+        static NSCharacterSet *illegal = nil;
+        NSRange r;
 
-      if (illegal == nil)
-	{
-	  NSMutableCharacterSet	*tmp = [NSMutableCharacterSet new];
-
-	  [tmp addCharactersInRange: NSMakeRange('0', 10)];
-	  [tmp addCharactersInRange: NSMakeRange('a', 26)];
-	  [tmp addCharactersInRange: NSMakeRange('A', 26)];
-	  [tmp addCharactersInString: @"_.:/"];
-	  [tmp invert];
-	  illegal = [tmp copy];
-	  RELEASE(tmp);
-	}
-      r = [method rangeOfCharacterFromSet: illegal];
-      if (r.length > 0)
-	{
-	  return nil;	// Bad method name.
-	}
-    }
-  [str appendString: @"<?xml version=\"1.0\"?>\n"];
-  [str appendString: @"<methodCall>"];
-  NL;
-  INDENT(1);
-  [str appendFormat: @"<methodName>%@</methodName>",
-    [method stringByEscapingXML]];
-  NL;
-  if (c > 0)
-    {
-      INDENT(1);
-      [str appendString: @"<params>"];
-      NL;
-      for (i = 0; i < c; i++)
-      	{
-	  INDENT(2);
-	  [str appendString: @"<param>"];
-	  NL;
-	  INDENT(3);
-	  [str appendString: @"<value>"];
-	  NL;
-	  [[params objectAtIndex: i] appendToXMLRPC: str indent: 3 for: self];
-	  NL;
-	  INDENT(3);
-	  [str appendString: @"</value>"];
-	  NL;
-	  INDENT(2);
-	  [str appendString: @"</param>"];
-	  NL;
-	}
-      INDENT(1);
-      [str appendString: @"</params>"];
-      NL;
-    }
-  [str appendString: @"</methodCall>"];
-  NL;
-  return str;
-}
-
-- (NSString*) buildResponseWithFaultCode: (NSInteger)code andString: (NSString*)s
-{
-  NSMutableString	*str = [NSMutableString stringWithCapacity: 1024];
-  NSDictionary		*fault;
-
-  fault = [NSDictionary dictionaryWithObjectsAndKeys:
-    [NSNumber numberWithInt: code], @"faultCode",
-    s, @"faultString",
-    nil];
-
-  [str appendString: @"<?xml version=\"1.0\"?>\n"];
-  [str appendString: @"<methodResponse>"];
-  NL;
-  INDENT(1);
-  [str appendString: @"<fault>"];
-  NL;
-  INDENT(2);
-  [str appendString: @"<value>"];
-  NL;
-  [fault appendToXMLRPC: str indent: 3 for: self];
-  NL;
-  INDENT(2);
-  [str appendString: @"</value>"];
-  NL;
-  INDENT(1);
-  [str appendString: @"</fault>"];
-  NL;
-  [str appendString: @"</methodResponse>"];
-  NL;
-  return str;
-}
-
-- (NSString*) buildResponseWithParams: (NSArray*)params
-{
-  NSMutableString	*str = [NSMutableString stringWithCapacity: 1024];
-  unsigned		c = [params count];
-  unsigned		i;
-  
-  [str appendString: @"<?xml version=\"1.0\"?>\n"];
-  [str appendString: @"<methodResponse>"];
-  NL;
-  INDENT(1);
-  [str appendString: @"<params>"];
-  NL;
-  for (i = 0; i < c; i++)
-    {
-      INDENT(2);
-      [str appendString: @"<param>"];
-      NL;
-      INDENT(3);
-      [str appendString: @"<value>"];
-      NL;
-      [[params objectAtIndex: i] appendToXMLRPC: str indent: 3 for: self];
-      NL;
-      INDENT(3);
-      [str appendString: @"</value>"];
-      NL;
-      INDENT(2);
-      [str appendString: @"</param>"];
-      NL;
-    }
-  INDENT(1);
-  [str appendString: @"</params>"];
-  NL;
-  [str appendString: @"</methodResponse>"];
-  NL;
-  return str;
-}
-
-- (BOOL) compact
-{
-  return compact;
-}
-
-- (void) dealloc
-{
-  RELEASE(tz);
-  if (timer != nil)
-    {
-      [self timeout: nil];	// Treat as immediate timeout.
-    }
-#ifdef GNUSTEP
-  [handle removeClient: self];
-#endif
-  DESTROY(result);
-#ifdef GNUSTEP
-  DESTROY(handle);
-#else
-  if (connection)
-    {
-      [connection release];
-    }
-  [response release];
-  [connectionURL release];
-#endif
-  [super dealloc];
-}
-
-- (id) delegate
-{
-  return delegate;
-}
-
-- (id) initWithURL: (NSString*)url
-{
-  return [self initWithURL: url certificate: nil privateKey: nil password: nil];
-}
-
-- (id) initWithURL: (NSString*)url
-       certificate: (NSString*)cert
-        privateKey: (NSString*)pKey
-	  password: (NSString*)pwd
-{
-  if (url != nil)
-    {
-      NS_DURING
-	{
-#ifdef GNUSTEP
-	  NSURL	*u = [NSURL URLWithString: url];
-        
-	  handle = RETAIN([u URLHandleUsingCache: NO]);
-	  if (cert != nil && pKey != nil && pwd != nil)
-	    {
-	      [handle writeProperty: cert 
-			     forKey: GSHTTPPropertyCertificateFileKey];
-	      [handle writeProperty: pKey forKey: GSHTTPPropertyKeyFileKey];
-	      [handle writeProperty: pwd forKey: GSHTTPPropertyPasswordKey];
-	    }
-#else
-	  connectionURL = [url copy];
-	  connection = nil;
-	  response = [[NSMutableData alloc] init];
-#endif
-	}
-      NS_HANDLER
-	{
-	  DESTROY(self);
-	}
-      NS_ENDHANDLER
-    }
-  return self;
-}
-
-- (id) init
-{
-  return [self initWithURL: nil certificate: nil privateKey: nil password: nil];
-}
-
-- (id) makeMethodCall: (NSString*)method 
-	       params: (NSArray*)params
-	      timeout: (NSInteger)seconds
-{
-  NS_DURING
-    {
-      if ([self sendMethodCall: method params: params timeout: seconds] == YES)
-	{
-	  NSDate	*when = AUTORELEASE(RETAIN([timer fireDate]));
-
-	  while (timer != nil)
-	    {
-	      [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
-				       beforeDate: when];
-	    }
-	}
-    }
-  NS_HANDLER
-    {
-      ASSIGN(result, [localException description]);
-    }
-  NS_ENDHANDLER
-
-  return result;  
-}
-
-- (NSString*) parseMethod: (NSData*)request
-		   params: (NSMutableArray*)params
-{
-  GSXPathContext	*ctx = nil;
-  GSXPathNodeSet	*ns = nil;
-  GSXMLParser		*parser = nil;
-  NSString		*method;
-  
-  [params removeAllObjects];
-
-  NS_DURING
-    {
-      GSXMLDocument	*doc = nil;
-
-      parser = [GSXMLParser parserWithData: request];
-      [parser substituteEntities: YES];
-      [parser saveMessages: YES];
-      if ([parser parse] == YES)
+        if (illegal == nil)
         {
-	  doc = [parser document];
-	  ctx = AUTORELEASE([[GSXPathContext alloc] initWithDocument: doc]);
-	}
-    }
-  NS_HANDLER
-    {
-      ctx = nil;
-    }
-  NS_ENDHANDLER
-  if (ctx == nil)
-    {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"Bad Request: parse failed (%@)", [parser messages]];
-    }
-  
-  ns = (GSXPathNodeSet*)[ctx evaluateExpression: @"//methodCall/methodName"];
-  if ([ns count] != 1)
-    {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"Badly formatted methodCall"];
-    }
-  method = [[ns nodeAtIndex: 0] content];
-	 
-  ns = (GSXPathNodeSet*)[ctx evaluateExpression: 
-    @"//methodCall/params/param/value"];
+            NSMutableCharacterSet *tmp = [NSMutableCharacterSet new];
 
-  NS_DURING
-    {
-      int	i;
-
-      for (i = 0; i < [ns count]; i++)
-	{
-	  GSXMLNode	*node = [ns nodeAtIndex: i];
-	  id		value = [self _parseValue: node];
-
-	  if (value != nil)
-	    {
-	      [params addObject: value];
-	    }
-	}
+            [tmp addCharactersInRange:NSMakeRange('0', 10)];
+            [tmp addCharactersInRange:NSMakeRange('a', 26)];
+            [tmp addCharactersInRange:NSMakeRange('A', 26)];
+            [tmp addCharactersInString:@"_.:/"];
+            [tmp invert];
+            illegal = [tmp copy];
+            RELEASE(tmp);
+        }
+        r = [method rangeOfCharacterFromSet:illegal];
+        if (r.length > 0)
+        {
+            return nil; // Bad method name.
+        }
     }
-  NS_HANDLER
+    [str appendString:@"<?xml version=\"1.0\"?>\n"];
+    [str appendString:@"<methodCall>"];
+    NL;
+    INDENT(1);
+    [str appendFormat:@"<methodName>%@</methodName>",
+     [method stringByEscapingXML]];
+    NL;
+    if (c > 0)
     {
-      [params removeAllObjects];
-      [localException raise];
+        INDENT(1);
+        [str appendString:@"<params>"];
+        NL;
+        for (i = 0; i < c; i++)
+        {
+            INDENT(2);
+            [str appendString:@"<param>"];
+            NL;
+            INDENT(3);
+            [str appendString:@"<value>"];
+            NL;
+            [[params objectAtIndex:i] appendToXMLRPC:str indent:3 for:self];
+            NL;
+            INDENT(3);
+            [str appendString:@"</value>"];
+            NL;
+            INDENT(2);
+            [str appendString:@"</param>"];
+            NL;
+        }
+        INDENT(1);
+        [str appendString:@"</params>"];
+        NL;
     }
-  NS_ENDHANDLER
-
-  return method;
+    [str appendString:@"</methodCall>"];
+    NL;
+    return str;
 }
 
-- (NSDictionary*) parseResponse: (NSData*)resp
-			 params: (NSMutableArray*)params
+- (NSString*)buildResponseWithFaultCode:(NSInteger)code andString:(NSString*)s
 {
-  GSXPathContext	*ctx = nil;
-  GSXPathNodeSet	*ns = nil;
-  GSXMLParser		*parser = nil;
-  id			fault = nil;
+    NSMutableString   *str = [NSMutableString stringWithCapacity:1024];
+    NSDictionary      *fault;
 
-  [params removeAllObjects];
+    fault = [NSDictionary dictionaryWithObjectsAndKeys:
+             [NSNumber numberWithInt:code], @"faultCode",
+             s, @"faultString",
+             nil];
 
-  NS_DURING
-    {
-      GSXMLDocument	*doc = nil;
-
-      parser = [GSXMLParser parserWithData: resp];
-      [parser substituteEntities: YES];
-      [parser saveMessages: YES];
-      if ([parser parse] == YES)
-	{
-	  doc = [parser document];
-	  ctx = AUTORELEASE([[GSXPathContext alloc] initWithDocument: doc]);
-	}
-    }
-  NS_HANDLER
-    {
-      ctx = nil;
-    }
-  NS_ENDHANDLER
-  if (ctx == nil)
-    {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"Bad Request: parse failed (%@)", [parser messages]];
-    }
-
-  ns = (GSXPathNodeSet*)[ctx evaluateExpression: 
-    @"//methodResponse/params/param/value"];
-
-  NS_DURING
-    {
-      int	i;
-
-      if ([ns count] > 0)
-	{
-	  for (i = 0; i < [ns count]; i++)
-	    {
-	      GSXMLNode	*node = [ns nodeAtIndex: i];
-	      id	value = [self _parseValue: node];
-
-	      if (value != nil)
-		{
-		  [params addObject: value];
-		}
-	    }
-	}
-      else
-	{
-	  ns = (GSXPathNodeSet*)[ctx evaluateExpression: 
-	    @"//methodResponse/fault/value/struct"];
-	  if ([ns count] > 0)
-	    {
-	      fault = [self _parseValue: [ns nodeAtIndex: 0]];
-	    }
-	}
-    }
-  NS_HANDLER
-    {
-      [params removeAllObjects];
-      [localException raise];
-    }
-  NS_ENDHANDLER
-
-  return fault;
+    [str appendString:@"<?xml version=\"1.0\"?>\n"];
+    [str appendString:@"<methodResponse>"];
+    NL;
+    INDENT(1);
+    [str appendString:@"<fault>"];
+    NL;
+    INDENT(2);
+    [str appendString:@"<value>"];
+    NL;
+    [fault appendToXMLRPC:str indent:3 for:self];
+    NL;
+    INDENT(2);
+    [str appendString:@"</value>"];
+    NL;
+    INDENT(1);
+    [str appendString:@"</fault>"];
+    NL;
+    [str appendString:@"</methodResponse>"];
+    NL;
+    return str;
 }
 
-- (id) result
+- (NSString*)buildResponseWithParams:(NSArray*)params
 {
-  if (timer == nil)
+    NSMutableString   *str = [NSMutableString stringWithCapacity:1024];
+    unsigned c = [params count];
+    unsigned i;
+
+    [str appendString:@"<?xml version=\"1.0\"?>\n"];
+    [str appendString:@"<methodResponse>"];
+    NL;
+    INDENT(1);
+    [str appendString:@"<params>"];
+    NL;
+    for (i = 0; i < c; i++)
     {
-      return result;
+        INDENT(2);
+        [str appendString:@"<param>"];
+        NL;
+        INDENT(3);
+        [str appendString:@"<value>"];
+        NL;
+        [[params objectAtIndex:i] appendToXMLRPC:str indent:3 for:self];
+        NL;
+        INDENT(3);
+        [str appendString:@"</value>"];
+        NL;
+        INDENT(2);
+        [str appendString:@"</param>"];
+        NL;
     }
-  else
-    {
-      return nil;
-    }
+    INDENT(1);
+    [str appendString:@"</params>"];
+    NL;
+    [str appendString:@"</methodResponse>"];
+    NL;
+    return str;
 }
 
-- (BOOL) sendMethodCall: (NSString*)method 
-		 params: (NSArray*)params
-		timeout: (NSInteger)seconds
+- (BOOL)compact
 {
-  NSData	*data;
+    return compact;
+}
 
-  ASSIGN(result, @"unable to send");
-
+- (void)dealloc
+{
+    RELEASE(tz);
+    if (timer != nil)
+    {
+        [self timeout:nil]; // Treat as immediate timeout.
+    }
 #ifdef GNUSTEP
-  if (handle == nil)
-    {
-      return NO;	// Not initialised to send.
-    }
+    [handle removeClient:self];
 #endif
-  if (timer != nil)
-    {
-      return NO;	// Send already in progress.
-    }
-  data = [self buildMethod: method params: params];
-  if (data == nil)
-    {
-      return NO;
-    }
-
-  timer = [NSTimer scheduledTimerWithTimeInterval: seconds
-					   target: self
-					 selector: @selector(timeout:)
-					 userInfo: nil
-					  repeats: NO];
-
+    DESTROY(result);
 #ifdef GNUSTEP
-  [handle addClient: self];
-  [handle writeProperty: @"POST" forKey: GSHTTPPropertyMethodKey];
-  [handle writeProperty: @"GSXMLRPC/1.0.0" forKey: @"User-Agent"];
-  [handle writeProperty: @"text/xml" forKey: @"Content-Type"];
-  [handle writeData: data];
-  [handle loadInBackground];
+    DESTROY(handle);
 #else
-  {
-    NSMutableURLRequest *request;
-
-    request = [NSMutableURLRequest alloc];
-    request = [request initWithURL: [NSURL URLWithString: connectionURL]];
-    [request setCachePolicy: NSURLRequestReloadIgnoringCacheData];
-    [request setHTTPMethod: @"POST"];  
-    [request setValue: @"GSXMLRPC/1.0.0" forHTTPHeaderField: @"User-Agent"];
-    [request setValue: @"text/xml" forHTTPHeaderField: @"Content-Type"];
-    [request setHTTPBody: data];
-  
-    connection = [NSURLConnection alloc];
-    connection = [connection initWithRequest: request delegate: self];
-    [request release];
-  }
-#endif
-  return YES;
-}
-
-- (void) setDebug: (BOOL)flag
-{
-#ifdef GNUSTEP
-  if ([handle respondsToSelector: _cmd] == YES)
+    if (connection)
     {
-      [(id)handle setDebug: flag];
+        [connection release];
     }
+    [response release];
+    [connectionURL release];
 #endif
+    [super dealloc];
 }
 
-- (void) setCompact: (BOOL)flag
+- (id)delegate
 {
-  compact = flag;
+    return delegate;
 }
 
-- (void) setDelegate: (id)aDelegate
+- (id)initWithURL:(NSString*)url
 {
-  delegate = aDelegate;
+    return [self initWithURL:url certificate:nil privateKey:nil password:nil];
 }
 
-- (void) setTimeZone: (NSTimeZone*)timeZone
+- (id)initWithURL:(NSString*)url
+    certificate:(NSString*)cert
+    privateKey:(NSString*)pKey
+    password:(NSString*)pwd
 {
-  ASSIGN(tz, timeZone);
-}
-
-- (void) timeout: (NSTimer*)t
-{
-  [timer invalidate];
-  timer = nil;
+    if (url != nil)
+    {
+        NS_DURING
+        {
 #ifdef GNUSTEP
-  [handle cancelLoadInBackground];
+            NSURL *u = [NSURL URLWithString:url];
+
+            handle = RETAIN([u URLHandleUsingCache:NO]);
+            if (cert != nil && pKey != nil && pwd != nil)
+            {
+                [handle writeProperty:cert
+                 forKey:GSHTTPPropertyCertificateFileKey];
+                [handle writeProperty:pKey forKey:GSHTTPPropertyKeyFileKey];
+                [handle writeProperty:pwd forKey:GSHTTPPropertyPasswordKey];
+            }
 #else
-  [connection cancel];
+            connectionURL = [url copy];
+            connection = nil;
+            response = [[NSMutableData alloc] init];
+#endif
+        }
+        NS_HANDLER
+        {
+            DESTROY(self);
+        }
+        NS_ENDHANDLER
+    }
+    return self;
+}
+
+- (id)init
+{
+    return [self initWithURL:nil certificate:nil privateKey:nil password:nil];
+}
+
+- (id)makeMethodCall:(NSString*)method
+    params:(NSArray*)params
+    timeout:(NSInteger)seconds
+{
+    NS_DURING
+    {
+        if ([self sendMethodCall:method params:params timeout:seconds] == YES)
+        {
+            NSDate    *when = AUTORELEASE(RETAIN([timer fireDate]));
+
+            while (timer != nil)
+            {
+                [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                 beforeDate:when];
+            }
+        }
+    }
+    NS_HANDLER
+    {
+        ASSIGN(result, [localException description]);
+    }
+    NS_ENDHANDLER
+
+    return result;
+}
+
+- (NSString*)parseMethod:(NSData*)request
+    params:(NSMutableArray*)params
+{
+    GSXPathContext    *ctx = nil;
+    GSXPathNodeSet    *ns = nil;
+    GSXMLParser       *parser = nil;
+    NSString      *method;
+
+    [params removeAllObjects];
+
+    NS_DURING
+    {
+        GSXMLDocument *doc = nil;
+
+        parser = [GSXMLParser parserWithData:request];
+        [parser substituteEntities:YES];
+        [parser saveMessages:YES];
+        if ([parser parse] == YES)
+        {
+            doc = [parser document];
+            ctx = AUTORELEASE([[GSXPathContext alloc] initWithDocument:doc]);
+        }
+    }
+    NS_HANDLER
+    {
+        ctx = nil;
+    }
+    NS_ENDHANDLER
+    if (ctx == nil)
+    {
+        [NSException raise:NSInvalidArgumentException
+         format:@"Bad Request: parse failed (%@)", [parser messages]];
+    }
+
+    ns = (GSXPathNodeSet*)[ctx evaluateExpression:@"//methodCall/methodName"];
+    if ([ns count] != 1)
+    {
+        [NSException raise:NSInvalidArgumentException
+         format:@"Badly formatted methodCall"];
+    }
+    method = [[ns nodeAtIndex:0] content];
+
+    ns = (GSXPathNodeSet*)[ctx evaluateExpression:
+                           @"//methodCall/params/param/value"];
+
+    NS_DURING
+    {
+        int i;
+
+        for (i = 0; i < [ns count]; i++)
+        {
+            GSXMLNode *node = [ns nodeAtIndex:i];
+            id value = [self _parseValue:node];
+
+            if (value != nil)
+            {
+                [params addObject:value];
+            }
+        }
+    }
+    NS_HANDLER
+    {
+        [params removeAllObjects];
+        [localException raise];
+    }
+    NS_ENDHANDLER
+
+    return method;
+}
+
+- (NSDictionary*)parseResponse:(NSData*)resp
+    params:(NSMutableArray*)params
+{
+    GSXPathContext    *ctx = nil;
+    GSXPathNodeSet    *ns = nil;
+    GSXMLParser       *parser = nil;
+    id fault = nil;
+
+    [params removeAllObjects];
+
+    NS_DURING
+    {
+        GSXMLDocument *doc = nil;
+
+        parser = [GSXMLParser parserWithData:resp];
+        [parser substituteEntities:YES];
+        [parser saveMessages:YES];
+        if ([parser parse] == YES)
+        {
+            doc = [parser document];
+            ctx = AUTORELEASE([[GSXPathContext alloc] initWithDocument:doc]);
+        }
+    }
+    NS_HANDLER
+    {
+        ctx = nil;
+    }
+    NS_ENDHANDLER
+    if (ctx == nil)
+    {
+        [NSException raise:NSInvalidArgumentException
+         format:@"Bad Request: parse failed (%@)", [parser messages]];
+    }
+
+    ns = (GSXPathNodeSet*)[ctx evaluateExpression:
+                           @"//methodResponse/params/param/value"];
+
+    NS_DURING
+    {
+        int i;
+
+        if ([ns count] > 0)
+        {
+            for (i = 0; i < [ns count]; i++)
+            {
+                GSXMLNode *node = [ns nodeAtIndex:i];
+                id value = [self _parseValue:node];
+
+                if (value != nil)
+                {
+                    [params addObject:value];
+                }
+            }
+        }
+        else
+        {
+            ns = (GSXPathNodeSet*)[ctx evaluateExpression:
+                                   @"//methodResponse/fault/value/struct"];
+            if ([ns count] > 0)
+            {
+                fault = [self _parseValue:[ns nodeAtIndex:0]];
+            }
+        }
+    }
+    NS_HANDLER
+    {
+        [params removeAllObjects];
+        [localException raise];
+    }
+    NS_ENDHANDLER
+
+    return fault;
+}
+
+- (id)result
+{
+    if (timer == nil)
+    {
+        return result;
+    }
+    else
+    {
+        return nil;
+    }
+}
+
+- (BOOL)sendMethodCall:(NSString*)method
+    params:(NSArray*)params
+    timeout:(NSInteger)seconds
+{
+    NSData    *data;
+
+    ASSIGN(result, @"unable to send");
+
+#ifdef GNUSTEP
+    if (handle == nil)
+    {
+        return NO;  // Not initialised to send.
+    }
+#endif
+    if (timer != nil)
+    {
+        return NO;  // Send already in progress.
+    }
+    data = [self buildMethod:method params:params];
+    if (data == nil)
+    {
+        return NO;
+    }
+
+    timer = [NSTimer scheduledTimerWithTimeInterval:seconds
+             target:self
+             selector:@selector(timeout:)
+             userInfo:nil
+             repeats:NO];
+
+#ifdef GNUSTEP
+    [handle addClient:self];
+    [handle writeProperty:@"POST" forKey:GSHTTPPropertyMethodKey];
+    [handle writeProperty:@"GSXMLRPC/1.0.0" forKey:@"User-Agent"];
+    [handle writeProperty:@"text/xml" forKey:@"Content-Type"];
+    [handle writeData:data];
+    [handle loadInBackground];
+#else
+    {
+        NSMutableURLRequest *request;
+
+        request = [NSMutableURLRequest alloc];
+        request = [request initWithURL:[NSURL URLWithString:connectionURL]];
+        [request setCachePolicy:NSURLRequestReloadIgnoringCacheData];
+        [request setHTTPMethod:@"POST"];
+        [request setValue:@"GSXMLRPC/1.0.0" forHTTPHeaderField:@"User-Agent"];
+        [request setValue:@"text/xml" forHTTPHeaderField:@"Content-Type"];
+        [request setHTTPBody:data];
+
+        connection = [NSURLConnection alloc];
+        connection = [connection initWithRequest:request delegate:self];
+        [request release];
+    }
+#endif
+    return YES;
+}
+
+- (void)setDebug:(BOOL)flag
+{
+#ifdef GNUSTEP
+    if ([handle respondsToSelector:_cmd] == YES)
+    {
+        [(id)handle setDebug : flag];
+    }
 #endif
 }
 
-- (NSTimeZone*) timeZone
+- (void)setCompact:(BOOL)flag
 {
-  if (tz == nil)
+    compact = flag;
+}
+
+- (void)setDelegate:(id)aDelegate
+{
+    delegate = aDelegate;
+}
+
+- (void)setTimeZone:(NSTimeZone*)timeZone
+{
+    ASSIGN(tz, timeZone);
+}
+
+- (void)timeout:(NSTimer*)t
+{
+    [timer invalidate];
+    timer = nil;
+#ifdef GNUSTEP
+    [handle cancelLoadInBackground];
+#else
+    [connection cancel];
+#endif
+}
+
+- (NSTimeZone*)timeZone
+{
+    if (tz == nil)
     {
-      tz = RETAIN([NSTimeZone timeZoneForSecondsFromGMT: 0]);
+        tz = RETAIN([NSTimeZone timeZoneForSecondsFromGMT:0]);
     }
-  return tz;
+    return tz;
 }
 
 #ifdef GNUSTEP
 
-- (void) URLHandle: (NSURLHandle*)sender
-  resourceDataDidBecomeAvailable: (NSData*)newData
+- (void)URLHandle:(NSURLHandle*)sender
+    resourceDataDidBecomeAvailable:(NSData*)newData
 {
-  // Not interesting
+    // Not interesting
 }
 
-- (void) URLHandle: (NSURLHandle*)sender
-  resourceDidFailLoadingWithReason: (NSString*)reason
+- (void)URLHandle:(NSURLHandle*)sender
+    resourceDidFailLoadingWithReason:(NSString*)reason
 {
-  ASSIGN(result, reason);
-  [timer invalidate];
-  timer = nil;
+    ASSIGN(result, reason);
+    [timer invalidate];
+    timer = nil;
 #ifdef GNUSTEP
-  [handle removeClient: self];
+    [handle removeClient:self];
 #endif
-  if ([delegate respondsToSelector: @selector(completedXMLRPC:)])
+    if ([delegate respondsToSelector:@selector(completedXMLRPC:)])
     {
-      [delegate completedXMLRPC: self];
+        [delegate completedXMLRPC:self];
     }
 }
 
-- (void) URLHandleResourceDidBeginLoading: (NSURLHandle*)sender
+- (void)URLHandleResourceDidBeginLoading:(NSURLHandle*)sender
 {
-  // Not interesting
+    // Not interesting
 }
 
-- (void) URLHandleResourceDidCancelLoading: (NSURLHandle*)sender
+- (void)URLHandleResourceDidCancelLoading:(NSURLHandle*)sender
 {
-  NSString	*str;
+    NSString  *str;
 
-  [timer invalidate];
-  timer = nil;
+    [timer invalidate];
+    timer = nil;
 #ifdef GNUSTEP
-  [handle removeClient: self];
+    [handle removeClient:self];
 #endif
-  str = [handle propertyForKeyIfAvailable: NSHTTPPropertyStatusCodeKey];
-  if (str == nil)
+    str = [handle propertyForKeyIfAvailable:NSHTTPPropertyStatusCodeKey];
+    if (str == nil)
     {
-      str = @"timeout";
+        str = @"timeout";
     }
-  else
+    else
     {
-      str = [NSString stringWithFormat: @"HTTP status %@", str];
+        str = [NSString stringWithFormat:@"HTTP status %@", str];
     }
-  ASSIGN(result, str);
-  if ([delegate respondsToSelector: @selector(completedXMLRPC:)])
+    ASSIGN(result, str);
+    if ([delegate respondsToSelector:@selector(completedXMLRPC:)])
     {
-      [delegate completedXMLRPC: self];
+        [delegate completedXMLRPC:self];
     }
 }
 
-- (void) URLHandleResourceDidFinishLoading: (NSURLHandle*)sender
+- (void)URLHandleResourceDidFinishLoading:(NSURLHandle*)sender
 {
-  NSMutableArray	*params = [NSMutableArray array];
-  id			fault = nil;
-  int			code;
+    NSMutableArray    *params = [NSMutableArray array];
+    id fault = nil;
+    int code;
 
-  code = [[handle propertyForKey: NSHTTPPropertyStatusCodeKey] intValue];
+    code = [[handle propertyForKey:NSHTTPPropertyStatusCodeKey] intValue];
 
-  if (code == 200)
+    if (code == 200)
     {
-      NSData	*resp = [handle availableResourceData];
+        NSData    *resp = [handle availableResourceData];
 
-      NS_DURING
-	{
-	  fault = [self parseResponse: resp params: params];
-	}
-      NS_HANDLER
-	{
-	  fault = [localException reason];
-	}
-      NS_ENDHANDLER
+        NS_DURING
+        {
+            fault = [self parseResponse:resp params:params];
+        }
+        NS_HANDLER
+        {
+            fault = [localException reason];
+        }
+        NS_ENDHANDLER
     }
-  else
+    else
     {
-      fault = [NSString stringWithFormat: @"HTTP status %03d", code];
+        fault = [NSString stringWithFormat:@"HTTP status %03d", code];
     }
-  if (fault == nil)
+    if (fault == nil)
     {
-      ASSIGN(result, params);
+        ASSIGN(result, params);
     }
-  else
+    else
     {
-      ASSIGN(result, fault);
+        ASSIGN(result, fault);
     }
 
-  [timer invalidate];
-  timer = nil;
+    [timer invalidate];
+    timer = nil;
 #ifdef GNUSTEP
-  [handle removeClient: self];
+    [handle removeClient:self];
 #endif
 
-  if ([delegate respondsToSelector: @selector(completedXMLRPC:)])
+    if ([delegate respondsToSelector:@selector(completedXMLRPC:)])
     {
-      [delegate completedXMLRPC: self];
+        [delegate completedXMLRPC:self];
     }
 }
 
 #else /* !GNUSTEP */
 
-- (void) connection: (NSURLConnection*)connection
-didCancelAuthenticationChallenge: (NSURLAuthenticationChallenge*)challenge
+- (void)connection:(NSURLConnection*)connection
+    didCancelAuthenticationChallenge:(NSURLAuthenticationChallenge*)challenge
 {
-  /* DO NOTHING */
+    /* DO NOTHING */
 }
 
-- (void) connection: (NSURLConnection*)connection
-   didFailWithError: (NSError*)error
+- (void)connection:(NSURLConnection*)connection
+    didFailWithError:(NSError*)error
 {
-  ASSIGN(result, [error localizedDescription]);
-  [timer invalidate];
-  timer = nil;
-  if ([delegate respondsToSelector: @selector(completedXMLRPC:)])
+    ASSIGN(result, [error localizedDescription]);
+    [timer invalidate];
+    timer = nil;
+    if ([delegate respondsToSelector:@selector(completedXMLRPC:)])
     {
-      [delegate completedXMLRPC: self];
-    }    
-}
-
-- (void) connection: (NSURLConnection*)connection
-didReceiveAuthenticationChallenge: (NSURLAuthenticationChallenge*)challenge 
-{
-}
-
-- (void) connection: (NSURLConnection*)connection didReceiveData: (NSData*)data 
-{
-  [response appendData: data];
-}
-
-- (void) connection: (NSURLConnection*)connection
- didReceiveResponse: (NSURLResponse*)response 
-{
-  /* DO NOTHING */
-}
-
-- (NSCachedURLResponse*) connection: (NSURLConnection*)connection
-		  willCacheResponse: (NSCachedURLResponse*)cachedResponse
-{
-  return nil;
-}
-
-- (NSURLRequest*) connection: (NSURLConnection*)connection
-	     willSendRequest: (NSURLRequest*)request
-	    redirectResponse: (NSURLResponse*)redirectResponse 
-{
-  return nil;
-}
-
--(void) connectionDidFinishLoading: (NSURLConnection*)connection 
-{
-  NSMutableArray	*params = [NSMutableArray array];
-  id			fault = nil;
-
-  NS_DURING
-    {
-      fault = [self parseResponse: response params:   params];
+        [delegate completedXMLRPC:self];
     }
-  NS_HANDLER
+}
+
+- (void)connection:(NSURLConnection*)connection
+    didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge*)challenge
+{
+}
+
+- (void)connection:(NSURLConnection*)connection didReceiveData:(NSData*)data
+{
+    [response appendData:data];
+}
+
+- (void)connection:(NSURLConnection*)connection
+    didReceiveResponse:(NSURLResponse*)response
+{
+    /* DO NOTHING */
+}
+
+- (NSCachedURLResponse*)connection:(NSURLConnection*)connection
+    willCacheResponse:(NSCachedURLResponse*)cachedResponse
+{
+    return nil;
+}
+
+- (NSURLRequest*)connection:(NSURLConnection*)connection
+    willSendRequest:(NSURLRequest*)request
+    redirectResponse:(NSURLResponse*)redirectResponse
+{
+    return nil;
+}
+
+- (void)connectionDidFinishLoading:(NSURLConnection*)connection
+{
+    NSMutableArray    *params = [NSMutableArray array];
+    id fault = nil;
+
+    NS_DURING
     {
-      fault = [localException reason];
+        fault = [self parseResponse:response params:params];
     }
-  NS_ENDHANDLER
-    
-  if (fault == nil)
+    NS_HANDLER
     {
-      ASSIGNCOPY(result, params);
+        fault = [localException reason];
     }
-  else
+    NS_ENDHANDLER
+
+    if (fault == nil)
     {
-      ASSIGNCOPY(result, fault);
+        ASSIGNCOPY(result, params);
     }
-    
-  [timer invalidate];
-  timer = nil;
-    
-  if ([delegate respondsToSelector: @selector(completedXMLRPC:)])
+    else
     {
-      [delegate completedXMLRPC: self];
-    }        
+        ASSIGNCOPY(result, fault);
+    }
+
+    [timer invalidate];
+    timer = nil;
+
+    if ([delegate respondsToSelector:@selector(completedXMLRPC:)])
+    {
+        [delegate completedXMLRPC:self];
+    }
 }
 
 #endif
 
 @end
 
-@implementation	GSXMLRPC (Delegate)
-- (void) completedXMLRPC: (GSXMLRPC*)sender
+@implementation GSXMLRPC (Delegate)
+- (void)completedXMLRPC:(GSXMLRPC*)sender
 {
 }
 @end
 
-#endif	/* HAVE_LIBXML */
+#endif  /* HAVE_LIBXML */
 

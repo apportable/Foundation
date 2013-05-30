@@ -21,14 +21,14 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-*/
+ */
 
 /* We must define _XOPEN_SOURCE to 600 in order to get the standard
  * version of strerror_r when using glibc.  Otherwise glibc will give
  * us a version which may not populate the buffer.
  */
 #ifndef _XOPEN_SOURCE
-#define	_XOPEN_SOURCE	600
+#define _XOPEN_SOURCE   600
 #endif
 #include <string.h>
 
@@ -38,57 +38,53 @@
 #import "Foundation/NSError.h"
 #import "GSPrivate.h"
 
-#if !defined(__MINGW__)
 #include <errno.h>
-#endif
 
 /**
  * GNUstep specific (non-standard) additions to the NSError class.
  * Possibly to be made public
  */
-@implementation NSError(GNUstepBase)
+@implementation NSError (GNUstepBase)
 
 
-#if !defined(__MINGW__)
 #if !defined(HAVE_STRERROR_R)
 #if defined(HAVE_STRERROR)
 static int
 strerror_r(int eno, char *buf, int len)
 {
-  const char *ptr;
-  int   result;
+    const char *ptr;
+    int result;
 
-  [gnustep_global_lock lock];
-  ptr = strerror(eno);
-  if (ptr == 0)
+    [gnustep_global_lock lock];
+    ptr = strerror(eno);
+    if (ptr == 0)
     {
-      strncpy(buf, "unknown error number", len);
-      result = -1;
+        strncpy(buf, "unknown error number", len);
+        result = -1;
     }
-  else
+    else
     {
-      strncpy(buf, strerror(eno), len);
-      result = 0;
+        strncpy(buf, strerror(eno), len);
+        result = 0;
     }
-  [gnustep_global_lock unlock];
-  return result;
+    [gnustep_global_lock unlock];
+    return result;
 }
 #else
 static int
 strerror_r(int eno, char *buf, int len)
 {
-  extern char  *sys_errlist[];
-  extern int    sys_nerr;
+    extern char  *sys_errlist[];
+    extern int sys_nerr;
 
-  if (eno < 0 || eno >= sys_nerr)
+    if (eno < 0 || eno >= sys_nerr)
     {
-      strncpy(buf, "unknown error number", len);
-      return -1;
+        strncpy(buf, "unknown error number", len);
+        return -1;
     }
-  strncpy(buf, sys_errlist[eno], len);
-  return 0;
+    strncpy(buf, sys_errlist[eno], len);
+    return 0;
 }
-#endif
 #endif
 #endif
 
@@ -97,58 +93,42 @@ strerror_r(int eno, char *buf, int len)
  * The user info dictionary of this object will be mutable, so that
  * additional information can be placed in it by higher level code.
  */
-+ (NSError*) _last
++ (NSError*)_last
 {
-  int	eno;
-#if defined(__MINGW__)
-  eno = GetLastError();
-  if (eno == 0) eno = errno;
-#else
-  eno = errno;
-#endif
-  return [self _systemError: eno];
+    int eno;
+    eno = errno;
+    return [self _systemError:eno];
 }
 
-+ (NSError*) _systemError: (long)code
++ (NSError*)_systemError:(long)code
 {
-  NSError	*error;
-  NSString	*domain;
-  NSDictionary	*info;
-#if defined(__MINGW__)
-  LPVOID	lpMsgBuf;
-  NSString	*message=nil;
+    NSError   *error;
+    NSString  *domain;
+    NSDictionary  *info;
+    NSString  *message;
+    char buf[BUFSIZ];
 
-  domain = NSOSStatusErrorDomain;
-  FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-    NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-    (LPWSTR) &lpMsgBuf, 0, NULL );
-  if (lpMsgBuf != NULL) {
-    message = [NSString stringWithCharacters: lpMsgBuf length: wcslen(lpMsgBuf)];
-    LocalFree(lpMsgBuf);
-  }
-  info = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-    message, NSLocalizedDescriptionKey,
-    nil];
-#else
-  NSString	*message;
-  char          buf[BUFSIZ];
+    /* FIXME ... not all are POSIX, should we use NSMachErrorDomain for some? */
+    domain = NSPOSIXErrorDomain;
+    sprintf(buf, "%ld", code);
+    message = [NSString stringWithCString:buf
+               encoding:[NSString defaultCStringEncoding]];
+    /* FIXME ... can we do better localisation? */
+    info = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+            message, NSLocalizedDescriptionKey,
+            nil];
 
-  /* FIXME ... not all are POSIX, should we use NSMachErrorDomain for some? */
-  domain = NSPOSIXErrorDomain;
-  sprintf(buf, "%ld", code);
-  message = [NSString stringWithCString: buf
-			       encoding: [NSString defaultCStringEncoding]];
-  /* FIXME ... can we do better localisation? */
-  info = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-    message, NSLocalizedDescriptionKey,
-    nil];
-#endif
-
-  /* NB we use a mutable dictionary so that calling code can add extra
-   * information to the dictionary before passing it up to higher level
-   * code.
-   */
-  error = [self errorWithDomain: domain code: code userInfo: info];
-  return error;
+    /* NB we use a mutable dictionary so that calling code can add extra
+     * information to the dictionary before passing it up to higher level
+     * code.
+     */
+    error = [self errorWithDomain:domain code:code userInfo:info];
+    return error;
 }
+
++ (NSError*)_unimplementedError
+{
+    return [self _systemError:ENOSYS];
+}
+
 @end

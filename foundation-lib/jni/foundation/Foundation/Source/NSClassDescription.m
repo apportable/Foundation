@@ -23,7 +23,7 @@
 
    <title>NSClassDescription class reference</title>
    $Date: 2010-02-19 00:12:46 -0800 (Fri, 19 Feb 2010) $ $Revision: 29669 $
-*/
+ */
 
 #import "common.h"
 #import "Foundation/NSClassDescription.h"
@@ -43,8 +43,8 @@
  */
 @implementation NSClassDescription
 
-static NSRecursiveLock	*mapLock = nil;
-static NSMapTable	*classMap;
+static NSRecursiveLock  *mapLock = nil;
+static NSMapTable   *classMap;
 
 /**
  * Returns the class description for aClass.  If there is no such description
@@ -55,39 +55,39 @@ static NSMapTable	*classMap;
  * found.<br /> Handles locking to ensure thread safety and ensures that the
  * returned object will not be destroyed by other threads.
  */
-+ (NSClassDescription*) classDescriptionForClass: (Class)aClass
++ (NSClassDescription*)classDescriptionForClass:(Class)aClass
 {
-  NSClassDescription	*description;
+    NSClassDescription    *description;
 
-  [mapLock lock];
-  description = NSMapGet(classMap, aClass);
-  if (description == nil)
+    [mapLock lock];
+    description = NSMapGet(classMap, aClass);
+    if (description == nil)
     {
-      NSNotificationCenter	*nc;
+        NSNotificationCenter  *nc;
 
-      /*
-       * As we have a recursive lock, we can ask other objects to
-       * supply descriptuions right now, without having to unlock
-       * and re-lock
-       */
-      nc = [NSNotificationCenter defaultCenter];
-      [nc postNotificationName: NSClassDescriptionNeededForClassNotification
-                        object: aClass];
-      description = NSMapGet(classMap, aClass);
+        /*
+         * As we have a recursive lock, we can ask other objects to
+         * supply descriptuions right now, without having to unlock
+         * and re-lock
+         */
+        nc = [NSNotificationCenter defaultCenter];
+        [nc postNotificationName:NSClassDescriptionNeededForClassNotification
+         object:aClass];
+        description = NSMapGet(classMap, aClass);
     }
-  IF_NO_GC([description retain];)
-  [mapLock unlock];
+    IF_NO_GC([description retain]; )
+    [mapLock unlock];
 
-  return AUTORELEASE(description);
+    return AUTORELEASE(description);
 }
 
-+ (void) initialize
++ (void)initialize
 {
-  if (self == [NSClassDescription class])
+    if (self == [NSClassDescription class])
     {
-      classMap = NSCreateMapTable(NSObjectMapKeyCallBacks,
-        NSObjectMapValueCallBacks, 100);
-      mapLock = [NSRecursiveLock new];
+        classMap = NSCreateMapTable(NSObjectMapKeyCallBacks,
+                                    NSObjectMapValueCallBacks, 100);
+        mapLock = [NSRecursiveLock new];
     }
 }
 
@@ -97,89 +97,88 @@ static NSMapTable	*classMap;
  * this only if you suspect that a class description should have
  * changed.
  */
-+ (void) invalidateClassDescriptionCache
++ (void)invalidateClassDescriptionCache
 {
-  [mapLock lock];
-  NSResetMapTable(classMap);
-  [mapLock unlock];
+    [mapLock lock];
+    NSResetMapTable(classMap);
+    [mapLock unlock];
 }
 
 /**
  * Registers aDescription for aClass ... placing it in the cache and
  * replacing any previous version.
  */
-+ (void) registerClassDescription: (NSClassDescription*)aDescription
-			 forClass: (Class)aClass
++ (void)registerClassDescription:(NSClassDescription*)aDescription
+    forClass:(Class)aClass
 {
-  if (aDescription != nil && aClass != 0)
+    if (aDescription != nil && aClass != 0)
     {
-      [mapLock lock];
-      NSMapInsert(classMap, aClass, aDescription);
-      [mapLock unlock];
+        [mapLock lock];
+        NSMapInsert(classMap, aClass, aDescription);
+        [mapLock unlock];
     }
 }
 
 /** <override-subclass />
  * Returns the attribute keys - default implementation returns nil.
  */
-- (NSArray*) attributeKeys
+- (NSArray*)attributeKeys
 {
-  return nil;
+    return nil;
 }
 
 /** <override-subclass />
  * Returns the inverse relationship keys - default implementation returns nil.
  */
-- (NSString*) inverseForRelationshipKey: (NSString*)aKey
+- (NSString*)inverseForRelationshipKey:(NSString*)aKey
 {
-  return nil;
+    return nil;
 }
 
 /** <override-subclass />
  * Returns the to many relationship keys - default implementation returns nil.
  */
-- (NSArray*) toManyRelationshipKeys
+- (NSArray*)toManyRelationshipKeys
 {
-  return nil;
+    return nil;
 }
 
 /** <override-subclass />
  * Returns the to one relationship keys - default implementation returns nil.
  */
-- (NSArray*) toOneRelationshipKeys
+- (NSArray*)toOneRelationshipKeys
 {
-  return nil;
+    return nil;
 }
 
 @end
 
-
 
-@implementation NSObject(NSClassDescriptionPrimitives)
+@implementation NSObject (NSClassDescriptionPrimitives)
 
-static Class	NSClassDescriptionClass = 0;
+static Class NSClassDescriptionClass = 0;
 
 /**
  * Returns the attribute keys supplied by the
  * <ref id="NSClassDescription" type="class"/>
  * object for the receivers class.
  */
-- (NSArray*) attributeKeys
+- (NSArray*)attributeKeys
 {
-  return [[self classDescription] attributeKeys];
+    return [[self classDescription] attributeKeys];
 }
 
 /**
  * Returns the <ref id="NSClassDescription" type="class" />
  * object for the receivers class.
  */
-- (NSClassDescription*) classDescription
+- (NSClassDescription*)classDescription
 {
-  if (NSClassDescriptionClass == 0)
+    if (NSClassDescriptionClass == 0)
     {
-      NSClassDescriptionClass = [NSClassDescription class];
+        NSClassDescriptionClass = [NSClassDescription class];
     }
-  return [NSClassDescriptionClass classDescriptionForClass: [self class]];
+    return [NSClassDescriptionClass classDescriptionForClass:[self class]];
 }
 
 /**
@@ -187,9 +186,9 @@ static Class	NSClassDescriptionClass = 0;
  * <ref id="NSClassDescription" type="class" />
  * object for the receivers class.
  */
-- (NSString*) inverseForRelationshipKey: (NSString*)aKey
+- (NSString*)inverseForRelationshipKey:(NSString*)aKey
 {
-  return [[self classDescription] inverseForRelationshipKey: aKey];
+    return [[self classDescription] inverseForRelationshipKey:aKey];
 }
 
 /**
@@ -197,9 +196,9 @@ static Class	NSClassDescriptionClass = 0;
  * <ref id="NSClassDescription" type="class" />
  * object for the receivers class.
  */
-- (NSArray*) toManyRelationshipKeys
+- (NSArray*)toManyRelationshipKeys
 {
-  return [[self classDescription] toManyRelationshipKeys];
+    return [[self classDescription] toManyRelationshipKeys];
 }
 
 /**
@@ -207,9 +206,9 @@ static Class	NSClassDescriptionClass = 0;
  * <ref id="NSClassDescription" type="class" />
  * object for the receivers class.
  */
-- (NSArray*) toOneRelationshipKeys
+- (NSArray*)toOneRelationshipKeys
 {
-  return [[self classDescription] toOneRelationshipKeys];
+    return [[self classDescription] toOneRelationshipKeys];
 }
 
 @end

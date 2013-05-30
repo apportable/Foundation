@@ -1,15 +1,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#if !defined(TARGET_OS_android) && !defined(TARGET_OS_googletv)
-int arc4random(void) {
-    static char seeded = 0;
-    if (!seeded) {
-        srand(time(0));
-        seeded = 1;
-    }
-    return rand();
-}
+#if !defined(TARGET_OS_ANDROID) && !defined(TARGET_OS_BBX)
 
 #warning kill not supported
 void kill(void) {

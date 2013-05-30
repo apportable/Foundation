@@ -60,7 +60,7 @@ NSMutableDictionary *GNUstepConfig(NSDictionary *newConfig)
 
 NSArray *NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory directoryKey, NSSearchPathDomainMask domainMask, BOOL expandTilde)
 {
-  return [NSArray arrayWithObject:NSHomeDirectory()];
+  return [[NSPlatform currentPlatform] searchPathForDirectories:directoryKey inDomains:domainMask expandTilde:expandTilde];
 }
 
 NSString *

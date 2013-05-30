@@ -25,10 +25,10 @@
 
    <title>NSProtocolChecker class reference</title>
    $Date: 2010-09-09 15:42:47 -0700 (Thu, 09 Sep 2010) $ $Revision: 31282 $
-   */
+ */
 
 #import "common.h"
-#define	EXPOSE_NSProtocolChecker_IVARS	1
+#define EXPOSE_NSProtocolChecker_IVARS  1
 #import "Foundation/NSProtocolChecker.h"
 #import "Foundation/NSException.h"
 #import "Foundation/NSInvocation.h"
@@ -42,12 +42,14 @@
  * <code>NSProtocolChecker</code> instance with the protocol and the object as
  * arguments-
 
-<example>
+   <example>
     id versatileObject = [[ClassWithManyMethods alloc] init];
-    id narrowObject = [NSProtocolChecker protocolCheckerWithTarget: versatileObject
-                                         protocol: @protocol(SomeSpecificProtocol)];
+    id narrowObject = [NSProtocolChecker protocolCheckerWithTarget:
+     *versatileObject
+                                         protocol:
+                                          *@protocol(SomeSpecificProtocol)];
     return narrowObject;
-</example>
+   </example>
 
  * This is often used in conjunction with distributed objects to expose only a
  * subset of an objects methods to remote processes
@@ -59,28 +61,28 @@
  * -initWithTarget:protocol:<br />
  * Autoreleases and returns the new instance.
  */
-+ (id) protocolCheckerWithTarget: (NSObject*)anObject
-			protocol: (Protocol*)aProtocol
++ (id)protocolCheckerWithTarget:(NSObject*)anObject
+    protocol:(Protocol*)aProtocol
 {
-  return AUTORELEASE([[NSProtocolChecker alloc] initWithTarget: anObject
-						      protocol: aProtocol]);
+    return AUTORELEASE([[NSProtocolChecker alloc] initWithTarget:anObject
+                        protocol:aProtocol]);
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  DESTROY(_myTarget);
-  [super dealloc];
+    DESTROY(_myTarget);
+    [super dealloc];
 }
 
-- (const char *) _protocolTypeForSelector: (SEL)aSel
+- (const char *)_protocolTypeForSelector:(SEL)aSel
 {
-  struct objc_method_description desc;
-  desc = GSProtocolGetMethodDescriptionRecursive(_myProtocol, aSel, YES, YES);
-  if (desc.name == NULL && desc.types == NULL)
+    struct objc_method_description desc;
+    desc = GSProtocolGetMethodDescriptionRecursive(_myProtocol, aSel, YES, YES);
+    if (desc.name == NULL && desc.types == NULL)
     {
-      desc = GSProtocolGetMethodDescriptionRecursive(_myProtocol, aSel, YES, NO);
+        desc = GSProtocolGetMethodDescriptionRecursive(_myProtocol, aSel, YES, NO);
     }
-  return desc.types;
+    return desc.types;
 }
 
 /**
@@ -88,49 +90,49 @@
  * the checker's protocol; otherwise raises an
  * <code>NSInvalidArgumentException</code>.
  */
-- (void) forwardInvocation: (NSInvocation*)anInvocation
+- (void)forwardInvocation:(NSInvocation*)anInvocation
 {
-  const char	*type;
+    const char    *type;
 
-  if ([self _protocolTypeForSelector: [anInvocation selector]] == NULL)
+    if ([self _protocolTypeForSelector:[anInvocation selector]] == NULL)
     {
-      if (GSObjCIsInstance(_myTarget))
-	{
-	  [NSException raise: NSInvalidArgumentException
-		      format: @"<%s -%@> not declared",
-	    protocol_getName(_myProtocol), NSStringFromSelector([anInvocation selector])];
-	}
-      else
-	{
-	  [NSException raise: NSInvalidArgumentException
-		      format: @"<%s +%@> not declared",
-	    protocol_getName(_myProtocol), NSStringFromSelector([anInvocation selector])];
-	}
+        if (GSObjCIsInstance(_myTarget))
+        {
+            [NSException raise:NSInvalidArgumentException
+             format:@"<%s -%@> not declared",
+             protocol_getName(_myProtocol), NSStringFromSelector([anInvocation selector])];
+        }
+        else
+        {
+            [NSException raise:NSInvalidArgumentException
+             format:@"<%s +%@> not declared",
+             protocol_getName(_myProtocol), NSStringFromSelector([anInvocation selector])];
+        }
     }
-  [anInvocation invokeWithTarget: _myTarget];
+    [anInvocation invokeWithTarget:_myTarget];
 
-  /*
-   * If the method returns 'self' (ie the target object) replace the
-   * returned value with the protocol checker.
-   */
-  type = [[anInvocation methodSignature] methodReturnType];
-  if (strcmp(type, @encode(id)) == 0)
+    /*
+     * If the method returns 'self' (ie the target object) replace the
+     * returned value with the protocol checker.
+     */
+    type = [[anInvocation methodSignature] methodReturnType];
+    if (strcmp(type, @encode(id)) == 0)
     {
-      id	buf;
+        id buf;
 
-      [anInvocation getReturnValue: &buf];
-      if (buf == _myTarget)
-	{
-	  buf = self;
-	  [anInvocation setReturnValue: &buf];
-	}
+        [anInvocation getReturnValue:&buf];
+        if (buf == _myTarget)
+        {
+            buf = self;
+            [anInvocation setReturnValue:&buf];
+        }
     }
 }
 
-- (id) init
+- (id)init
 {
-  self = [self initWithTarget: nil protocol: nil];
-  return self;
+    self = [self initWithTarget:nil protocol:nil];
+    return self;
 }
 
 /**
@@ -142,43 +144,43 @@
  * value with itself rather than the target object.<br />
  * Returns the new instance.
  */
-- (id) initWithTarget: (NSObject*)anObject protocol: (Protocol*)aProtocol
+- (id)initWithTarget:(NSObject*)anObject protocol:(Protocol*)aProtocol
 {
-  _myProtocol = aProtocol;
-  ASSIGN(_myTarget, anObject);
-  return self;
+    _myProtocol = aProtocol;
+    ASSIGN(_myTarget, anObject);
+    return self;
 }
 
-- (NSMethodSignature*) methodSignatureForSelector: (SEL)aSelector
+- (NSMethodSignature*)methodSignatureForSelector:(SEL)aSelector
 {
-  if (_myProtocol != nil)
+    if (_myProtocol != nil)
     {
-      const char *types = [self _protocolTypeForSelector: aSelector];
-      if (types == NULL)
-	{
-	  return nil;
-	}
-      return [NSMethodSignature signatureWithObjCTypes: types];
+        const char *types = [self _protocolTypeForSelector:aSelector];
+        if (types == NULL)
+        {
+            return nil;
+        }
+        return [NSMethodSignature signatureWithObjCTypes:types];
     }
 
-  return [super methodSignatureForSelector: aSelector];
+    return [super methodSignatureForSelector:aSelector];
 }
 
 /**
  * Returns the protocol object the checker uses to verify whether a
  * given message should be forwarded to its delegate.
  */
-- (Protocol*) protocol
+- (Protocol*)protocol
 {
-  return _myProtocol;
+    return _myProtocol;
 }
 
 /**
  * Returns the target of the NSProtocolChecker.
  */
-- (NSObject*) target
+- (NSObject*)target
 {
-  return _myTarget;
+    return _myTarget;
 }
 
 @end

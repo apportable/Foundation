@@ -23,101 +23,101 @@
 
    <title>NSPortMessage class reference</title>
    $Date: 2010-02-19 00:12:46 -0800 (Fri, 19 Feb 2010) $ $Revision: 29669 $
-   */
+ */
 
 #import "common.h"
-#define	EXPOSE_NSPortMessage_IVARS	1
+#define EXPOSE_NSPortMessage_IVARS  1
 #import "Foundation/NSAutoreleasePool.h"
 #import "Foundation/NSData.h"
 #import "Foundation/NSException.h"
 #import "Foundation/NSPortMessage.h"
 #import "GNUstepBase/NSObject+GNUstepBase.h"
 
-@implementation	NSPortMessage
+@implementation NSPortMessage
 
-- (void) dealloc
+- (void)dealloc
 {
-  RELEASE(_recv);
-  RELEASE(_send);
-  RELEASE(_components);
-  [super dealloc];
+    RELEASE(_recv);
+    RELEASE(_send);
+    RELEASE(_components);
+    [super dealloc];
 }
 
-- (NSString*) description
+- (NSString*)description
 {
-  return [NSString stringWithFormat:
-    @"NSPortMessage 0x%x (Id %u)\n  Send: %@\n  Recv: %@\n  Components -\n%@",
-    self, _msgid, _send, _recv, _components];
-}
-
-/*	PortMessages MUST be initialised with ports and data.	*/
-- (id) init
-{
-  [self shouldNotImplement: _cmd];
-  return nil;
+    return [NSString stringWithFormat:
+            @"NSPortMessage %p (Id %u)\n  Send: %@\n  Recv: %@\n  Components -\n%@",
+            self, _msgid, _send, _recv, _components];
 }
 
 /*	PortMessages MUST be initialised with ports and data.	*/
-- (id) initWithMachMessage: (void*)buffer
+- (id)init
 {
-  [self shouldNotImplement: _cmd];
-  return nil;
+    [self shouldNotImplement:_cmd];
+    return nil;
+}
+
+/*	PortMessages MUST be initialised with ports and data.	*/
+- (id)initWithMachMessage:(void*)buffer
+{
+    [self shouldNotImplement:_cmd];
+    return nil;
 }
 
 /*	This is the designated initialiser.	*/
-- (id) initWithSendPort: (NSPort*)aPort
-	    receivePort: (NSPort*)anotherPort
-	     components: (NSArray*)items
+- (id)initWithSendPort:(NSPort*)aPort
+    receivePort:(NSPort*)anotherPort
+    components:(NSArray*)items
 {
-  self = [super init];
-  if (self != nil)
+    self = [super init];
+    if (self != nil)
     {
-      _send = RETAIN(aPort);
-      _recv = RETAIN(anotherPort);
-      _components = [[NSMutableArray allocWithZone: [self zone]]
-				     initWithArray: items];
+        _send = RETAIN(aPort);
+        _recv = RETAIN(anotherPort);
+        _components = [[NSMutableArray allocWithZone:[self zone]]
+                       initWithArray:items];
     }
-  return self;
+    return self;
 }
 
-- (NSArray*) components
+- (NSArray*)components
 {
-  return AUTORELEASE([_components copy]);
+    return AUTORELEASE([_components copy]);
 }
 
-- (unsigned) msgid
+- (unsigned)msgid
 {
-  return _msgid;
+    return _msgid;
 }
 
-- (NSPort*) receivePort
+- (NSPort*)receivePort
 {
-  return _recv;
+    return _recv;
 }
 
-- (BOOL) sendBeforeDate: (NSDate*)when
+- (BOOL)sendBeforeDate:(NSDate*)when
 {
-  return [_send sendBeforeDate: when
-		    components: _components
-			  from: _recv
-		      reserved: 0];
+    return [_send sendBeforeDate:when
+            components:_components
+            from:_recv
+            reserved:0];
 }
 
-- (NSPort*) sendPort
+- (NSPort*)sendPort
 {
-  return _send;
+    return _send;
 }
 
-- (void) setMsgid: (unsigned)anId
+- (void)setMsgid:(unsigned)anId
 {
-  _msgid = anId;
+    _msgid = anId;
 }
 @end
 
-@implementation	NSPortMessage (Private)
-- (NSMutableArray*) _components
+@implementation NSPortMessage (Private)
+- (NSMutableArray*)_components
 {
-  return _components;
+    return _components;
 }
 @end
 

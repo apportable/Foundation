@@ -23,10 +23,10 @@
 
    <title>NSPort class reference</title>
    $Date: 2010-09-10 01:56:55 -0700 (Fri, 10 Sep 2010) $ $Revision: 31288 $
-   */
+ */
 
 #import "common.h"
-#define	EXPOSE_NSPort_IVARS	1
+#define EXPOSE_NSPort_IVARS 1
 #import "Foundation/NSException.h"
 #import "Foundation/NSNotification.h"
 #import "Foundation/NSNotificationQueue.h"
@@ -42,8 +42,8 @@
 
 @class NSMessagePort;
 
-@implementation NSObject(NSPortDelegateMethods)
-- (void) handlePortMessage: (NSPortMessage*)aMessage
+@implementation NSObject (NSPortDelegateMethods)
+- (void)handlePortMessage:(NSPortMessage*)aMessage
 {
 }
 @end
@@ -51,203 +51,205 @@
 @implementation NSPort
 
 NSString * const NSInvalidReceivePortException
-  = @"NSInvalidReceivePortException";
+    = @"NSInvalidReceivePortException";
 NSString * const NSInvalidSendPortException
-  = @"NSInvalidSendPortException";
+    = @"NSInvalidSendPortException";
 NSString * const NSPortReceiveException
-  = @"NSPortReceiveException";
+    = @"NSPortReceiveException";
 NSString * const NSPortSendException
-  = @"NSPortSendException";
+    = @"NSPortSendException";
 NSString * const NSPortTimeoutException
-  = @"NSPortTimeoutException";
+    = @"NSPortTimeoutException";
 
-static Class	NSPort_abstract_class;
-static Class	NSPort_concrete_class;
+static Class NSPort_abstract_class;
+static Class NSPort_concrete_class;
 
-+ (id) allocWithZone: (NSZone*)aZone
++ (id)allocWithZone:(NSZone*)aZone
 {
-  if (self == NSPort_abstract_class)
+    if (self == NSPort_abstract_class)
     {
-      return NSAllocateObject(NSPort_concrete_class, 0, aZone);
+        return NSAllocateObject(NSPort_concrete_class, 0, aZone);
     }
-  else
+    else
     {
-      return NSAllocateObject(self, 0, aZone);
-    }
-}
-
-+ (void) initialize
-{
-  if (self == [NSPort class])
-    {
-      NSUserDefaults	*defs;
-
-      GSMakeWeakPointer(self, "delegate");
-
-      NSPort_abstract_class = self;
-      NSPort_concrete_class = [NSMessagePort class];
-
-      defs = [NSUserDefaults standardUserDefaults];
-      if ([defs objectForKey: @"NSPortIsMessagePort"] != nil
-	&& [defs boolForKey: @"NSPortIsMessagePort"] == NO)
-	{
-	  NSPort_concrete_class = [NSSocketPort class];
-	}
+        return NSAllocateObject(self, 0, aZone);
     }
 }
 
-+ (NSPort*) port
++ (void)initialize
 {
-  if (self == NSPort_abstract_class)
-    return AUTORELEASE([NSPort_concrete_class new]);
-  else
-    return AUTORELEASE([self new]);
-}
-
-+ (NSPort*) portWithMachPort: (NSInteger)machPort
-{
-  return AUTORELEASE([[self alloc] initWithMachPort: machPort]);
-}
-
-- (id) copyWithZone: (NSZone*)aZone
-{
-  return RETAIN(self);
-}
-
-- (id) delegate
-{
-  return _delegate;
-}
-
-- (void) encodeWithCoder: (NSCoder*)aCoder
-{
-  [(NSPortCoder*)aCoder encodePortObject: self];
-}
-
-- (id) init
-{
-  self = [super init];
-  return self;
-}
-
-- (id) initWithCoder: (NSCoder*)aCoder
-{
-  id	obj = [(NSPortCoder*)aCoder decodePortObject];
-
-  if (obj != self)
+    if (self == [NSPort class])
     {
-      DESTROY(self);
-      self = RETAIN(obj);
+        NSUserDefaults    *defs;
+
+        GSMakeWeakPointer(self, "delegate");
+
+        NSPort_abstract_class = self;
+        NSPort_concrete_class = [NSMessagePort class];
+
+        defs = [NSUserDefaults standardUserDefaults];
+        if ([defs objectForKey:@"NSPortIsMessagePort"] != nil
+            && [defs boolForKey:@"NSPortIsMessagePort"] == NO)
+        {
+            NSPort_concrete_class = [NSSocketPort class];
+        }
     }
-  return self;
 }
 
-- (id) initWithMachPort: (NSInteger)machPort
++ (NSPort*)port
 {
-  [self shouldNotImplement: _cmd];
-  return nil;
+    if (self == NSPort_abstract_class) {
+        return AUTORELEASE([NSPort_concrete_class new]);
+    }
+    else{
+        return AUTORELEASE([self new]);
+    }
+}
+
++ (NSPort*)portWithMachPort:(NSInteger)machPort
+{
+    return AUTORELEASE([[self alloc] initWithMachPort:machPort]);
+}
+
+- (id)copyWithZone:(NSZone*)aZone
+{
+    return RETAIN(self);
+}
+
+- (id)delegate
+{
+    return _delegate;
+}
+
+- (void)encodeWithCoder:(NSCoder*)aCoder
+{
+    [(NSPortCoder*)aCoder encodePortObject : self];
+}
+
+- (id)init
+{
+    self = [super init];
+    return self;
+}
+
+- (id)initWithCoder:(NSCoder*)aCoder
+{
+    id obj = [(NSPortCoder*)aCoder decodePortObject];
+
+    if (obj != self)
+    {
+        DESTROY(self);
+        self = RETAIN(obj);
+    }
+    return self;
+}
+
+- (id)initWithMachPort:(NSInteger)machPort
+{
+    [self shouldNotImplement:_cmd];
+    return nil;
 }
 
 /*
  *	subclasses should override this method and call [super invalidate]
  *	in their versions of the method.
  */
-- (void) invalidate
+- (void)invalidate
 {
-  CREATE_AUTORELEASE_POOL(arp);
+    CREATE_AUTORELEASE_POOL(arp);
 
-  _is_valid = NO;
-  [[NSNotificationCenter defaultCenter]
-    postNotificationName: NSPortDidBecomeInvalidNotification
-		  object: self];
-  RELEASE(arp);
+    _is_valid = NO;
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:NSPortDidBecomeInvalidNotification
+     object:self];
+    RELEASE(arp);
 }
 
-- (BOOL) isValid
+- (BOOL)isValid
 {
-  return _is_valid;
+    return _is_valid;
 }
 
-- (NSInteger) machPort
+- (NSInteger)machPort
 {
-  [self shouldNotImplement: _cmd];
-  return 0;
+    [self shouldNotImplement:_cmd];
+    return 0;
 }
 
-- (id) retain
+- (id)retain
 {
-  return [super retain];
+    return [super retain];
 }
 
-- (id) autorelease
+- (id)autorelease
 {
-  return [super autorelease];
+    return [super autorelease];
 }
 
-- (void) release
+- (void)release
 {
-  if (_is_valid && [self retainCount] == 1)
+    if (_is_valid && [self retainCount] == 1)
     {
-      /*
-       * If the port is about to have a final release deallocate it
-       * we must invalidate it.
-       * Bracket with retain/release pair to prevent recursion.
-       */
-      [super retain];
-      [self invalidate];
-      [super release];
+        /*
+         * If the port is about to have a final release deallocate it
+         * we must invalidate it.
+         * Bracket with retain/release pair to prevent recursion.
+         */
+        [super retain];
+        [self invalidate];
+        [super release];
     }
-  [super release];
+    [super release];
 }
 
-- (void) setDelegate: (id) anObject
+- (void)setDelegate:(id)anObject
 {
-  NSAssert(anObject == nil
-    || [anObject respondsToSelector: @selector(handlePortMessage:)],
-    NSInvalidArgumentException);
-  _delegate = anObject;
+    NSAssert(anObject == nil
+             || [anObject respondsToSelector:@selector(handlePortMessage:)],
+             NSInvalidArgumentException);
+    _delegate = anObject;
 }
 
-- (void) addConnection: (NSConnection*)aConnection
-             toRunLoop: (NSRunLoop*)aLoop
-               forMode: (NSString*)aMode
+- (void)addConnection:(NSConnection*)aConnection
+    toRunLoop:(NSRunLoop*)aLoop
+    forMode:(NSString*)aMode
 {
-  [aLoop addPort: self forMode: aMode];
+    [aLoop addPort:self forMode:aMode];
 }
 
-- (void) removeConnection: (NSConnection*)aConnection
-              fromRunLoop: (NSRunLoop*)aLoop
-                  forMode: (NSString*)aMode
+- (void)removeConnection:(NSConnection*)aConnection
+    fromRunLoop:(NSRunLoop*)aLoop
+    forMode:(NSString*)aMode
 {
-  [aLoop removePort: self forMode: aMode];
+    [aLoop removePort:self forMode:aMode];
 }
 
-- (NSUInteger) reservedSpaceLength
+- (NSUInteger)reservedSpaceLength
 {
-  [self subclassResponsibility: _cmd];
-  return 0;
+    [self subclassResponsibility:_cmd];
+    return 0;
 }
 
-- (BOOL) sendBeforeDate: (NSDate*)when
-             components: (NSMutableArray*)components
-                   from: (NSPort*)receivingPort
-               reserved: (NSUInteger)length
+- (BOOL)sendBeforeDate:(NSDate*)when
+    components:(NSMutableArray*)components
+    from:(NSPort*)receivingPort
+    reserved:(NSUInteger)length
 {
-  return [self sendBeforeDate: when
-			msgid: 0
-		   components: components
-			 from: receivingPort
-		     reserved: length];
+    return [self sendBeforeDate:when
+            msgid:0
+            components:components
+            from:receivingPort
+            reserved:length];
 }
 
-- (BOOL) sendBeforeDate: (NSDate*)when
-		  msgid: (NSInteger)msgid
-             components: (NSMutableArray*)components
-                   from: (NSPort*)receivingPort
-               reserved: (NSUInteger)length
+- (BOOL)sendBeforeDate:(NSDate*)when
+    msgid:(NSInteger)msgid
+    components:(NSMutableArray*)components
+    from:(NSPort*)receivingPort
+    reserved:(NSUInteger)length
 {
-  [self subclassResponsibility: _cmd];
-  return YES;
+    [self subclassResponsibility:_cmd];
+    return YES;
 }
 
 @end
@@ -256,9 +258,9 @@ static Class	NSPort_concrete_class;
  * This is a callback method used by the NSRunLoop class to determine which
  * descriptors to watch for the port.  Subclasses override it.
  */
-@implementation	NSPort (GNUstep)
-- (void) getFds: (NSInteger*)fds count: (NSInteger*)count
+@implementation NSPort (GNUstep)
+- (void)getFds:(NSInteger*)fds count:(NSInteger*)count
 {
-  *count = 0;
+    *count = 0;
 }
 @end

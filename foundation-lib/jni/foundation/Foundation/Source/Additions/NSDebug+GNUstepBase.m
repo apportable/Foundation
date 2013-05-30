@@ -24,7 +24,7 @@
    Boston, MA 02111 USA.
 
    $Date: 2010-02-17 11:47:06 +0000 (Wed, 17 Feb 2010) $ $Revision: 29657 $
-   */
+ */
 
 #import "common.h"
 #import "GNUstepBase/NSDebug+GNUstepBase.h"
@@ -32,27 +32,27 @@
 NSString*
 GSDebugFunctionMsg(const char *func, const char *file, int line, NSString *fmt)
 {
-  NSString *message;
+    NSString *message;
 
-  message = [NSString stringWithFormat: @"File %s: %d. In %s %@",
-	file, line, func, fmt];
-  return message;
+    message = [NSString stringWithFormat:@"File %s: %d. In %s %@",
+               file, line, func, fmt];
+    return message;
 }
 
 NSString*
 GSDebugMethodMsg(id obj, SEL sel, const char *file, int line, NSString *fmt)
 {
-  NSString	*message;
-  Class		cls = [obj class];
-  char		c = '-';
+    NSString  *message;
+    Class cls = [obj class];
+    char c = '-';
 
-  if (class_isMetaClass(cls))
+    if (class_isMetaClass(cls))
     {
-      cls = (Class)obj;
-      c = '+';
+        cls = (Class)obj;
+        c = '+';
     }
-  message = [NSString stringWithFormat: @"File %s: %d. In [%@ %c%@] %@",
-	file, line, NSStringFromClass(cls), c, NSStringFromSelector(sel), fmt];
-  return message;
+    message = [NSString stringWithFormat:@"File %s: %d. In [%@ %c%@] %@",
+               file, line, NSStringFromClass(cls), c, NSStringFromSelector(sel), fmt];
+    return message;
 }
 

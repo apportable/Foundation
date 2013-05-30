@@ -5630,7 +5630,7 @@
 
 2008-03-19  Richard Frith-Macdonald <rfm@gnu.org>
 
-	* Source/NSAutoreleasePool.m: Use get_imp() to fetch the
+	* Source/NSAutoreleasePool.m: Use class_getMethodImplementation() to fetch the
 	implementation of the release method.
 
 2008-03-19  Richard Frith-Macdonald <rfm@gnu.org>

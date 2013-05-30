@@ -102,11 +102,11 @@ typedef struct objc_protocol Protocol;
 #endif
 
 #ifndef nil
-#define nil ((id)_OBJC_NULL_PTR)
+#define nil _OBJC_NULL_PTR
 #endif
 
 #ifndef Nil
-#define Nil ((Class)_OBJC_NULL_PTR)
+#define Nil _OBJC_NULL_PTR
 #endif
 
 BOOL class_addIvar(Class cls,

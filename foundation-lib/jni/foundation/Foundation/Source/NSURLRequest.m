@@ -3,293 +3,397 @@
 
    Written by:  Richard Frith-Macdonald <rfm@gnu.org>
    Date: 2006
-   
+
    This file is part of the GNUstep Base Library.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
    version 2 of the License, or (at your option) any later version.
-   
+
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Library General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
-   */ 
+ */
 
 #import "common.h"
 
-#define	EXPOSE_NSURLRequest_IVARS	1
+#define EXPOSE_NSURLRequest_IVARS   1
 #import "GSURLPrivate.h"
 #import "GSPrivate.h"
 
 #import "Foundation/NSCoder.h"
-
+#import "Foundation/NSLocale.h"
 
 // Internal data storage
 typedef struct {
-  NSData			*body;
-  NSInputStream			*bodyStream;
-  NSString			*method;
-  NSMutableDictionary		*headers;
-  BOOL				shouldHandleCookies;
-  NSURL				*URL;
-  NSURL				*mainDocumentURL;
-  NSURLRequestCachePolicy	cachePolicy;
-  NSTimeInterval		timeoutInterval;
-  NSMutableDictionary		*properties;
-  NSString                  *version;
+    NSData            *body;
+    NSInputStream         *bodyStream;
+    NSString          *method;
+    NSMutableDictionary       *headers;
+    BOOL shouldHandleCookies;
+    NSURL             *URL;
+    NSURL             *mainDocumentURL;
+    NSURLRequestCachePolicy cachePolicy;
+    NSTimeInterval timeoutInterval;
+    NSMutableDictionary       *properties;
+    NSString                  *version;
 } Internal;
- 
+
 /* Defines to get easy access to internals from mutable/immutable
  * versions of the class and from categories.
  */
-#define	this	((Internal*)(self->_NSURLRequestInternal))
-#define	inst	((Internal*)(((NSURLRequest*)o)->_NSURLRequestInternal))
+#define this    ((Internal*)(self->_NSURLRequestInternal))
+#define inst    ((Internal*)(((NSURLRequest*)o)->_NSURLRequestInternal))
 
-@interface	_GSMutableInsensitiveDictionary : NSMutableDictionary
+@interface  _GSMutableInsensitiveDictionary : NSMutableDictionary
 @end
 
-@implementation	NSURLRequest
+@implementation NSURLRequest
 
-+ (id) allocWithZone: (NSZone*)z
+static NSMutableDictionary *defaultHeaders = nil;
+
+- (NSData *)_data
 {
-  NSURLRequest	*o = [super allocWithZone: z];
+    NSMutableString *m;
+    NSDictionary *d;
+    NSEnumerator *e;
+    NSString *s;
+    NSURL *u;
+    int l;
+    float _version = 1.0;
 
-  if (o != nil)
+    if ([self HTTPBodyStream] == nil)
     {
-      o->_NSURLRequestInternal = NSZoneCalloc(z, 1, sizeof(Internal));
+        l = [[self HTTPBody] length];
+        _version = 1.1;
     }
-  return o;
-}
-
-+ (id) requestWithURL: (NSURL *)URL
-{
-  return [self requestWithURL: URL
-		  cachePolicy: NSURLRequestUseProtocolCachePolicy
-	      timeoutInterval: 60.0];
-}
-
-+ (id) requestWithURL: (NSURL *)URL
-	  cachePolicy: (NSURLRequestCachePolicy)cachePolicy
-      timeoutInterval: (NSTimeInterval)timeoutInterval
-{
-  NSURLRequest	*o = [[self class] allocWithZone: NSDefaultMallocZone()];
-
-  o = [o initWithURL: URL
-	 cachePolicy: cachePolicy
-     timeoutInterval: timeoutInterval];
-  return AUTORELEASE(o);
-}
-
-- (NSURLRequestCachePolicy) cachePolicy
-{
-  return this->cachePolicy;
-}
-
-- (id) copyWithZone: (NSZone*)z
-{
-  NSURLRequest	*o;
-
-  if (NSShouldRetainWithZone(self, z) == YES
-    && [self isKindOfClass: [NSMutableURLRequest class]] == NO)
+    else
     {
-      o = RETAIN(self);
+        l = -1;
+        _version = 1.0;
     }
-  else
+
+    m = [[NSMutableString alloc] initWithCapacity:1024];
+
+    [m appendString:[self HTTPMethod]];
+    [m appendString:@" "];
+    u = [self URL];
+    s = [[u fullPath] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    if ([s hasPrefix:@"/"] == NO)
     {
-      o = [[self class] allocWithZone: z];
-      o = [o initWithURL: [self URL]
-	     cachePolicy: [self cachePolicy]
-	 timeoutInterval: [self timeoutInterval]];
-      if (o != nil)
+        [m appendString:@"/"];
+    }
+    [m appendString:s];
+    s = [u query];
+    if ([s length] > 0)
+    {
+        [m appendString:@"?"];
+        [m appendString:s];
+    }
+    [m appendFormat:@" HTTP/%0.1f\r\n", _version];
+
+    d = [self allHTTPHeaderFields];
+    e = [d keyEnumerator];
+    while ((s = [e nextObject]) != nil)
+    {
+        [m appendString:s];
+        [m appendString:@": "];
+        [m appendString:[d objectForKey:s]];
+        [m appendString:@"\r\n"];
+    }
+
+    if ([[self HTTPMethod] isEqual:@"POST"] &&
+        [self valueForHTTPHeaderField:
+         @"Content-Type"] == nil)
+    {
+        [m appendString:@"Content-Type: application/x-www-form-urlencoded\r\n"];
+    }
+    if ([self valueForHTTPHeaderField:@"Host"] == nil)
+    {
+        id p = [u port];
+        id h = [u host];
+
+        if (h == nil)
         {
-	  inst->properties = [this->properties mutableCopy];
-	  ASSIGN(inst->mainDocumentURL, this->mainDocumentURL);
-	  ASSIGN(inst->body, this->body);
-	  ASSIGN(inst->bodyStream, this->bodyStream);
-	  ASSIGN(inst->method, this->method);
-      ASSIGN(inst->version, this->version);
-	  inst->shouldHandleCookies = this->shouldHandleCookies;
-          inst->headers = [this->headers mutableCopy];
-	}
+            h = @""; // Must send an empty host header
+        }
+        if (p == nil)
+        {
+            [m appendFormat:@"Host: %@\r\n", h];
+        }
+        else
+        {
+            [m appendFormat:@"Host: %@:%@\r\n", h, p];
+        }
     }
-  return o;
-}
-
-- (void) dealloc
-{
-  if (this != 0)
+    if (l >= 0 && [self valueForHTTPHeaderField:@"Content-Length"] == nil)
     {
-      RELEASE(this->body);
-      RELEASE(this->bodyStream);
-      RELEASE(this->method);
-      RELEASE(this->URL);
-      RELEASE(this->mainDocumentURL);
-      RELEASE(this->properties);
-      RELEASE(this->headers);
-      RELEASE(this->version);
-      NSZoneFree([self zone], this);
+        [m appendFormat:@"Content-Length: %d\r\n", l];
     }
-  [super dealloc];
+    [m appendString:@"\r\n"];   // End of headers
+
+    NSData *data = [m dataUsingEncoding:NSUTF8StringEncoding];
+    [m release];
+    return data;
 }
 
-- (NSString*) description
++ (NSMutableDictionary *)defaultHeaders
 {
-  return [NSString stringWithFormat: @"<%@ %@>",
-    NSStringFromClass([self class]), [[self URL] absoluteString]];
+    if (defaultHeaders == nil)
+    {
+        defaultHeaders = [[NSMutableDictionary alloc] init];
+    }
+    return defaultHeaders;
 }
 
-- (void) encodeWithCoder: (NSCoder*)aCoder
++ (id)allocWithZone:(NSZone*)z
+{
+    NSURLRequest  *o = [super allocWithZone:z];
+
+    if (o != nil)
+    {
+        o->_NSURLRequestInternal = NSZoneCalloc(z, 1, sizeof(Internal));
+    }
+    return o;
+}
+
++ (id)requestWithURL:(NSURL *)URL
+{
+    return [self requestWithURL:URL
+            cachePolicy:NSURLRequestUseProtocolCachePolicy
+            timeoutInterval:60.0];
+}
+
++ (id)requestWithURL:(NSURL *)URL
+    cachePolicy:(NSURLRequestCachePolicy)cachePolicy
+    timeoutInterval:(NSTimeInterval)timeoutInterval
+{
+    NSURLRequest  *o = [[self class] allocWithZone:NSDefaultMallocZone()];
+
+    o = [o initWithURL:URL
+         cachePolicy:cachePolicy
+         timeoutInterval:timeoutInterval];
+    return AUTORELEASE(o);
+}
+
+- (NSURLRequestCachePolicy)cachePolicy
+{
+    return this->cachePolicy;
+}
+
+- (id)copyWithZone:(NSZone*)z
+{
+    NSURLRequest  *o;
+
+    if (NSShouldRetainWithZone(self, z) == YES
+        && [self isKindOfClass:[NSMutableURLRequest class]] == NO)
+    {
+        o = RETAIN(self);
+    }
+    else
+    {
+        o = [[self class] allocWithZone:z];
+        o = [o initWithURL:[self URL]
+             cachePolicy:[self cachePolicy]
+             timeoutInterval:[self timeoutInterval]];
+        if (o != nil)
+        {
+            inst->properties = [this->properties mutableCopy];
+            ASSIGN(inst->mainDocumentURL, this->mainDocumentURL);
+            ASSIGN(inst->body, this->body);
+            ASSIGN(inst->bodyStream, this->bodyStream);
+            ASSIGN(inst->method, this->method);
+            ASSIGN(inst->version, this->version);
+            inst->shouldHandleCookies = this->shouldHandleCookies;
+            inst->headers = [this->headers mutableCopy];
+        }
+    }
+    return o;
+}
+
+- (void)dealloc
+{
+    if (this != 0)
+    {
+        RELEASE(this->body);
+        RELEASE(this->bodyStream);
+        RELEASE(this->method);
+        RELEASE(this->URL);
+        RELEASE(this->mainDocumentURL);
+        RELEASE(this->properties);
+        RELEASE(this->headers);
+        RELEASE(this->version);
+        NSZoneFree([self zone], this);
+    }
+    [super dealloc];
+}
+
+- (NSString*)description
+{
+    return [NSString stringWithFormat:@"<%@ %@>",
+            NSStringFromClass([self class]), [[self URL] absoluteString]];
+}
+
+- (void)encodeWithCoder:(NSCoder*)aCoder
 {
 // FIXME
-  if ([aCoder allowsKeyedCoding])
+    if ([aCoder allowsKeyedCoding])
     {
     }
-  else
+    else
     {
     }
 }
 
-- (id) initWithCoder: (NSCoder*)aCoder
+- (id)initWithCoder:(NSCoder*)aCoder
 {
 // FIXME
-  if ([aCoder allowsKeyedCoding])
+    if ([aCoder allowsKeyedCoding])
     {
     }
-  else
+    else
     {
     }
-  return self;
+    return self;
 }
 
-- (NSUInteger) hash
+- (NSUInteger)hash
 {
-  return [this->URL hash];
+    return [this->URL hash];
 }
 
-- (id) init
+- (id)init
 {
-  return [self initWithURL: nil];
+    return [self initWithURL:nil];
 }
 
-- (id) initWithURL: (NSURL *)URL
+- (id)initWithURL:(NSURL *)URL
 {
-  return [self initWithURL: URL
-	       cachePolicy: NSURLRequestUseProtocolCachePolicy
-	   timeoutInterval: 60.0];
+    return [self initWithURL:URL
+            cachePolicy:NSURLRequestUseProtocolCachePolicy
+            timeoutInterval:60.0];
 }
 
-- (id) initWithURL: (NSURL *)URL
-       cachePolicy: (NSURLRequestCachePolicy)cachePolicy
-   timeoutInterval: (NSTimeInterval)timeoutInterval
+- (id)initWithURL:(NSURL *)URL
+    cachePolicy:(NSURLRequestCachePolicy)cachePolicy
+    timeoutInterval:(NSTimeInterval)timeoutInterval
 {
-  if ([URL isKindOfClass: [NSURL class]] == NO && URL != NULL)
+    if ([URL isKindOfClass:[NSURL class]] == NO && URL != NULL)
     {
-      DESTROY(self);
+        DESTROY(self);
     }
-  else if ((self = [super init]) != nil)
+    else if ((self = [super init]) != nil)
     {
-      this->URL = RETAIN(URL);
-      this->cachePolicy = cachePolicy;
-      this->timeoutInterval = timeoutInterval;
-      this->mainDocumentURL = nil;
-      this->method = @"GET";
-      this->version = @"HTTP/1.1";
+        this->URL = RETAIN(URL);
+        this->cachePolicy = cachePolicy;
+        this->timeoutInterval = timeoutInterval;
+        this->mainDocumentURL = nil;
+        this->method = @"GET";
+        this->version = @"HTTP/1.1";
+
+        // Create some default headers.  Apparently iOS adds this to every
+        // request.
+        NSMutableDictionary *headers = [[NSURLRequest defaultHeaders] mutableCopy];
+        NSString* localeString = [[NSLocale currentLocale] localeIdentifier];
+        NSString *correctedLocaleId = [[localeString stringByReplacingOccurrencesOfString:@"_" withString:@"-"] lowercaseString];
+        [headers setObject:correctedLocaleId forKey:@"Accept-Language"];
+        this->headers = headers;
     }
-  return self;
+    return self;
 }
 
-- (BOOL) isEqual: (id)o
+- (BOOL)isEqual:(id)o
 {
-  if ([o isKindOfClass: [NSURLRequest class]] == NO)
-    {
-      return NO;
-    }
-  if (this->URL != inst->URL
-    && [this->URL isEqual: inst->URL] == NO)
-    {
-      return NO;
-    }
-  if (this->mainDocumentURL != inst->mainDocumentURL
-    && [this->mainDocumentURL isEqual: inst->mainDocumentURL] == NO)
-    {
-      return NO;
-    }
-  if (this->method != inst->method
-    && [this->method isEqual: inst->method] == NO)
-    {
-      return NO;
-    }
-  if (this->version != inst->version
-    && [this->version isEqual: inst->version] == NO)
+    if ([o isKindOfClass:[NSURLRequest class]] == NO)
     {
         return NO;
     }
-  if (this->body != inst->body
-    && [this->body isEqual: inst->body] == NO)
+    if (this->URL != inst->URL
+        && [this->URL isEqual:inst->URL] == NO)
     {
-      return NO;
+        return NO;
     }
-  if (this->bodyStream != inst->bodyStream
-    && [this->bodyStream isEqual: inst->bodyStream] == NO)
+    if (this->mainDocumentURL != inst->mainDocumentURL
+        && [this->mainDocumentURL isEqual:inst->mainDocumentURL] == NO)
     {
-      return NO;
+        return NO;
     }
-  if (this->properties != inst->properties
-    && [this->properties isEqual: inst->properties] == NO)
+    if (this->method != inst->method
+        && [this->method isEqual:inst->method] == NO)
     {
-      return NO;
+        return NO;
     }
-  if (this->headers != inst->headers
-    && [this->headers isEqual: inst->headers] == NO)
+    if (this->version != inst->version
+        && [this->version isEqual:inst->version] == NO)
     {
-      return NO;
+        return NO;
     }
-  return YES;
+    if (this->body != inst->body
+        && [this->body isEqual:inst->body] == NO)
+    {
+        return NO;
+    }
+    if (this->bodyStream != inst->bodyStream
+        && [this->bodyStream isEqual:inst->bodyStream] == NO)
+    {
+        return NO;
+    }
+    if (this->properties != inst->properties
+        && [this->properties isEqual:inst->properties] == NO)
+    {
+        return NO;
+    }
+    if (this->headers != inst->headers
+        && [this->headers isEqual:inst->headers] == NO)
+    {
+        return NO;
+    }
+    return YES;
 }
 
-- (NSURL *) mainDocumentURL
+- (NSURL *)mainDocumentURL
 {
-  return this->mainDocumentURL;
+    return this->mainDocumentURL;
 }
 
-- (id) mutableCopyWithZone: (NSZone*)z
+- (id)mutableCopyWithZone:(NSZone*)z
 {
-  NSMutableURLRequest	*o;
+    NSMutableURLRequest   *o;
 
-  o = [NSMutableURLRequest allocWithZone: z];
-  o = [o initWithURL: [self URL]
-	 cachePolicy: [self cachePolicy]
-     timeoutInterval: [self timeoutInterval]];
-  if (o != nil)
+    o = [NSMutableURLRequest allocWithZone:z];
+    o = [o initWithURL:[self URL]
+         cachePolicy:[self cachePolicy]
+         timeoutInterval:[self timeoutInterval]];
+    if (o != nil)
     {
-      [o setMainDocumentURL: this->mainDocumentURL];
-      inst->properties = [this->properties mutableCopy];
-      ASSIGN(inst->mainDocumentURL, this->mainDocumentURL);
-      ASSIGN(inst->body, this->body);
-      ASSIGN(inst->bodyStream, this->bodyStream);
-      ASSIGN(inst->method, this->method);
-      ASSIGN(inst->version, this->version);
-      inst->shouldHandleCookies = this->shouldHandleCookies;
-      inst->headers = [this->headers mutableCopy];
+        [o setMainDocumentURL:this->mainDocumentURL];
+        inst->properties = [this->properties mutableCopy];
+        ASSIGN(inst->mainDocumentURL, this->mainDocumentURL);
+        ASSIGN(inst->body, this->body);
+        ASSIGN(inst->bodyStream, this->bodyStream);
+        ASSIGN(inst->method, this->method);
+        ASSIGN(inst->version, this->version);
+        inst->shouldHandleCookies = this->shouldHandleCookies;
+        inst->headers = [this->headers mutableCopy];
     }
-  return o;
+    return o;
 }
 
-- (NSTimeInterval) timeoutInterval
+- (NSTimeInterval)timeoutInterval
 {
-  return this->timeoutInterval;
+    return this->timeoutInterval;
 }
 
-- (NSURL *) URL
+- (NSURL *)URL
 {
-  return this->URL;
+    return this->URL;
 }
 
 @end
@@ -297,157 +401,244 @@ typedef struct {
 
 @implementation NSMutableURLRequest
 
-- (void) setCachePolicy: (NSURLRequestCachePolicy)cachePolicy
+
+- (NSData *)_data
 {
-  this->cachePolicy = cachePolicy;
+    NSMutableString *m;
+    NSDictionary *d;
+    NSEnumerator *e;
+    NSString *s;
+    NSURL *u;
+    int l;
+    float _version = 1.0;
+
+    if ([self HTTPBodyStream] == nil)
+    {
+        l = [[self HTTPBody] length];
+        _version = 1.1;
+    }
+    else
+    {
+        l = -1;
+        _version = 1.0;
+    }
+
+    m = [[NSMutableString alloc] initWithCapacity:1024];
+
+    [m appendString:[self HTTPMethod]];
+    [m appendString:@" "];
+    u = [self URL];
+    s = [[u fullPath] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    if ([s hasPrefix:@"/"] == NO)
+    {
+        [m appendString:@"/"];
+    }
+    [m appendString:s];
+    s = [u query];
+    if ([s length] > 0)
+    {
+        [m appendString:@"?"];
+        [m appendString:s];
+    }
+    [m appendFormat:@" HTTP/%0.1f\r\n", _version];
+
+    d = [self allHTTPHeaderFields];
+    e = [d keyEnumerator];
+    while ((s = [e nextObject]) != nil)
+    {
+        [m appendString:s];
+        [m appendString:@": "];
+        [m appendString:[d objectForKey:s]];
+        [m appendString:@"\r\n"];
+    }
+
+    if ([[self HTTPMethod] isEqual:@"POST"] &&
+        [self valueForHTTPHeaderField:
+         @"Content-Type"] == nil)
+    {
+        [m appendString:@"Content-Type: application/x-www-form-urlencoded\r\n"];
+    }
+    if ([self valueForHTTPHeaderField:@"Host"] == nil)
+    {
+        id p = [u port];
+        id h = [u host];
+
+        if (h == nil)
+        {
+            h = @""; // Must send an empty host header
+        }
+        if (p == nil)
+        {
+            [m appendFormat:@"Host: %@\r\n", h];
+        }
+        else
+        {
+            [m appendFormat:@"Host: %@:%@\r\n", h, p];
+        }
+    }
+    if (l >= 0 && [self valueForHTTPHeaderField:@"Content-Length"] == nil)
+    {
+        [m appendFormat:@"Content-Length: %d\r\n", l];
+    }
+    [m appendString:@"\r\n"];   // End of headers
+
+    NSData *data = [m dataUsingEncoding:NSUTF8StringEncoding];
+    [m release];
+    return data;
 }
 
-- (void) setMainDocumentURL: (NSURL *)URL
+- (void)setCachePolicy:(NSURLRequestCachePolicy)cachePolicy
 {
-  ASSIGN(this->mainDocumentURL, URL);
+    this->cachePolicy = cachePolicy;
 }
 
-- (void) setTimeoutInterval: (NSTimeInterval)seconds
+- (void)setMainDocumentURL:(NSURL *)URL
 {
-  this->timeoutInterval = seconds;
+    ASSIGN(this->mainDocumentURL, URL);
 }
 
-- (void) setURL: (NSURL *)URL
+- (void)setTimeoutInterval:(NSTimeInterval)seconds
 {
-  [this->URL release];
-  this->URL = [URL retain];
+    this->timeoutInterval = seconds;
+}
+
+- (void)setURL:(NSURL *)URL
+{
+    if (this->URL != URL) {
+        [this->URL release];
+        this->URL = [URL retain];
+    }
 }
 
 @end
 
 @implementation NSURLRequest (NSHTTPURLRequest)
 
-- (NSDictionary *) allHTTPHeaderFields
+- (NSDictionary *)allHTTPHeaderFields
 {
-  NSDictionary	*fields;
+    NSDictionary  *fields;
 
-  if (this->headers == nil)
+    if (this->headers == nil)
     {
-      fields = [NSDictionary dictionary];
+        fields = [NSDictionary dictionary];
     }
-  else
+    else
     {
-      fields = [NSDictionary dictionaryWithDictionary: this->headers];
+        fields = [NSDictionary dictionaryWithDictionary:this->headers];
     }
-  return fields;
+    return fields;
 }
 
-- (NSData *) HTTPBody
+- (NSData *)HTTPBody
 {
-  return this->body;
+    return this->body;
 }
 
-- (NSInputStream *) HTTPBodyStream
+- (NSInputStream *)HTTPBodyStream
 {
-  return this->bodyStream;
+    return this->bodyStream;
 }
 
-- (NSString *) HTTPMethod
+- (NSString *)HTTPMethod
 {
-  return this->method;
+    return this->method;
 }
 
-- (BOOL) HTTPShouldHandleCookies
+- (BOOL)HTTPShouldHandleCookies
 {
-  return this->shouldHandleCookies;
+    return this->shouldHandleCookies;
 }
 
-- (NSString *) valueForHTTPHeaderField: (NSString *)field
+- (NSString *)valueForHTTPHeaderField:(NSString *)field
 {
-  return [this->headers objectForKey: field];
+    return [this->headers objectForKey:field];
 }
 
 @end
 
 
-
 @implementation NSMutableURLRequest (NSMutableHTTPURLRequest)
 
-- (void) addValue: (NSString *)value forHTTPHeaderField: (NSString *)field
+- (void)addValue:(NSString *)value forHTTPHeaderField:(NSString *)field
 {
-  NSString	*old = [self valueForHTTPHeaderField: field];
+    NSString  *old = [self valueForHTTPHeaderField:field];
 
-  if (old != nil)
+    if (old != nil)
     {
-      value = [old stringByAppendingFormat: @",%@", value];
+        value = [old stringByAppendingFormat:@",%@", value];
     }
-  [self setValue: value forHTTPHeaderField: field];
+    [self setValue:value forHTTPHeaderField:field];
 }
 
-- (void) setAllHTTPHeaderFields: (NSDictionary *)headerFields
+- (void)setAllHTTPHeaderFields:(NSDictionary *)headerFields
 {
-  NSEnumerator	*enumerator = [headerFields keyEnumerator];
-  NSString	*field;
+    NSEnumerator  *enumerator = [headerFields keyEnumerator];
+    NSString  *field;
 
-  while ((field = [enumerator nextObject]) != nil)
+    while ((field = [enumerator nextObject]) != nil)
     {
-      id	value = [headerFields objectForKey: field];
+        id value = [headerFields objectForKey:field];
 
-      if ([value isKindOfClass: [NSString class]] == YES)
+        if ([value isKindOfClass:[NSString class]] == YES)
         {
-	  [self setValue: (NSString*)value forHTTPHeaderField: field];
-	}
+            [self setValue:(NSString*)value forHTTPHeaderField:field];
+        }
     }
 }
 
-- (void) setHTTPBodyStream: (NSInputStream *)inputStream
+- (void)setHTTPBodyStream:(NSInputStream *)inputStream
 {
-  DESTROY(this->body);
-  ASSIGN(this->bodyStream, inputStream);
+    DESTROY(this->body);
+    ASSIGN(this->bodyStream, inputStream);
 }
 
-- (void) setHTTPBody: (NSData *)data
+- (void)setHTTPBody:(NSData *)data
 {
-  DESTROY(this->bodyStream);
-  ASSIGNCOPY(this->body, data);
+    DESTROY(this->bodyStream);
+    ASSIGNCOPY(this->body, data);
 }
 
-- (void) setHTTPMethod: (NSString *)method
+- (void)setHTTPMethod:(NSString *)method
 {
 /* NB. I checked MacOS-X 4.2, and this method actually lets you set any
  * copyable value (including non-string classes), but setting nil is
  * equivalent to resetting to the default value of 'GET'
  */
-  if (method == nil)
+    if (method == nil)
     {
-      method = @"GET";
+        method = @"GET";
     }
-  ASSIGNCOPY(this->method, method);
+    ASSIGNCOPY(this->method, method);
 }
 
-- (void) setHTTPShouldHandleCookies: (BOOL)should
+- (void)setHTTPShouldHandleCookies:(BOOL)should
 {
-  this->shouldHandleCookies = should;
+    this->shouldHandleCookies = should;
 }
 
-- (void) setValue: (NSString *)value forHTTPHeaderField: (NSString *)field
+- (void)setValue:(NSString *)value forHTTPHeaderField:(NSString *)field
 {
-  if (this->headers == nil)
+    if (this->headers == nil)
     {
-      this->headers = [_GSMutableInsensitiveDictionary new];
+        this->headers = [_GSMutableInsensitiveDictionary new];
     }
-  [this->headers setObject: value forKey: field];
+    [this->headers setObject:value forKey:field];
 }
 
 @end
 
-@implementation	NSURLRequest (Private)
-- (id) _propertyForKey: (NSString*)key
+@implementation NSURLRequest (Private)
+- (id)_propertyForKey:(NSString*)key
 {
-  return [this->properties objectForKey: key];
+    return [this->properties objectForKey:key];
 }
 
-- (void) _setProperty: (id)value forKey: (NSString*)key
+- (void)_setProperty:(id)value forKey:(NSString*)key
 {
-  if (this->properties == nil)
+    if (this->properties == nil)
     {
-      this->properties = [NSMutableDictionary new];
-      [this->properties setObject: value forKey: key];
+        this->properties = [NSMutableDictionary new];
+        [this->properties setObject:value forKey:key];
     }
 }
 

@@ -23,7 +23,7 @@
 
    <title>NSPage class reference</title>
    $Date: 2010-06-17 12:08:08 -0700 (Thu, 17 Jun 2010) $ $Revision: 30772 $
-   */
+ */
 
 #import "common.h"
 #include <string.h>
@@ -39,16 +39,6 @@
 #include <malloc.h>
 #endif
 
-#ifdef __MINGW__
-#include <malloc.h>
-static size_t
-getpagesize(void)
-{
-  SYSTEM_INFO info;
-  GetSystemInfo(&info);
-  return info.dwPageSize;
-}
-#endif
 
 #ifdef __SOLARIS__
 #define getpagesize() sysconf(_SC_PAGESIZE)
@@ -62,10 +52,6 @@ getpagesize(void)
 #define getpagesize vm_page_size
 #endif
 
-#ifdef __BEOS__
-#include <kernel/OS.h>
-#define getpagesize()  B_PAGE_SIZE
-#endif
 
 /* Cache the size of a memory page here, so we don't have to make the
    getpagesize() system call repeatedly. */
@@ -77,9 +63,10 @@ static NSUInteger ns_page_size = 0;
 NSUInteger
 NSPageSize (void)
 {
-  if (!ns_page_size)
-    ns_page_size = getpagesize ();
-  return ns_page_size;
+    if (!ns_page_size) {
+        ns_page_size = getpagesize ();
+    }
+    return ns_page_size;
 }
 
 /**
@@ -88,12 +75,12 @@ NSPageSize (void)
 NSUInteger
 NSLogPageSize (void)
 {
-  NSUInteger tmp_page_size = NSPageSize();
-  NSUInteger log = 0;
+    NSUInteger tmp_page_size = NSPageSize();
+    NSUInteger log = 0;
 
-  while (tmp_page_size >>= 1)
-    log++;
-  return log;
+    while (tmp_page_size >>= 1)
+        log++;
+    return log;
 }
 
 /**
@@ -103,9 +90,9 @@ NSLogPageSize (void)
 NSUInteger
 NSRoundDownToMultipleOfPageSize (NSUInteger bytes)
 {
-  NSUInteger a = NSPageSize();
+    NSUInteger a = NSPageSize();
 
-  return (bytes / a) * a;
+    return (bytes / a) * a;
 }
 
 /**
@@ -115,13 +102,13 @@ NSRoundDownToMultipleOfPageSize (NSUInteger bytes)
 NSUInteger
 NSRoundUpToMultipleOfPageSize (NSUInteger bytes)
 {
-  NSUInteger a = NSPageSize();
+    NSUInteger a = NSPageSize();
 
-  return ((bytes % a) ? ((bytes / a + 1) * a) : bytes);
+    return ((bytes % a) ? ((bytes / a + 1) * a) : bytes);
 }
 
 #if __linux__
-#include	<sys/sysinfo.h>
+#include    <sys/sysinfo.h>
 #endif
 
 /**
@@ -131,31 +118,21 @@ NSUInteger
 NSRealMemoryAvailable ()
 {
 #if __linux__
-#if defined(TARGET_OS_android) || defined(TARGET_OS_googletv)
-// For some reason this doesnt work when compiled with clang (link error), but does with gcc
-   return 0;
-#else
-  struct sysinfo info;
-
-  if ((sysinfo(&info)) != 0)
+#if defined(TARGET_OS_ANDROID)
+// For some reason this doesnt work when compiled with clang (link error), but
+// does with gcc
     return 0;
-  return  info.freeram;
+#else
+    struct sysinfo info;
+
+    if ((sysinfo(&info)) != 0) {
+        return 0;
+    }
+    return info.freeram;
 #endif
-#elif defined(__MINGW__)
-  MEMORYSTATUSEX memory;
-
-  memory.dwLength = sizeof(memory);
-  GlobalMemoryStatusEx(&memory);
-  return memory.ullAvailPhys;
-#elif defined(__BEOS__)
-  system_info info;
-
-  if (get_system_info(&info) != B_OK)
-    return 0;
-  return (info.max_pages - info.used_pages) * B_PAGE_SIZE;
 #else
-  fprintf (stderr, "NSRealMemoryAvailable() not implemented.\n");
-  return 0;
+    fprintf (stderr, "NSRealMemoryAvailable() not implemented.\n");
+    return 0;
 #endif
 }
 
@@ -167,26 +144,27 @@ NSRealMemoryAvailable ()
 void *
 NSAllocateMemoryPages (NSUInteger bytes)
 {
-  NSUInteger size = NSRoundUpToMultipleOfPageSize (bytes);
-  void *where;
-#if defined(__MINGW__)
-  where = VirtualAlloc(NULL, size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
-#elif __mach__
-  kern_return_t r;
-  r = vm_allocate (mach_task_self(), &where, (vm_size_t) size, 1);
-  if (r != KERN_SUCCESS)
-    return NULL;
-  return where;
-#elif	HAVE_POSIX_MEMALIGN
-  if (posix_memalign(&where, NSPageSize(), size) != 0)
-    return NULL;
+    NSUInteger size = NSRoundUpToMultipleOfPageSize (bytes);
+    void *where;
+#if   __mach__
+    kern_return_t r;
+    r = vm_allocate (mach_task_self(), &where, (vm_size_t) size, 1);
+    if (r != KERN_SUCCESS) {
+        return NULL;
+    }
+    return where;
+#elif   HAVE_POSIX_MEMALIGN
+    if (posix_memalign(&where, NSPageSize(), size) != 0) {
+        return NULL;
+    }
 #else
-  where = valloc (size);
-  if (where == NULL)
-    return NULL;
+    where = valloc (size);
+    if (where == NULL) {
+        return NULL;
+    }
 #endif
-  memset (where, 0, bytes);
-  return where;
+    memset (where, 0, bytes);
+    return where;
 }
 
 /**
@@ -198,12 +176,10 @@ NSAllocateMemoryPages (NSUInteger bytes)
 void
 NSDeallocateMemoryPages (void *ptr, NSUInteger bytes)
 {
-#if defined(__MINGW__)
-  VirtualFree(ptr, 0, MEM_RELEASE);
-#elif __mach__
-  vm_deallocate (mach_task_self (), ptr, NSRoundUpToMultipleOfPageSize (bytes));
+#if   __mach__
+    vm_deallocate (mach_task_self (), ptr, NSRoundUpToMultipleOfPageSize (bytes));
 #else
-  free (ptr);
+    free (ptr);
 #endif
 }
 
@@ -215,11 +191,11 @@ void
 NSCopyMemoryPages (const void *src, void *dest, NSUInteger bytes)
 {
 #if __mach__
-  kern_return_t r;
-  r = vm_copy (mach_task_self(), src, bytes, dest);
-  NSParameterAssert (r == KERN_SUCCESS);
+    kern_return_t r;
+    r = vm_copy (mach_task_self(), src, bytes, dest);
+    NSParameterAssert (r == KERN_SUCCESS);
 #else
-  memcpy (dest, src, bytes);
+    memcpy (dest, src, bytes);
 #endif
 }
 

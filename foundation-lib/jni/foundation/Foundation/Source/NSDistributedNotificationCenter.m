@@ -23,37 +23,37 @@
 
    <title>NSDistributedNotificationCenter class reference</title>
    $Date: 2010-09-09 09:30:10 -0700 (Thu, 09 Sep 2010) $ $Revision: 31268 $
-   */
+ */
 
-#import	"common.h"
-#define	EXPOSE_NSDistributedNotificationCenter_IVARS	1
-#import	"Foundation/NSConnection.h"
-#import	"Foundation/NSDistantObject.h"
-#import	"Foundation/NSException.h"
-#import	"Foundation/NSFileManager.h"
-#import	"Foundation/NSArchiver.h"
-#import	"Foundation/NSNotification.h"
-#import	"Foundation/NSDate.h"
-#import	"Foundation/NSPathUtilities.h"
-#import	"Foundation/NSRunLoop.h"
-#import	"Foundation/NSTask.h"
-#import	"GNUstepBase/NSTask+GNUstepBase.h"
-#import	"Foundation/NSDistributedNotificationCenter.h"
-#import	"Foundation/NSUserDefaults.h"
-#import	"Foundation/NSHost.h"
-#import	"Foundation/NSPortNameServer.h"
+#import "common.h"
+#define EXPOSE_NSDistributedNotificationCenter_IVARS    1
+#import "Foundation/NSConnection.h"
+#import "Foundation/NSDistantObject.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSArchiver.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSDate.h"
+#import "Foundation/NSPathUtilities.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSTask.h"
+#import "GNUstepBase/NSTask+GNUstepBase.h"
+#import "Foundation/NSDistributedNotificationCenter.h"
+#import "Foundation/NSUserDefaults.h"
+#import "Foundation/NSHost.h"
+#import "Foundation/NSPortNameServer.h"
 #import "Foundation/NSThread.h"
-#import	"../Tools/gdnc.h"
+#import "../Tools/gdnc.h"
 
 
-@interface	NSDistributedNotificationCenter (Private)
-- (void) _connect;
-- (void) _invalidated: (NSNotification*)notification;
-- (void) postNotificationName: (NSString*)name
-		       object: (NSString*)object
-		     userInfo: (NSData*)info
-		     selector: (NSString*)aSelector
-			   to: (uint64_t)observer;
+@interface  NSDistributedNotificationCenter (Private)
+- (void)_connect;
+- (void)_invalidated:(NSNotification*)notification;
+- (void)postNotificationName:(NSString*)name
+    object:(NSString*)object
+    userInfo:(NSData*)info
+    selector:(NSString*)aSelector
+    to:(uint64_t)observer;
 @end
 
 /**
@@ -98,17 +98,17 @@
  * wish to have logically separate clusters of machines on a shared LAN.
  * </p>
  */
-@implementation	NSDistributedNotificationCenter
+@implementation NSDistributedNotificationCenter
 
-static NSDistributedNotificationCenter	*locCenter = nil;
-static NSDistributedNotificationCenter	*pubCenter = nil;
-static NSDistributedNotificationCenter	*netCenter = nil;
+static NSDistributedNotificationCenter  *locCenter = nil;
+static NSDistributedNotificationCenter  *pubCenter = nil;
+static NSDistributedNotificationCenter  *netCenter = nil;
 
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
-  [NSException raise: NSInternalInconsistencyException
-    format: @"Should not call +alloc for NSDistributedNotificationCenter"];
-  return nil;
+    [NSException raise:NSInternalInconsistencyException
+     format:@"Should not call +alloc for NSDistributedNotificationCenter"];
+    return nil;
 }
 
 /**
@@ -117,9 +117,9 @@ static NSDistributedNotificationCenter	*netCenter = nil;
  * equivalent to calling +notificationCenterForType: with
  * <code>NSLocalNotificationCenterType</code> as its argument.
  */
-+ (NSNotificationCenter*) defaultCenter
++ (NSNotificationCenter*)defaultCenter
 {
-  return [self notificationCenterForType: NSLocalNotificationCenterType];
+    return [self notificationCenterForType:NSLocalNotificationCenterType];
 }
 
 /**
@@ -134,120 +134,120 @@ static NSDistributedNotificationCenter	*netCenter = nil;
  * a notification center used by processes on the local network.<br />
  * MacOS-X supports only <code>NSLocalNotificationCenterType</code>.
  */
-+ (NSNotificationCenter*) notificationCenterForType: (NSString*)type
++ (NSNotificationCenter*)notificationCenterForType:(NSString*)type
 {
-  if ([type isEqual: NSLocalNotificationCenterType] == YES)
+    if ([type isEqual:NSLocalNotificationCenterType] == YES)
     {
-      if (locCenter == nil)
-	{
-	  [gnustep_global_lock lock];
-	    if (locCenter == nil)
-	      {
-		NS_DURING
-		  {
-		    NSDistributedNotificationCenter	*tmp;
+        if (locCenter == nil)
+        {
+            [gnustep_global_lock lock];
+            if (locCenter == nil)
+            {
+                NS_DURING
+                {
+                    NSDistributedNotificationCenter *tmp;
 
-		    tmp = (NSDistributedNotificationCenter*)
-		      NSAllocateObject(self, 0, NSDefaultMallocZone());
-		    tmp->_centerLock = [NSRecursiveLock new];
-		    tmp->_type = RETAIN(NSLocalNotificationCenterType);
-		    locCenter = tmp;
-		  }
-		NS_HANDLER
-		  {
-		    [gnustep_global_lock unlock];
-		    [localException raise];
-		  }
-		NS_ENDHANDLER
-	      }
-	  [gnustep_global_lock unlock];
-	}
-      return locCenter;
+                    tmp = (NSDistributedNotificationCenter*)
+                          NSAllocateObject(self, 0, NSDefaultMallocZone());
+                    tmp->_centerLock = [NSRecursiveLock new];
+                    tmp->_type = RETAIN(NSLocalNotificationCenterType);
+                    locCenter = tmp;
+                }
+                NS_HANDLER
+                {
+                    [gnustep_global_lock unlock];
+                    [localException raise];
+                }
+                NS_ENDHANDLER
+            }
+            [gnustep_global_lock unlock];
+        }
+        return locCenter;
     }
-  else if ([type isEqual: GSPublicNotificationCenterType] == YES)
+    else if ([type isEqual:GSPublicNotificationCenterType] == YES)
     {
-      if (pubCenter == nil)
-	{
-	  [gnustep_global_lock lock];
-	    if (pubCenter == nil)
-	      {
-		NS_DURING
-		  {
-		    NSDistributedNotificationCenter	*tmp;
+        if (pubCenter == nil)
+        {
+            [gnustep_global_lock lock];
+            if (pubCenter == nil)
+            {
+                NS_DURING
+                {
+                    NSDistributedNotificationCenter *tmp;
 
-		    tmp = (NSDistributedNotificationCenter*)
-		      NSAllocateObject(self, 0, NSDefaultMallocZone());
-		    tmp->_centerLock = [NSRecursiveLock new];
-		    tmp->_type = RETAIN(GSPublicNotificationCenterType);
-		    pubCenter = tmp;
-		  }
-		NS_HANDLER
-		  {
-		    [gnustep_global_lock unlock];
-		    [localException raise];
-		  }
-		NS_ENDHANDLER
-	      }
-	  [gnustep_global_lock unlock];
-	}
-      return pubCenter;
+                    tmp = (NSDistributedNotificationCenter*)
+                          NSAllocateObject(self, 0, NSDefaultMallocZone());
+                    tmp->_centerLock = [NSRecursiveLock new];
+                    tmp->_type = RETAIN(GSPublicNotificationCenterType);
+                    pubCenter = tmp;
+                }
+                NS_HANDLER
+                {
+                    [gnustep_global_lock unlock];
+                    [localException raise];
+                }
+                NS_ENDHANDLER
+            }
+            [gnustep_global_lock unlock];
+        }
+        return pubCenter;
     }
-  else if ([type isEqual: GSNetworkNotificationCenterType] == YES)
+    else if ([type isEqual:GSNetworkNotificationCenterType] == YES)
     {
-      if (netCenter == nil)
-	{
-	  [gnustep_global_lock lock];
-	    if (netCenter == nil)
-	      {
-		NS_DURING
-		  {
-		    NSDistributedNotificationCenter	*tmp;
+        if (netCenter == nil)
+        {
+            [gnustep_global_lock lock];
+            if (netCenter == nil)
+            {
+                NS_DURING
+                {
+                    NSDistributedNotificationCenter *tmp;
 
-		    tmp = (NSDistributedNotificationCenter*)
-		      NSAllocateObject(self, 0, NSDefaultMallocZone());
-		    tmp->_centerLock = [NSRecursiveLock new];
-		    tmp->_type = RETAIN(GSNetworkNotificationCenterType);
-		    netCenter = tmp;
-		  }
-		NS_HANDLER
-		  {
-		    [gnustep_global_lock unlock];
-		    [localException raise];
-		  }
-		NS_ENDHANDLER
-	      }
-	  [gnustep_global_lock unlock];
-	}
-      return netCenter;
+                    tmp = (NSDistributedNotificationCenter*)
+                          NSAllocateObject(self, 0, NSDefaultMallocZone());
+                    tmp->_centerLock = [NSRecursiveLock new];
+                    tmp->_type = RETAIN(GSNetworkNotificationCenterType);
+                    netCenter = tmp;
+                }
+                NS_HANDLER
+                {
+                    [gnustep_global_lock unlock];
+                    [localException raise];
+                }
+                NS_ENDHANDLER
+            }
+            [gnustep_global_lock unlock];
+        }
+        return netCenter;
     }
-  else
+    else
     {
-      [NSException raise: NSInvalidArgumentException
-      		  format: @"Unknown center type (%@)", type];
-      return nil;	/* NOT REACHED */
+        [NSException raise:NSInvalidArgumentException
+         format:@"Unknown center type (%@)", type];
+        return nil; /* NOT REACHED */
     }
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  if ([[_remote connectionForProxy] isValid])
+    if ([[_remote connectionForProxy] isValid])
     {
-      [_remote unregisterClient: (id<GDNCClient>)self];
+        [_remote unregisterClient:(id < GDNCClient >)self];
     }
-  RELEASE(_remote);
-  RELEASE(_type);
-  [super dealloc];
+    RELEASE(_remote);
+    RELEASE(_type);
+    [super dealloc];
 }
 
 /**
  * Should not be used.
  */
-- (id) init
+- (id)init
 {
-  DESTROY(self);
-  [NSException raise: NSInternalInconsistencyException
-    format: @"Should not call -init for NSDistributedNotificationCenter"];
-  return nil;
+    DESTROY(self);
+    [NSException raise:NSInternalInconsistencyException
+     format:@"Should not call -init for NSDistributedNotificationCenter"];
+    return nil;
 }
 
 /**
@@ -255,16 +255,16 @@ static NSDistributedNotificationCenter	*netCenter = nil;
  * -addObserver:selector:name:object:suspensionBehavior: with
  * <code>NSNotificationSuspensionBehaviorCoalesce</code>.
  */
-- (void) addObserver: (id)anObserver
-	    selector: (SEL)aSelector
-		name: (NSString*)notificationName
-	      object: (NSString*)anObject
+- (void)addObserver:(id)anObserver
+    selector:(SEL)aSelector
+    name:(NSString*)notificationName
+    object:(NSString*)anObject
 {
-  [self addObserver: anObserver
-	   selector: aSelector
-	       name: notificationName
-	     object: anObject
- suspensionBehavior: NSNotificationSuspensionBehaviorCoalesce];
+    [self addObserver:anObserver
+     selector:aSelector
+     name:notificationName
+     object:anObject
+     suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
 }
 
 /**
@@ -299,57 +299,57 @@ static NSDistributedNotificationCenter	*netCenter = nil;
  *  </desc>
  * </deflist>
  */
-- (void) addObserver: (id)anObserver
-	    selector: (SEL)aSelector
-		name: (NSString*)notificationName
-	      object: (NSString*)anObject
-  suspensionBehavior: (NSNotificationSuspensionBehavior)suspensionBehavior
+- (void)addObserver:(id)anObserver
+    selector:(SEL)aSelector
+    name:(NSString*)notificationName
+    object:(NSString*)anObject
+    suspensionBehavior:(NSNotificationSuspensionBehavior)suspensionBehavior
 {
-  if (anObserver == nil)
+    if (anObserver == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"nil observer"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"nil observer"];
     }
-  if (aSelector == 0)
+    if (aSelector == 0)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"null selector"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"null selector"];
     }
-  if (notificationName != nil
-    && [notificationName isKindOfClass: [NSString class]] == NO)
+    if (notificationName != nil
+        && [notificationName isKindOfClass:[NSString class]] == NO)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"invalid notification name"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"invalid notification name"];
     }
-  if (anObject != nil && [anObject isKindOfClass: [NSString class]] == NO)
+    if (anObject != nil && [anObject isKindOfClass:[NSString class]] == NO)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"invalid notification object"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"invalid notification object"];
     }
-  if (anObject == nil && notificationName == nil)
+    if (anObject == nil && notificationName == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"notification name and object both nil"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"notification name and object both nil"];
     }
 
-  [_centerLock lock];
-  NS_DURING
+    [_centerLock lock];
+    NS_DURING
     {
-      [self _connect];
-      [(id<GDNCProtocol>)_remote addObserver: (uint64_t)(uintptr_t)anObserver
-				    selector: NSStringFromSelector(aSelector)
-				        name: notificationName
-				      object: anObject
-			  suspensionBehavior: suspensionBehavior
-					 for: (id<GDNCClient>)self];
+        [self _connect];
+        [(id < GDNCProtocol >) _remote addObserver : (uint64_t)(uintptr_t)anObserver
+         selector : NSStringFromSelector(aSelector)
+         name : notificationName
+         object : anObject
+         suspensionBehavior : suspensionBehavior
+         for : (id < GDNCClient >)self];
     }
-  NS_HANDLER
+    NS_HANDLER
     {
-      [_centerLock unlock];
-      [localException raise];
+        [_centerLock unlock];
+        [localException raise];
     }
-  NS_ENDHANDLER
-  [_centerLock unlock];
+    NS_ENDHANDLER
+    [_centerLock unlock];
 }
 
 /**
@@ -357,12 +357,12 @@ static NSDistributedNotificationCenter	*netCenter = nil;
  * postNotificationName:object:userInfo:deliverImmediately: with the
  * delivery flag set to NO.
  */
-- (void) postNotification: (NSNotification*)notification
+- (void)postNotification:(NSNotification*)notification
 {
-  [self postNotificationName: [notification name]
-		      object: [notification object]
-		    userInfo: [notification userInfo]
-	  deliverImmediately: NO];
+    [self postNotificationName:[notification name]
+     object:[notification object]
+     userInfo:[notification userInfo]
+     deliverImmediately:NO];
 }
 
 /**
@@ -370,13 +370,13 @@ static NSDistributedNotificationCenter	*netCenter = nil;
  * postNotificationName:object:userInfo:deliverImmediately: with the
  * user info set to nil and the delivery flag set to NO.
  */
-- (void) postNotificationName: (NSString*)notificationName
-		       object: (NSString*)anObject
+- (void)postNotificationName:(NSString*)notificationName
+    object:(NSString*)anObject
 {
-  [self postNotificationName: notificationName
-		      object: anObject
-		    userInfo: nil
-	  deliverImmediately: NO];
+    [self postNotificationName:notificationName
+     object:anObject
+     userInfo:nil
+     deliverImmediately:NO];
 }
 
 /**
@@ -384,14 +384,14 @@ static NSDistributedNotificationCenter	*netCenter = nil;
  * postNotificationName:object:userInfo:deliverImmediately: with the
  * delivery flag set to NO.
  */
-- (void) postNotificationName: (NSString*)notificationName
-		       object: (NSString*)anObject
-		     userInfo: (NSDictionary*)userInfo
+- (void)postNotificationName:(NSString*)notificationName
+    object:(NSString*)anObject
+    userInfo:(NSDictionary*)userInfo
 {
-  [self postNotificationName: notificationName
-		      object: anObject
-		    userInfo: userInfo
-	  deliverImmediately: NO];
+    [self postNotificationName:notificationName
+     object:anObject
+     userInfo:userInfo
+     deliverImmediately:NO];
 }
 
 /**
@@ -400,80 +400,80 @@ static NSDistributedNotificationCenter	*netCenter = nil;
  * The deliverImmediately flag specifies whether the suspension
  * state of the receiving process is to be ignored.
  */
-- (void) postNotificationName: (NSString*)notificationName
-		       object: (NSString*)anObject
-		     userInfo: (NSDictionary*)userInfo
-	   deliverImmediately: (BOOL)deliverImmediately
+- (void)postNotificationName:(NSString*)notificationName
+    object:(NSString*)anObject
+    userInfo:(NSDictionary*)userInfo
+    deliverImmediately:(BOOL)deliverImmediately
 {
-  if (notificationName == nil
-    || [notificationName isKindOfClass: [NSString class]] == NO)
+    if (notificationName == nil
+        || [notificationName isKindOfClass:[NSString class]] == NO)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"invalid notification name"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"invalid notification name"];
     }
-  if (anObject != nil && [anObject isKindOfClass: [NSString class]] == NO)
+    if (anObject != nil && [anObject isKindOfClass:[NSString class]] == NO)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"invalid notification object"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"invalid notification object"];
     }
 
-  [_centerLock lock];
-  NS_DURING
+    [_centerLock lock];
+    NS_DURING
     {
-      NSData	*d;
+        NSData    *d;
 
-      [self _connect];
-      d = [NSArchiver archivedDataWithRootObject: userInfo];
-      [(id<GDNCProtocol>)_remote postNotificationName: notificationName
-					      object: anObject
-					    userInfo: d
-				  deliverImmediately: deliverImmediately
-						 for: (id<GDNCClient>)self];
+        [self _connect];
+        d = [NSArchiver archivedDataWithRootObject:userInfo];
+        [(id < GDNCProtocol >) _remote postNotificationName : notificationName
+         object : anObject
+         userInfo : d
+         deliverImmediately : deliverImmediately
+         for : (id < GDNCClient >)self];
     }
-  NS_HANDLER
+    NS_HANDLER
     {
-      [_centerLock unlock];
-      [localException raise];
+        [_centerLock unlock];
+        [localException raise];
     }
-  NS_ENDHANDLER
-  [_centerLock unlock];
+    NS_ENDHANDLER
+    [_centerLock unlock];
 }
 
 /**
  * Removes the observer from the center.
  */
-- (void) removeObserver: (id)anObserver
-		   name: (NSString*)notificationName
-		 object: (NSString*)anObject
+- (void)removeObserver:(id)anObserver
+    name:(NSString*)notificationName
+    object:(NSString*)anObject
 {
-  if (notificationName != nil
-    && [notificationName isKindOfClass: [NSString class]] == NO)
+    if (notificationName != nil
+        && [notificationName isKindOfClass:[NSString class]] == NO)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"invalid notification name"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"invalid notification name"];
     }
-  if (anObject != nil && [anObject isKindOfClass: [NSString class]] == NO)
+    if (anObject != nil && [anObject isKindOfClass:[NSString class]] == NO)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"invalid notification object"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"invalid notification object"];
     }
 
-  [_centerLock lock];
-  NS_DURING
+    [_centerLock lock];
+    NS_DURING
     {
-      [self _connect];
-      [(id<GDNCProtocol>)_remote removeObserver: (uint64_t)(uintptr_t)anObserver
-					   name: notificationName
-					 object: anObject
-					    for: (id<GDNCClient>)self];
+        [self _connect];
+        [(id < GDNCProtocol >) _remote removeObserver : (uint64_t)(uintptr_t)anObserver
+         name : notificationName
+         object : anObject
+         for : (id < GDNCClient >)self];
     }
-  NS_HANDLER
+    NS_HANDLER
     {
-      [_centerLock unlock];
-      [localException raise];
+        [_centerLock unlock];
+        [localException raise];
     }
-  NS_ENDHANDLER
-  [_centerLock unlock];
+    NS_ENDHANDLER
+    [_centerLock unlock];
 }
 
 /**
@@ -482,30 +482,30 @@ static NSDistributedNotificationCenter	*netCenter = nil;
  * again, unless the notifications are posted to be delivered
  * immediately.
  */
-- (void) setSuspended: (BOOL)flag
+- (void)setSuspended:(BOOL)flag
 {
-  [_centerLock lock];
-  NS_DURING
+    [_centerLock lock];
+    NS_DURING
     {
-      [self _connect];
-      _suspended = flag;
-      [(id<GDNCProtocol>)_remote setSuspended: flag for: (id<GDNCClient>)self];
+        [self _connect];
+        _suspended = flag;
+        [(id < GDNCProtocol >) _remote setSuspended : flag for : (id < GDNCClient >)self];
     }
-  NS_HANDLER
+    NS_HANDLER
     {
-      [_centerLock unlock];
-      [localException raise];
+        [_centerLock unlock];
+        [localException raise];
     }
-  NS_ENDHANDLER
-  [_centerLock unlock];
+    NS_ENDHANDLER
+    [_centerLock unlock];
 }
 
 /**
  * Returns the current suspension state of the receiver.
  */
-- (BOOL) suspended
+- (BOOL)suspended
 {
-  return _suspended;
+    return _suspended;
 }
 
 @end
@@ -516,303 +516,302 @@ static NSDistributedNotificationCenter	*netCenter = nil;
  * in the source where the '@protocol()' directive is used.
  */
 @interface NSDistributedNotificationCenterDummy : NSObject <GDNCProtocol>
-- (void) addObserver: (uint64_t)anObserver
-	    selector: (NSString*)aSelector
-	        name: (NSString*)notificationname
-	      object: (NSString*)anObject
-  suspensionBehavior: (NSNotificationSuspensionBehavior)suspensionBehavior
-		 for: (id<GDNCClient>)client;
-- (oneway void) postNotificationName: (NSString*)notificationName
-			      object: (NSString*)anObject
-			    userInfo: (NSData*)d
-		  deliverImmediately: (BOOL)deliverImmediately
-			         for: (id<GDNCClient>)client;
-- (void) registerClient: (id<GDNCClient>)client;
-- (void) removeObserver: (uint64_t)anObserver
-		   name: (NSString*)notificationname
-		 object: (NSString*)anObject
-		    for: (id<GDNCClient>)client;
-- (void) setSuspended: (BOOL)flag
-		  for: (id<GDNCClient>)client;
-- (void) unregisterClient: (id<GDNCClient>)client;
+- (void)addObserver:(uint64_t)anObserver
+    selector:(NSString*)aSelector
+    name:(NSString*)notificationname
+    object:(NSString*)anObject
+    suspensionBehavior:(NSNotificationSuspensionBehavior)suspensionBehavior
+    for:(id<GDNCClient>)client;
+- (oneway void)postNotificationName:(NSString*)notificationName
+    object:(NSString*)anObject
+    userInfo:(NSData*)d
+    deliverImmediately:(BOOL)deliverImmediately
+    for:(id<GDNCClient>)client;
+- (void)registerClient:(id<GDNCClient>)client;
+- (void)removeObserver:(uint64_t)anObserver
+    name:(NSString*)notificationname
+    object:(NSString*)anObject
+    for:(id<GDNCClient>)client;
+- (void)setSuspended:(BOOL)flag
+    for:(id<GDNCClient>)client;
+- (void)unregisterClient:(id<GDNCClient>)client;
 @end
 
 @implementation NSDistributedNotificationCenterDummy
-- (void) addObserver: (uint64_t)anObserver
-	    selector: (NSString*)aSelector
-	        name: (NSString*)notificationname
-	      object: (NSString*)anObject
-  suspensionBehavior: (NSNotificationSuspensionBehavior)suspensionBehavior
-		 for: (id<GDNCClient>)client
+- (void)addObserver:(uint64_t)anObserver
+    selector:(NSString*)aSelector
+    name:(NSString*)notificationname
+    object:(NSString*)anObject
+    suspensionBehavior:(NSNotificationSuspensionBehavior)suspensionBehavior
+    for:(id<GDNCClient>)client
 {
 }
-- (oneway void) postNotificationName: (NSString*)notificationName
-			      object: (NSString*)anObject
-			    userInfo: (NSData*)d
-		  deliverImmediately: (BOOL)deliverImmediately
-			         for: (id<GDNCClient>)client
+- (oneway void)postNotificationName:(NSString*)notificationName
+    object:(NSString*)anObject
+    userInfo:(NSData*)d
+    deliverImmediately:(BOOL)deliverImmediately
+    for:(id<GDNCClient>)client
 {
 }
-- (void) registerClient: (id<GDNCClient>)client
+- (void)registerClient:(id<GDNCClient>)client
 {
 }
-- (void) removeObserver: (uint64_t)anObserver
-		   name: (NSString*)notificationname
-		 object: (NSString*)anObject
-		    for: (id<GDNCClient>)client
+- (void)removeObserver:(uint64_t)anObserver
+    name:(NSString*)notificationname
+    object:(NSString*)anObject
+    for:(id<GDNCClient>)client
 {
 }
-- (void) setSuspended: (BOOL)flag
-		  for: (id<GDNCClient>)client
+- (void)setSuspended:(BOOL)flag
+    for:(id<GDNCClient>)client
 {
 }
-- (void) unregisterClient: (id<GDNCClient>)client
+- (void)unregisterClient:(id<GDNCClient>)client
 {
 }
 @end
 
-@implementation	NSDistributedNotificationCenter (Private)
+@implementation NSDistributedNotificationCenter (Private)
 
 /**
  * Establish a connection to the server.  This method should only be called
  * when protected by the center's lock, so that it is thread-safe.
  */
-- (void) _connect
+- (void)_connect
 {
-  if (_remote == nil)
+    if (_remote == nil)
     {
-      NSString		*host = nil;
-      NSString		*service = nil;
-      NSString		*description = nil;
-      NSString		*alternate = nil;
-      NSPortNameServer	*ns = nil;
-      Protocol		*p = @protocol(GDNCProtocol);
-      NSConnection	*c;
+        NSString      *host = nil;
+        NSString      *service = nil;
+        NSString      *description = nil;
+        NSString      *alternate = nil;
+        NSPortNameServer  *ns = nil;
+        Protocol      *p = @protocol(GDNCProtocol);
+        NSConnection  *c;
 
-      if (_type == NSLocalNotificationCenterType)
-	{
-	  NSUserDefaults	*defs = [NSUserDefaults standardUserDefaults];
-
-	  if ([defs objectForKey: @"NSPortIsMessagePort"] != nil
-	    && [defs boolForKey: @"NSPortIsMessagePort"] == NO)
-	    {
-	      ns = [NSSocketPortNameServer sharedInstance];
-	    }
-	  else
-	    {
-	      ns = [NSMessagePortNameServer sharedInstance];
-	    }
-	  host = @"";
-	  service = GDNC_SERVICE;
-	  description = @"local host";
-	}
-      else if (_type == GSPublicNotificationCenterType)
+        if (_type == NSLocalNotificationCenterType)
         {
-	  /*
-	   * Connect to the NSDistributedNotificationCenter for this host.
-	   */
-	  host = [[NSUserDefaults standardUserDefaults]
-	    stringForKey: @"NSHost"];
-	  if (host == nil)
-	    {
-	      host = @"";
-	    }
-	  else
-	    {
-	      NSHost	*h;
+            NSUserDefaults    *defs = [NSUserDefaults standardUserDefaults];
 
-	      /*
-	       * If we have a host specified, but it is the current host,
-	       * we do not need to ask for a host by name (nameserver lookup
-	       * can be faster) and the empty host name can be used to
-	       * indicate that we may start a <code>gdnc</code> server locally.
-	       */
-	      h = [NSHost hostWithName: host];
-	      if (h == nil)
-		{
-		  NSLog(@"Unknown -NSHost '%@' ignored", host);
-		  host = @"";
-		}
-	      else if ([h isEqual: [NSHost currentHost]] == YES)
-		{
-		  host = @"";
-		}
-	      else
-		{
-		  host = [h name];
-		}
-	      if ([host isEqual: @""] == NO)
-		{
-		  alternate = [service stringByAppendingFormat: @"-%@", host] ;
-		}
-	    }
-	  if ([host length] == 0
-	    || [host isEqualToString: @"localhost"] == YES
-	    || [host isEqualToString: @"127.0.0.1"] == YES)
-	    {
-	      host = @"";
-	      description = @"local host";
-	    }
-	  else
-	    {
-	      description = host;
-	    }
-	  service = GDNC_SERVICE;
-	  ns = [NSSocketPortNameServer sharedInstance];
-	}
-      else if (_type == GSNetworkNotificationCenterType)
-        {
-	  host = [[NSUserDefaults standardUserDefaults]
-	    stringForKey: @"GDNCHost"];
-	  description = host;
-	  if (host == nil)
-	    {
-	      host = @"*";
-	      description = @"network host";
-	    }
-	  service = GDNC_NETWORK;
-	  ns = [NSSocketPortNameServer sharedInstance];
-	}
-      else
-        {
-	  [NSException raise: NSInternalInconsistencyException
-	  	      format: @"Unknown center type - %@", _type];
-	}
-
-      _remote = [NSConnection rootProxyForConnectionWithRegisteredName: service
-								  host: host
-						       usingNameServer: ns];
-      if (_remote == nil && alternate != nil)
-	{
-	  _remote = [NSConnection rootProxyForConnectionWithRegisteredName:
-	    alternate host: @"*" usingNameServer: ns];
-	}
-
-      if (_remote == nil)
-	{
-	  NSString	*cmd = nil;
-	  NSArray	*args = nil;
-	  NSDate	*limit;
-
-	  cmd = [NSTask launchPathForTool: @"gdnc"];
-	
-	  NSDebugMLLog(@"NSDistributedNotificationCenter",
-@"\nI couldn't contact the notification server for %@ -\n"
-@"so I'm attempting to to start one - which will take a few seconds.\n"
-@"Trying to launch gdnc from %@ or a machine/operating-system subdirectory.\n"
-@"It is recommended that you start the notification server (gdnc) either at\n"
-@"login or (better) when your computer is started up.\n", description,
-[cmd stringByDeletingLastPathComponent]);
-
-	  if (_type == GSNetworkNotificationCenterType)
-	    {
-	      args = [NSArray arrayWithObjects:
-		@"-GSNetwork", @"YES",
-		@"--auto",
-		nil];
-	    }
-	  else if (_type == GSPublicNotificationCenterType)
-	    {
-	      args = [NSArray arrayWithObjects:
-		@"-GSPublic", @"YES",
-		@"--auto",
-		nil];
-	    }
-	  else if ([host length] > 0)
-	    {
-	      args = [NSArray arrayWithObjects:
-		@"-NSHost", host,
-		@"--auto",
-		nil];
-	    }
-	  else
-	    {
-	      args = [NSArray arrayWithObjects:
-		@"--auto",
-		nil];
-	    }
-	  [NSTask launchedTaskWithLaunchPath: cmd arguments: args];
-
-	  limit = [NSDate dateWithTimeIntervalSinceNow: 5.0];
-	  while (_remote == nil && [limit timeIntervalSinceNow] > 0)
-	    {
-              CREATE_AUTORELEASE_POOL(pool);
-              [NSThread sleepForTimeInterval: 0.05];
-	      _remote = [NSConnection
-		rootProxyForConnectionWithRegisteredName: service
-		host: host usingNameServer: ns];
-              IF_NO_GC([_remote retain];)
-              IF_NO_GC(DESTROY(pool);)
-	    }
-	  if (_remote == nil)
-	    {
-	      [NSException raise: NSInternalInconsistencyException
-			  format: @"unable to contact GDNC server -\n"
-		@"please check that the gdnc process is running.\n"
-		@"I attempted to start it at '%@'\n", cmd];
-	    }
-	}
-#if	!GS_WITH_GC
-      else
-        {
-          [_remote retain];
+            if ([defs objectForKey:@"NSPortIsMessagePort"] != nil
+                && [defs boolForKey:@"NSPortIsMessagePort"] == NO)
+            {
+                ns = [NSSocketPortNameServer sharedInstance];
+            }
+            else
+            {
+                ns = [NSMessagePortNameServer sharedInstance];
+            }
+            host = @"";
+            service = GDNC_SERVICE;
+            description = @"local host";
         }
-#endif
+        else if (_type == GSPublicNotificationCenterType)
+        {
+            /*
+             * Connect to the NSDistributedNotificationCenter for this host.
+             */
+            host = [[NSUserDefaults standardUserDefaults]
+                    stringForKey:@"NSHost"];
+            if (host == nil)
+            {
+                host = @"";
+            }
+            else
+            {
+                NSHost    *h;
 
-      c = [_remote connectionForProxy];
-      [_remote setProtocolForProxy: p];
-    
-      /*
-       * Ensure that this center can be used safely from different
-       * threads.
-       */
-      [c enableMultipleThreads];
+                /*
+                 * If we have a host specified, but it is the current host,
+                 * we do not need to ask for a host by name (nameserver lookup
+                 * can be faster) and the empty host name can be used to
+                 * indicate that we may start a <code>gdnc</code> server
+                 *locally.
+                 */
+                h = [NSHost hostWithName:host];
+                if (h == nil)
+                {
+                    NSLog(@"Unknown -NSHost '%@' ignored", host);
+                    host = @"";
+                }
+                else if ([h isEqual:[NSHost currentHost]] == YES)
+                {
+                    host = @"";
+                }
+                else
+                {
+                    host = [h name];
+                }
+                if ([host isEqual:@""] == NO)
+                {
+                    alternate = [service stringByAppendingFormat:@"-%@", host];
+                }
+            }
+            if ([host length] == 0
+                || [host isEqualToString:@"localhost"] == YES
+                || [host isEqualToString:@"127.0.0.1"] == YES)
+            {
+                host = @"";
+                description = @"local host";
+            }
+            else
+            {
+                description = host;
+            }
+            service = GDNC_SERVICE;
+            ns = [NSSocketPortNameServer sharedInstance];
+        }
+        else if (_type == GSNetworkNotificationCenterType)
+        {
+            host = [[NSUserDefaults standardUserDefaults]
+                    stringForKey:@"GDNCHost"];
+            description = host;
+            if (host == nil)
+            {
+                host = @"*";
+                description = @"network host";
+            }
+            service = GDNC_NETWORK;
+            ns = [NSSocketPortNameServer sharedInstance];
+        }
+        else
+        {
+            [NSException raise:NSInternalInconsistencyException
+             format:@"Unknown center type - %@", _type];
+        }
 
-      /*
-       *	Ask to be told if the connection goes away.
-       */
-      [[NSNotificationCenter defaultCenter]
-	addObserver: self
-	   selector: @selector(_invalidated:)
-	       name: NSConnectionDidDieNotification
-	     object: c];
-      [_remote registerClient: (id<GDNCClient>)self];
+        _remote = [NSConnection rootProxyForConnectionWithRegisteredName:service
+                   host:host
+                   usingNameServer:ns];
+        if (_remote == nil && alternate != nil)
+        {
+            _remote = [NSConnection rootProxyForConnectionWithRegisteredName:
+                       alternate host:@"*" usingNameServer:ns];
+        }
+
+        if (_remote == nil)
+        {
+            NSString  *cmd = nil;
+            NSArray   *args = nil;
+            NSDate    *limit;
+
+            cmd = [NSTask launchPathForTool:@"gdnc"];
+
+            NSDebugMLLog(@"NSDistributedNotificationCenter",
+                         @"\nI couldn't contact the notification server for %@ -\n"
+                         @"so I'm attempting to to start one - which will take a few seconds.\n"
+                         @"Trying to launch gdnc from %@ or a machine/operating-system subdirectory.\n"
+                         @"It is recommended that you start the notification server (gdnc) either at\n"
+                         @"login or (better) when your computer is started up.\n", description,
+                         [cmd stringByDeletingLastPathComponent]);
+
+            if (_type == GSNetworkNotificationCenterType)
+            {
+                args = [NSArray arrayWithObjects:
+                        @"-GSNetwork", @"YES",
+                        @"--auto",
+                        nil];
+            }
+            else if (_type == GSPublicNotificationCenterType)
+            {
+                args = [NSArray arrayWithObjects:
+                        @"-GSPublic", @"YES",
+                        @"--auto",
+                        nil];
+            }
+            else if ([host length] > 0)
+            {
+                args = [NSArray arrayWithObjects:
+                        @"-NSHost", host,
+                        @"--auto",
+                        nil];
+            }
+            else
+            {
+                args = [NSArray arrayWithObjects:
+                        @"--auto",
+                        nil];
+            }
+            [NSTask launchedTaskWithLaunchPath:cmd arguments:args];
+
+            limit = [NSDate dateWithTimeIntervalSinceNow:5.0];
+            while (_remote == nil && [limit timeIntervalSinceNow] > 0)
+            {
+                CREATE_AUTORELEASE_POOL(pool);
+                [NSThread sleepForTimeInterval:0.05];
+                _remote = [NSConnection
+                           rootProxyForConnectionWithRegisteredName:service
+                           host:host usingNameServer:ns];
+                IF_NO_GC([_remote retain]; )
+                IF_NO_GC(DESTROY(pool); )
+            }
+            if (_remote == nil)
+            {
+                [NSException raise:NSInternalInconsistencyException
+                 format:@"unable to contact GDNC server -\n"
+                        @"please check that the gdnc process is running.\n"
+                        @"I attempted to start it at '%@'\n", cmd];
+            }
+        }
+        else
+        {
+            [_remote retain];
+        }
+
+        c = [_remote connectionForProxy];
+        [_remote setProtocolForProxy:p];
+
+        /*
+         * Ensure that this center can be used safely from different
+         * threads.
+         */
+        [c enableMultipleThreads];
+
+        /*
+         *	Ask to be told if the connection goes away.
+         */
+        [[NSNotificationCenter defaultCenter]
+         addObserver:self
+         selector:@selector(_invalidated:)
+         name:NSConnectionDidDieNotification
+         object:c];
+        [_remote registerClient:(id < GDNCClient >)self];
     }
 }
 
-- (void) _invalidated: (NSNotification*)notification
+- (void)_invalidated:(NSNotification*)notification
 {
-  id connection = [notification object];
+    id connection = [notification object];
 
-  /*
-   *	Tidy up now that the connection has gone away.
-   */
-  [[NSNotificationCenter defaultCenter]
-    removeObserver: self
-	      name: NSConnectionDidDieNotification
-	    object: connection];
-  NSAssert(connection == [_remote connectionForProxy],
-		 NSInternalInconsistencyException);
-  RELEASE(_remote);
-  _remote = nil;
+    /*
+     *	Tidy up now that the connection has gone away.
+     */
+    [[NSNotificationCenter defaultCenter]
+     removeObserver:self
+     name:NSConnectionDidDieNotification
+     object:connection];
+    NSAssert(connection == [_remote connectionForProxy],
+             NSInternalInconsistencyException);
+    RELEASE(_remote);
+    _remote = nil;
 }
 
-- (void) postNotificationName: (NSString*)name
-		       object: (NSString*)object
-		     userInfo: (NSData*)info
-		     selector: (NSString*)aSelector
-			   to: (uint64_t)observer
+- (void)postNotificationName:(NSString*)name
+    object:(NSString*)object
+    userInfo:(NSData*)info
+    selector:(NSString*)aSelector
+    to:(uint64_t)observer
 {
-  id			userInfo;
-  NSNotification	*notification;
-  id			recipient = (id)(uintptr_t)observer;
+    id userInfo;
+    NSNotification    *notification;
+    id recipient = (id)(uintptr_t)observer;
 
-  userInfo = [NSUnarchiver unarchiveObjectWithData: info];
-  notification = [NSNotification notificationWithName: name
-					       object: object
-					     userInfo: userInfo];
-  [recipient performSelector: sel_registerTypedName_np([aSelector cString], 0)
-		  withObject: notification];
+    userInfo = [NSUnarchiver unarchiveObjectWithData:info];
+    notification = [NSNotification notificationWithName:name
+                    object:object
+                    userInfo:userInfo];
+    [recipient performSelector:sel_getUid([aSelector cString])
+     withObject:notification];
 }
 
 @end

@@ -3,14 +3,14 @@
 
    Hacked together by Kai Henningsen <kai@cats.ms>
    from the glibc 2.2.1 sources
-	_i18n_number.h
-	_itowa.h
-	itowa-digits.c
-	outdigits.h
-	outdigitswc.h
-	printf-parse.h
-	printf.h
-	vfprintf.c
+    _i18n_number.h
+    _itowa.h
+    itowa-digits.c
+    outdigits.h
+    outdigitswc.h
+    printf-parse.h
+    printf.h
+    vfprintf.c
    which were contributed by Ulrich Drepper <drepper@gnu.org>, 2000,
    Date: January 2001
    FIXME: I wasn't brave enough to include floating point formatting -
@@ -36,14 +36,14 @@
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
-*/
+ */
 #include "common.h"
 
-#if	!defined(LLONG_MAX)
-#  if	defined(__LONG_LONG_MAX__)
+#if !defined(LLONG_MAX)
+#  if   defined(__LONG_LONG_MAX__)
 #    define LLONG_MAX __LONG_LONG_MAX__
-#    define LLONG_MIN	(-LLONG_MAX-1)
-#    define ULLONG_MAX	(LLONG_MAX * 2ULL + 1)
+#    define LLONG_MIN   (-LLONG_MAX-1)
+#    define ULLONG_MAX  (LLONG_MAX * 2ULL + 1)
 #  else
 #    error Neither LLONG_MAX nor __LONG_LONG_MAX__ found
 #  endif
@@ -80,7 +80,7 @@
 
 #import "GSPrivate.h"
 
-#include <string.h>		// for strstr()
+#include <string.h>     // for strstr()
 #include <sys/stat.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -110,22 +110,22 @@ typedef unsigned long long uintmax_t;
 
 struct printf_info
 {
-  int prec;			/* Precision.  */
-  int width;			/* Width.  */
-  unichar spec;			/* Format letter.  */
-  unsigned int is_long_double:1;/* L flag.  */
-  unsigned int is_short:1;	/* h flag.  */
-  unsigned int is_long:1;	/* l flag.  */
-  unsigned int alt:1;		/* # flag.  */
-  unsigned int space:1;		/* Space flag.  */
-  unsigned int left:1;		/* - flag.  */
-  unsigned int showsign:1;	/* + flag.  */
-  unsigned int group:1;		/* ' flag.  */
-  unsigned int extra:1;		/* For special use.  */
-  unsigned int is_char:1;	/* hh flag.  */
-  unsigned int wide:1;		/* Nonzero for wide character streams.  */
-  unsigned int i18n:1;		/* I flag.  */
-  unichar pad;			/* Padding character.  */
+    int prec;       /* Precision.  */
+    int width;          /* Width.  */
+    unichar spec;       /* Format letter.  */
+    unsigned int is_long_double : 1; /* L flag.  */
+    unsigned int is_short : 1; /* h flag.  */
+    unsigned int is_long : 1; /* l flag.  */
+    unsigned int alt : 1;   /* # flag.  */
+    unsigned int space : 1; /* Space flag.  */
+    unsigned int left : 1;  /* - flag.  */
+    unsigned int showsign : 1; /* + flag.  */
+    unsigned int group : 1; /* ' flag.  */
+    unsigned int extra : 1; /* For special use.  */
+    unsigned int is_char : 1; /* hh flag.  */
+    unsigned int wide : 1;  /* Nonzero for wide character streams.  */
+    unsigned int i18n : 1;  /* I flag.  */
+    unichar pad;        /* Padding character.  */
 };
 
 /* Type of a printf specifier-handler function.
@@ -144,11 +144,9 @@ struct printf_info
    N, ARGTYPES, and return value are as for printf_parse_format.  */
 
 
-
 /* Register FUNC to be called to format SPEC specifiers; ARGINFO must be
    specified to determine how many arguments a SPEC conversion requires and
    what their types are.  */
-
 
 
 /* Parse FMT, and fill in N elements of ARGTYPES with the
@@ -163,34 +161,32 @@ struct printf_info
    the number of arguments it wants.  */
 
 
-
 /* Codes returned by `parse_printf_format' for basic types.
 
    These values cover all the standard format specifications.
    Users can add new values after PA_LAST for their own types.  */
 
 enum
-{				/* C type: */
-  PA_INT,			/* int */
-  PA_CHAR,			/* int, cast to char */
-  PA_WCHAR,			/* wide char */
-  PA_STRING,			/* const char *, a '\0'-terminated string */
-  PA_WSTRING,			/* const wchar_t *, wide character string */
-  PA_POINTER,			/* void * */
-  PA_FLOAT,			/* float */
-  PA_DOUBLE,			/* double */
-  PA_OBJECT,			/* id */
-  PA_LAST
+{               /* C type: */
+    PA_INT,         /* int */
+    PA_CHAR,        /* int, cast to char */
+    PA_WCHAR,       /* wide char */
+    PA_STRING,          /* const char *, a '\0'-terminated string */
+    PA_WSTRING,         /* const wchar_t *, wide character string */
+    PA_POINTER,         /* void * */
+    PA_FLOAT,       /* float */
+    PA_DOUBLE,          /* double */
+    PA_OBJECT,          /* id */
+    PA_LAST
 };
 
 /* Flag bits that can be set in a type returned by `parse_printf_format'.  */
-#define	PA_FLAG_MASK		0xff00
-#define	PA_FLAG_LONG_LONG	(1 << 8)
-#define	PA_FLAG_LONG_DOUBLE	PA_FLAG_LONG_LONG
-#define	PA_FLAG_LONG		(1 << 9)
-#define	PA_FLAG_SHORT		(1 << 10)
-#define	PA_FLAG_PTR		(1 << 11)
-
+#define PA_FLAG_MASK        0xff00
+#define PA_FLAG_LONG_LONG   (1 << 8)
+#define PA_FLAG_LONG_DOUBLE PA_FLAG_LONG_LONG
+#define PA_FLAG_LONG        (1 << 9)
+#define PA_FLAG_SHORT       (1 << 10)
+#define PA_FLAG_PTR     (1 << 11)
 
 
 /* Function which can be registered as `printf'-handlers.  */
@@ -206,10 +202,10 @@ enum
 
 /* Lower-case digits.  */
 static const char _itowa_lower_digits[36]
-	= "0123456789abcdefghijklmnopqrstuvwxyz";
+    = "0123456789abcdefghijklmnopqrstuvwxyz";
 /* Upper-case digits.  */
 static const char _itowa_upper_digits[36]
-	= "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 
 /* This code is shared between the standard stdio implementation found
@@ -220,7 +216,7 @@ static const char _itowa_upper_digits[36]
    implementation as defined in ISO/IEC 9899:1990/Amendment 1:1995.  */
 
 
-#  define ISDIGIT(Ch)	((unsigned int) ((Ch) - '0') < 10)
+#  define ISDIGIT(Ch)   ((unsigned int) ((Ch) - '0') < 10)
 
 /* Internal function for converting integers to ASCII.  */
 
@@ -231,68 +227,68 @@ static const char _itowa_upper_digits[36]
    Use upper case letters iff UPPER_CASE is nonzero.  */
 
 static unichar *_itowa (unsigned long long int value, unichar *buflim,
-			unsigned int base, int upper_case)
+                        unsigned int base, int upper_case)
 {
-  const char *digits = (upper_case
-			   ? _itowa_upper_digits : _itowa_lower_digits);
-  unichar *bp = buflim;
+    const char *digits = (upper_case
+                          ? _itowa_upper_digits : _itowa_lower_digits);
+    unichar *bp = buflim;
 
-  switch (base)
+    switch (base)
     {
-#define SPECIAL(Base)							      \
-    case Base:								      \
-      do								      \
-	*--bp = digits[value % Base];					      \
-      while ((value /= Base) != 0);					      \
-      break
+#define SPECIAL(Base)                                 \
+case Base:                                    \
+    do                                      \
+        *--bp = digits[value % Base];                         \
+    while ((value /= Base) != 0);                       \
+    break
 
-      SPECIAL (10);
-      SPECIAL (16);
-      SPECIAL (8);
+        SPECIAL (10);
+        SPECIAL (16);
+        SPECIAL (8);
     default:
-      do
-	*--bp = digits[value % base];
-      while ((value /= base) != 0);
-      break;
+        do
+            *--bp = digits[value % base];
+        while ((value /= base) != 0);
+        break;
     }
-  return bp;
+    return bp;
 }
 
 static inline unichar *
 _itowa_word (unsigned long value, unichar *buflim,
-	     unsigned int base, int upper_case)
+             unsigned int base, int upper_case)
 {
-  const char *digits = (upper_case
-			   ? _itowa_upper_digits : _itowa_lower_digits);
-  unichar *bp = buflim;
+    const char *digits = (upper_case
+                          ? _itowa_upper_digits : _itowa_lower_digits);
+    unichar *bp = buflim;
 
-  switch (base)
+    switch (base)
     {
-#define SPECIAL(Base)							      \
-    case Base:								      \
-      do								      \
-	*--bp = digits[value % Base];					      \
-      while ((value /= Base) != 0);					      \
-      break
+#define SPECIAL(Base)                                 \
+case Base:                                    \
+    do                                      \
+        *--bp = digits[value % Base];                         \
+    while ((value /= Base) != 0);                       \
+    break
 
-      SPECIAL (10);
-      SPECIAL (16);
-      SPECIAL (8);
+        SPECIAL (10);
+        SPECIAL (16);
+        SPECIAL (8);
     default:
-      do
-	*--bp = digits[value % base];
-      while ((value /= base) != 0);
-      break;
+        do
+            *--bp = digits[value % base];
+        while ((value /= base) != 0);
+        break;
     }
-  return bp;
+    return bp;
 }
 
 
 #define PAD(Padchar) \
-  { \
-    int w = width; \
-    while (w-- > 0) outchar(Padchar); \
-  }
+    { \
+        int w = width; \
+        while (w -- > 0) outchar(Padchar); \
+    }
 
 
 /* Look up the value of the next multibyte character and return its numerical
@@ -304,49 +300,47 @@ _itowa_word (unsigned long value, unichar *buflim,
 static unichar *
 _i18n_number_rewrite (unichar *w, unichar *rear_ptr, NSString *locale_digits)
 {
-  unichar	*src;
-  unichar	*s;
-  unichar	buf[10];
-  unichar	*ld = 0;
+    unichar   *src;
+    unichar   *s;
+    unichar buf[10];
+    unichar   *ld = 0;
 
-  /* Copy existing string so that nothing gets overwritten.  */
-  src = (unichar *) alloca ((rear_ptr - w) * sizeof (unichar));
-  s = (unichar *) memcpy (src, w, (rear_ptr - w) * sizeof (unichar));
-  w = rear_ptr;
+    /* Copy existing string so that nothing gets overwritten.  */
+    src = (unichar *) alloca ((rear_ptr - w) * sizeof (unichar));
+    s = (unichar *) memcpy (src, w, (rear_ptr - w) * sizeof (unichar));
+    w = rear_ptr;
 
-  /* Process all characters in the string.  */
-  while (--s >= src)
+    /* Process all characters in the string.  */
+    while (--s >= src)
     {
-      if (*s >= '0' && *s <= '9')
-	{
-	  if (ld == 0)
-	    {
-	      if (!locale_digits || [locale_digits length] != 10)
-		{
-		  locale_digits = @"0123456789";
-		}
-	      [locale_digits getCharacters: buf];
-	      ld = buf;
-	    }
-	  *--w = ld[*s - '0'];
-	}
-      else
-	{
-	  *--w = *s;
-	}
+        if (*s >= '0' && *s <= '9')
+        {
+            if (ld == 0)
+            {
+                if (!locale_digits || [locale_digits length] != 10)
+                {
+                    locale_digits = @"0123456789";
+                }
+                [locale_digits getCharacters:buf];
+                ld = buf;
+            }
+            *--w = ld[*s - '0'];
+        }
+        else
+        {
+            *--w = *s;
+        }
     }
 
-  return w;
+    return w;
 }
 
 /* Include the shared code for parsing the format string.  */
 /* Internal header for parsing printf format strings.  */
 
 
-
-
 struct printf_spec
-  {
+{
     /* Information parsed from the format spec.  */
     struct printf_info info;
 
@@ -358,16 +352,16 @@ struct printf_spec
        the constant value.  */
     int prec_arg, width_arg;
 
-    int data_arg;		/* Position of data argument.  */
-    int data_arg_type;		/* Type of first argument.  */
+    int data_arg;       /* Position of data argument.  */
+    int data_arg_type;      /* Type of first argument.  */
     /* Number of arguments consumed by this format specifier.  */
     size_t ndata_args;
-  };
+};
 
 
 /* The various kinds off arguments that can be passed to printf.  */
 union printf_arg
-  {
+{
     unsigned char pa_char;
     wchar_t pa_wchar;
     short int pa_short_int;
@@ -385,7 +379,7 @@ union printf_arg
     const wchar_t *pa_wstring;
     id pa_object;
     void *pa_pointer;
-  };
+};
 
 
 /* Read a simple integer from a string and update the string pointer.
@@ -393,17 +387,16 @@ union printf_arg
 static inline unsigned int
 read_int (const unichar * *pstr)
 {
-  unsigned int retval = **pstr - '0';
+    unsigned int retval = **pstr - '0';
 
-  while (ISDIGIT (*++(*pstr)))
+    while (ISDIGIT (*++(*pstr)))
     {
-      retval *= 10;
-      retval += **pstr - '0';
+        retval *= 10;
+        retval += **pstr - '0';
     }
 
-  return retval;
+    return retval;
 }
-
 
 
 /* Find the next spec in FORMAT, or the end of the string.  Returns
@@ -411,8 +404,8 @@ read_int (const unichar * *pstr)
 static inline const unichar *
 find_spec (const unichar *format)
 {
-	while (*format && *format != '%') format++;
-  return format;
+    while (*format && *format != '%') format++;
+    return format;
 }
 
 
@@ -426,332 +419,347 @@ find_spec (const unichar *format)
    remains the highest argument index used.  */
 static inline size_t
 parse_one_spec (const unichar *format, size_t posn, struct printf_spec *spec,
-		size_t *max_ref_arg)
+                size_t *max_ref_arg)
 {
-  unsigned int n;
-  size_t nargs = 0;
+    unsigned int n;
+    size_t nargs = 0;
 
-  /* Skip the '%'.  */
-  ++format;
+    /* Skip the '%'.  */
+    ++format;
 
-  /* Clear information structure.  */
-  spec->data_arg = -1;
-  spec->info.alt = 0;
-  spec->info.space = 0;
-  spec->info.left = 0;
-  spec->info.showsign = 0;
-  spec->info.group = 0;
-  spec->info.i18n = 0;
-  spec->info.pad = ' ';
-  spec->info.wide = sizeof (unichar) > 1;
-
-  /* Test for positional argument.  */
-  if (ISDIGIT (*format))
-    {
-      const unichar *begin = format;
-
-      n = read_int (&format);
-
-      if (n > 0 && *format == '$')
-	/* Is positional parameter.  */
-	{
-	  ++format;		/* Skip the '$'.  */
-	  spec->data_arg = n - 1;
-	  *max_ref_arg = MAX (*max_ref_arg, n);
-	}
-      else
-	/* Oops; that was actually the width and/or 0 padding flag.
-	   Step back and read it again.  */
-	format = begin;
-    }
-
-  /* Check for spec modifiers.  */
-  do
-    {
-      switch (*format)
-	{
-	case ' ':
-	  /* Output a space in place of a sign, when there is no sign.  */
-	  spec->info.space = 1;
-	  continue;
-	case '+':
-	  /* Always output + or - for numbers.  */
-	  spec->info.showsign = 1;
-	  continue;
-	case '-':
-	  /* Left-justify things.  */
-	  spec->info.left = 1;
-	  continue;
-	case '#':
-	  /* Use the "alternate form":
-	     Hex has 0x or 0X, FP always has a decimal point.  */
-	  spec->info.alt = 1;
-	  continue;
-	case '0':
-	  /* Pad with 0s.  */
-	  spec->info.pad = '0';
-	  continue;
-	case '\'':
-	  /* Show grouping in numbers if the locale information
-	     indicates any.  */
-	  spec->info.group = 1;
-	  continue;
-	case 'I':
-	  /* Use the internationalized form of the output.  Currently
-	     means to use the `outdigits' of the current locale.  */
-	  spec->info.i18n = 1;
-	  continue;
-	default:
-	  break;
-	}
-      break;
-    }
-  while (*++format);
-
-  if (spec->info.left)
+    /* Clear information structure.  */
+    spec->data_arg = -1;
+    spec->info.alt = 0;
+    spec->info.space = 0;
+    spec->info.left = 0;
+    spec->info.showsign = 0;
+    spec->info.group = 0;
+    spec->info.i18n = 0;
     spec->info.pad = ' ';
+    spec->info.wide = sizeof (unichar) > 1;
 
-  /* Get the field width.  */
-  spec->width_arg = -1;
-  spec->info.width = 0;
-  if (*format == '*')
+    /* Test for positional argument.  */
+    if (ISDIGIT (*format))
     {
-      /* The field width is given in an argument.
-	 A negative field width indicates left justification.  */
-      const unichar *begin = ++format;
+        const unichar *begin = format;
 
-      if (ISDIGIT (*format))
-	{
-	  /* The width argument might be found in a positional parameter.  */
-	  n = read_int (&format);
+        n = read_int (&format);
 
-	  if (n > 0 && *format == '$')
-	    {
-	      spec->width_arg = n - 1;
-	      *max_ref_arg = MAX (*max_ref_arg, n);
-	      ++format;		/* Skip '$'.  */
-	    }
-	}
-
-      if (spec->width_arg < 0)
-	{
-	  /* Not in a positional parameter.  Consume one argument.  */
-	  spec->width_arg = posn++;
-	  ++nargs;
-	  format = begin;	/* Step back and reread.  */
-	}
-    }
-  else if (ISDIGIT (*format))
-    /* Constant width specification.  */
-    spec->info.width = read_int (&format);
-
-  /* Get the precision.  */
-  spec->prec_arg = -1;
-  /* -1 means none given; 0 means explicit 0.  */
-  spec->info.prec = -1;
-  if (*format == '.')
-    {
-      ++format;
-      if (*format == '*')
-	{
-	  /* The precision is given in an argument.  */
-	  const unichar *begin = ++format;
-
-	  if (ISDIGIT (*format))
-	    {
-	      n = read_int (&format);
-
-	      if (n > 0 && *format == '$')
-		{
-		  spec->prec_arg = n - 1;
-		  *max_ref_arg = MAX (*max_ref_arg, n);
-		  ++format;
-		}
-	    }
-
-	  if (spec->prec_arg < 0)
-	    {
-	      /* Not in a positional parameter.  */
-	      spec->prec_arg = posn++;
-	      ++nargs;
-	      format = begin;
-	    }
-	}
-      else if (ISDIGIT (*format))
-	spec->info.prec = read_int (&format);
-      else
-	/* "%.?" is treated like "%.0?".  */
-	spec->info.prec = 0;
+        if (n > 0 && *format == '$')
+        /* Is positional parameter.  */
+        {
+            ++format; /* Skip the '$'.  */
+            spec->data_arg = n - 1;
+            *max_ref_arg = MAX (*max_ref_arg, n);
+        }
+        else{
+            /* Oops; that was actually the width and/or 0 padding flag.
+               Step back and read it again.  */
+            format = begin;
+        }
     }
 
-  /* Check for type modifiers.  */
-  spec->info.is_long_double = 0;
-  spec->info.is_short = 0;
-  spec->info.is_long = 0;
-  spec->info.is_char = 0;
+    /* Check for spec modifiers.  */
+    do
+    {
+        switch (*format)
+        {
+        case ' ':
+            /* Output a space in place of a sign, when there is no sign.  */
+            spec->info.space = 1;
+            continue;
+        case '+':
+            /* Always output + or - for numbers.  */
+            spec->info.showsign = 1;
+            continue;
+        case '-':
+            /* Left-justify things.  */
+            spec->info.left = 1;
+            continue;
+        case '#':
+            /* Use the "alternate form":
+               Hex has 0x or 0X, FP always has a decimal point.  */
+            spec->info.alt = 1;
+            continue;
+        case '0':
+            /* Pad with 0s.  */
+            spec->info.pad = '0';
+            continue;
+        case '\'':
+            /* Show grouping in numbers if the locale information
+               indicates any.  */
+            spec->info.group = 1;
+            continue;
+        case 'I':
+            /* Use the internationalized form of the output.  Currently
+               means to use the `outdigits' of the current locale.  */
+            spec->info.i18n = 1;
+            continue;
+        default:
+            break;
+        }
+        break;
+    }
+    while (*++format);
 
-  switch (*format++)
+    if (spec->info.left) {
+        spec->info.pad = ' ';
+    }
+
+    /* Get the field width.  */
+    spec->width_arg = -1;
+    spec->info.width = 0;
+    if (*format == '*')
+    {
+        /* The field width is given in an argument.
+           A negative field width indicates left justification.  */
+        const unichar *begin = ++format;
+
+        if (ISDIGIT (*format))
+        {
+            /* The width argument might be found in a positional parameter.  */
+            n = read_int (&format);
+
+            if (n > 0 && *format == '$')
+            {
+                spec->width_arg = n - 1;
+                *max_ref_arg = MAX (*max_ref_arg, n);
+                ++format; /* Skip '$'.  */
+            }
+        }
+
+        if (spec->width_arg < 0)
+        {
+            /* Not in a positional parameter.  Consume one argument.  */
+            spec->width_arg = posn++;
+            ++nargs;
+            format = begin; /* Step back and reread.  */
+        }
+    }
+    else if (ISDIGIT (*format)) {
+        /* Constant width specification.  */
+        spec->info.width = read_int (&format);
+    }
+
+    /* Get the precision.  */
+    spec->prec_arg = -1;
+    /* -1 means none given; 0 means explicit 0.  */
+    spec->info.prec = -1;
+    if (*format == '.')
+    {
+        ++format;
+        if (*format == '*')
+        {
+            /* The precision is given in an argument.  */
+            const unichar *begin = ++format;
+
+            if (ISDIGIT (*format))
+            {
+                n = read_int (&format);
+
+                if (n > 0 && *format == '$')
+                {
+                    spec->prec_arg = n - 1;
+                    *max_ref_arg = MAX (*max_ref_arg, n);
+                    ++format;
+                }
+            }
+
+            if (spec->prec_arg < 0)
+            {
+                /* Not in a positional parameter.  */
+                spec->prec_arg = posn++;
+                ++nargs;
+                format = begin;
+            }
+        }
+        else if (ISDIGIT (*format)) {
+            spec->info.prec = read_int (&format);
+        }
+        else{
+            /* "%.?" is treated like "%.0?".  */
+            spec->info.prec = 0;
+        }
+    }
+
+    /* Check for type modifiers.  */
+    spec->info.is_long_double = 0;
+    spec->info.is_short = 0;
+    spec->info.is_long = 0;
+    spec->info.is_char = 0;
+
+    switch (*format++)
     {
     case 'h':
-      /* ints are short ints or chars.  */
-      if (*format != 'h')
-	spec->info.is_short = 1;
-      else
-	{
-	  ++format;
-	  spec->info.is_char = 1;
-	}
-      break;
+        /* ints are short ints or chars.  */
+        if (*format != 'h') {
+            spec->info.is_short = 1;
+        }
+        else
+        {
+            ++format;
+            spec->info.is_char = 1;
+        }
+        break;
     case 'l':
-      /* ints are long ints.  */
-      spec->info.is_long = 1;
-      if (*format != 'l')
-	break;
-      ++format;
-      /* FALLTHROUGH */
+        /* ints are long ints.  */
+        spec->info.is_long = 1;
+        if (*format != 'l') {
+            break;
+        }
+        ++format;
+    /* FALLTHROUGH */
     case 'L':
-      /* doubles are long doubles, and ints are long long ints.  */
+    /* doubles are long doubles, and ints are long long ints.  */
     case 'q':
-      /* 4.4 uses this for long long.  */
-      spec->info.is_long_double = 1;
-      break;
+        /* 4.4 uses this for long long.  */
+        spec->info.is_long_double = 1;
+        break;
     case 'z':
     case 'Z':
-      /* ints are size_ts.  */
-      NSCParameterAssert (sizeof (size_t) <= sizeof (unsigned long long int));
+        /* ints are size_ts.  */
+        NSCParameterAssert (sizeof (size_t) <= sizeof (unsigned long long int));
 #if defined(LLONG_MAX)
 #if LONG_MAX != LLONG_MAX
-      spec->info.is_long_double = sizeof (size_t) > sizeof (unsigned long int);
+        spec->info.is_long_double = sizeof (size_t) > sizeof (unsigned long int);
 #endif
 #endif
-      spec->info.is_long = sizeof (size_t) > sizeof (unsigned int);
-      break;
+        spec->info.is_long = sizeof (size_t) > sizeof (unsigned int);
+        break;
     case 't':
-      NSCParameterAssert (sizeof (ptrdiff_t) <= sizeof (long long int));
+        NSCParameterAssert (sizeof (ptrdiff_t) <= sizeof (long long int));
 #if defined(LLONG_MAX)
 #if LONG_MAX != LLONG_MAX
-      spec->info.is_long_double = (sizeof (ptrdiff_t) > sizeof (long int));
+        spec->info.is_long_double = (sizeof (ptrdiff_t) > sizeof (long int));
 #endif
 #endif
-      spec->info.is_long = sizeof (ptrdiff_t) > sizeof (int);
-      break;
+        spec->info.is_long = sizeof (ptrdiff_t) > sizeof (int);
+        break;
     case 'j':
-      NSCParameterAssert (sizeof (uintmax_t) <= sizeof (unsigned long long int));
+        NSCParameterAssert (sizeof (uintmax_t) <= sizeof (unsigned long long int));
 #if defined(LLONG_MAX)
 #if LONG_MAX != LLONG_MAX
-      spec->info.is_long_double = (sizeof (uintmax_t)
-				   > sizeof (unsigned long int));
+        spec->info.is_long_double = (sizeof (uintmax_t)
+                                     > sizeof (unsigned long int));
 #endif
 #endif
-      spec->info.is_long = sizeof (uintmax_t) > sizeof (unsigned int);
-      break;
+        spec->info.is_long = sizeof (uintmax_t) > sizeof (unsigned int);
+        break;
     default:
-      /* Not a recognized modifier.  Backup.  */
-      --format;
-      break;
+        /* Not a recognized modifier.  Backup.  */
+        --format;
+        break;
     }
 
-  /* Get the format specification.  */
-  spec->info.spec = (unichar) *format++;
+    /* Get the format specification.  */
+    spec->info.spec = (unichar) *format++;
     {
-      /* Find the data argument types of a built-in spec.  */
-      spec->ndata_args = 1;
+        /* Find the data argument types of a built-in spec.  */
+        spec->ndata_args = 1;
 
-      switch (spec->info.spec)
-	{
-	case 'i':
-	case 'd':
-	case 'u':
-	case 'o':
-	case 'X':
-	case 'x':
+        switch (spec->info.spec)
+        {
+        case 'i':
+        case 'd':
+        case 'u':
+        case 'o':
+        case 'X':
+        case 'x':
 #if defined(LLONG_MAX)
 #if LONG_MAX != LLONG_MAX
-	  if (spec->info.is_long_double)
-	    spec->data_arg_type = PA_INT|PA_FLAG_LONG_LONG;
-	  else
+            if (spec->info.is_long_double) {
+                spec->data_arg_type = PA_INT|PA_FLAG_LONG_LONG;
+            }
+            else
 #endif
 #endif
-	    if (spec->info.is_long)
-	      spec->data_arg_type = PA_INT|PA_FLAG_LONG;
-	    else if (spec->info.is_short)
-	      spec->data_arg_type = PA_INT|PA_FLAG_SHORT;
-	    else if (spec->info.is_char)
-	      spec->data_arg_type = PA_CHAR;
-	    else
-	      spec->data_arg_type = PA_INT;
-	  break;
-	case 'e':
-	case 'E':
-	case 'f':
-	case 'F':
-	case 'g':
-	case 'G':
-	case 'a':
-	case 'A':
-	  if (spec->info.is_long_double)
-	    spec->data_arg_type = PA_DOUBLE|PA_FLAG_LONG_DOUBLE;
-	  else
-	    spec->data_arg_type = PA_DOUBLE;
-	  break;
-	case 'c':
-	  spec->data_arg_type = PA_CHAR;
-	  break;
-	case 'C':
-	  spec->data_arg_type = PA_WCHAR;
-	  break;
-	case 's':
-	  spec->data_arg_type = PA_STRING;
-	  break;
-	case 'S':
-	  spec->data_arg_type = PA_WSTRING;
-	  break;
-	case '@':
-	  spec->data_arg_type = PA_OBJECT;
-	  break;
-	case 'p':
-	  spec->data_arg_type = PA_POINTER;
-	  break;
-	case 'n':
-	  spec->data_arg_type = PA_INT|PA_FLAG_PTR;
-	  break;
+            if (spec->info.is_long) {
+                spec->data_arg_type = PA_INT|PA_FLAG_LONG;
+            }
+            else if (spec->info.is_short) {
+                spec->data_arg_type = PA_INT|PA_FLAG_SHORT;
+            }
+            else if (spec->info.is_char) {
+                spec->data_arg_type = PA_CHAR;
+            }
+            else{
+                spec->data_arg_type = PA_INT;
+            }
+            break;
+        case 'e':
+        case 'E':
+        case 'f':
+        case 'F':
+        case 'g':
+        case 'G':
+        case 'a':
+        case 'A':
+            if (spec->info.is_long_double) {
+                spec->data_arg_type = PA_DOUBLE|PA_FLAG_LONG_DOUBLE;
+            }
+            else{
+                spec->data_arg_type = PA_DOUBLE;
+            }
+            break;
+        case 'c':
+            spec->data_arg_type = PA_CHAR;
+            break;
+        case 'C':
+            spec->data_arg_type = PA_WCHAR;
+            break;
+        case 's':
+            spec->data_arg_type = PA_STRING;
+            break;
+        case 'S':
+            spec->data_arg_type = PA_WSTRING;
+            break;
+        case '@':
+            spec->data_arg_type = PA_OBJECT;
+            break;
+        case 'p':
+            spec->data_arg_type = PA_POINTER;
+            break;
+        case 'n':
+            spec->data_arg_type = PA_INT|PA_FLAG_PTR;
+            break;
 
-	case 'm':
-	default:
-	  /* An unknown spec will consume no args.  */
-	  spec->ndata_args = 0;
-	  break;
-	}
+        case 'm':
+        default:
+            /* An unknown spec will consume no args.  */
+            spec->ndata_args = 0;
+            break;
+        }
     }
 
-  if (spec->data_arg == -1 && spec->ndata_args > 0)
+    if (spec->data_arg == -1 && spec->ndata_args > 0)
     {
-      /* There are args consumed, but no positional spec.  Use the
-	 next sequential arg position.  */
-      spec->data_arg = posn;
-      nargs += spec->ndata_args;
+        /* There are args consumed, but no positional spec.  Use the
+           next sequential arg position.  */
+        spec->data_arg = posn;
+        nargs += spec->ndata_args;
     }
 
-  if (spec->info.spec == '\0')
-    /* Format ended before this spec was complete.  */
-    spec->end_of_fmt = spec->next_fmt = format - 1;
-  else
+    if (spec->info.spec == '\0') {
+        /* Format ended before this spec was complete.  */
+        spec->end_of_fmt = spec->next_fmt = format - 1;
+    }
+    else
     {
-      /* Find the next format spec.  */
-      spec->end_of_fmt = format;
-      spec->next_fmt = find_spec (format);
+        /* Find the next format spec.  */
+        spec->end_of_fmt = format;
+        spec->next_fmt = find_spec (format);
     }
 
-  return nargs;
+    return nargs;
 }
 
 static inline void GSStrAppendUnichar(GSStr s, unichar u)
 {
-  GSPrivateStrAppendUnichars(s, &u, 1);
+    GSPrivateStrAppendUnichars(s, &u, 1);
 }
 
-#define	outchar(Ch)		GSStrAppendUnichar(s, Ch)
-#define outstring(String, Len)	GSPrivateStrAppendUnichars(s, String, Len)
+#define outchar(Ch)     GSStrAppendUnichar(s, Ch)
+#define outstring(String, Len)  GSPrivateStrAppendUnichars(s, String, Len)
 
 /* For handling long_double and longlong we use the same flag.  If
    `long' and `long long' are effectively the same type define it to
@@ -769,32 +777,32 @@ static inline void GSStrAppendUnichar(GSStr s, unichar u)
 /* If `long' and `int' is effectively the same type we don't have to
    handle `long separately.  */
 #if INT_MAX == LONG_MAX
-# define is_long_num	0
+# define is_long_num    0
 #else
-# define is_long_num	is_long
+# define is_long_num    is_long
 #endif
 
-static NSString	*locale_sep()
+static NSString *locale_sep()
 {
-  static NSString	*sep = nil;
+    static NSString   *sep = nil;
 
-  if (sep == nil)
+    if (sep == nil)
     {
-      char	buf[32];
-      char	*from = buf;
-      char	*to;
+        char buf[32];
+        char  *from = buf;
+        char  *to;
 
-      sprintf(buf, "%g", 1.2);
-      if (*from == '1') from++;
-      to = from;
-      while (*to != '\0' && *to != '2')
-	to++;
-      *to = '\0';
-      sep = [[NSString alloc] initWithCString: from];
+        sprintf(buf, "%g", 1.2);
+        if (*from == '1') { from++; }
+        to = from;
+        while (*to != '\0' && *to != '2')
+            to++;
+        *to = '\0';
+        sep = [[NSString alloc] initWithCString:from];
     }
-  return sep;
+    return sep;
 }
- 
+
 
 /* Global variables.  */
 static const unichar null[] = {'(','n','u','l','l',')','\0'};
@@ -802,7 +810,7 @@ static const unichar null[] = {'(','n','u','l','l',')','\0'};
 
 /* Handle unknown format specifier.  */
 static int printf_unknown (GSStr, const struct printf_info *,
-				const void *const *);
+                           const void *const *);
 
 /* Group digits of number string.  */
 static unichar *group_number (unichar *, unichar *, const char *, NSString *);
@@ -811,1242 +819,1336 @@ static unichar *group_number (unichar *, unichar *, const char *, NSString *);
 /* The function itself.  */
 void
 GSPrivateFormat (GSStr s, const unichar *format, va_list ap,
-NSDictionary *locale)
+                 NSDictionary *locale)
 {
-  /* The character used as thousands separator.  */
-  NSString *thousands_sep = @"";
+    /* The character used as thousands separator.  */
+    NSString *thousands_sep = @"";
 
-  /* The string describing the size of groups of digits.  */
-  const char *grouping;
+    /* The string describing the size of groups of digits.  */
+    const char *grouping;
 
-  /* Place to accumulate the result.  */
-  int done;
+    /* Place to accumulate the result.  */
+    int done;
 
-  /* Current character in format string.  */
-  const unichar *f;
+    /* Current character in format string.  */
+    const unichar *f;
 
-  /* End of leading constant string.  */
-  const unichar *lead_str_end;
+    /* End of leading constant string.  */
+    const unichar *lead_str_end;
 
-  /* Points to next format specifier.  */
+    /* Points to next format specifier.  */
 
-  /* Buffer intermediate results.  */
-  unichar work_buffer[1000];
-  unichar *workend;
+    /* Buffer intermediate results.  */
+    unichar work_buffer[1000];
+    unichar *workend;
 
-  /* State for restartable multibyte character handling functions.  */
+    /* State for restartable multibyte character handling functions.  */
 
-  /* We have to save the original argument pointer.  */
-  va_list ap_save;
+    /* We have to save the original argument pointer.  */
+    va_list ap_save;
 
-  /* Count number of specifiers we already processed.  */
-  int nspecs_done;
+    /* Count number of specifiers we already processed.  */
+    int nspecs_done;
 
-  /* For the %m format we may need the current `errno' value.  */
-  int save_errno = errno;
+    /* For the %m format we may need the current `errno' value.  */
+    int save_errno = errno;
 
 
-  /* This table maps a character into a number representing a
-     class.  In each step there is a destination label for each
-     class.  */
-  static const int jump_table[] =
-  {
-    /* ' ' */  1,            0,            0, /* '#' */  4,
-	       0, /* '%' */ 14,            0, /* '\''*/  6,
-	       0,            0, /* '*' */  7, /* '+' */  2,
-	       0, /* '-' */  3, /* '.' */  9,            0,
-    /* '0' */  5, /* '1' */  8, /* '2' */  8, /* '3' */  8,
-    /* '4' */  8, /* '5' */  8, /* '6' */  8, /* '7' */  8,
-    /* '8' */  8, /* '9' */  8,            0,            0,
-	       0,            0,            0,            0,
-    /* '@' */ 30, /* 'A' */ 26,            0, /* 'C' */ 25,
-	       0, /* 'E' */ 19, /* F */   19, /* 'G' */ 19,
-	       0, /* 'I' */ 29,            0,            0,
-    /* 'L' */ 12,            0,            0,            0,
-	       0,            0,            0, /* 'S' */ 21,
-	       0,            0,            0,            0,
-    /* 'X' */ 18,            0, /* 'Z' */ 13,            0,
-	       0,            0,            0,            0,
-	       0, /* 'a' */ 26,            0, /* 'c' */ 20,
-    /* 'd' */ 15, /* 'e' */ 19, /* 'f' */ 19, /* 'g' */ 19,
-    /* 'h' */ 10, /* 'i' */ 15, /* 'j' */ 28,            0,
-    /* 'l' */ 11, /* 'm' */ 24, /* 'n' */ 23, /* 'o' */ 17,
-    /* 'p' */ 22, /* 'q' */ 12,            0, /* 's' */ 21,
-    /* 't' */ 27, /* 'u' */ 16,            0,            0,
-    /* 'x' */ 18,            0, /* 'z' */ 13
-  };
+    /* This table maps a character into a number representing a
+       class.  In each step there is a destination label for each
+       class.  */
+    static const int jump_table[] =
+    {
+        /* ' ' */ 1,            0,            0, /* '#' */ 4,
+        0, /* '%' */ 14,            0, /* '\''*/ 6,
+        0,            0, /* '*' */ 7, /* '+' */ 2,
+        0, /* '-' */ 3, /* '.' */ 9,            0,
+        /* '0' */ 5, /* '1' */ 8, /* '2' */ 8, /* '3' */ 8,
+        /* '4' */ 8, /* '5' */ 8, /* '6' */ 8, /* '7' */ 8,
+        /* '8' */ 8, /* '9' */ 8,            0,            0,
+        0,            0,            0,            0,
+        /* '@' */ 30, /* 'A' */ 26,            0, /* 'C' */ 25,
+        0, /* 'E' */ 19, /* F */ 19, /* 'G' */ 19,
+        0, /* 'I' */ 29,            0,            0,
+        /* 'L' */ 12,            0,            0,            0,
+        0,            0,            0, /* 'S' */ 21,
+        0,            0,            0,            0,
+        /* 'X' */ 18,            0, /* 'Z' */ 13,            0,
+        0,            0,            0,            0,
+        0, /* 'a' */ 26,            0, /* 'c' */ 20,
+        /* 'd' */ 15, /* 'e' */ 19, /* 'f' */ 19, /* 'g' */ 19,
+        /* 'h' */ 10, /* 'i' */ 15, /* 'j' */ 28,            0,
+        /* 'l' */ 11, /* 'm' */ 24, /* 'n' */ 23, /* 'o' */ 17,
+        /* 'p' */ 22, /* 'q' */ 12,            0, /* 's' */ 21,
+        /* 't' */ 27, /* 'u' */ 16,            0,            0,
+        /* 'x' */ 18,            0, /* 'z' */ 13
+    };
 
 #define NOT_IN_JUMP_RANGE(Ch) ((Ch) < ' ' || (Ch) > 'z')
 #define CHAR_CLASS(Ch) (jump_table[(wint_t) (Ch) - ' '])
 # define JUMP_TABLE_TYPE const void *const
 
-  /* Initialize local variables.  */
-  done = 0;
-  grouping = (const char *) -1;
+    /* Initialize local variables.  */
+    done = 0;
+    grouping = (const char *) -1;
 #ifdef __va_copy
-  /* This macro will be available soon in gcc's <stdarg.h>.  We need it
-     since on some systems `va_list' is not an integral type.  */
-  __va_copy (ap_save, ap);
+    /* This macro will be available soon in gcc's <stdarg.h>.  We need it
+       since on some systems `va_list' is not an integral type.  */
+    __va_copy (ap_save, ap);
 #else
-  ap_save = ap;
+    ap_save = ap;
 #endif
-  nspecs_done = 0;
+    nspecs_done = 0;
 
-  /* Find the first format specifier.  */
-  f = lead_str_end = find_spec ((const unichar *) format);
-
-
-  /* Write the literal text before the first format.  */
-  outstring ((const unichar *) format,
-	     lead_str_end - (const unichar *) format);
-
-  /* If we only have to print a simple string, return now.  */
-  if (*f == '\0')
-    goto all_done;
-
-  /* Process whole format string.  */
-
-      workend = &work_buffer[sizeof (work_buffer) / sizeof (unichar)];
-
-  /* Here starts the more complex loop to handle positional parameters.  */
-  {
-    /* Array with information about the needed arguments.  This has to
-       be dynamically extensible.  */
-    size_t nspecs = 0;
-    size_t nspecs_max = 32;	/* A more or less arbitrary start value.  */
-    struct printf_spec *specs
-      = alloca (nspecs_max * sizeof (struct printf_spec));
-
-    /* The number of arguments the format string requests.  This will
-       determine the size of the array needed to store the argument
-       attributes.  */
-    size_t nargs = 0;
-    int *args_type;
-    union printf_arg *args_value = NULL;
-
-    /* Positional parameters refer to arguments directly.  This could
-       also determine the maximum number of arguments.  Track the
-       maximum number.  */
-    size_t max_ref_arg = 0;
-
-    /* Just a counter.  */
-    size_t cnt;
+    /* Find the first format specifier.  */
+    f = lead_str_end = find_spec ((const unichar *) format);
 
 
-    if (grouping == (const char *) -1)
-      {
-	thousands_sep = [locale objectForKey: NSThousandsSeparator];
-	if (thousands_sep == nil) thousands_sep = @",";
+    /* Write the literal text before the first format.  */
+    outstring ((const unichar *) format,
+               lead_str_end - (const unichar *) format);
 
-	grouping = ""; // FIXME: grouping info missing in locale?
-	if (*grouping == '\0' || *grouping == CHAR_MAX)
-	  grouping = NULL;
-      }
+    /* If we only have to print a simple string, return now.  */
+    if (*f == '\0') {
+        goto all_done;
+    }
 
-    for (f = lead_str_end; *f != '\0'; f = specs[nspecs++].next_fmt)
-      {
-	if (nspecs >= nspecs_max)
-	  {
-	    /* Extend the array of format specifiers.  */
-	    struct printf_spec *old = specs;
+    /* Process whole format string.  */
 
-	    nspecs_max *= 2;
-	    specs = alloca (nspecs_max * sizeof (struct printf_spec));
+    workend = &work_buffer[sizeof (work_buffer) / sizeof (unichar)];
 
-	    if (specs == &old[nspecs])
-	      /* Stack grows up, OLD was the last thing allocated;
-		 extend it.  */
-	      nspecs_max += nspecs_max / 2;
-	    else
-	      {
-		/* Copy the old array's elements to the new space.  */
-		memcpy (specs, old, nspecs * sizeof (struct printf_spec));
-		if (old == &specs[nspecs])
-		  /* Stack grows down, OLD was just below the new
-		     SPECS.  We can use that space when the new space
-		     runs out.  */
-		  nspecs_max += nspecs_max / 2;
-	      }
-	  }
+    /* Here starts the more complex loop to handle positional parameters.  */
+    {
+        /* Array with information about the needed arguments.  This has to
+           be dynamically extensible.  */
+        size_t nspecs = 0;
+        size_t nspecs_max = 32; /* A more or less arbitrary start value.  */
+        struct printf_spec *specs
+            = alloca (nspecs_max * sizeof (struct printf_spec));
 
-	/* Parse the format specifier.  */
-	nargs += parse_one_spec (f, nargs, &specs[nspecs], &max_ref_arg);
-      }
+        /* The number of arguments the format string requests.  This will
+           determine the size of the array needed to store the argument
+           attributes.  */
+        size_t nargs = 0;
+        int *args_type;
+        union printf_arg *args_value = NULL;
 
-    /* Determine the number of arguments the format string consumes.  */
-    nargs = MAX (nargs, max_ref_arg);
+        /* Positional parameters refer to arguments directly.  This could
+           also determine the maximum number of arguments.  Track the
+           maximum number.  */
+        size_t max_ref_arg = 0;
 
-    /* Allocate memory for the argument descriptions.  */
-    args_type = alloca (nargs * sizeof (int));
-    memset (args_type, 0, nargs * sizeof (int));
-    args_value = alloca (nargs * sizeof (union printf_arg));
+        /* Just a counter.  */
+        size_t cnt;
 
-    /* XXX Could do sanity check here: If any element in ARGS_TYPE is
-       still zero after this loop, format is invalid.  For now we
-       simply use 0 as the value.  */
 
-    /* Fill in the types of all the arguments.  */
-    for (cnt = 0; cnt < nspecs; ++cnt)
-      {
-	/* If the width is determined by an argument this is an int.  */
-	if (specs[cnt].width_arg != -1)
-	  args_type[specs[cnt].width_arg] = PA_INT;
+        if (grouping == (const char *) -1)
+        {
+            thousands_sep = [locale objectForKey:NSThousandsSeparator];
+            if (thousands_sep == nil) { thousands_sep = @","; }
 
-	/* If the precision is determined by an argument this is an int.  */
-	if (specs[cnt].prec_arg != -1)
-	  args_type[specs[cnt].prec_arg] = PA_INT;
+            grouping = ""; // FIXME: grouping info missing in locale?
+            if (*grouping == '\0' || *grouping == CHAR_MAX) {
+                grouping = NULL;
+            }
+        }
 
-	switch (specs[cnt].ndata_args)
-	  {
-	  case 0:		/* No arguments.  */
-	    break;
-	  case 1:		/* One argument; we already have the type.  */
-	    args_type[specs[cnt].data_arg] = specs[cnt].data_arg_type;
-	    break;
-	  default:
-	    /* ??? */
-	    break;
-	  }
-      }
+        for (f = lead_str_end; *f != '\0'; f = specs[nspecs++].next_fmt)
+        {
+            if (nspecs >= nspecs_max)
+            {
+                /* Extend the array of format specifiers.  */
+                struct printf_spec *old = specs;
 
-    /* Now we know all the types and the order.  Fill in the argument
-       values.  */
-    for (cnt = 0; cnt < nargs; ++cnt)
-      switch (args_type[cnt])
-	{
-#define T(tag, mem, type)						      \
-	case tag:							      \
-	  args_value[cnt].mem = va_arg (ap_save, type);			      \
-	  break
+                nspecs_max *= 2;
+                specs = alloca (nspecs_max * sizeof (struct printf_spec));
 
-	T (PA_CHAR, pa_char, int); /* Promoted.  */
-	T (PA_WCHAR, pa_wchar, int); /* Sometimes promoted.  */
-	T (PA_INT|PA_FLAG_SHORT, pa_short_int, int); /* Promoted.  */
-	T (PA_INT, pa_int, int);
-	T (PA_INT|PA_FLAG_LONG, pa_long_int, long int);
-	T (PA_INT|PA_FLAG_LONG_LONG, pa_long_long_int, long long int);
-	T (PA_FLOAT, pa_float, double);	/* Promoted.  */
-	T (PA_DOUBLE, pa_double, double);
-	T (PA_DOUBLE|PA_FLAG_LONG_DOUBLE, pa_long_double, long double);
-	T (PA_STRING, pa_string, const char *);
-	T (PA_WSTRING, pa_wstring, const wchar_t *);
-	T (PA_OBJECT, pa_object, id);
-	T (PA_POINTER, pa_pointer, void *);
+                if (specs == &old[nspecs]) {
+                    /* Stack grows up, OLD was the last thing allocated;
+                       extend it.  */
+                    nspecs_max += nspecs_max / 2;
+                }
+                else
+                {
+                    /* Copy the old array's elements to the new space.  */
+                    memcpy (specs, old, nspecs * sizeof (struct printf_spec));
+                    if (old == &specs[nspecs]) {
+                        /* Stack grows down, OLD was just below the new
+                           SPECS.  We can use that space when the new space
+                           runs out.  */
+                        nspecs_max += nspecs_max / 2;
+                    }
+                }
+            }
+
+            /* Parse the format specifier.  */
+            nargs += parse_one_spec (f, nargs, &specs[nspecs], &max_ref_arg);
+        }
+
+        /* Determine the number of arguments the format string consumes.  */
+        nargs = MAX (nargs, max_ref_arg);
+
+        /* Allocate memory for the argument descriptions.  */
+        args_type = alloca (nargs * sizeof (int));
+        memset (args_type, 0, nargs * sizeof (int));
+        args_value = alloca (nargs * sizeof (union printf_arg));
+
+        /* XXX Could do sanity check here: If any element in ARGS_TYPE is
+           still zero after this loop, format is invalid.  For now we
+           simply use 0 as the value.  */
+
+        /* Fill in the types of all the arguments.  */
+        for (cnt = 0; cnt < nspecs; ++cnt)
+        {
+            /* If the width is determined by an argument this is an int.  */
+            if (specs[cnt].width_arg != -1) {
+                args_type[specs[cnt].width_arg] = PA_INT;
+            }
+
+            /* If the precision is determined by an argument this is an int.  */
+            if (specs[cnt].prec_arg != -1) {
+                args_type[specs[cnt].prec_arg] = PA_INT;
+            }
+
+            switch (specs[cnt].ndata_args)
+            {
+            case 0: /* No arguments.  */
+                break;
+            case 1: /* One argument; we already have the type.  */
+                args_type[specs[cnt].data_arg] = specs[cnt].data_arg_type;
+                break;
+            default:
+                /* ??? */
+                break;
+            }
+        }
+
+        /* Now we know all the types and the order.  Fill in the argument
+           values.  */
+        for (cnt = 0; cnt < nargs; ++cnt)
+            switch (args_type[cnt])
+            {
+#define T(tag, mem, type)                             \
+case tag:                                 \
+    args_value[cnt].mem = va_arg (ap_save, type);               \
+    break
+
+                T (PA_CHAR, pa_char, int); /* Promoted.  */
+                T (PA_WCHAR, pa_wchar, int); /* Sometimes promoted.  */
+                T (PA_INT|PA_FLAG_SHORT, pa_short_int, int); /* Promoted.  */
+                T (PA_INT, pa_int, int);
+                T (PA_INT|PA_FLAG_LONG, pa_long_int, long int);
+                T (PA_INT|PA_FLAG_LONG_LONG, pa_long_long_int, long long int);
+                T (PA_FLOAT, pa_float, double); /* Promoted.  */
+                T (PA_DOUBLE, pa_double, double);
+                T (PA_DOUBLE|PA_FLAG_LONG_DOUBLE, pa_long_double, long double);
+                T (PA_STRING, pa_string, const char *);
+                T (PA_WSTRING, pa_wstring, const wchar_t *);
+                T (PA_OBJECT, pa_object, id);
+                T (PA_POINTER, pa_pointer, void *);
 #undef T
-	default:
-	  if ((args_type[cnt] & PA_FLAG_PTR) != 0)
-	    args_value[cnt].pa_pointer = va_arg (ap_save, void *);
-	  else
-	    args_value[cnt].pa_long_double = 0.0;
-	  break;
-	}
+            default:
+                if ((args_type[cnt] & PA_FLAG_PTR) != 0) {
+                    args_value[cnt].pa_pointer = va_arg (ap_save, void *);
+                }
+                else{
+                    args_value[cnt].pa_long_double = 0.0;
+                }
+                break;
+            }
 
-    /* Now walk through all format specifiers and process them.  */
-    for (; (size_t) nspecs_done < nspecs; ++nspecs_done)
-      {
-# define REF(Name) &&do2_##Name
-#define LABEL(Name) do2_##Name
-    /* Step 4: processing format specifier.  */
+        /* Now walk through all format specifiers and process them.  */
+        for (; (size_t) nspecs_done < nspecs; ++nspecs_done)
+        {
+# define REF(Name) &&do2_ ## Name
+#define LABEL(Name) do2_ ## Name
+            /* Step 4: processing format specifier.  */
 
-	int is_negative;
-	union
-	{
-	  unsigned long long int longlong;
-	  unsigned long int word;
-	} number;
-	int base;
-	unichar *string;		/* Pointer to argument string.  */
+            int is_negative;
+            union
+            {
+                unsigned long long int longlong;
+                unsigned long int word;
+            } number;
+            int base;
+            unichar *string; /* Pointer to argument string.  */
 
-	/* Fill variables from values in struct.  */
-	int alt = specs[nspecs_done].info.alt;
-	int space = specs[nspecs_done].info.space;
-	int left = specs[nspecs_done].info.left;
-	int showsign = specs[nspecs_done].info.showsign;
-	int group = specs[nspecs_done].info.group;
+            /* Fill variables from values in struct.  */
+            int alt = specs[nspecs_done].info.alt;
+            int space = specs[nspecs_done].info.space;
+            int left = specs[nspecs_done].info.left;
+            int showsign = specs[nspecs_done].info.showsign;
+            int group = specs[nspecs_done].info.group;
 #if defined(LLONG_MAX) && (LONG_MAX != LLONG_MAX)
-	int is_long_double = specs[nspecs_done].info.is_long_double;
+            int is_long_double = specs[nspecs_done].info.is_long_double;
 #endif
-	int is_short = specs[nspecs_done].info.is_short;
-	int is_char = specs[nspecs_done].info.is_char;
-	int is_long = specs[nspecs_done].info.is_long;
-	int width = specs[nspecs_done].info.width;
-	int prec = specs[nspecs_done].info.prec;
-	int use_outdigits = specs[nspecs_done].info.i18n;
-	char pad = specs[nspecs_done].info.pad;
-	unichar spec = specs[nspecs_done].info.spec;
-
-	/* Fill in last information.  */
-	if (specs[nspecs_done].width_arg != -1)
-	  {
-	    /* Extract the field width from an argument.  */
-	    specs[nspecs_done].info.width =
-	      args_value[specs[nspecs_done].width_arg].pa_int;
-
-	    if (specs[nspecs_done].info.width < 0)
-	      /* If the width value is negative left justification is
-		 selected and the value is taken as being positive.  */
-	      {
-		specs[nspecs_done].info.width *= -1;
-		left = specs[nspecs_done].info.left = 1;
-	      }
-	    width = specs[nspecs_done].info.width;
-	  }
-
-	if (specs[nspecs_done].prec_arg != -1)
-	  {
-	    /* Extract the precision from an argument.  */
-	    specs[nspecs_done].info.prec =
-	      args_value[specs[nspecs_done].prec_arg].pa_int;
-
-	    if (specs[nspecs_done].info.prec < 0)
-	      /* If the precision is negative the precision is
-		 omitted.  */
-	      specs[nspecs_done].info.prec = -1;
-
-	    prec = specs[nspecs_done].info.prec;
-	  }
-
-	/* Maybe the buffer is too small.  */
-	if ((unsigned)(MAX (prec, width) + 32)
-	  > sizeof (work_buffer) / sizeof (unichar))
-	  {
-	    workend = ((unichar *) alloca ((MAX (prec, width) + 32)
-	      * sizeof (unichar)) + (MAX (prec, width) + 32));
-	  }
-
-	int string_malloced;
-
-	/* Process format specifiers.  */
-	while (1) {
-	  switch (CHAR_CLASS (spec)) {
-	    case 0:
-        case 1:     /* for ' ' */
-        case 2:     /* for '+' */
-        case 3:     /* for '-' */
-        case 4:     /* for '<hash>' */
-        case 5:     /* for '0' */
-        case 6:     /* for '\'' */
-        case 7:     /* for '*' */
-        case 8:     /* for '1'...'9' */
-        case 9:     /* for '.' */
-        case 10:    /* for 'h' */
-        case 11:    /* for 'l' */
-        case 12:    /* for 'L', 'q' */
-        case 13:    /* for 'z', 'Z' */
-          goto LABEL (form_unknown);
-        case 14:
-          goto LABEL (form_percent);	/* for '%' */
-        case 15:
-          goto LABEL (form_integer);	/* for 'd', 'i' */
-        case 16:
-          goto LABEL (form_unsigned);	/* for 'u' */
-        case 17:
-          goto LABEL (form_octal);		/* for 'o' */
-        case 18:
-          goto LABEL (form_hexa);		/* for 'X', 'x' */
-        case 19:
-          goto LABEL (form_float);		/* for 'E', 'e', 'F', 'f', 'G', 'g' */
-        case 20:
-          goto LABEL (form_character);	/* for 'c' */
-        case 21:
-          goto LABEL (form_string);	/* for 's', 'S' */
-        case 22:
-          goto LABEL (form_pointer);	/* for 'p' */
-        case 23:
-          goto LABEL (form_number);	/* for 'n' */
-        case 24:
-          goto LABEL (form_strerror);	/* for 'm' */
-        case 25:
-          goto LABEL (form_wcharacter);	/* for 'C' */
-        case 26:
-          goto LABEL (form_floathex);	/* for 'A', 'a' */
-        case 27:       /* for 't' */
-        case 28:       /* for 'j' */
-        case 29:       /* for 'I' */
-          goto LABEL (form_unknown);
-        case 30:
-          goto LABEL (form_object);        /* for '@' */
-        default:
-          goto LABEL (form_unknown);
-       }
-
-      /* Start real work.  We know about all flags and modifiers and
-	 now process the wanted format specifier.  */
-    LABEL (form_percent):
-      /* Write a literal "%".  */
-      outchar ('%');
-      break;
-
-    LABEL (form_integer):
-      /* Signed decimal integer.  */
-      base = 10;
-
-      if (is_longlong)
-	{
-	  long long int signed_number;
-
-	  signed_number
-	    = args_value[specs[nspecs_done].data_arg].pa_long_long_int;
-
-	  is_negative = signed_number < 0;
-	  number.longlong = is_negative ? (- signed_number) : signed_number;
-
-	  goto LABEL (longlong_number);
-	}
-      else
-	{
-	  long int signed_number;
-
-	  if (is_char)
-	    {
-	      signed_number = args_value[specs[nspecs_done].data_arg].pa_char;
-	    }
-	  else if (is_short)
-	    {
-	      signed_number
-		= args_value[specs[nspecs_done].data_arg].pa_short_int;
-	    }
-	  else if (is_long_num)
-	    {
-	      signed_number
-		= args_value[specs[nspecs_done].data_arg].pa_long_int;
-	    }
-	  else
-	    {
-	      signed_number = args_value[specs[nspecs_done].data_arg].pa_int;
-	    }
-
-	  is_negative = signed_number < 0;
-	  number.word = is_negative ? (- signed_number) : signed_number;
-
-	  goto LABEL (number);
-	}
-      /* NOTREACHED */
-
-    LABEL (form_unsigned):
-      /* Unsigned decimal integer.  */
-      base = 10;
-      goto LABEL (unsigned_number);
-      /* NOTREACHED */
-
-    LABEL (form_octal):
-      /* Unsigned octal integer.  */
-      base = 8;
-      goto LABEL (unsigned_number);
-      /* NOTREACHED */
-
-    LABEL (form_hexa):
-      /* Unsigned hexadecimal integer.  */
-      base = 16;
-
-    LABEL (unsigned_number):	  /* Unsigned number of base BASE.  */
-
-      /* ISO specifies the `+' and ` ' flags only for signed
-	 conversions.  */
-      is_negative = 0;
-      showsign = 0;
-      space = 0;
-
-      if (is_longlong)
-	{
-	  number.longlong
-	    = args_value[specs[nspecs_done].data_arg].pa_u_long_long_int;
-
-	LABEL (longlong_number):
-	  if (prec < 0)
-	    /* Supply a default precision if none was given.  */
-	    prec = 1;
-	  else
-	    /* We have to take care for the '0' flag.  If a precision
-	       is given it must be ignored.  */
-	    pad = ' ';
-
-	  /* If the precision is 0 and the number is 0 nothing has to
-	     be written for the number, except for the 'o' format in
-	     alternate form.  */
-	  if (prec == 0 && number.longlong == 0)
-	    {
-	      string = workend;
-	      if (base == 8 && alt)
-		*--string = '0';
-	    }
-	  else
-	    {
-	      /* Put the number in WORK.  */
-	      string = _itowa (number.longlong, workend, base,
-			      spec == 'X');
-	      if (group && grouping)
-		string = group_number (string, workend, grouping,
-				       thousands_sep);
-
-	      if (use_outdigits && base == 10)
-		string = _i18n_number_rewrite
-		  (string, workend, [locale objectForKey: NSDecimalDigits]);
-	    }
-	  /* Simplify further test for num != 0.  */
-	  number.word = number.longlong != 0;
-	}
-      else
-	{
-	  if (is_long_num)
-	    number.word = args_value[specs[nspecs_done].data_arg].pa_u_long_int;
-	  else if (is_char)
-	    number.word = (unsigned char)
-	      args_value[specs[nspecs_done].data_arg].pa_char;
-	  else if (!is_short)
-	    number.word = args_value[specs[nspecs_done].data_arg].pa_u_int;
-	  else
-	    number.word = (unsigned short int)
-	      args_value[specs[nspecs_done].data_arg].pa_u_short_int;
-
-	LABEL (number):
-	  if (prec < 0)
-	    /* Supply a default precision if none was given.  */
-	    prec = 1;
-	  else
-	    /* We have to take care for the '0' flag.  If a precision
-	       is given it must be ignored.  */
-	    pad = ' ';
-
-	  /* If the precision is 0 and the number is 0 nothing has to
-	     be written for the number, except for the 'o' format in
-	     alternate form.  */
-	  if (prec == 0 && number.word == 0)
-	    {
-	      string = workend;
-	      if (base == 8 && alt)
-		*--string = '0';
-	    }
-	  else
-	    {
-	      /* Put the number in WORK.  */
-	      string = _itowa_word (number.word, workend, base,
-				   spec == 'X');
-	      if (group && grouping)
-		string = group_number (string, workend, grouping,
-				       thousands_sep);
-
-	      if (use_outdigits && base == 10)
-		string = _i18n_number_rewrite
-		  (string, workend, [locale objectForKey: NSDecimalDigits]);
-	    }
-	}
-
-      if (prec <= workend - string && number.word != 0 && alt && base == 8)
-	/* Add octal marker.  */
-	*--string = '0';
-
-      prec = MAX (0, prec - (workend - string));
-
-      if (!left)
-	{
-	  width -= workend - string + prec;
-
-	  if (number.word != 0 && alt && base == 16)
-	    /* Account for 0X hex marker.  */
-	    width -= 2;
-
-	  if (is_negative || showsign || space)
-	    --width;
-
-	  if (pad == ' ')
-	    {
-	      PAD (' ');
-	      width = 0;
-	    }
-
-	  if (is_negative)
-	    outchar ('-');
-	  else if (showsign)
-	    outchar ('+');
-	  else if (space)
-	    outchar (' ');
-
-	  if (number.word != 0 && alt && base == 16)
-	    {
-	      outchar ('0');
-	      outchar (spec);
-	    }
-
-	  width += prec;
-	  PAD ('0');
-
-	  outstring (string, workend - string);
-
-	  break;
-	}
-      else
-	{
-	  if (is_negative)
-	    {
-	      outchar ('-');
-	      --width;
-	    }
-	  else if (showsign)
-	    {
-	      outchar ('+');
-	      --width;
-	    }
-	  else if (space)
-	    {
-	      outchar (' ');
-	      --width;
-	    }
-
-	  if (number.word != 0 && alt && base == 16)
-	    {
-	      outchar ('0');
-	      outchar (spec);
-	      width -= 2;
-	    }
-
-	  width -= workend - string + prec;
-
-	  if (prec > 0)
-	    {
-	      int temp = width;
-	      width = prec;
-	      PAD ('0');
-	      width = temp;
-	    }
-
-	  outstring (string, workend - string);
-
-	  PAD (' ');
-	  break;
-	}
-
-    LABEL (form_float):
-      {
-	/* Floating-point number.  This is handled by the native sprintf.  */
-	char buf1[32], *bp;
-	char buf2[specs[nspecs_done].info.width
-	  +specs[nspecs_done].info.prec+32];
-	unichar work_buffer[MAX (specs[nspecs_done].info.width,
-	  specs[nspecs_done].info.spec) + 32];
-	unichar *const workend
-	  = &work_buffer[sizeof (work_buffer) / sizeof (unichar)];
-	register unichar *w;
-	NSString	*decimal_sep;
-
-	decimal_sep = [locale objectForKey: NSDecimalSeparator];
-	if (decimal_sep == nil) decimal_sep = @".";
-
-	bp = buf1;
-
-	*bp++ = '%';
-
-	if (specs[nspecs_done].info.alt)
-	  *bp++ = '#';
-	if (specs[nspecs_done].info.group)
-	  *bp++ = '\'';
-	if (specs[nspecs_done].info.showsign)
-	  *bp++ = '+';
-	else if (specs[nspecs_done].info.space)
-	  *bp++ = ' ';
-	if (specs[nspecs_done].info.left)
-	  *bp++ = '-';
-	if (specs[nspecs_done].info.pad == '0')
-	  *bp++ = '0';
-	if (specs[nspecs_done].info.i18n)
-	  *bp++ = 'I';
-
-	if (specs[nspecs_done].info.width != 0)
-	  {
-	    w = _itowa_word (specs[nspecs_done].info.width, workend, 10, 0);
-	    while (w < workend)
-	      *bp++ = *w++;
-	  }
-
-	if (specs[nspecs_done].info.prec != -1)
-	  {
-	    *bp++ = '.';
-	    w = _itowa_word (specs[nspecs_done].info.prec, workend, 10, 0);
-	    while (w < workend)
-	      *bp++ = *w++;
-	  }
-
-	if (specs[nspecs_done].info.spec != '\0')
-	  *bp++ = specs[nspecs_done].info.spec;
-
-	*bp++ = '\0';
-
-	if (specs[nspecs_done].info.is_long_double)
-	  {
-	    sprintf(buf2, buf1,
-	      args_value[specs[nspecs_done].data_arg].pa_long_double);
-	  }
-	else
-	  {
-	    sprintf(buf2, buf1,
-	      args_value[specs[nspecs_done].data_arg].pa_double);
-	  }
-
-	/*
-	 * FIXME - hack to rewrite decimal separator into correct locale
-	 * if necessary.
-	 */
-	if (decimal_sep != nil)
-	  {
-	    NSString	*sep = locale_sep();
-
-	    if ([decimal_sep isEqual: sep] == NO && [sep length] == 1)
-	      {
-		unichar	m = [sep characterAtIndex: 0];
-		char	*p = &buf2[strlen(buf2)];
-
-		/*
-		 * Assume that we won't be finding an escape in the string
-		 * so we can use it as a marker.
-		 */
-		while (p-- > buf2)
-		  {
-		    if (*p == m)
-		      {
-			*p = '\033';
-			break;
-		      }
-		  }
-	      }
-	  }
-
-	bp = buf2;
-	while (*bp)
-	  {
-	    if (*bp == '\033')
-	      {
-		int	i = 0;
-		int	c = [decimal_sep length];
-		unichar	b[c];
-
-		[decimal_sep getCharacters: b];
-		while (i < c)
-		  {
-		    outchar(b[i++]);
-		  }
-		bp++;
-	      }
-	    else
-	      {
-		outchar(*bp++);
-	      }
-	  }
-      }
-      break;
-
-    LABEL (form_floathex):
-      {
-	/* Floating point number printed as hexadecimal number.  */
-	char buf1[32], *bp;
-	char buf2[specs[nspecs_done].info.width
-	  +specs[nspecs_done].info.prec+32];
-	unichar work_buffer[MAX (specs[nspecs_done].info.width,
-	  specs[nspecs_done].info.spec) + 32];
-	unichar *const workend
-	  = &work_buffer[sizeof (work_buffer) / sizeof (unichar)];
-	register unichar *w;
-	NSString	*decimal_sep;
-
-	decimal_sep = [locale objectForKey: NSDecimalSeparator];
-	if (decimal_sep == nil) decimal_sep = @".";
-
-	bp = buf1;
-
-	*bp++ = '%';
-
-	if (specs[nspecs_done].info.alt)
-	  *bp++ = '#';
-	if (specs[nspecs_done].info.group)
-	  *bp++ = '\'';
-	if (specs[nspecs_done].info.showsign)
-	  *bp++ = '+';
-	else if (specs[nspecs_done].info.space)
-	  *bp++ = ' ';
-	if (specs[nspecs_done].info.left)
-	  *bp++ = '-';
-	if (specs[nspecs_done].info.pad == '0')
-	  *bp++ = '0';
-	if (specs[nspecs_done].info.i18n)
-	  *bp++ = 'I';
-
-	if (specs[nspecs_done].info.width != 0)
-	  {
-	    w = _itowa_word (specs[nspecs_done].info.width, workend, 10, 0);
-	    while (w < workend)
-	      *bp++ = *w++;
-	  }
-
-	if (specs[nspecs_done].info.prec != -1)
-	  {
-	    *bp++ = '.';
-	    w = _itowa_word (specs[nspecs_done].info.prec, workend, 10, 0);
-	    while (w < workend)
-	      *bp++ = *w++;
-	  }
-
-	if (specs[nspecs_done].info.spec != '\0')
-	  *bp++ = specs[nspecs_done].info.spec;
-
-	*bp++ = '\0';
-
-	if (specs[nspecs_done].info.is_long_double)
-	  {
-	    sprintf(buf2, buf1,
-	      args_value[specs[nspecs_done].data_arg].pa_long_double);
-	  }
-	else
-	  {
-	    sprintf(buf2, buf1,
-	      args_value[specs[nspecs_done].data_arg].pa_double);
-	  }
-
-	/*
-	 * FIXME - hack to rewrite decimal separator into correct locale
-	 * if necessary.
-	 */
-	if (decimal_sep != nil)
-	  {
-	    NSString	*sep = locale_sep();
-
-	    if ([decimal_sep isEqual: sep] == NO && [sep length] == 1)
-	      {
-		unichar	m = [sep characterAtIndex: 0];
-		char	*p = &buf2[strlen(buf2)];
-
-		/*
-		 * Assume that we won't be finding an escape in the string
-		 * so we can use it as a marker.
-		 */
-		while (p-- > buf2)
-		  {
-		    if (*p == m)
-		      {
-			*p = '\033';
-			break;
-		      }
-		  }
-	      }
-	  }
-
-	bp = buf2;
-	while (*bp)
-	  {
-	    if (*bp == '\033')
-	      {
-		int	i = 0;
-		int	c = [decimal_sep length];
-		unichar	b[c];
-
-		[decimal_sep getCharacters: b];
-		while (i < c)
-		  {
-		    outchar(b[i++]);
-		  }
-		bp++;
-	      }
-	    else
-	      {
-		outchar(*bp++);
-	      }
-	  }
-      }
-      break;
-
-    LABEL (form_pointer):
-      /* Generic pointer.  */
-      {
-	const void *ptr;
-	  ptr = args_value[specs[nspecs_done].data_arg].pa_pointer;
-	if (ptr != NULL)
-	  {
-	    /* If the pointer is not NULL, write it as a %#x spec.  */
-	    base = 16;
-	    number.word = (size_t) ptr;
-	    is_negative = 0;
-	    alt = 1;
-	    group = 0;
-	    spec = 'x';
-	    goto LABEL (number);
-	  }
-	else
-	  {
-	    string = NULL;
-	    goto LABEL (print_string);
-	  }
-      }
-      /* NOTREACHED */
-
-    LABEL (form_number):
-      /* Answer the count of characters written.  */
-	if (is_longlong)
-	  *(long long int *) args_value[specs[nspecs_done].data_arg].pa_pointer = done;
-	else if (is_long_num)
-	  *(long int *) args_value[specs[nspecs_done].data_arg].pa_pointer = done;
-	else if (is_long_num)
-	  *(long int *) args_value[specs[nspecs_done].data_arg].pa_pointer = done;
-	else if (is_char)
-	  *(char *) args_value[specs[nspecs_done].data_arg].pa_pointer = done;
-	else if (!is_short)
-	  *(int *) args_value[specs[nspecs_done].data_arg].pa_pointer = done;
-	else
-	  *(short int *) args_value[specs[nspecs_done].data_arg].pa_pointer = done;
-      break;
-
-    LABEL (form_strerror):
-      /* Print description of error ERRNO.  */
-      errno = save_errno;
-      string = (unichar *)[[[NSError _last] localizedDescription]
-	cStringUsingEncoding: NSUnicodeStringEncoding];
-      is_long = 1;		/* This is a unicode string.  */
-      goto LABEL (print_string);
-    LABEL (form_character):
-      /* Character.  */
-      if (is_long)
-	goto LABEL (form_wcharacter);
-      --width;	/* Account for the character itself.  */
-      if (!left)
-	PAD (' ');
-	outchar (((unsigned char)
-			  args_value[specs[nspecs_done].data_arg].pa_char));
-      if (left)
-	PAD (' ');
-      break;
-
-    LABEL (form_wcharacter):
-      {
-	/* Wide character.  */
-	--width;
-	if (!left)
-	  PAD (' ');
-	  outchar (args_value[specs[nspecs_done].data_arg].pa_wchar);
-	if (left)
-	  PAD (' ');
-      }
-      break;
-
-    LABEL (form_string):
-      {
-	size_t len = 0;
-
-	/* The string argument could in fact be `char *' or `wchar_t *'.
-	   But this should not make a difference here.  */
-	string = (unichar *) args_value[specs[nspecs_done].data_arg].pa_wstring;
-
-	/* Entry point for printing other strings.  */
-      LABEL (print_string):
-
-	string_malloced = 0;
-	if (string == NULL)
-	  {
-	    /* Write "(null)" if there's space.  */
-	    if (prec == -1
-	      || prec >= (int) (sizeof (null) / sizeof (null[0])) - 1)
-	      {
-		string = (unichar *) null;
-		len = (sizeof (null) / sizeof (null[0])) - 1;
-	      }
-	    else
-	      {
-		string = (unichar *) {'\0'};
-		len = 0;
-	      }
-	  }
-	else if (!is_long && spec != 'S')
-	  {
-	    /* This is complicated.  We have to transform the multibyte
-	       string into a unicode string.  */
-	    const char		*str = (const char*)string;
-	    unsigned		blen;
-	    static NSStringEncoding	enc = GSUndefinedEncoding;
-	    static BOOL			byteEncoding = NO;
-
-	    if (enc == GSUndefinedEncoding)
-	      {
-	        enc = [NSString defaultCStringEncoding];
-		byteEncoding = GSPrivateIsByteEncoding(enc);
-	      }
-
-	    len = strlen(str);	// Number of bytes to convert.
-	    blen = len;		// Size of unichar output buffer.
-
-	    if (prec != -1)
-	      {
-		if (prec < len)
-		  {
-		    /* We don't neeed an output buffer bigger than the
-		     * precision specifies.
-		     */
-		    blen = prec;
-		  }
-		if (byteEncoding == YES)
-		  {
-		    /* Where the external encoding is one byte per character,
-		     * we know we don't need to convert more bytes than the
-		     * precision required for output.
-		     */
-		    if (prec < len)
-		      {
-			len = prec;
-		      }
-		  }
-		else if (prec * 4 < len)
-		  {
-		    /* We assume no multibyte encoding is going to use more
-		     * than the maximum four bytes used by utf-8 for any
-		     * unicode code point.  So we do not need to convert
-		     * more than four times the precision.
-		     */
-		    len = prec * 4;
-		  }
-	      }
-
-	    /* Allocate dynamically an array which definitely is long
-	     * enough for the unichar version.
-	     */
-	    if (blen < 8192 || ((string = (unichar *)
-	      NSZoneMalloc(s->_zone, blen * sizeof(unichar))) == NULL))
-	      string = (unichar *) alloca (blen * sizeof(unichar));
-	    else
-	      string_malloced = 1;
-
-	    GSToUnicode(&string, &blen, (unsigned char*)str, len, enc, 0, 0);
-
-	    /* get the number of unichars produced and truncate to the
-	     * required output precision if necessary.
-	     */
-	    len = blen;
-	    if (prec != -1 && prec < len)
-	      {
-	        len = prec;
-	      }
-	  }
-	else
-	  {
-	    /* This is simple.  Wide string == unicode string.  */
-	    int prc;
-	    unichar *wsp;
-
-	    len = 0;
-	    prc = prec;
-	    wsp = (unichar *)string;
-	    while (prc-- && *wsp++) len++;
-	  }
-
-	if ((width -= len) <= 0)
-	  {
-	    outstring (string, len);
-	  }
-	else
-	  {
-	    if (!left)
-	      PAD (' ');
-	    outstring (string, len);
-	    if (left)
-	      PAD (' ');
-	  }
-	if (string_malloced)
-	  NSZoneFree(s->_zone, string);
-      }
-      break;
-
-    LABEL (form_object):
-      {
-	size_t len;
-	id obj;
-	NSString *dsc;
-
-	obj = args_value[specs[nspecs_done].data_arg].pa_object;
-
-	if (!obj) dsc = @"(nil)";
-	else if ([obj respondsToSelector: @selector(descriptionWithLocale:)]) dsc = [obj descriptionWithLocale: locale];
-	else dsc = [obj description];
-
-	if (!dsc) dsc = @"(null)";
-
-	len = [dsc length];
-
-	string_malloced = 0;
-	  {
-	    /* This is complicated.  We have to transform the
-	       NSString into a unicode string.  */
-	    NSRange r;
-
-	    if (prec >= 0 && prec < (int)len) len = prec;
-
-	    /* Allocate dynamically an array which definitely is long
-	       enough for the wide character version.  */
-	    if (len < 8192
-	      || ((string = (unichar *) NSZoneMalloc(s->_zone, len * sizeof (unichar)))
-		    == NULL))
-	      string = (unichar *) alloca (len * sizeof (unichar));
-	    else
-	      string_malloced = 1;
-
-	    r.location = 0;
-	    r.length = len;
-	    [dsc getCharacters: string range: r];
-	  }
-
-	if ((width -= len) < 0)
-	  {
-	    outstring (string, len);
-	  }
-	else
-	  {
-	    if (!left)
-	      PAD (' ');
-	    outstring (string, len);
-	    if (left)
-	      PAD (' ');
-	  }
-	if (string_malloced)
-	  NSZoneFree(s->_zone, string);
-      }
-      break;
-
-	  LABEL (form_unknown):
-	    {
-	      int function_done;
-	      unsigned int i;
-	      const void **ptr;
-
-
-	      ptr = alloca (specs[nspecs_done].ndata_args
-			    * sizeof (const void *));
-
-	      /* Fill in an array of pointers to the argument values.  */
-	      for (i = 0; i < specs[nspecs_done].ndata_args; ++i)
-		ptr[i] = &args_value[specs[nspecs_done].data_arg + i];
-
-	      /* Call the function.  */
-	      function_done = printf_unknown(s, &specs[nspecs_done].info, ptr);
-
-	      /* If an error occurred we don't have information about #
-		 of chars.  */
-
-	      done += function_done;
-	    }
-	    break;
-	  }
-
-	/* Write the following constant string.  */
-	outstring (specs[nspecs_done].end_of_fmt,
-		   specs[nspecs_done].next_fmt
-		   - specs[nspecs_done].end_of_fmt);
-      }
-  }
+            int is_short = specs[nspecs_done].info.is_short;
+            int is_char = specs[nspecs_done].info.is_char;
+            int is_long = specs[nspecs_done].info.is_long;
+            int width = specs[nspecs_done].info.width;
+            int prec = specs[nspecs_done].info.prec;
+            int use_outdigits = specs[nspecs_done].info.i18n;
+            char pad = specs[nspecs_done].info.pad;
+            unichar spec = specs[nspecs_done].info.spec;
+
+            /* Fill in last information.  */
+            if (specs[nspecs_done].width_arg != -1)
+            {
+                /* Extract the field width from an argument.  */
+                specs[nspecs_done].info.width =
+                    args_value[specs[nspecs_done].width_arg].pa_int;
+
+                if (specs[nspecs_done].info.width < 0)
+                /* If the width value is negative left justification is
+                   selected and the value is taken as being positive.  */
+                {
+                    specs[nspecs_done].info.width *= -1;
+                    left = specs[nspecs_done].info.left = 1;
+                }
+                width = specs[nspecs_done].info.width;
+            }
+
+            if (specs[nspecs_done].prec_arg != -1)
+            {
+                /* Extract the precision from an argument.  */
+                specs[nspecs_done].info.prec =
+                    args_value[specs[nspecs_done].prec_arg].pa_int;
+
+                if (specs[nspecs_done].info.prec < 0) {
+                    /* If the precision is negative the precision is
+                       omitted.  */
+                    specs[nspecs_done].info.prec = -1;
+                }
+
+                prec = specs[nspecs_done].info.prec;
+            }
+
+            /* Maybe the buffer is too small.  */
+            if ((unsigned)(MAX (prec, width) + 32)
+                > sizeof (work_buffer) / sizeof (unichar))
+            {
+                workend = ((unichar *) alloca ((MAX (prec, width) + 32)
+                                               * sizeof (unichar)) + (MAX (prec, width) + 32));
+            }
+
+            int string_malloced;
+
+            /* Process format specifiers.  */
+            while (1) {
+                switch (CHAR_CLASS (spec)) {
+                case 0:
+                case 1: /* for ' ' */
+                case 2: /* for '+' */
+                case 3: /* for '-' */
+                case 4: /* for '<hash>' */
+                case 5: /* for '0' */
+                case 6: /* for '\'' */
+                case 7: /* for '*' */
+                case 8: /* for '1'...'9' */
+                case 9: /* for '.' */
+                case 10: /* for 'h' */
+                case 11: /* for 'l' */
+                case 12: /* for 'L', 'q' */
+                case 13: /* for 'z', 'Z' */
+                    goto LABEL (form_unknown);
+                case 14:
+                    goto LABEL (form_percent); /* for '%' */
+                case 15:
+                    goto LABEL (form_integer); /* for 'd', 'i' */
+                case 16:
+                    goto LABEL (form_unsigned); /* for 'u' */
+                case 17:
+                    goto LABEL (form_octal); /* for 'o' */
+                case 18:
+                    goto LABEL (form_hexa); /* for 'X', 'x' */
+                case 19:
+                    goto LABEL (form_float); /* for 'E', 'e', 'F', 'f', 'G', 'g'
+                                               */
+                case 20:
+                    goto LABEL (form_character); /* for 'c' */
+                case 21:
+                    goto LABEL (form_string); /* for 's', 'S' */
+                case 22:
+                    goto LABEL (form_pointer); /* for 'p' */
+                case 23:
+                    goto LABEL (form_number); /* for 'n' */
+                case 24:
+                    goto LABEL (form_strerror); /* for 'm' */
+                case 25:
+                    goto LABEL (form_wcharacter); /* for 'C' */
+                case 26:
+                    goto LABEL (form_floathex); /* for 'A', 'a' */
+                case 27: /* for 't' */
+                case 28: /* for 'j' */
+                case 29: /* for 'I' */
+                    goto LABEL (form_unknown);
+                case 30:
+                    goto LABEL (form_object); /* for '@' */
+                default:
+                    goto LABEL (form_unknown);
+                }
+
+                /* Start real work.  We know about all flags and modifiers and
+                   now process the wanted format specifier.  */
+                LABEL (form_percent) :
+                    /* Write a literal "%".  */
+                    outchar ('%');
+                break;
+
+                LABEL (form_integer) :
+                    /* Signed decimal integer.  */
+                    base = 10;
+
+                if (is_longlong)
+                {
+                    long long int signed_number;
+
+                    signed_number
+                        = args_value[specs[nspecs_done].data_arg].pa_long_long_int;
+
+                    is_negative = signed_number < 0;
+                    number.longlong = is_negative ? (-signed_number) : signed_number;
+
+                    goto LABEL (longlong_number);
+                }
+                else
+                {
+                    long int signed_number;
+
+                    if (is_char)
+                    {
+                        signed_number = args_value[specs[nspecs_done].data_arg].pa_char;
+                    }
+                    else if (is_short)
+                    {
+                        signed_number
+                            = args_value[specs[nspecs_done].data_arg].pa_short_int;
+                    }
+                    else if (is_long_num)
+                    {
+                        signed_number
+                            = args_value[specs[nspecs_done].data_arg].pa_long_int;
+                    }
+                    else
+                    {
+                        signed_number = args_value[specs[nspecs_done].data_arg].pa_int;
+                    }
+
+                    is_negative = signed_number < 0;
+                    number.word = is_negative ? (-signed_number) : signed_number;
+
+                    goto LABEL (number);
+                }
+                /* NOTREACHED */
+
+                LABEL (form_unsigned) :
+                    /* Unsigned decimal integer.  */
+                    base = 10;
+                goto LABEL (unsigned_number);
+                /* NOTREACHED */
+
+                LABEL (form_octal) :
+                    /* Unsigned octal integer.  */
+                    base = 8;
+                goto LABEL (unsigned_number);
+                /* NOTREACHED */
+
+                LABEL (form_hexa) :
+                    /* Unsigned hexadecimal integer.  */
+                    base = 16;
+
+                LABEL (unsigned_number) : /* Unsigned number of base BASE.  */
+
+                    /* ISO specifies the `+' and ` ' flags only for signed
+                       conversions.  */
+                    is_negative = 0;
+                showsign = 0;
+                space = 0;
+
+                if (is_longlong)
+                {
+                    number.longlong
+                        = args_value[specs[nspecs_done].data_arg].pa_u_long_long_int;
+
+                    LABEL (longlong_number) :
+                        if (prec < 0) {
+                        /* Supply a default precision if none was given.  */
+                        prec = 1;
+                    }
+                    else{
+                        /* We have to take care for the '0' flag.  If a
+                           precision
+                           is given it must be ignored.  */
+                        pad = ' ';
+                    }
+
+                    /* If the precision is 0 and the number is 0 nothing has to
+                       be written for the number, except for the 'o' format in
+                       alternate form.  */
+                    if (prec == 0 && number.longlong == 0)
+                    {
+                        string = workend;
+                        if (base == 8 && alt) {
+                            *--string = '0';
+                        }
+                    }
+                    else
+                    {
+                        /* Put the number in WORK.  */
+                        string = _itowa (number.longlong, workend, base,
+                                         spec == 'X');
+                        if (group && grouping) {
+                            string = group_number (string, workend, grouping,
+                                                   thousands_sep);
+                        }
+
+                        if (use_outdigits && base == 10) {
+                            string = _i18n_number_rewrite
+                                         (string, workend, [locale objectForKey:NSDecimalDigits]);
+                        }
+                    }
+                    /* Simplify further test for num != 0.  */
+                    number.word = number.longlong != 0;
+                }
+                else
+                {
+                    if (is_long_num) {
+                        number.word = args_value[specs[nspecs_done].data_arg].pa_u_long_int;
+                    }
+                    else if (is_char) {
+                        number.word = (unsigned char)
+                                      args_value[specs[nspecs_done].data_arg].pa_char;
+                    }
+                    else if (!is_short) {
+                        number.word = args_value[specs[nspecs_done].data_arg].pa_u_int;
+                    }
+                    else{
+                        number.word = (unsigned short int)
+                                      args_value[specs[nspecs_done].data_arg].pa_u_short_int;
+                    }
+
+                    LABEL (number) :
+                        if (prec < 0) {
+                        /* Supply a default precision if none was given.  */
+                        prec = 1;
+                    }
+                    else{
+                        /* We have to take care for the '0' flag.  If a
+                           precision
+                           is given it must be ignored.  */
+                        pad = ' ';
+                    }
+
+                    /* If the precision is 0 and the number is 0 nothing has to
+                       be written for the number, except for the 'o' format in
+                       alternate form.  */
+                    if (prec == 0 && number.word == 0)
+                    {
+                        string = workend;
+                        if (base == 8 && alt) {
+                            *--string = '0';
+                        }
+                    }
+                    else
+                    {
+                        /* Put the number in WORK.  */
+                        string = _itowa_word (number.word, workend, base,
+                                              spec == 'X');
+                        if (group && grouping) {
+                            string = group_number (string, workend, grouping,
+                                                   thousands_sep);
+                        }
+
+                        if (use_outdigits && base == 10) {
+                            string = _i18n_number_rewrite
+                                         (string, workend, [locale objectForKey:NSDecimalDigits]);
+                        }
+                    }
+                }
+
+                if (prec <= workend - string && number.word != 0 && alt && base == 8) {
+                    /* Add octal marker.  */
+                    *--string = '0';
+                }
+
+                prec = MAX (0, prec - (workend - string));
+
+                if (!left)
+                {
+                    width -= workend - string + prec;
+
+                    if (number.word != 0 && alt && base == 16) {
+                        /* Account for 0X hex marker.  */
+                        width -= 2;
+                    }
+
+                    if (is_negative || showsign || space) {
+                        --width;
+                    }
+
+                    if (pad == ' ')
+                    {
+                        PAD (' ');
+                        width = 0;
+                    }
+
+                    if (is_negative) {
+                        outchar ('-');
+                    }
+                    else if (showsign) {
+                        outchar ('+');
+                    }
+                    else if (space) {
+                        outchar (' ');
+                    }
+
+                    if (number.word != 0 && alt && base == 16)
+                    {
+                        outchar ('0');
+                        outchar (spec);
+                    }
+
+                    width += prec;
+                    PAD ('0');
+
+                    outstring (string, workend - string);
+
+                    break;
+                }
+                else
+                {
+                    if (is_negative)
+                    {
+                        outchar ('-');
+                        --width;
+                    }
+                    else if (showsign)
+                    {
+                        outchar ('+');
+                        --width;
+                    }
+                    else if (space)
+                    {
+                        outchar (' ');
+                        --width;
+                    }
+
+                    if (number.word != 0 && alt && base == 16)
+                    {
+                        outchar ('0');
+                        outchar (spec);
+                        width -= 2;
+                    }
+
+                    width -= workend - string + prec;
+
+                    if (prec > 0)
+                    {
+                        int temp = width;
+                        width = prec;
+                        PAD ('0');
+                        width = temp;
+                    }
+
+                    outstring (string, workend - string);
+
+                    PAD (' ');
+                    break;
+                }
+
+                LABEL (form_float) :
+                {
+                    /* Floating-point number.  This is handled by the native
+                      sprintf.  */
+                    char buf1[32], *bp;
+                    char buf2[specs[nspecs_done].info.width
+                              +specs[nspecs_done].info.prec+32];
+                    unichar formatWorkBuffer[MAX (specs[nspecs_done].info.width,
+                                                  specs[nspecs_done].info.spec) + 32];
+                    unichar *const formatWorkEnd
+                        = &formatWorkBuffer[sizeof (formatWorkBuffer) / sizeof (unichar)];
+                    register unichar *w;
+                    NSString    *decimal_sep;
+
+                    decimal_sep = [locale objectForKey:NSDecimalSeparator];
+                    if (decimal_sep == nil) { decimal_sep = @"."; }
+
+                    bp = buf1;
+
+                    *bp++ = '%';
+
+                    if (specs[nspecs_done].info.alt) {
+                        *bp++ = '#';
+                    }
+                    if (specs[nspecs_done].info.group) {
+                        *bp++ = '\'';
+                    }
+                    if (specs[nspecs_done].info.showsign) {
+                        *bp++ = '+';
+                    }
+                    else if (specs[nspecs_done].info.space) {
+                        *bp++ = ' ';
+                    }
+                    if (specs[nspecs_done].info.left) {
+                        *bp++ = '-';
+                    }
+                    if (specs[nspecs_done].info.pad == '0') {
+                        *bp++ = '0';
+                    }
+                    if (specs[nspecs_done].info.i18n) {
+                        *bp++ = 'I';
+                    }
+
+                    if (specs[nspecs_done].info.width != 0)
+                    {
+                        w = _itowa_word (specs[nspecs_done].info.width, formatWorkEnd, 10, 0);
+                        while (w < formatWorkEnd)
+                            *bp++ = *w++;
+                    }
+
+                    if (specs[nspecs_done].info.prec != -1)
+                    {
+                        *bp++ = '.';
+                        w = _itowa_word (specs[nspecs_done].info.prec, formatWorkEnd, 10, 0);
+                        while (w < formatWorkEnd)
+                            *bp++ = *w++;
+                    }
+
+                    if (specs[nspecs_done].info.spec != '\0') {
+                        *bp++ = specs[nspecs_done].info.spec;
+                    }
+
+                    *bp++ = '\0';
+
+                    if (specs[nspecs_done].info.is_long_double)
+                    {
+                        sprintf(buf2, buf1,
+                                args_value[specs[nspecs_done].data_arg].pa_long_double);
+                    }
+                    else
+                    {
+                        sprintf(buf2, buf1,
+                                args_value[specs[nspecs_done].data_arg].pa_double);
+                    }
+
+                    /*
+                     * FIXME - hack to rewrite decimal separator into correct
+                     *locale
+                     * if necessary.
+                     */
+                    if (decimal_sep != nil)
+                    {
+                        NSString    *sep = locale_sep();
+
+                        if ([decimal_sep isEqual:sep] == NO && [sep length] == 1)
+                        {
+                            unichar m = [sep characterAtIndex:0];
+                            char    *p = &buf2[strlen(buf2)];
+
+                            /*
+                             * Assume that we won't be finding an escape in the
+                             *string
+                             * so we can use it as a marker.
+                             */
+                            while (p-- > buf2)
+                            {
+                                if (*p == m)
+                                {
+                                    *p = '\033';
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    bp = buf2;
+                    while (*bp)
+                    {
+                        if (*bp == '\033')
+                        {
+                            int i = 0;
+                            int c = [decimal_sep length];
+                            unichar b[c];
+
+                            [decimal_sep getCharacters:b];
+                            while (i < c)
+                            {
+                                outchar(b[i++]);
+                            }
+                            bp++;
+                        }
+                        else
+                        {
+                            outchar(*bp++);
+                        }
+                    }
+                }
+                break;
+
+                LABEL (form_floathex) :
+                {
+                    /* Floating point number printed as hexadecimal number.  */
+                    char buf1[32], *bp;
+                    char buf2[specs[nspecs_done].info.width
+                              +specs[nspecs_done].info.prec+32];
+                    unichar workingBuffer[MAX (specs[nspecs_done].info.width,
+                                               specs[nspecs_done].info.spec) + 32];
+                    unichar *const workEnding
+                        = &workingBuffer[sizeof (workingBuffer) / sizeof (unichar)];
+                    register unichar *w;
+                    NSString    *decimal_sep;
+
+                    decimal_sep = [locale objectForKey:NSDecimalSeparator];
+                    if (decimal_sep == nil) { decimal_sep = @"."; }
+
+                    bp = buf1;
+
+                    *bp++ = '%';
+
+                    if (specs[nspecs_done].info.alt) {
+                        *bp++ = '#';
+                    }
+                    if (specs[nspecs_done].info.group) {
+                        *bp++ = '\'';
+                    }
+                    if (specs[nspecs_done].info.showsign) {
+                        *bp++ = '+';
+                    }
+                    else if (specs[nspecs_done].info.space) {
+                        *bp++ = ' ';
+                    }
+                    if (specs[nspecs_done].info.left) {
+                        *bp++ = '-';
+                    }
+                    if (specs[nspecs_done].info.pad == '0') {
+                        *bp++ = '0';
+                    }
+                    if (specs[nspecs_done].info.i18n) {
+                        *bp++ = 'I';
+                    }
+
+                    if (specs[nspecs_done].info.width != 0)
+                    {
+                        w = _itowa_word (specs[nspecs_done].info.width, workEnding, 10, 0);
+                        while (w < workEnding)
+                            *bp++ = *w++;
+                    }
+
+                    if (specs[nspecs_done].info.prec != -1)
+                    {
+                        *bp++ = '.';
+                        w = _itowa_word (specs[nspecs_done].info.prec, workEnding, 10, 0);
+                        while (w < workEnding)
+                            *bp++ = *w++;
+                    }
+
+                    if (specs[nspecs_done].info.spec != '\0') {
+                        *bp++ = specs[nspecs_done].info.spec;
+                    }
+
+                    *bp++ = '\0';
+
+                    if (specs[nspecs_done].info.is_long_double)
+                    {
+                        sprintf(buf2, buf1,
+                                args_value[specs[nspecs_done].data_arg].pa_long_double);
+                    }
+                    else
+                    {
+                        sprintf(buf2, buf1,
+                                args_value[specs[nspecs_done].data_arg].pa_double);
+                    }
+
+                    /*
+                     * FIXME - hack to rewrite decimal separator into correct
+                     *locale
+                     * if necessary.
+                     */
+                    if (decimal_sep != nil)
+                    {
+                        NSString    *sep = locale_sep();
+
+                        if ([decimal_sep isEqual:sep] == NO && [sep length] == 1)
+                        {
+                            unichar m = [sep characterAtIndex:0];
+                            char    *p = &buf2[strlen(buf2)];
+
+                            /*
+                             * Assume that we won't be finding an escape in the
+                             *string
+                             * so we can use it as a marker.
+                             */
+                            while (p-- > buf2)
+                            {
+                                if (*p == m)
+                                {
+                                    *p = '\033';
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    bp = buf2;
+                    while (*bp)
+                    {
+                        if (*bp == '\033')
+                        {
+                            int i = 0;
+                            int c = [decimal_sep length];
+                            unichar b[c];
+
+                            [decimal_sep getCharacters:b];
+                            while (i < c)
+                            {
+                                outchar(b[i++]);
+                            }
+                            bp++;
+                        }
+                        else
+                        {
+                            outchar(*bp++);
+                        }
+                    }
+                }
+                break;
+
+                LABEL (form_pointer) :
+                    /* Generic pointer.  */
+                {
+                    const void *ptr;
+                    ptr = args_value[specs[nspecs_done].data_arg].pa_pointer;
+                    if (ptr != NULL)
+                    {
+                        /* If the pointer is not NULL, write it as a %#x spec.
+                           */
+                        base = 16;
+                        number.word = (size_t) ptr;
+                        is_negative = 0;
+                        alt = 1;
+                        group = 0;
+                        spec = 'x';
+                        goto LABEL (number);
+                    }
+                    else
+                    {
+                        string = NULL;
+                        goto LABEL (print_string);
+                    }
+                }
+                /* NOTREACHED */
+
+                LABEL (form_number) :
+                    /* Answer the count of characters written.  */
+                    if (is_longlong) {
+                    *(long long int *) args_value[specs[nspecs_done].data_arg].pa_pointer = done;
+                }
+                else if (is_long_num) {
+                    *(long int *) args_value[specs[nspecs_done].data_arg].pa_pointer = done;
+                }
+                else if (is_long_num) {
+                    *(long int *) args_value[specs[nspecs_done].data_arg].pa_pointer = done;
+                }
+                else if (is_char) {
+                    *(char *) args_value[specs[nspecs_done].data_arg].pa_pointer = done;
+                }
+                else if (!is_short) {
+                    *(int *) args_value[specs[nspecs_done].data_arg].pa_pointer = done;
+                }
+                else{
+                    *(short int *) args_value[specs[nspecs_done].data_arg].pa_pointer = done;
+                }
+                break;
+
+                LABEL (form_strerror) :
+                    /* Print description of error ERRNO.  */
+                    errno = save_errno;
+                string = (unichar *)[[[NSError _last] localizedDescription]
+                                     cStringUsingEncoding:NSUnicodeStringEncoding];
+                is_long = 1; /* This is a unicode string.  */
+                goto LABEL (print_string);
+                LABEL (form_character) :
+                    /* Character.  */
+                    if (is_long) {
+                    goto LABEL (form_wcharacter);
+                }
+                --width; /* Account for the character itself.  */
+                if (!left) {
+                    PAD (' ');
+                }
+                outchar (((unsigned char)
+                          args_value[specs[nspecs_done].data_arg].pa_char));
+                if (left) {
+                    PAD (' ');
+                }
+                break;
+
+                LABEL (form_wcharacter) :
+                {
+                    /* Wide character.  */
+                    --width;
+                    if (!left) {
+                        PAD (' ');
+                    }
+                    outchar (args_value[specs[nspecs_done].data_arg].pa_wchar);
+                    if (left) {
+                        PAD (' ');
+                    }
+                }
+                break;
+
+                LABEL (form_string) :
+                {
+                    size_t len = 0;
+
+                    /* The string argument could in fact be `char *' or `wchar_t
+                       *'.
+                       But this should not make a difference here.  */
+                    string = (unichar *) args_value[specs[nspecs_done].data_arg].pa_wstring;
+
+                    /* Entry point for printing other strings.  */
+                    LABEL (print_string) :
+
+                        string_malloced = 0;
+                    if (string == NULL)
+                    {
+                        /* Write "(null)" if there's space.  */
+                        if (prec == -1
+                            || prec >= (int) (sizeof (null) / sizeof (null[0])) - 1)
+                        {
+                            string = (unichar *) null;
+                            len = (sizeof (null) / sizeof (null[0])) - 1;
+                        }
+                        else
+                        {
+                            string = (unichar *) {'\0'};
+                            len = 0;
+                        }
+                    }
+                    else if (!is_long && spec != 'S')
+                    {
+                        /* This is complicated.  We have to transform the
+                           multibyte
+                           string into a unicode string.  */
+                        const char      *str = (const char*)string;
+                        unsigned blen;
+                        static NSStringEncoding enc = GSUndefinedEncoding;
+                        static BOOL byteEncoding = NO;
+
+                        if (enc == GSUndefinedEncoding)
+                        {
+                            enc = [NSString defaultCStringEncoding];
+                            byteEncoding = GSPrivateIsByteEncoding(enc);
+                        }
+
+                        len = strlen(str); // Number of bytes to convert.
+                        blen = len; // Size of unichar output buffer.
+
+                        if (prec != -1)
+                        {
+                            if (prec < len)
+                            {
+                                /* We don't neeed an output buffer bigger than
+                                   the
+                                 * precision specifies.
+                                 */
+                                blen = prec;
+                            }
+                            if (byteEncoding == YES)
+                            {
+                                /* Where the external encoding is one byte per
+                                   character,
+                                 * we know we don't need to convert more bytes
+                                 *than the
+                                 * precision required for output.
+                                 */
+                                if (prec < len)
+                                {
+                                    len = prec;
+                                }
+                            }
+                            else if (prec * 4 < len)
+                            {
+                                /* We assume no multibyte encoding is going to
+                                   use more
+                                 * than the maximum four bytes used by utf-8 for
+                                 *any
+                                 * unicode code point.  So we do not need to
+                                 *convert
+                                 * more than four times the precision.
+                                 */
+                                len = prec * 4;
+                            }
+                        }
+
+                        /* Allocate dynamically an array which definitely is
+                           long
+                         * enough for the unichar version.
+                         */
+                        if (blen < 8192 || ((string = (unichar *)
+                                                      NSZoneMalloc(s->_zone, blen * sizeof(unichar))) == NULL)) {
+                            string = (unichar *) alloca (blen * sizeof(unichar));
+                        }
+                        else{
+                            string_malloced = 1;
+                        }
+
+                        GSToUnicode(&string, &blen, (unsigned char*)str, len, enc, 0, 0);
+
+                        /* get the number of unichars produced and truncate to
+                           the
+                         * required output precision if necessary.
+                         */
+                        len = blen;
+                        if (prec != -1 && prec < len)
+                        {
+                            len = prec;
+                        }
+                    }
+                    else
+                    {
+                        /* This is simple.  Wide string == unicode string.  */
+                        int prc;
+                        unichar *wsp;
+
+                        len = 0;
+                        prc = prec;
+                        wsp = (unichar *)string;
+                        while (prc-- && *wsp++) len++;
+                    }
+
+                    if ((width -= len) <= 0)
+                    {
+                        outstring (string, len);
+                    }
+                    else
+                    {
+                        if (!left) {
+                            PAD (' ');
+                        }
+                        outstring (string, len);
+                        if (left) {
+                            PAD (' ');
+                        }
+                    }
+                    if (string_malloced) {
+                        NSZoneFree(s->_zone, string);
+                    }
+                }
+                break;
+
+                LABEL (form_object) :
+                {
+                    size_t len;
+                    id obj;
+                    NSString *dsc;
+
+                    obj = args_value[specs[nspecs_done].data_arg].pa_object;
+
+                    if (!obj) { dsc = @"(nil)"; }
+                    else if ([obj respondsToSelector:@selector(descriptionWithLocale:)]) { dsc = [obj descriptionWithLocale:locale]; }
+                    else{ dsc = [obj description]; }
+
+                    if (!dsc) { dsc = @"(null)"; }
+
+                    len = [dsc length];
+
+                    string_malloced = 0;
+                    {
+                        /* This is complicated.  We have to transform the
+                           NSString into a unicode string.  */
+                        NSRange r;
+
+                        if (prec >= 0 && prec < (int)len) { len = prec; }
+
+                        /* Allocate dynamically an array which definitely is
+                           long
+                           enough for the wide character version.  */
+                        if (len < 8192
+                            || ((string = (unichar *) NSZoneMalloc(s->_zone, len * sizeof (unichar)))
+                                == NULL)) {
+                            string = (unichar *) alloca (len * sizeof (unichar));
+                        }
+                        else{
+                            string_malloced = 1;
+                        }
+
+                        r.location = 0;
+                        r.length = len;
+                        [dsc getCharacters:string range:r];
+                    }
+
+                    if ((width -= len) < 0)
+                    {
+                        outstring (string, len);
+                    }
+                    else
+                    {
+                        if (!left) {
+                            PAD (' ');
+                        }
+                        outstring (string, len);
+                        if (left) {
+                            PAD (' ');
+                        }
+                    }
+                    if (string_malloced) {
+                        NSZoneFree(s->_zone, string);
+                    }
+                }
+                break;
+
+                LABEL (form_unknown) :
+                {
+                    int function_done;
+                    unsigned int i;
+                    const void **ptr;
+
+
+                    ptr = alloca (specs[nspecs_done].ndata_args
+                                  * sizeof (const void *));
+
+                    /* Fill in an array of pointers to the argument values.  */
+                    for (i = 0; i < specs[nspecs_done].ndata_args; ++i)
+                        ptr[i] = &args_value[specs[nspecs_done].data_arg + i];
+
+                    /* Call the function.  */
+                    function_done = printf_unknown(s, &specs[nspecs_done].info, ptr);
+
+                    /* If an error occurred we don't have information about #
+                       of chars.  */
+
+                    done += function_done;
+                }
+                break;
+            }
+
+            /* Write the following constant string.  */
+            outstring (specs[nspecs_done].end_of_fmt,
+                       specs[nspecs_done].next_fmt
+                       - specs[nspecs_done].end_of_fmt);
+        }
+    }
 
 all_done:
-  /* Unlock the stream.  */
-  return;
+    /* Unlock the stream.  */
+    return;
 }
-
 /* Handle an unknown format specifier.  This prints out a canonicalized
    representation of the format spec itself.  */
 static int
 printf_unknown (GSStr s, const struct printf_info *info,
-		const void *const *args)
+                const void *const *args)
 
 {
-  int done = 0;
-  unichar work_buffer[MAX (info->width, info->spec) + 32];
-  unichar *const workend
-    = &work_buffer[sizeof (work_buffer) / sizeof (unichar)];
-  register unichar *w;
+    int done = 0;
+    unichar work_buffer[MAX (info->width, info->spec) + 32];
+    unichar *const workend
+        = &work_buffer[sizeof (work_buffer) / sizeof (unichar)];
+    register unichar *w;
 
-  outchar ('%');
+    outchar ('%');
 
-  if (info->alt)
-    outchar ('#');
-  if (info->group)
-    outchar ('\'');
-  if (info->showsign)
-    outchar ('+');
-  else if (info->space)
-    outchar (' ');
-  if (info->left)
-    outchar ('-');
-  if (info->pad == '0')
-    outchar ('0');
-  if (info->i18n)
-    outchar ('I');
-
-  if (info->width != 0)
-    {
-      w = _itowa_word (info->width, workend, 10, 0);
-      while (w < workend)
-	outchar (*w++);
+    if (info->alt) {
+        outchar ('#');
+    }
+    if (info->group) {
+        outchar ('\'');
+    }
+    if (info->showsign) {
+        outchar ('+');
+    }
+    else if (info->space) {
+        outchar (' ');
+    }
+    if (info->left) {
+        outchar ('-');
+    }
+    if (info->pad == '0') {
+        outchar ('0');
+    }
+    if (info->i18n) {
+        outchar ('I');
     }
 
-  if (info->prec != -1)
+    if (info->width != 0)
     {
-      outchar ('.');
-      w = _itowa_word (info->prec, workend, 10, 0);
-      while (w < workend)
-	outchar (*w++);
+        w = _itowa_word (info->width, workend, 10, 0);
+        while (w < workend)
+            outchar (*w++);
     }
 
-  if (info->spec != '\0')
-    outchar (info->spec);
+    if (info->prec != -1)
+    {
+        outchar ('.');
+        w = _itowa_word (info->prec, workend, 10, 0);
+        while (w < workend)
+            outchar (*w++);
+    }
 
-  return done;
+    if (info->spec != '\0') {
+        outchar (info->spec);
+    }
+
+    return done;
 }
-
 /* Group the digits according to the grouping rules of the current locale.
    The interpretation of GROUPING is as in `struct lconv' from <locale.h>.  */
 static unichar *
 group_number (unichar *w, unichar *rear_ptr, const char *grouping,
-	      NSString *thousands_sep
-	     )
+              NSString *thousands_sep
+              )
 {
-  int len;
-  unichar *src, *s;
+    int len;
+    unichar *src, *s;
 
-  /* We treat all negative values like CHAR_MAX.  */
+    /* We treat all negative values like CHAR_MAX.  */
 
-  if (*grouping == CHAR_MAX || *grouping <= 0)
-    /* No grouping should be done.  */
-    return w;
-
-  len = *grouping;
-
-  /* Copy existing string so that nothing gets overwritten.  */
-  src = (unichar *) alloca ((rear_ptr - w) * sizeof (unichar));
-  s = (unichar *) memcpy (src, w,
-			    (rear_ptr - w) * sizeof (unichar));
-  w = rear_ptr;
-
-  /* Process all characters in the string.  */
-  while (s > src)
-    {
-      *--w = *--s;
-
-      if (--len == 0 && s > src)
-	{
-	  /* A new group begins.  */
-	  *--w = [thousands_sep characterAtIndex: 0];
-
-	  len = *grouping++;
-	  if (*grouping == '\0')
-	    /* The previous grouping repeats ad infinitum.  */
-	    --grouping;
-	  else if (*grouping == CHAR_MAX
-#if CHAR_MIN < 0
-		   || *grouping < 0
-#endif
-		  )
-	    {
-	      /* No further grouping to be done.
-		 Copy the rest of the number.  */
-	      do
-		{
-		  *--w = *--s;
-		}
-	      while (s > src);
-	      break;
-	    }
-	}
+    if (*grouping == CHAR_MAX || *grouping <= 0) {
+        /* No grouping should be done.  */
+        return w;
     }
-  return w;
+
+    len = *grouping;
+
+    /* Copy existing string so that nothing gets overwritten.  */
+    src = (unichar *) alloca ((rear_ptr - w) * sizeof (unichar));
+    s = (unichar *) memcpy (src, w,
+                            (rear_ptr - w) * sizeof (unichar));
+    w = rear_ptr;
+
+    /* Process all characters in the string.  */
+    while (s > src)
+    {
+        *--w = *--s;
+
+        if (--len == 0 && s > src)
+        {
+            /* A new group begins.  */
+            *--w = [thousands_sep characterAtIndex:0];
+
+            len = *grouping++;
+            if (*grouping == '\0') {
+                /* The previous grouping repeats ad infinitum.  */
+                --grouping;
+            }
+            else if (*grouping == CHAR_MAX
+#if CHAR_MIN < 0
+                     || *grouping < 0
+#endif
+                     )
+            {
+                /* No further grouping to be done.
+                   Copy the rest of the number.  */
+                do
+                {
+                    *--w = *--s;
+                }
+                while (s > src);
+                break;
+            }
+        }
+    }
+    return w;
 }
 

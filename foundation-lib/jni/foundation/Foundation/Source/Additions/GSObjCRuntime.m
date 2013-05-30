@@ -27,7 +27,7 @@
 
    <title>GSObjCRuntime function and macro reference</title>
    $Date: 2010-10-12 06:34:01 -0700 (Tue, 12 Oct 2010) $ $Revision: 31504 $
-   */
+ */
 
 #import "common.h"
 #import "GNUstepBase/preface.h"
@@ -61,97 +61,125 @@
 #include <pthread.h>
 #endif
 #ifdef __GNUSTEP_RUNTIME__
-extern struct objc_slot	*objc_get_slot(Class, SEL);
+extern struct objc_slot *objc_get_slot(Class, SEL);
 #endif
 
 #ifdef NeXT_Foundation_LIBRARY
 @interface NSObject (MissingFromMacOSX)
-+ (IMP) methodForSelector: (SEL)aSelector;
++ (IMP)methodForSelector:(SEL)aSelector;
 @end
 #endif
 
+/*
+   The following types should be layed out the same as CoreGraphics or AppKit,
+   to avoid circular dependancy graphs.
+ */
+
+typedef struct {
+    float x;
+    float y;
+} PointStruct;
+
+typedef struct {
+    float width;
+    float height;
+} SizeStruct;
+
+typedef struct {
+    PointStruct origin;
+    SizeStruct size;
+} RectStruct;
+
+#define POINT_ENCODING "{CGPoint=ff}"
+#define SIZE_ENCODING "{CGSize=ff}"
+#define RECT_ENCODING "{CGRect={CGPoint=ff}{CGSize=ff}}"
+
 #define BDBGPrintf(format, args...) \
-  do { if (behavior_debug) { fprintf(stderr, (format) , ## args); } } while (0)
+    do { if (behavior_debug) { fprintf(stderr, (format), ## args); } } while (0)
 
 
 Class
 GSObjCClass(id obj)
 {
-  return object_getClass(obj);
+    return object_getClass(obj);
 }
 Class GSObjCSuper(Class cls)
 {
-  return class_getSuperclass(cls);
+    return class_getSuperclass(cls);
 }
 BOOL
 GSObjCIsInstance(id obj)
 {
-  Class	c = object_getClass(obj);
+    Class c = object_getClass(obj);
 
-  if (c != Nil && class_isMetaClass(c) == NO)
-    return YES;
-  else
-    return NO;
+    if (c != Nil && class_isMetaClass(c) == NO) {
+        return YES;
+    }
+    else{
+        return NO;
+    }
 }
 BOOL
 GSObjCIsClass(Class cls)
 {
-  if (class_isMetaClass(object_getClass(cls)))
-    return YES; 
-  else
-    return NO;
+    if (class_isMetaClass(object_getClass(cls))) {
+        return YES;
+    }
+    else{
+        return NO;
+    }
 }
 BOOL
 GSObjCIsKindOf(Class cls, Class other)
 {
-  while (cls != Nil)
+    while (cls != Nil)
     {
-      if (cls == other)
-	{
-	  return YES;
-	}
-      cls = class_getSuperclass(cls);
+        if (cls == other)
+        {
+            return YES;
+        }
+        cls = class_getSuperclass(cls);
     }
-  return NO;
+    return NO;
 }
 Class
 GSClassFromName(const char *name)
 {
-  return objc_lookUpClass(name);
+    return objc_lookUpClass(name);
 }
 const char *
 GSNameFromClass(Class cls)
 {
-  return class_getName(cls);
+    return class_getName(cls);
 }
 const char *
 GSClassNameFromObject(id obj)
 {
-  return class_getName(object_getClass(obj));
+    return class_getName(object_getClass(obj));
 }
 const char *
 GSNameFromSelector(SEL sel)
 {
-  return sel_getName(sel);
+    return sel_getName(sel);
 }
 SEL
 GSSelectorFromName(const char *name)
 {
-  return sel_getUid(name);
+    return sel_getUid(name);
 }
 SEL
 GSSelectorFromNameAndTypes(const char *name, const char *types)
 {
 #if NeXT_RUNTIME
-  return sel_getUid(name);
+    return sel_getUid(name);
 #else
-  if (name == 0)
+    if (name == 0)
     {
-      return 0;
+        return 0;
     }
-  else
+    else
     {
-      return sel_registerTypedName_np(name, types);
+        return sel_registerTypedName_np(name, types);
     }
 #endif
 }
@@ -159,22 +187,23 @@ const char *
 GSTypesFromSelector(SEL sel)
 {
 #if NeXT_RUNTIME
-  return 0;
-#else
-  if (sel == 0)
     return 0;
-  return sel_getType_np(sel);
+#else
+    if (sel == 0) {
+        return 0;
+    }
+    return sel_getType_np(sel);
 #endif
 }
 void
 GSFlushMethodCacheForClass (Class cls)
 {
-  return;
+    return;
 }
 int
 GSObjCVersion(Class cls)
 {
-  return class_getVersion(cls);
+    return class_getVersion(cls);
 }
 
 
@@ -187,36 +216,36 @@ GSObjCVersion(Class cls)
  */
 BOOL
 GSObjCFindVariable(id obj, const char *name,
-  const char **type, unsigned int *size, int *offset)
+                   const char **type, unsigned int *size, int *offset)
 {
-  Class		class = object_getClass(obj);
-  Ivar		ivar = class_getInstanceVariable(class, name);
+    Class class = object_getClass(obj);
+    Ivar ivar = class_getInstanceVariable(class, name);
 
-  if (ivar == 0)
+    if (ivar == 0)
     {
-      return NO;
+        return NO;
     }
-  else
+    else
     {
-      const char	*enc = ivar_getTypeEncoding(ivar);
+        const char    *enc = ivar_getTypeEncoding(ivar);
 
-      if (type != 0)
-	{
-	  *type = enc;
-	}
-      if (size != 0)
-	{
-	  NSUInteger	s;
-	  NSUInteger	a;
+        if (type != 0)
+        {
+            *type = enc;
+        }
+        if (size != 0)
+        {
+            NSUInteger s;
+            NSUInteger a;
 
-	  NSGetSizeAndAlignment(enc, &s, &a);
-	  *size = s;
-	}
-      if (offset != 0)
-	{
-	  *offset = ivar_getOffset(ivar);
-	}
-      return YES;
+            NSGetSizeAndAlignment(enc, &s, &a);
+            *size = s;
+        }
+        if (offset != 0)
+        {
+            *offset = ivar_getOffset(ivar);
+        }
+        return YES;
     }
 }
 
@@ -230,50 +259,50 @@ GSObjCFindVariable(id obj, const char *name,
 NSArray *
 GSObjCMethodNames(id obj, BOOL recurse)
 {
-  NSMutableSet	*set;
-  NSArray	*array;
-  Class		 class;
+    NSMutableSet  *set;
+    NSArray   *array;
+    Class class;
 
-  if (obj == nil)
+    if (obj == nil)
     {
-      return nil;
+        return nil;
     }
-  /*
-   * Add names to a set so methods declared in superclasses
-   * and then overridden do not appear more than once.
-   */
-  set = [[NSMutableSet alloc] initWithCapacity: 32];
+    /*
+     * Add names to a set so methods declared in superclasses
+     * and then overridden do not appear more than once.
+     */
+    set = [[NSMutableSet alloc] initWithCapacity:32];
 
-  class = object_getClass(obj);
+    class = object_getClass(obj);
 
-  while (class != Nil)
+    while (class != Nil)
     {
-      unsigned	count;
-      Method	*meth = class_copyMethodList(class, &count);
+        unsigned count;
+        Method    *meth = class_copyMethodList(class, &count);
 
-      while (count-- > 0)
-	{
-	  NSString	*name;
+        while (count-- > 0)
+        {
+            NSString  *name;
 
-	  name = [[NSString alloc] initWithFormat: @"%s",
-	    sel_getName(method_getName(meth[count]))];
-	  [set addObject: name];
-	  [name release];
-	}
-      if (meth != NULL)
-	{
-          free(meth);
+            name = [[NSString alloc] initWithFormat:@"%s",
+                    sel_getName(method_getName(meth[count]))];
+            [set addObject:name];
+            [name release];
         }
-      if (NO == recurse)
-	{
-	  break;
-	}
-      class = class_getSuperclass(class);
+        if (meth != NULL)
+        {
+            free(meth);
+        }
+        if (NO == recurse)
+        {
+            break;
+        }
+        class = class_getSuperclass(class);
     }
 
-  array = [set allObjects];
-  RELEASE(set);
-  return array;
+    array = [set allObjects];
+    RELEASE(set);
+    return array;
 }
 
 /**
@@ -285,50 +314,50 @@ GSObjCMethodNames(id obj, BOOL recurse)
 NSArray *
 GSObjCVariableNames(id obj, BOOL recurse)
 {
-  NSMutableSet	*set;
-  NSArray	*array;
-  Class		 class;
+    NSMutableSet  *set;
+    NSArray   *array;
+    Class class;
 
-  if (obj == nil)
+    if (obj == nil)
     {
-      return nil;
+        return nil;
     }
-  /*
-   * Add names to a set so methods declared in superclasses
-   * and then overridden do not appear more than once.
-   */
-  set = [[NSMutableSet alloc] initWithCapacity: 32];
+    /*
+     * Add names to a set so methods declared in superclasses
+     * and then overridden do not appear more than once.
+     */
+    set = [[NSMutableSet alloc] initWithCapacity:32];
 
-  class = object_getClass(obj);
+    class = object_getClass(obj);
 
-  while (class != Nil)
+    while (class != Nil)
     {
-      unsigned	count;
-      Ivar	*ivar = class_copyIvarList(class, &count);
+        unsigned count;
+        Ivar  *ivar = class_copyIvarList(class, &count);
 
-      while (count-- > 0)
-	{
-	  NSString	*name;
+        while (count-- > 0)
+        {
+            NSString  *name;
 
-	  name = [[NSString alloc] initWithFormat: @"%s",
-	    ivar_getName(ivar[count])];
-	  [set addObject: name];
-	  [name release];
-	}
-      if (ivar != NULL)
-	{
-          free(ivar);
-	}
-      if (NO == recurse)
-	{
-	  break;
-	}
-      class = class_getSuperclass(class);
+            name = [[NSString alloc] initWithFormat:@"%s",
+                    ivar_getName(ivar[count])];
+            [set addObject:name];
+            [name release];
+        }
+        if (ivar != NULL)
+        {
+            free(ivar);
+        }
+        if (NO == recurse)
+        {
+            break;
+        }
+        class = class_getSuperclass(class);
     }
 
-  array = [set allObjects];
-  RELEASE(set);
-  return array;
+    array = [set allObjects];
+    RELEASE(set);
+    return array;
 }
 
 /**
@@ -340,7 +369,7 @@ GSObjCVariableNames(id obj, BOOL recurse)
 void
 GSObjCGetVariable(id obj, int offset, unsigned int size, void *data)
 {
-  memcpy(data, ((void*)obj) + offset, size);
+    memcpy(data, ((void*)obj) + offset, size);
 }
 
 /**
@@ -352,30 +381,30 @@ GSObjCGetVariable(id obj, int offset, unsigned int size, void *data)
 void
 GSObjCSetVariable(id obj, int offset, unsigned int size, const void *data)
 {
-  memcpy(((void*)obj) + offset, data, size);
+    memcpy(((void*)obj) + offset, data, size);
 }
 
 GS_EXPORT unsigned int
 GSClassList(Class *buffer, unsigned int max, BOOL clearCache)
 {
-  int num;
+    int num;
 
-  if (buffer != NULL)
+    if (buffer != NULL)
     {
-      memset(buffer, 0, sizeof(Class) * (max + 1));
+        memset(buffer, 0, sizeof(Class) * (max + 1));
     }
 
-  num = objc_getClassList(buffer, max);
-  num = (num < 0) ? 0 : num;
-  return num;
+    num = objc_getClassList(buffer, max);
+    num = (num < 0) ? 0 : num;
+    return num;
 }
 
 /** references:
-http://www.macdevcenter.com/pub/a/mac/2002/05/31/runtime_parttwo.html?page=1
-http://developer.apple.com/documentation/Cocoa/Conceptual/ObjectiveC/9objc_runtime_reference/chapter_5_section_1.html
-http://developer.apple.com/documentation/Cocoa/Conceptual/ObjectiveC/9objc_runtime_reference/chapter_5_section_21.html
-ObjcRuntimeUtilities.m by Nicola Pero
-**/
+   http://www.macdevcenter.com/pub/a/mac/2002/05/31/runtime_parttwo.html?page=1
+   http://developer.apple.com/documentation/Cocoa/Conceptual/ObjectiveC/9objc_runtime_reference/chapter_5_section_1.html
+   http://developer.apple.com/documentation/Cocoa/Conceptual/ObjectiveC/9objc_runtime_reference/chapter_5_section_21.html
+   ObjcRuntimeUtilities.m by Nicola Pero
+ **/
 
 /**
  * <p>Create a Class structure for use by the ObjectiveC runtime and return
@@ -388,58 +417,59 @@ ObjcRuntimeUtilities.m by Nicola Pero
 NSValue *
 GSObjCMakeClass(NSString *name, NSString *superName, NSDictionary *iVars)
 {
-  Class		newClass;
-  Class		classSuperClass;
-  const char	*classNameCString;
-  char		*tmp;
+    Class newClass;
+    Class classSuperClass;
+    const char    *classNameCString;
+    char      *tmp;
 
-  NSCAssert(name, @"no name");
-  NSCAssert(superName, @"no superName");
+    NSCAssert(name, @"no name");
+    NSCAssert(superName, @"no superName");
 
-  classSuperClass = NSClassFromString(superName);
+    classSuperClass = NSClassFromString(superName);
 
-  NSCAssert1(classSuperClass, @"No class named %@",superName);
-  NSCAssert1(!NSClassFromString(name), @"A class %@ already exists", name);
+    NSCAssert1(classSuperClass, @"No class named %@",superName);
+    NSCAssert1(!NSClassFromString(name), @"A class %@ already exists", name);
 
-  classNameCString = [name UTF8String];
-  tmp = malloc(strlen(classNameCString) + 1);
-  strcpy(tmp, classNameCString);
-  classNameCString = tmp;
+    classNameCString = [name UTF8String];
+    tmp = malloc(strlen(classNameCString) + 1);
+    strcpy(tmp, classNameCString);
+    classNameCString = tmp;
 
-  newClass = objc_allocateClassPair(classSuperClass, classNameCString, 0);
-  if ([iVars count] > 0)
+    newClass = objc_allocateClassPair(classSuperClass, classNameCString, 0);
+    free(classNameCString);
+    if ([iVars count] > 0)
     {
-      NSEnumerator	*enumerator = [iVars keyEnumerator];
-      NSString		*key;
+        NSEnumerator  *enumerator = [iVars keyEnumerator];
+        NSString      *key;
 
-      while ((key = [enumerator nextObject]) != nil)
+        while ((key = [enumerator nextObject]) != nil)
         {
-          const	char	*iVarName = [key UTF8String];
-          const char	*iVarType = [[iVars objectForKey: key] UTF8String];
-	  uint8_t	iVarAlign = 0;
-	  size_t	iVarSize;
-	  NSUInteger	s;
-	  NSUInteger	a;
+            const char    *iVarName = [key UTF8String];
+            const char    *iVarType = [[iVars objectForKey:key] UTF8String];
+            uint8_t iVarAlign = 0;
+            size_t iVarSize;
+            NSUInteger s;
+            NSUInteger a;
 
-	  NSGetSizeAndAlignment(iVarType, &s, &a);
-	  // Convert size to number of bitshifts needed for alignment.
-	  iVarSize = 1;
-	  while (iVarSize < s)
-	    {
-	      iVarSize <<= 1;
-	      iVarAlign++;
-	    }
-	  // Record actual size
-	  iVarSize = s;
-	  if (NO
-	    == class_addIvar(newClass, iVarName, iVarSize, iVarAlign, iVarType))
-	    {
-	      NSLog(@"Error adding ivar '%s' of type '%s'", iVarName, iVarType);
-	    }
-	}
+            NSGetSizeAndAlignment(iVarType, &s, &a);
+            // Convert size to number of bitshifts needed for alignment.
+            iVarSize = 1;
+            while (iVarSize < s)
+            {
+                iVarSize <<= 1;
+                iVarAlign++;
+            }
+            // Record actual size
+            iVarSize = s;
+            if (NO
+                == class_addIvar(newClass, iVarName, iVarSize, iVarAlign, iVarType))
+            {
+                NSLog(@"Error adding ivar '%s' of type '%s'", iVarName, iVarType);
+            }
+        }
     }
 
-  return [NSValue valueWithPointer: newClass];
+    return [NSValue valueWithPointer:newClass];
 }
 
 /**
@@ -449,124 +479,123 @@ GSObjCMakeClass(NSString *name, NSString *superName, NSDictionary *iVars)
 void
 GSObjCAddClasses(NSArray *classes)
 {
-  NSUInteger	numClasses = [classes count];
-  NSUInteger	i;
+    NSUInteger numClasses = [classes count];
+    NSUInteger i;
 
-  for (i = 0; i < numClasses; i++)
+    for (i = 0; i < numClasses; i++)
     {
-      objc_registerClassPair((Class)[[classes objectAtIndex: i] pointerValue]);
+        objc_registerClassPair((Class)[[classes objectAtIndex:i] pointerValue]);
     }
 }
 
-
 
 static BOOL behavior_debug = NO;
 
 BOOL
 GSObjCBehaviorDebug(int i)
 {
-  BOOL	old = behavior_debug;
+    BOOL old = behavior_debug;
 
-  if (i == YES)
+    if (i == YES)
     {
-      behavior_debug = YES;
+        behavior_debug = YES;
     }
-  else if (i == NO)
+    else if (i == NO)
     {
-      behavior_debug = NO;
+        behavior_debug = NO;
     }
-  return old;
+    return old;
 }
 
 void
 GSObjCAddMethods(Class cls, Method *list, BOOL replace)
 {
-  unsigned int	index = 0;
-  char		c;
-  Method	m;
+    unsigned int index = 0;
+    char c;
+    Method m;
 
-  if (cls == 0 || list == 0)
+    if (cls == 0 || list == 0)
     {
-      return;
+        return;
     }
-  c = class_isMetaClass(cls) ? '+' : '-';
+    c = class_isMetaClass(cls) ? '+' : '-';
 
-  while ((m = list[index++]) != NULL)
+    while ((m = list[index++]) != NULL)
     {
-      SEL		n = method_getName(m);
-      IMP		i = method_getImplementation(m);
-      const char	*t = method_getTypeEncoding(m);
+        SEL n = method_getName(m);
+        IMP i = method_getImplementation(m);
+        const char    *t = method_getTypeEncoding(m);
 
-      /* This will override a superclass method but will not replace a
-       * method which already exists in the class itsself.
-       */
-      if (YES == class_addMethod(cls, n, i, t))
-	{
-          BDBGPrintf("    added %c%s\n", c, sel_getName(n));
-	}
-      else if (YES == replace)
-	{
-	  /* If we want to replace an existing implemetation ...
-	   */
-	  method_setImplementation(class_getInstanceMethod(cls, n), i);
-          BDBGPrintf("    replaced %c%s\n", c, sel_getName(n));
-	} 
-      else
-	{
-          BDBGPrintf("    skipped %c%s\n", c, sel_getName(n));
-	}
+        /* This will override a superclass method but will not replace a
+         * method which already exists in the class itsself.
+         */
+        if (YES == class_addMethod(cls, n, i, t))
+        {
+            BDBGPrintf("    added %c%s\n", c, sel_getName(n));
+        }
+        else if (YES == replace)
+        {
+            /* If we want to replace an existing implemetation ...
+             */
+            method_setImplementation(class_getInstanceMethod(cls, n), i);
+            BDBGPrintf("    replaced %c%s\n", c, sel_getName(n));
+        }
+        else
+        {
+            BDBGPrintf("    skipped %c%s\n", c, sel_getName(n));
+        }
     }
 }
 
 GSMethod
 GSGetMethod(Class cls, SEL sel,
-  BOOL searchInstanceMethods,
-  BOOL searchSuperClasses)
+            BOOL searchInstanceMethods,
+            BOOL searchSuperClasses)
 {
-  if (cls == 0 || sel == 0)
+    if (cls == 0 || sel == 0)
     {
-      return 0;
+        return 0;
     }
 
-  if (searchSuperClasses == NO)
+    if (searchSuperClasses == NO)
     {
-      unsigned int	count;
-      Method		method = NULL;
-      Method		*methods;
+        unsigned int count;
+        Method method = NULL;
+        Method        *methods;
 
-      if (searchInstanceMethods == NO)
-	{
-	  methods = class_copyMethodList(object_getClass(cls), &count);
-	}
-      else
-	{
-	  methods = class_copyMethodList(cls, &count);
-	}
-      if (methods != NULL)
-	{
-	  unsigned int	index = 0;
+        if (searchInstanceMethods == NO)
+        {
+            methods = class_copyMethodList(object_getClass(cls), &count);
+        }
+        else
+        {
+            methods = class_copyMethodList(cls, &count);
+        }
+        if (methods != NULL)
+        {
+            unsigned int index = 0;
 
-	  while ((method = methods[index++]) != NULL)
-	    {
-	      if (sel_isEqual(sel, method_getName(method)))
-		{
-		  break;
-		}
-	    }
-	  free(methods);
-	}
-      return method;
+            while ((method = methods[index++]) != NULL)
+            {
+                if (sel_isEqual(sel, method_getName(method)))
+                {
+                    break;
+                }
+            }
+            free(methods);
+        }
+        return method;
     }
-  else
+    else
     {
-      if (searchInstanceMethods == NO)
-	{
-	  return class_getClassMethod(cls, sel);
-	}
-      else
-	{
-	  return class_getInstanceMethod(cls, sel);
-	}
+        if (searchInstanceMethods == NO)
+        {
+            return class_getClassMethod(cls, sel);
+        }
+        else
+        {
+            return class_getInstanceMethod(cls, sel);
+        }
     }
 }
 
@@ -574,86 +603,93 @@ GSGetMethod(Class cls, SEL sel,
 static inline const char *
 gs_skip_type_qualifier_and_layout_info (const char *types)
 {
-  while (*types == '+'
-    || *types == '-'
-    || *types == _C_CONST
-    || *types == _C_IN
-    || *types == _C_INOUT
-    || *types == _C_OUT
-    || *types == _C_BYCOPY
-    || *types == _C_BYREF
-    || *types == _C_ONEWAY
-    || *types == _C_GCINVISIBLE
-    || isdigit ((unsigned char) *types))
+    while (*types == '+'
+           || *types == '-'
+           || *types == _C_CONST
+           || *types == _C_IN
+           || *types == _C_INOUT
+           || *types == _C_OUT
+           || *types == _C_BYCOPY
+#ifdef _C_BYREF
+           || *types == _C_BYREF
+#endif
+           || *types == _C_ONEWAY
+#ifdef _C_GCINVISIBLE
+           || *types == _C_GCINVISIBLE
+#endif
+           || isdigit ((unsigned char) *types))
     {
-      types++;
+        types++;
     }
 
-  return types;
+    return types;
 }
 
 /* See header for documentation. */
 GS_EXPORT BOOL
 GSSelectorTypesMatch(const char *types1, const char *types2)
 {
-  if (! types1 || ! types2)
-    return NO;
-
-  while (*types1 && *types2)
-    {
-      types1 = gs_skip_type_qualifier_and_layout_info (types1);
-      types2 = gs_skip_type_qualifier_and_layout_info (types2);
-
-      /* Reached the end of the selector.  */
-      if (! *types1 && ! *types2)
-        return YES;
-
-      /* Ignore structure name yet compare layout.  */
-      if (*types1 == '{' && *types2 == '{')
-	{
-	  while (*types1 != '=' && *types1 != '}')
-	    types1++;
-
-	  while (*types2 != '=' && *types2 != '}')
-	    types2++;
-	}
-
-      if (*types1 != *types2)
+    if (!types1 || !types2) {
         return NO;
-
-      types1++;
-      types2++;
     }
 
-  types1 = gs_skip_type_qualifier_and_layout_info (types1);
-  types2 = gs_skip_type_qualifier_and_layout_info (types2);
+    while (*types1 && *types2)
+    {
+        types1 = gs_skip_type_qualifier_and_layout_info (types1);
+        types2 = gs_skip_type_qualifier_and_layout_info (types2);
 
-  return (! *types1 && ! *types2);
+        /* Reached the end of the selector.  */
+        if (!*types1 && !*types2) {
+            return YES;
+        }
+
+        /* Ignore structure name yet compare layout.  */
+        if (*types1 == '{' && *types2 == '{')
+        {
+            while (*types1 != '=' && *types1 != '}')
+                types1++;
+
+            while (*types2 != '=' && *types2 != '}')
+                types2++;
+        }
+
+        if (*types1 != *types2) {
+            return NO;
+        }
+
+        types1++;
+        types2++;
+    }
+
+    types1 = gs_skip_type_qualifier_and_layout_info (types1);
+    types2 = gs_skip_type_qualifier_and_layout_info (types2);
+
+    return (!*types1 && !*types2);
 }
 
 /* See header for documentation. */
 GSIVar
 GSCGetInstanceVariableDefinition(Class cls, const char *name)
 {
-  return class_getInstanceVariable(cls, name);
+    return class_getInstanceVariable(cls, name);
 }
 
 GSIVar
 GSObjCGetInstanceVariableDefinition(Class cls, NSString *name)
 {
-  return class_getInstanceVariable(cls, [name UTF8String]);
+    return class_getInstanceVariable(cls, [name UTF8String]);
 }
 
 
 static inline unsigned int
 gs_string_hash(const char *s)
 {
-  unsigned int val = 0;
-  while (*s != 0)
+    unsigned int val = 0;
+    while (*s != 0)
     {
-      val = (val << 5) + val + *s++;
+        val = (val << 5) + val + *s++;
     }
-  return val;
+    return val;
 }
 
 #define GSI_MAP_HAS_VALUE 1
@@ -680,256 +716,253 @@ static pthread_mutex_t protocol_by_name_lock = PTHREAD_MUTEX_INITIALIZER;
 static void
 gs_init_protocol_lock(void)
 {
-  pthread_mutex_lock(&protocol_by_name_lock);
-  if (protocol_by_name_init == NO)
-  	{
-	  GSIMapInitWithZoneAndCapacity (&protocol_by_name,
-					 NSDefaultMallocZone(),
-					 128);
-	  protocol_by_name_init = YES;
-	}
-  pthread_mutex_unlock(&protocol_by_name_lock);
+    pthread_mutex_lock(&protocol_by_name_lock);
+    if (protocol_by_name_init == NO)
+    {
+        GSIMapInitWithZoneAndCapacity (&protocol_by_name,
+                                       NSDefaultMallocZone(),
+                                       128);
+        protocol_by_name_init = YES;
+    }
+    pthread_mutex_unlock(&protocol_by_name_lock);
 }
 
 void
 GSRegisterProtocol(Protocol *proto)
 {
-  if (protocol_by_name_init == NO)
+    if (protocol_by_name_init == NO)
     {
-      gs_init_protocol_lock();
+        gs_init_protocol_lock();
     }
 
-  if (proto != nil)
+    if (proto != nil)
     {
-      GSIMapNode node;
+        GSIMapNode node;
 
-      pthread_mutex_lock(&protocol_by_name_lock);
-      node = GSIMapNodeForKey(&protocol_by_name,
-	(GSIMapKey)protocol_getName(proto));
-      if (node == 0)
-	{
-	  GSIMapAddPairNoRetain(&protocol_by_name,
-	    (GSIMapKey)(void*)protocol_getName(proto),
-	    (GSIMapVal)(void*)proto);
-	}
-      pthread_mutex_unlock(&protocol_by_name_lock);
+        pthread_mutex_lock(&protocol_by_name_lock);
+        node = GSIMapNodeForKey(&protocol_by_name,
+                                (GSIMapKey)protocol_getName(proto));
+        if (node == 0)
+        {
+            GSIMapAddPairNoRetain(&protocol_by_name,
+                                  (GSIMapKey)(void*)protocol_getName(proto),
+                                  (GSIMapVal)(void*)proto);
+        }
+        pthread_mutex_unlock(&protocol_by_name_lock);
     }
 }
 
 Protocol *
 GSProtocolFromName(const char *name)
 {
-  GSIMapNode node;
-  Protocol *p;
+    GSIMapNode node;
+    Protocol *p;
 
-  if (protocol_by_name_init == NO)
+    if (protocol_by_name_init == NO)
     {
-      gs_init_protocol_lock();
+        gs_init_protocol_lock();
     }
 
-  node = GSIMapNodeForKey(&protocol_by_name, (GSIMapKey) name);
-  if (node)
+    node = GSIMapNodeForKey(&protocol_by_name, (GSIMapKey) name);
+    if (node)
     {
-      p = node->value.ptr;
+        p = node->value.ptr;
     }
-  else
+    else
     {
-      pthread_mutex_lock(&protocol_by_name_lock);
-      node = GSIMapNodeForKey(&protocol_by_name, (GSIMapKey) name);
+        pthread_mutex_lock(&protocol_by_name_lock);
+        node = GSIMapNodeForKey(&protocol_by_name, (GSIMapKey) name);
 
-      if (node)
-	{
-	  p = node->value.ptr;
-	}
-      else
-	{
-	  p = objc_getProtocol(name);
-	  if (p)
-	    {
-	      /* Use the protocol's name to save us from allocating
-		 a copy of the parameter 'name'.  */
-	      GSIMapAddPairNoRetain(&protocol_by_name,
-	        (GSIMapKey)(void*)protocol_getName(p),
-		(GSIMapVal)(void*)p);
-	    }
-	}
-      pthread_mutex_unlock(&protocol_by_name_lock);
-
+        if (node)
+        {
+            p = node->value.ptr;
+        }
+        else
+        {
+            p = objc_getProtocol(name);
+            if (p)
+            {
+                /* Use the protocol's name to save us from allocating
+                   a copy of the parameter 'name'.  */
+                GSIMapAddPairNoRetain(&protocol_by_name,
+                                      (GSIMapKey)(void*)protocol_getName(p),
+                                      (GSIMapVal)(void*)p);
+            }
+        }
+        pthread_mutex_unlock(&protocol_by_name_lock);
     }
 
-  return p;
+    return p;
 }
 
 struct objc_method_description
 GSProtocolGetMethodDescriptionRecursive(Protocol *aProtocol, SEL aSel, BOOL isRequired, BOOL isInstance)
 {
-  struct objc_method_description desc;
+    struct objc_method_description desc;
 
-  desc = protocol_getMethodDescription(aProtocol, aSel, isRequired, isInstance);
-  if (desc.name == NULL && desc.types == NULL)
+    desc = protocol_getMethodDescription(aProtocol, aSel, isRequired, isInstance);
+    if (desc.name == NULL && desc.types == NULL)
     {
-      Protocol **list;
-      unsigned int count;
-      list = protocol_copyProtocolList(aProtocol, &count);
-      if (list != NULL)
+        Protocol **list;
+        unsigned int count;
+        list = protocol_copyProtocolList(aProtocol, &count);
+        if (list != NULL)
         {
-          unsigned int i;
-          for (i = 0; i < count; i++)
+            unsigned int i;
+            for (i = 0; i < count; i++)
             {
-              desc = GSProtocolGetMethodDescriptionRecursive(list[i], aSel, isRequired, isInstance);
-              if (desc.name != NULL || desc.types != NULL)
+                desc = GSProtocolGetMethodDescriptionRecursive(list[i], aSel, isRequired, isInstance);
+                if (desc.name != NULL || desc.types != NULL)
                 {
-                  return desc;
+                    return desc;
                 }
             }
-          free(list);
+            free(list);
         }
     }
 
-  return desc;
+    return desc;
 }
 
 void
 GSObjCAddClassBehavior(Class receiver, Class behavior)
 {
-  unsigned int	count;
-  Method	*methods;
-  Class behavior_super_class = class_getSuperclass(behavior);
+    unsigned int count;
+    Method    *methods;
+    Class behavior_super_class = class_getSuperclass(behavior);
 
-  if (YES == class_isMetaClass(receiver))
+    if (YES == class_isMetaClass(receiver))
     {
-      fprintf(stderr, "Trying to add behavior (%s) to meta class (%s)\n",
-	class_getName(behavior), class_getName(receiver));
-      abort();
+        fprintf(stderr, "Trying to add behavior (%s) to meta class (%s)\n",
+                class_getName(behavior), class_getName(receiver));
+        abort();
     }
-  if (YES == class_isMetaClass(behavior))
+    if (YES == class_isMetaClass(behavior))
     {
-      fprintf(stderr, "Trying to add meta class as behavior (%s) to (%s)\n",
-	class_getName(behavior), class_getName(receiver));
-      abort();
+        fprintf(stderr, "Trying to add meta class as behavior (%s) to (%s)\n",
+                class_getName(behavior), class_getName(receiver));
+        abort();
     }
-  if (class_getInstanceSize(receiver) < class_getInstanceSize(behavior))
+    if (class_getInstanceSize(receiver) < class_getInstanceSize(behavior))
     {
-      const char *b = class_getName(behavior);
-      const char *r = class_getName(receiver);
+        const char *b = class_getName(behavior);
+        const char *r = class_getName(receiver);
 
 #ifdef NeXT_Foundation_LIBRARY
-      fprintf(stderr, "Trying to add behavior (%s) with instance "
-	"size larger than class (%s)\n", b, r);
-      abort();
+        fprintf(stderr, "Trying to add behavior (%s) with instance "
+                        "size larger than class (%s)\n", b, r);
+        abort();
 #else
-      /* As a special case we allow adding GSString/GSCString to the
-       * constant string class ... since we know the base library
-       * takes care not to access non-existent instance variables.
-       */
-      if ((strcmp(b, "GSCString") && strcmp(b, "GSString"))
-        || (strcmp(r, "NSConstantString") && strcmp(r, "NXConstantString")))
-	{
-	  fprintf(stderr, "Trying to add behavior (%s) with instance "
-	    "size larger than class (%s)\n", b, r);
-          abort();
-	}
+        /* As a special case we allow adding GSString/GSCString to the
+         * constant string class ... since we know the base library
+         * takes care not to access non-existent instance variables.
+         */
+        if ((strcmp(b, "GSCString") && strcmp(b, "GSString"))
+            || (strcmp(r, "NSConstantString") && strcmp(r, "NXConstantString")))
+        {
+            fprintf(stderr, "Trying to add behavior (%s) with instance "
+                            "size larger than class (%s)\n", b, r);
+            abort();
+        }
 #endif
     }
 
-  BDBGPrintf("Adding behavior to class %s\n", class_getName(receiver));
+    BDBGPrintf("Adding behavior to class %s\n", class_getName(receiver));
 
-  /* Add instance methods */
-  methods = class_copyMethodList(behavior, &count);
-  BDBGPrintf("  instance methods from %s %u\n", class_getName(behavior), count);
-  if (methods == NULL)
+    /* Add instance methods */
+    methods = class_copyMethodList(behavior, &count);
+    BDBGPrintf("  instance methods from %s %u\n", class_getName(behavior), count);
+    if (methods == NULL)
     {
-      BDBGPrintf("    none.\n");
+        BDBGPrintf("    none.\n");
     }
-  else
+    else
     {
-      GSObjCAddMethods (receiver, methods, NO);
-      free(methods);
-    }
-
-  /* Add class methods */
-  methods = class_copyMethodList(object_getClass(behavior), &count);
-  BDBGPrintf("  class methods from %s %u\n", class_getName(behavior), count);
-  if (methods == NULL)
-    {
-      BDBGPrintf("    none.\n");
-    }
-  else
-    {
-      GSObjCAddMethods (object_getClass(receiver), methods, NO);
-      free(methods);
+        GSObjCAddMethods (receiver, methods, NO);
+        free(methods);
     }
 
-  /* Add behavior's superclass, if not already there. */
-  if (!GSObjCIsKindOf(receiver, behavior_super_class))
+    /* Add class methods */
+    methods = class_copyMethodList(object_getClass(behavior), &count);
+    BDBGPrintf("  class methods from %s %u\n", class_getName(behavior), count);
+    if (methods == NULL)
     {
-      GSObjCAddClassBehavior (receiver, behavior_super_class);
+        BDBGPrintf("    none.\n");
     }
-  GSFlushMethodCacheForClass (receiver);
+    else
+    {
+        GSObjCAddMethods (object_getClass(receiver), methods, NO);
+        free(methods);
+    }
+
+    /* Add behavior's superclass, if not already there. */
+    if (!GSObjCIsKindOf(receiver, behavior_super_class))
+    {
+        GSObjCAddClassBehavior (receiver, behavior_super_class);
+    }
+    GSFlushMethodCacheForClass (receiver);
 }
 
 void
 GSObjCAddClassOverride(Class receiver, Class override)
 {
-  unsigned int	count;
-  Method	*methods;
+    unsigned int count;
+    Method    *methods;
 
-  if (YES == class_isMetaClass(receiver))
+    if (YES == class_isMetaClass(receiver))
     {
-      fprintf(stderr, "Trying to add override (%s) to meta class (%s)\n",
-	class_getName(override), class_getName(receiver));
-      abort();
+        fprintf(stderr, "Trying to add override (%s) to meta class (%s)\n",
+                class_getName(override), class_getName(receiver));
+        abort();
     }
-  if (YES == class_isMetaClass(override))
+    if (YES == class_isMetaClass(override))
     {
-      fprintf(stderr, "Trying to add meta class as override (%s) to (%s)\n",
-	class_getName(override), class_getName(receiver));
-      abort();
+        fprintf(stderr, "Trying to add meta class as override (%s) to (%s)\n",
+                class_getName(override), class_getName(receiver));
+        abort();
     }
-  if (class_getInstanceSize(receiver) < class_getInstanceSize(override))
+    if (class_getInstanceSize(receiver) < class_getInstanceSize(override))
     {
-      fprintf(stderr, "Trying to add override (%s) with instance "
-	"size larger than class (%s)\n",
-	class_getName(override), class_getName(receiver));
-      abort();
-    }
-
-  BDBGPrintf("Adding override to class %s\n", class_getName(receiver));
-
-  /* Add instance methods */
-  methods = class_copyMethodList(override, &count);
-  BDBGPrintf("  instance methods from %s %u\n", class_getName(override), count);
-  if (methods == NULL)
-    {
-      BDBGPrintf("    none.\n");
-    }
-  else
-    {
-      GSObjCAddMethods (receiver, methods, YES);
-      free(methods);
+        fprintf(stderr, "Trying to add override (%s) with instance "
+                        "size larger than class (%s)\n",
+                class_getName(override), class_getName(receiver));
+        abort();
     }
 
-  /* Add class methods */
-  methods = class_copyMethodList(object_getClass(override), &count);
-  BDBGPrintf("  class methods from %s %u\n", class_getName(override), count);
-  if (methods == NULL)
+    BDBGPrintf("Adding override to class %s\n", class_getName(receiver));
+
+    /* Add instance methods */
+    methods = class_copyMethodList(override, &count);
+    BDBGPrintf("  instance methods from %s %u\n", class_getName(override), count);
+    if (methods == NULL)
     {
-      BDBGPrintf("    none.\n");
+        BDBGPrintf("    none.\n");
     }
-  else
+    else
     {
-      GSObjCAddMethods (object_getClass(receiver), methods, YES);
-      free(methods);
+        GSObjCAddMethods (receiver, methods, YES);
+        free(methods);
     }
-  GSFlushMethodCacheForClass (receiver);
+
+    /* Add class methods */
+    methods = class_copyMethodList(object_getClass(override), &count);
+    BDBGPrintf("  class methods from %s %u\n", class_getName(override), count);
+    if (methods == NULL)
+    {
+        BDBGPrintf("    none.\n");
+    }
+    else
+    {
+        GSObjCAddMethods (object_getClass(receiver), methods, YES);
+        free(methods);
+    }
+    GSFlushMethodCacheForClass (receiver);
 }
 
 
-
-
 #ifndef NeXT_Foundation_LIBRARY
-#import	"Foundation/NSValue.h"
-#import	"Foundation/NSKeyValueCoding.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSKeyValueCoding.h"
 #endif
 
 
@@ -945,415 +978,415 @@ GSObjCAddClassOverride(Class receiver, Class override)
  */
 id
 GSObjCGetVal(NSObject *self, const char *key, SEL sel,
-	       const char *type, unsigned size, int offset)
+             const char *type, unsigned size, int offset)
 {
-  NSMethodSignature	*sig = nil;
+    NSMethodSignature *sig = nil;
 
-  if (sel != 0)
+    if (sel != 0)
     {
-      sig = [self methodSignatureForSelector: sel];
-      if ([sig numberOfArguments] != 2)
-	{
-	  [NSException raise: NSInvalidArgumentException
-		      format: @"key-value get method has wrong number of args"];
-	}
-      type = [sig methodReturnType];
+        sig = [self methodSignatureForSelector:sel];
+        if ([sig numberOfArguments] != 2)
+        {
+            [NSException raise:NSInvalidArgumentException
+             format:@"key-value get method has wrong number of args"];
+        }
+        type = [sig methodReturnType];
     }
-  if (type == NULL)
+    if (type == NULL)
     {
-      return [self valueForUndefinedKey: [NSString stringWithUTF8String: key]];
+        return [self valueForUndefinedKey:[NSString stringWithUTF8String:key]];
     }
-  else
+    else
     {
-      id	val = nil;
+        id val = nil;
 
-      switch (*type)
-	{
-	  case _C_ID:
-	  case _C_CLASS:
-	    {
-	      id	v;
+        switch (*type)
+        {
+        case _C_ID:
+        case _C_CLASS:
+        {
+            id v;
 
-	      if (sel == 0)
-		{
-		  v = *(id *)((char *)self + offset);
-		}
-	      else
-		{
-		  id	(*imp)(id, SEL) =
-		    (id (*)(id, SEL))[self methodForSelector: sel];
-
-		  v = (*imp)(self, sel);
-		}
-	      val = v;
-	    }
-	    break;
-
-	  case _C_CHR:
-	    {
-	      signed char	v;
-
-	      if (sel == 0)
-		{
-		  v = *(char *)((char *)self + offset);
-		}
-	      else
-		{
-		  signed char	(*imp)(id, SEL) =
-		    (signed char (*)(id, SEL))[self methodForSelector: sel];
-
-		  v = (*imp)(self, sel);
-		}
-	      val = [NSNumber numberWithChar: v];
-	    }
-	    break;
-
-	  case _C_UCHR:
-	    {
-	      unsigned char	v;
-
-	      if (sel == 0)
-		{
-		  v = *(unsigned char *)((char *)self + offset);
-		}
-	      else
-		{
-		  unsigned char	(*imp)(id, SEL) =
-		    (unsigned char (*)(id, SEL))[self methodForSelector:
-		    sel];
-
-		  v = (*imp)(self, sel);
-		}
-	      val = [NSNumber numberWithUnsignedChar: v];
-	    }
-	    break;
-
-	  case _C_SHT:
-	    {
-	      short	v;
-
-	      if (sel == 0)
-		{
-		  v = *(short *)((char *)self + offset);
-		}
-	      else
-		{
-		  short	(*imp)(id, SEL) =
-		    (short (*)(id, SEL))[self methodForSelector: sel];
-
-		  v = (*imp)(self, sel);
-		}
-	      val = [NSNumber numberWithShort: v];
-	    }
-	    break;
-
-	  case _C_USHT:
-	    {
-	      unsigned short	v;
-
-	      if (sel == 0)
-		{
-		  v = *(unsigned short *)((char *)self + offset);
-		}
-	      else
-		{
-		  unsigned short	(*imp)(id, SEL) =
-		    (unsigned short (*)(id, SEL))[self methodForSelector:
-		    sel];
-
-		  v = (*imp)(self, sel);
-		}
-	      val = [NSNumber numberWithUnsignedShort: v];
-	    }
-	    break;
-
-	  case _C_INT:
-	    {
-	      int	v;
-
-	      if (sel == 0)
-		{
-		  v = *(int *)((char *)self + offset);
-		}
-	      else
-		{
-		  int	(*imp)(id, SEL) =
-		    (int (*)(id, SEL))[self methodForSelector: sel];
-
-		  v = (*imp)(self, sel);
-		}
-	      val = [NSNumber numberWithInt: v];
-	    }
-	    break;
-
-	  case _C_UINT:
-	    {
-	      unsigned int	v;
-
-	      if (sel == 0)
-		{
-		  v = *(unsigned int *)((char *)self + offset);
-		}
-	      else
-		{
-		  unsigned int	(*imp)(id, SEL) =
-		    (unsigned int (*)(id, SEL))[self methodForSelector:
-		    sel];
-
-		  v = (*imp)(self, sel);
-		}
-	      val = [NSNumber numberWithUnsignedInt: v];
-	    }
-	    break;
-
-	  case _C_LNG:
-	    {
-	      long	v;
-
-	      if (sel == 0)
-		{
-		  v = *(long *)((char *)self + offset);
-		}
-	      else
-		{
-		  long	(*imp)(id, SEL) =
-		    (long (*)(id, SEL))[self methodForSelector: sel];
-
-		  v = (*imp)(self, sel);
-		}
-	      val = [NSNumber numberWithLong: v];
-	    }
-	    break;
-
-	  case _C_ULNG:
-	    {
-	      unsigned long	v;
-
-	      if (sel == 0)
-		{
-		  v = *(unsigned long *)((char *)self + offset);
-		}
-	      else
-		{
-		  unsigned long	(*imp)(id, SEL) =
-		    (unsigned long (*)(id, SEL))[self methodForSelector:
-		    sel];
-
-		  v = (*imp)(self, sel);
-		}
-	      val = [NSNumber numberWithUnsignedLong: v];
-	    }
-	    break;
-
-#ifdef	_C_LNG_LNG
-	  case _C_LNG_LNG:
-	    {
-	      long long	v;
-
-	      if (sel == 0)
-		{
-		  v = *(long long *)((char *)self + offset);
-		}
-	      else
-		{
-		   long long	(*imp)(id, SEL) =
-		    (long long (*)(id, SEL))[self methodForSelector: sel];
-
-		  v = (*imp)(self, sel);
-		}
-	      val = [NSNumber numberWithLongLong: v];
-	    }
-	    break;
-#endif
-
-#ifdef	_C_ULNG_LNG
-	  case _C_ULNG_LNG:
-	    {
-	      unsigned long long	v;
-
-	      if (sel == 0)
-		{
-		  v = *(unsigned long long *)((char *)self + offset);
-		}
-	      else
-		{
-		  unsigned long long	(*imp)(id, SEL) =
-		    (unsigned long long (*)(id, SEL))[self
-		    methodForSelector: sel];
-
-		  v = (*imp)(self, sel);
-		}
-	      val = [NSNumber numberWithUnsignedLongLong: v];
-	    }
-	    break;
-#endif
-
-	  case _C_FLT:
-	    {
-	      float	v;
-
-	      if (sel == 0)
-		{
-		  v = *(float *)((char *)self + offset);
-		}
-	      else
-		{
-		  float	(*imp)(id, SEL) =
-		    (float (*)(id, SEL))[self methodForSelector: sel];
-
-		  v = (*imp)(self, sel);
-		}
-	      val = [NSNumber numberWithFloat: v];
-	    }
-	    break;
-
-	  case _C_DBL:
-	    {
-	      double	v;
-
-	      if (sel == 0)
-		{
-		  v = *(double *)((char *)self + offset);
-		}
-	      else
-		{
-		  double	(*imp)(id, SEL) =
-		    (double (*)(id, SEL))[self methodForSelector: sel];
-
-		  v = (*imp)(self, sel);
-		}
-	      val = [NSNumber numberWithDouble: v];
-	    }
-	    break;
-
-	  case _C_VOID:
+            if (sel == 0)
             {
-              void        (*imp)(id, SEL) =
-                (void (*)(id, SEL))[self methodForSelector: sel];
-
-              (*imp)(self, sel);
+                v = *(id *)((char *)self + offset);
             }
+            else
+            {
+                id (*imp)(id, SEL) =
+                    (id (*)(id, SEL))[self methodForSelector : sel];
+
+                v = (*imp)(self, sel);
+            }
+            val = v;
+        }
+        break;
+
+        case _C_CHR:
+        {
+            signed char v;
+
+            if (sel == 0)
+            {
+                v = *(char *)((char *)self + offset);
+            }
+            else
+            {
+                signed char (*imp)(id, SEL) =
+                    (signed char (*)(id, SEL))[self methodForSelector : sel];
+
+                v = (*imp)(self, sel);
+            }
+            val = [NSNumber numberWithChar:v];
+        }
+        break;
+
+        case _C_UCHR:
+        {
+            unsigned char v;
+
+            if (sel == 0)
+            {
+                v = *(unsigned char *)((char *)self + offset);
+            }
+            else
+            {
+                unsigned char (*imp)(id, SEL) =
+                    (unsigned char (*)(id, SEL))[self methodForSelector :
+                                                 sel];
+
+                v = (*imp)(self, sel);
+            }
+            val = [NSNumber numberWithUnsignedChar:v];
+        }
+        break;
+
+        case _C_SHT:
+        {
+            short v;
+
+            if (sel == 0)
+            {
+                v = *(short *)((char *)self + offset);
+            }
+            else
+            {
+                short (*imp)(id, SEL) =
+                    (short (*)(id, SEL))[self methodForSelector : sel];
+
+                v = (*imp)(self, sel);
+            }
+            val = [NSNumber numberWithShort:v];
+        }
+        break;
+
+        case _C_USHT:
+        {
+            unsigned short v;
+
+            if (sel == 0)
+            {
+                v = *(unsigned short *)((char *)self + offset);
+            }
+            else
+            {
+                unsigned short (*imp)(id, SEL) =
+                    (unsigned short (*)(id, SEL))[self methodForSelector :
+                                                  sel];
+
+                v = (*imp)(self, sel);
+            }
+            val = [NSNumber numberWithUnsignedShort:v];
+        }
+        break;
+
+        case _C_INT:
+        {
+            int v;
+
+            if (sel == 0)
+            {
+                v = *(int *)((char *)self + offset);
+            }
+            else
+            {
+                int (*imp)(id, SEL) =
+                    (int (*)(id, SEL))[self methodForSelector : sel];
+
+                v = (*imp)(self, sel);
+            }
+            val = [NSNumber numberWithInt:v];
+        }
+        break;
+
+        case _C_UINT:
+        {
+            unsigned int v;
+
+            if (sel == 0)
+            {
+                v = *(unsigned int *)((char *)self + offset);
+            }
+            else
+            {
+                unsigned int (*imp)(id, SEL) =
+                    (unsigned int (*)(id, SEL))[self methodForSelector :
+                                                sel];
+
+                v = (*imp)(self, sel);
+            }
+            val = [NSNumber numberWithUnsignedInt:v];
+        }
+        break;
+
+        case _C_LNG:
+        {
+            long v;
+
+            if (sel == 0)
+            {
+                v = *(long *)((char *)self + offset);
+            }
+            else
+            {
+                long (*imp)(id, SEL) =
+                    (long (*)(id, SEL))[self methodForSelector : sel];
+
+                v = (*imp)(self, sel);
+            }
+            val = [NSNumber numberWithLong:v];
+        }
+        break;
+
+        case _C_ULNG:
+        {
+            unsigned long v;
+
+            if (sel == 0)
+            {
+                v = *(unsigned long *)((char *)self + offset);
+            }
+            else
+            {
+                unsigned long (*imp)(id, SEL) =
+                    (unsigned long (*)(id, SEL))[self methodForSelector :
+                                                 sel];
+
+                v = (*imp)(self, sel);
+            }
+            val = [NSNumber numberWithUnsignedLong:v];
+        }
+        break;
+
+#ifdef  _C_LNG_LNG
+        case _C_LNG_LNG:
+        {
+            long long v;
+
+            if (sel == 0)
+            {
+                v = *(long long *)((char *)self + offset);
+            }
+            else
+            {
+                long long (*imp)(id, SEL) =
+                    (long long (*)(id, SEL))[self methodForSelector : sel];
+
+                v = (*imp)(self, sel);
+            }
+            val = [NSNumber numberWithLongLong:v];
+        }
+        break;
+#endif
+
+#ifdef  _C_ULNG_LNG
+        case _C_ULNG_LNG:
+        {
+            unsigned long long v;
+
+            if (sel == 0)
+            {
+                v = *(unsigned long long *)((char *)self + offset);
+            }
+            else
+            {
+                unsigned long long (*imp)(id, SEL) =
+                    (unsigned long long (*)(id, SEL))[self
+methodForSelector: sel];
+
+                v = (*imp)(self, sel);
+            }
+            val = [NSNumber numberWithUnsignedLongLong:v];
+        }
+        break;
+#endif
+
+        case _C_FLT:
+        {
+            float v;
+
+            if (sel == 0)
+            {
+                v = *(float *)((char *)self + offset);
+            }
+            else
+            {
+                float (*imp)(id, SEL) =
+                    (float (*)(id, SEL))[self methodForSelector : sel];
+
+                v = (*imp)(self, sel);
+            }
+            val = [NSNumber numberWithFloat:v];
+        }
+        break;
+
+        case _C_DBL:
+        {
+            double v;
+
+            if (sel == 0)
+            {
+                v = *(double *)((char *)self + offset);
+            }
+            else
+            {
+                double (*imp)(id, SEL) =
+                    (double (*)(id, SEL))[self methodForSelector : sel];
+
+                v = (*imp)(self, sel);
+            }
+            val = [NSNumber numberWithDouble:v];
+        }
+        break;
+
+        case _C_VOID:
+        {
+            void (*imp)(id, SEL) =
+                (void (*)(id, SEL))[self methodForSelector : sel];
+
+            (*imp)(self, sel);
+        }
             val = nil;
             break;
 
-          case _C_STRUCT_B:
-            if (strcmp(@encode(NSPoint), type) == 0)
-              {
-                NSPoint	v;
+        case _C_STRUCT_B:
+            if (strcmp(POINT_ENCODING, type) == 0)
+            {
+                PointStruct v;
 
                 if (sel == 0)
-                  {
+                {
                     memcpy((char*)&v, ((char *)self + offset), sizeof(v));
-                  }
+                }
                 else
-                  {
-                    NSPoint	(*imp)(id, SEL) =
-                      (NSPoint (*)(id, SEL))[self methodForSelector: sel];
+                {
+                    PointStruct (*imp)(id, SEL) =
+                        (PointStruct (*)(id, SEL))[self methodForSelector : sel];
 
                     v = (*imp)(self, sel);
-                  }
-                val = [NSValue valueWithPoint: v];
-              }
+                }
+                val = [NSValue valueWithBytes:&v objCType:POINT_ENCODING];
+            }
             else if (strcmp(@encode(NSRange), type) == 0)
-              {
-                NSRange	v;
+            {
+                NSRange v;
 
                 if (sel == 0)
-                  {
+                {
                     memcpy((char*)&v, ((char *)self + offset), sizeof(v));
-                  }
+                }
                 else
-                  {
-                    NSRange	(*imp)(id, SEL) =
-                      (NSRange (*)(id, SEL))[self methodForSelector: sel];
+                {
+                    NSRange (*imp)(id, SEL) =
+                        (NSRange (*)(id, SEL))[self methodForSelector : sel];
 
                     v = (*imp)(self, sel);
-                  }
-                val = [NSValue valueWithRange: v];
-              }
-            else if (strcmp(@encode(NSRect), type) == 0)
-              {
-                NSRect	v;
+                }
+                val = [NSValue valueWithRange:v];
+            }
+            else if (strcmp(RECT_ENCODING, type) == 0)
+            {
+                RectStruct v;
 
                 if (sel == 0)
-                  {
+                {
                     memcpy((char*)&v, ((char *)self + offset), sizeof(v));
-                  }
+                }
                 else
-                  {
-                    NSRect	(*imp)(id, SEL) =
-                      (NSRect (*)(id, SEL))[self methodForSelector: sel];
+                {
+                    RectStruct (*imp)(id, SEL) =
+                        (RectStruct (*)(id, SEL))[self methodForSelector : sel];
 
                     v = (*imp)(self, sel);
-                  }
-                val = [NSValue valueWithRect: v];
-              }
-            else if (strcmp(@encode(NSSize), type) == 0)
-              {
-                NSSize	v;
+                }
+                val = [NSValue valueWithBytes:&v objCType:RECT_ENCODING];
+            }
+            else if (strcmp(SIZE_ENCODING, type) == 0)
+            {
+                SizeStruct v;
 
                 if (sel == 0)
-                  {
+                {
                     memcpy((char*)&v, ((char *)self + offset), sizeof(v));
-                  }
+                }
                 else
-                  {
-                    NSSize	(*imp)(id, SEL) =
-                      (NSSize (*)(id, SEL))[self methodForSelector: sel];
+                {
+                    SizeStruct (*imp)(id, SEL) =
+                        (SizeStruct (*)(id, SEL))[self methodForSelector : sel];
 
                     v = (*imp)(self, sel);
-                  }
-                val = [NSValue valueWithSize: v];
-              }
+                }
+                val = [NSValue valueWithBytes:&v objCType:SIZE_ENCODING];
+            }
             else
-              {
+            {
                 if (sel == 0)
-                  {
-		    return [NSValue valueWithBytes: ((char *)self + offset)
-					  objCType: type];
-                  }
+                {
+                    return [NSValue valueWithBytes:((char *)self + offset)
+                            objCType:type];
+                }
                 else
-                  {
-		    NSInvocation	*inv;
-		    size_t		retSize;
+                {
+                    NSInvocation    *inv;
+                    size_t retSize;
 
-		    inv = [NSInvocation invocationWithMethodSignature: sig];
-		    [inv setSelector: sel];
-		    [inv invokeWithTarget: self];
-		    retSize = [sig methodReturnLength];
-		    {
-		      char ret[retSize];
+                    inv = [NSInvocation invocationWithMethodSignature:sig];
+                    [inv setSelector:sel];
+                    [inv invokeWithTarget:self];
+                    retSize = [sig methodReturnLength];
+                    {
+                        char ret[retSize];
 
-		      [inv getReturnValue: ret];
-		      return [NSValue valueWithBytes: ret objCType: type];
-		    }
-                  }
-              }
+                        [inv getReturnValue:ret];
+                        return [NSValue valueWithBytes:ret objCType:type];
+                    }
+                }
+            }
             break;
 
-	  default:
+        default:
 #ifdef __GNUSTEP_RUNTIME__
-	    {
-	      Class		cls;
-	      struct objc_slot	*type_slot;
-	      SEL		typed;
-	      struct objc_slot	*slot;
+            {
+                Class cls;
+                struct objc_slot  *type_slot;
+                SEL typed;
+                struct objc_slot  *slot;
 
-	      cls = [self class];
-	      type_slot = objc_get_slot(cls, @selector(retain));
-	      typed = sel_registerTypedName_np(sel_getName(sel),
-		type_slot->types);
-	      slot = objc_get_slot(cls, typed);
-	      if (strcmp(slot->types, type_slot->types) == 0)
-		{
-		  return slot->method(self, typed);
-		}
-	    }
+                cls = [self class];
+                type_slot = objc_get_slot(cls, @selector(retain));
+                typed = sel_registerTypedName_np(sel_getName(sel),
+                                                 type_slot->types);
+                slot = objc_get_slot(cls, typed);
+                if (strcmp(slot->types, type_slot->types) == 0)
+                {
+                    return slot->method(self, typed);
+                }
+            }
 #endif
-	    val = [self valueForUndefinedKey:
-	      [NSString stringWithUTF8String: key]];
-	}
-      return val;
+            val = [self valueForUndefinedKey:
+                   [NSString stringWithUTF8String:key]];
+        }
+        return val;
     }
 }
 
@@ -1362,9 +1395,9 @@ GSObjCGetVal(NSObject *self, const char *key, SEL sel,
  */
 id
 GSObjCGetValue(NSObject *self, NSString *key, SEL sel,
-	       const char *type, unsigned size, int offset)
+               const char *type, unsigned size, int offset)
 {
-  return GSObjCGetVal(self, [key UTF8String], sel, type, size, offset);
+    return GSObjCGetVal(self, [key UTF8String], sel, type, size, offset);
 }
 
 /**
@@ -1378,411 +1411,451 @@ GSObjCGetValue(NSObject *self, NSString *key, SEL sel,
  * to set a value.
  */
 void
-GSObjCSetVal(NSObject *self, const char *key, id val, SEL sel,
-  const char *type, unsigned size, int offset)
+GSObjCSetVal(NSObject *self, const char *key, id val, SEL sel, const char *type, unsigned size, int offset)
 {
-  static NSNull		*null = nil;
-  NSMethodSignature	*sig = nil;
+    static NSNull *null = nil;
+    NSMethodSignature *sig = nil;
 
-  if (null == nil)
+    if (self == NULL)
     {
-      null = [NSNull new];
+        return;
     }
-  if (sel != 0)
+
+    if (null == nil)
     {
-      sig = [self methodSignatureForSelector: sel];
-      if ([sig numberOfArguments] != 3)
-	{
-	  [NSException raise: NSInvalidArgumentException
-		      format: @"key-value set method has wrong number of args"];
-	}
-      type = [sig getArgumentTypeAtIndex: 2];
+        null = [NSNull new];
     }
-  if (type == NULL)
+    if (sel != 0)
     {
-      [self setValue: val forUndefinedKey:
-	[NSString stringWithUTF8String: key]];
+        sig = [self methodSignatureForSelector:sel];
+        if ([sig numberOfArguments] != 3)
+        {
+            [NSException raise:NSInvalidArgumentException format:@"key-value set method has wrong number of args"];
+            return;
+        }
+        type = [sig getArgumentTypeAtIndex:2];
     }
-  else if ((val == nil || val == null) && *type != _C_ID && *type != _C_CLASS)
+    if (type == NULL)
     {
-      [self setNilValueForKey: [NSString stringWithUTF8String: key]];
+        [self setValue:val forUndefinedKey:[NSString stringWithUTF8String:key]];
     }
-  else
+    else if ((val == nil || val == null) && *type != _C_ID && *type != _C_CLASS)
     {
-      switch (*type)
-	{
-	  case _C_ID:
-	  case _C_CLASS:
-	    {
-	      id	v = val;
+        [self setNilValueForKey:[NSString stringWithUTF8String:key]];
+    }
+    else
+    {
+        switch (*type)
+        {
+        case _C_ID:
+        case _C_CLASS:
+        {
+            id v = val;
 
-	      if (sel == 0)
-		{
-		  id *ptr = (id *)((char *)self + offset);
+            if (sel == 0)
+            {
+                id *ptr = (id *)((char *)self + offset);
 
-		  ASSIGN(*ptr, v);
-		}
-	      else
-		{
-		  void	(*imp)(id, SEL, id) =
-		    (void (*)(id, SEL, id))[self methodForSelector: sel];
+                ASSIGN(*ptr, v);
+            }
+            else
+            {
+                void (*imp)(id, SEL, id) = (void (*)(id, SEL, id))[self methodForSelector : sel];
+                if (imp != NULL)
+                {
+                    imp(self, sel, val);
+                }
+            }
+        }
+        break;
+        case _C_BOOL:
+        {
+            BOOL v = [val boolValue];
 
-		  (*imp)(self, sel, val);
-		}
-	    }
-	    break;
+            if (sel == 0)
+            {
+                BOOL *ptr = (BOOL *)((BOOL *)self + offset);
 
-	  case _C_CHR:
-	    {
-	      char	v = [val charValue];
+                *ptr = v;
+            }
+            else
+            {
+                void (*imp)(id, SEL, BOOL) = (void (*)(id, SEL, BOOL))[self methodForSelector : sel];
+                if (imp != NULL)
+                {
+                    imp(self, sel, v);
+                }
+            }
+        }
+        break;
+        case _C_CHR:
+        {
+            char v = [val charValue];
 
-	      if (sel == 0)
-		{
-		  char *ptr = (char *)((char *)self + offset);
+            if (sel == 0)
+            {
+                char *ptr = (char *)((char *)self + offset);
 
-		  *ptr = v;
-		}
-	      else
-		{
-		  void	(*imp)(id, SEL, char) =
-		    (void (*)(id, SEL, char))[self methodForSelector: sel];
+                *ptr = v;
+            }
+            else
+            {
+                void (*imp)(id, SEL, char) = (void (*)(id, SEL, char))[self methodForSelector : sel];
+                if (imp != NULL)
+                {
+                    imp(self, sel, v);
+                }
+            }
+        }
+        break;
 
-		  (*imp)(self, sel, v);
-		}
-	    }
-	    break;
+        case _C_UCHR:
+        {
+            unsigned char v = [val unsignedCharValue];
 
-	  case _C_UCHR:
-	    {
-	      unsigned char	v = [val unsignedCharValue];
+            if (sel == 0)
+            {
+                unsigned char *ptr = (unsigned char*)((char *)self + offset);
 
-	      if (sel == 0)
-		{
-		  unsigned char *ptr = (unsigned char*)((char *)self + offset);
+                *ptr = v;
+            }
+            else
+            {
+                void (*imp)(id, SEL, unsigned char) = (void (*)(id, SEL, unsigned char))[self methodForSelector : sel];
+                if (imp != NULL)
+                {
+                    imp(self, sel, v);
+                }
+            }
+        }
+        break;
 
-		  *ptr = v;
-		}
-	      else
-		{
-		  void	(*imp)(id, SEL, unsigned char) =
-		    (void (*)(id, SEL, unsigned char))[self methodForSelector:
-		    sel];
+        case _C_SHT:
+        {
+            short v = [val shortValue];
 
-		  (*imp)(self, sel, v);
-		}
-	    }
-	    break;
+            if (sel == 0)
+            {
+                short *ptr = (short*)((char *)self + offset);
 
-	  case _C_SHT:
-	    {
-	      short	v = [val shortValue];
+                *ptr = v;
+            }
+            else
+            {
+                void (*imp)(id, SEL, short) = (void (*)(id, SEL, short))[self methodForSelector : sel];
+                if (imp != NULL)
+                {
+                    imp(self, sel, v);
+                }
+            }
+        }
+        break;
 
-	      if (sel == 0)
-		{
-		  short *ptr = (short*)((char *)self + offset);
+        case _C_USHT:
+        {
+            unsigned short v = [val unsignedShortValue];
 
-		  *ptr = v;
-		}
-	      else
-		{
-		  void	(*imp)(id, SEL, short) =
-		    (void (*)(id, SEL, short))[self methodForSelector: sel];
+            if (sel == 0)
+            {
+                unsigned short *ptr;
 
-		  (*imp)(self, sel, v);
-		}
-	    }
-	    break;
+                ptr = (unsigned short*)((char *)self + offset);
+                *ptr = v;
+            }
+            else
+            {
+                void (*imp)(id, SEL, unsigned short) = (void (*)(id, SEL, unsigned short))[self methodForSelector : sel];
+                if (imp != NULL)
+                {
+                    imp(self, sel, v);
+                }
+            }
+        }
+        break;
 
-	  case _C_USHT:
-	    {
-	      unsigned short	v = [val unsignedShortValue];
+        case _C_INT:
+        {
+            int v = [val intValue];
 
-	      if (sel == 0)
-		{
-		  unsigned short *ptr;
+            if (sel == 0)
+            {
+                int *ptr = (int*)((char *)self + offset);
 
-		  ptr = (unsigned short*)((char *)self + offset);
-		  *ptr = v;
-		}
-	      else
-		{
-		  void	(*imp)(id, SEL, unsigned short) =
-		    (void (*)(id, SEL, unsigned short))[self methodForSelector:
-		    sel];
+                *ptr = v;
+            }
+            else
+            {
+                void (*imp)(id, SEL, int) = (void (*)(id, SEL, int))[self methodForSelector : sel];
+                if (imp != NULL)
+                {
+                    imp(self, sel, v);
+                }
+            }
+        }
+        break;
 
-		  (*imp)(self, sel, v);
-		}
-	    }
-	    break;
+        case _C_UINT:
+        {
+            unsigned int v = [val unsignedIntValue];
 
-	  case _C_INT:
-	    {
-	      int	v = [val intValue];
+            if (sel == 0)
+            {
+                unsigned int *ptr = (unsigned int*)((char *)self + offset);
 
-	      if (sel == 0)
-		{
-		  int *ptr = (int*)((char *)self + offset);
+                *ptr = v;
+            }
+            else
+            {
+                void (*imp)(id, SEL, unsigned int) = (void (*)(id, SEL, unsigned int))[self methodForSelector : sel];
+                if (imp != NULL)
+                {
+                    imp(self, sel, v);
+                }
+            }
+        }
+        break;
 
-		  *ptr = v;
-		}
-	      else
-		{
-		  void	(*imp)(id, SEL, int) =
-		    (void (*)(id, SEL, int))[self methodForSelector: sel];
+        case _C_LNG:
+        {
+            long v = [val longValue];
 
-		  (*imp)(self, sel, v);
-		}
-	    }
-	    break;
+            if (sel == 0)
+            {
+                long *ptr = (long*)((char *)self + offset);
 
-	  case _C_UINT:
-	    {
-	      unsigned int	v = [val unsignedIntValue];
+                *ptr = v;
+            }
+            else
+            {
+                void (*imp)(id, SEL, long) = (void (*)(id, SEL, long))[self methodForSelector : sel];
+                if (imp != NULL)
+                {
+                    imp(self, sel, v);
+                }
+            }
+        }
+        break;
 
-	      if (sel == 0)
-		{
-		  unsigned int *ptr = (unsigned int*)((char *)self + offset);
+        case _C_ULNG:
+        {
+            unsigned long v = [val unsignedLongValue];
 
-		  *ptr = v;
-		}
-	      else
-		{
-		  void	(*imp)(id, SEL, unsigned int) =
-		    (void (*)(id, SEL, unsigned int))[self methodForSelector:
-		    sel];
+            if (sel == 0)
+            {
+                unsigned long *ptr = (unsigned long*)((char *)self + offset);
 
-		  (*imp)(self, sel, v);
-		}
-	    }
-	    break;
+                *ptr = v;
+            }
+            else
+            {
+                void (*imp)(id, SEL, unsigned long) = (void (*)(id, SEL, unsigned long))[self methodForSelector : sel];
+                if (imp != NULL)
+                {
+                    imp(self, sel, v);
+                }
+            }
+        }
+        break;
 
-	  case _C_LNG:
-	    {
-	      long	v = [val longValue];
+#ifdef  _C_LNG_LNG
+        case _C_LNG_LNG:
+        {
+            long long v = [val longLongValue];
 
-	      if (sel == 0)
-		{
-		  long *ptr = (long*)((char *)self + offset);
+            if (sel == 0)
+            {
+                long long *ptr = (long long*)((char *)self + offset);
 
-		  *ptr = v;
-		}
-	      else
-		{
-		  void	(*imp)(id, SEL, long) =
-		    (void (*)(id, SEL, long))[self methodForSelector: sel];
-
-		  (*imp)(self, sel, v);
-		}
-	    }
-	    break;
-
-	  case _C_ULNG:
-	    {
-	      unsigned long	v = [val unsignedLongValue];
-
-	      if (sel == 0)
-		{
-		  unsigned long *ptr = (unsigned long*)((char *)self + offset);
-
-		  *ptr = v;
-		}
-	      else
-		{
-		  void	(*imp)(id, SEL, unsigned long) =
-		    (void (*)(id, SEL, unsigned long))[self methodForSelector:
-		    sel];
-
-		  (*imp)(self, sel, v);
-		}
-	    }
-	    break;
-
-#ifdef	_C_LNG_LNG
-	  case _C_LNG_LNG:
-	    {
-	      long long	v = [val longLongValue];
-
-	      if (sel == 0)
-		{
-		  long long *ptr = (long long*)((char *)self + offset);
-
-		  *ptr = v;
-		}
-	      else
-		{
-		  void	(*imp)(id, SEL, long long) =
-		    (void (*)(id, SEL, long long))[self methodForSelector: sel];
-
-		  (*imp)(self, sel, v);
-		}
-	    }
-	    break;
+                *ptr = v;
+            }
+            else
+            {
+                void (*imp)(id, SEL, long long) = (void (*)(id, SEL, long long))[self methodForSelector : sel];
+                if (imp != NULL)
+                {
+                    imp(self, sel, v);
+                }
+            }
+        }
+        break;
 #endif
 
-#ifdef	_C_ULNG_LNG
-	  case _C_ULNG_LNG:
-	    {
-	      unsigned long long	v = [val unsignedLongLongValue];
+#ifdef  _C_ULNG_LNG
+        case _C_ULNG_LNG:
+        {
+            unsigned long long v = [val unsignedLongLongValue];
 
-	      if (sel == 0)
-		{
-		  unsigned long long *ptr = (unsigned long long*)((char*)self +
-								  offset);
+            if (sel == 0)
+            {
+                unsigned long long *ptr = (unsigned long long*)((char*)self + offset);
 
-		  *ptr = v;
-		}
-	      else
-		{
-		  void	(*imp)(id, SEL, unsigned long long) =
-		    (void (*)(id, SEL, unsigned long long))[self
-		    methodForSelector: sel];
-
-		  (*imp)(self, sel, v);
-		}
-	    }
-	    break;
+                *ptr = v;
+            }
+            else
+            {
+                void (*imp)(id, SEL, unsigned long long) = (void (*)(id, SEL, unsigned long long))[self methodForSelector : sel];
+                if (imp != NULL)
+                {
+                    imp(self, sel, v);
+                }
+            }
+        }
+        break;
 #endif
 
-	  case _C_FLT:
-	    {
-	      float	v = [val floatValue];
+        case _C_FLT:
+        {
+            float v = [val floatValue];
 
-	      if (sel == 0)
-		{
-		  float *ptr = (float*)((char *)self + offset);
+            if (sel == 0)
+            {
+                float *ptr = (float*)((char *)self + offset);
 
-		  *ptr = v;
-		}
-	      else
-		{
-		  void	(*imp)(id, SEL, float) =
-		    (void (*)(id, SEL, float))[self methodForSelector: sel];
+                *ptr = v;
+            }
+            else
+            {
+                void (*imp)(id, SEL, float) = (void (*)(id, SEL, float))[self methodForSelector : sel];
+                if (imp != NULL)
+                {
+                    imp(self, sel, v);
+                }
+            }
+        }
+        break;
 
-		  (*imp)(self, sel, v);
-		}
-	    }
-	    break;
+        case _C_DBL:
+        {
+            double v = [val doubleValue];
 
-	  case _C_DBL:
-	    {
-	      double	v = [val doubleValue];
+            if (sel == 0)
+            {
+                double *ptr = (double*)((char *)self + offset);
 
-	      if (sel == 0)
-		{
-		  double *ptr = (double*)((char *)self + offset);
+                *ptr = v;
+            }
+            else
+            {
+                void (*imp)(id, SEL, double) = (void (*)(id, SEL, double))[self methodForSelector : sel];
+                if (imp != NULL)
+                {
+                    imp(self, sel, v);
+                }
+            }
+        }
+        break;
 
-		  *ptr = v;
-		}
-	      else
-		{
-		  void	(*imp)(id, SEL, double) =
-		    (void (*)(id, SEL, double))[self methodForSelector: sel];
+        case _C_STRUCT_B:
+            if (strcmp(POINT_ENCODING, type) == 0)
+            {
+                PointStruct v;
 
-		  (*imp)(self, sel, v);
-		}
-	    }
-	    break;
-
-          case _C_STRUCT_B:
-            if (strcmp(@encode(NSPoint), type) == 0)
-              {
-                NSPoint	v = [val pointValue];
+                [val getValue:&v];
 
                 if (sel == 0)
-                  {
-                    NSPoint *ptr = (NSPoint*)((char *)self + offset);
+                {
+                    PointStruct *ptr = (PointStruct*)((char *)self + offset);
 
                     *ptr = v;
-                  }
+                }
                 else
-                  {
-                    void	(*imp)(id, SEL, NSPoint) =
-                      (void (*)(id, SEL, NSPoint))[self methodForSelector: sel];
-
-                    (*imp)(self, sel, v);
-                  }
-              }
+                {
+                    void (*imp)(id, SEL, PointStruct) = (void (*)(id, SEL, PointStruct))[self methodForSelector : sel];
+                    if (imp != NULL)
+                    {
+                        imp(self, sel, v);
+                    }
+                }
+            }
             else if (strcmp(@encode(NSRange), type) == 0)
-              {
-                NSRange	v = [val rangeValue];
+            {
+                NSRange v = [val rangeValue];
 
                 if (sel == 0)
-                  {
+                {
                     NSRange *ptr = (NSRange*)((char *)self + offset);
 
                     *ptr = v;
-                  }
+                }
                 else
-                  {
-                    void	(*imp)(id, SEL, NSRange) =
-                      (void (*)(id, SEL, NSRange))[self methodForSelector: sel];
-
-                    (*imp)(self, sel, v);
-                  }
-              }
-            else if (strcmp(@encode(NSRect), type) == 0)
-              {
-                NSRect	v = [val rectValue];
+                {
+                    void (*imp)(id, SEL, NSRange) =
+                        (void (*)(id, SEL, NSRange))[self methodForSelector : sel];
+                    if (imp != NULL)
+                    {
+                        imp(self, sel, v);
+                    }
+                }
+            }
+            else if (strcmp(RECT_ENCODING, type) == 0)
+            {
+                RectStruct v;
+                [val getValue:&v];
 
                 if (sel == 0)
-                  {
-                    NSRect *ptr = (NSRect*)((char *)self + offset);
+                {
+                    RectStruct *ptr = (RectStruct*)((char *)self + offset);
 
                     *ptr = v;
-                  }
+                }
                 else
-                  {
-                    void	(*imp)(id, SEL, NSRect) =
-                      (void (*)(id, SEL, NSRect))[self methodForSelector: sel];
-
-                    (*imp)(self, sel, v);
-                  }
-              }
-            else if (strcmp(@encode(NSSize), type) == 0)
-              {
-                NSSize	v = [val sizeValue];
+                {
+                    void (*imp)(id, SEL, RectStruct) =
+                        (void (*)(id, SEL, RectStruct))[self methodForSelector : sel];
+                    if (imp != NULL)
+                    {
+                        imp(self, sel, v);
+                    }
+                }
+            }
+            else if (strcmp(SIZE_ENCODING, type) == 0)
+            {
+                SizeStruct v;
+                [val getValue:&v];
 
                 if (sel == 0)
-                  {
-                    NSSize *ptr = (NSSize*)((char *)self + offset);
+                {
+                    SizeStruct *ptr = (SizeStruct*)((char *)self + offset);
 
                     *ptr = v;
-                  }
+                }
                 else
-                  {
-                    void	(*imp)(id, SEL, NSSize) =
-                      (void (*)(id, SEL, NSSize))[self methodForSelector: sel];
-
-                    (*imp)(self, sel, v);
-                  }
-              }
+                {
+                    void (*imp)(id, SEL, SizeStruct) =
+                        (void (*)(id, SEL, SizeStruct))[self methodForSelector : sel];
+                    if (imp != NULL)
+                    {
+                        imp(self, sel, v);
+                    }
+                }
+            }
             else
-              {
-		NSUInteger	size;
+            {
+                NSUInteger argSize;
 
-		NSGetSizeAndAlignment(type, &size, 0);
+                NSGetSizeAndAlignment(type, &argSize, 0);
                 if (sel == 0)
-                  {
-		    [val getValue: ((char *)self + offset)];
-		  }
-		else
-		  {
-		    NSInvocation	*inv;
-		    char		buf[size];
+                {
+                    [val getValue:((char *)self + offset)];
+                }
+                else
+                {
+                    NSInvocation  *inv;
+                    char buf[argSize];
 
-		    [val getValue: buf];
-		    inv = [NSInvocation invocationWithMethodSignature: sig];
-		    [inv setSelector: sel];
-		    [inv setArgument: buf atIndex: 2];
-		    [inv invokeWithTarget: self];
-		  }
-              }
+                    [val getValue:buf];
+                    inv = [NSInvocation invocationWithMethodSignature:sig];
+                    [inv setSelector:sel];
+                    [inv setArgument:buf atIndex:2];
+                    [inv invokeWithTarget:self];
+                }
+            }
             break;
 
-	  default:
-            [self setValue: val forUndefinedKey:
-	      [NSString stringWithUTF8String: key]];
-	}
+        default:
+            [self setValue:val forUndefinedKey:[NSString stringWithUTF8String:key]];
+            return;
+        }
     }
 }
 
@@ -1791,42 +1864,41 @@ GSObjCSetVal(NSObject *self, const char *key, id val, SEL sel,
  */
 void
 GSObjCSetValue(NSObject *self, NSString *key, id val, SEL sel,
-	       const char *type, unsigned size, int offset)
+               const char *type, unsigned size, int offset)
 {
-  GSObjCSetVal(self, [key UTF8String], val, sel, type, size, offset);
+    GSObjCSetVal(self, [key UTF8String], val, sel, type, size, offset);
 }
 
-
 /** Returns an autoreleased array of subclasses of Class cls, including
  *  subclasses of subclasses. */
 NSArray *GSObjCAllSubclassesOfClass(Class cls)
 {
-  if (!cls)
+    if (!cls)
     {
-      return nil;
+        return nil;
     }
-  else
+    else
     {
-      NSMutableArray	*result;
-      Class		*classes;
-      int 		numClasses;
-      int		i;
+        NSMutableArray    *result;
+        Class     *classes;
+        int numClasses;
+        int i;
 
-      numClasses = objc_getClassList(NULL, 0);
-      classes = NSZoneMalloc(NSDefaultMallocZone(), numClasses*sizeof(Class));
-      objc_getClassList(classes, numClasses);
-      result = [NSMutableArray array];
-      for (i = 0; i < numClasses; i++)
-	{
-	  Class	c = classes[i];
+        numClasses = objc_getClassList(NULL, 0);
+        classes = NSZoneMalloc(NSDefaultMallocZone(), numClasses*sizeof(Class));
+        objc_getClassList(classes, numClasses);
+        result = [NSMutableArray array];
+        for (i = 0; i < numClasses; i++)
+        {
+            Class c = classes[i];
 
-	  if (YES == GSObjCIsKindOf(c, cls) && cls != c)
-	    {
-	      [result addObject: c];
-	    }
-	}
-      NSZoneFree(NSDefaultMallocZone(), classes);
-      return result;
+            if (YES == GSObjCIsKindOf(c, cls) && cls != c)
+            {
+                [result addObject:c];
+            }
+        }
+        NSZoneFree(NSDefaultMallocZone(), classes);
+        return result;
     }
 }
 
@@ -1834,76 +1906,71 @@ NSArray *GSObjCAllSubclassesOfClass(Class cls)
  *  Class cls. */
 NSArray *GSObjCDirectSubclassesOfClass(Class cls)
 {
-  if (!cls)
+    if (!cls)
     {
-      return nil;
+        return nil;
     }
-  else
+    else
     {
-      NSMutableArray	*result;
-      Class		*classes;
-      int 		numClasses;
-      int		i;
+        NSMutableArray    *result;
+        Class     *classes;
+        int numClasses;
+        int i;
 
-      numClasses = objc_getClassList(NULL, 0);
-      classes = NSZoneMalloc(NSDefaultMallocZone(), numClasses*sizeof(Class));
-      objc_getClassList(classes, numClasses);
-      result = [NSMutableArray array];
-      for (i = 0; i < numClasses; i++)
-	{
-	  Class	c = classes[i];
+        numClasses = objc_getClassList(NULL, 0);
+        classes = NSZoneMalloc(NSDefaultMallocZone(), numClasses*sizeof(Class));
+        objc_getClassList(classes, numClasses);
+        result = [NSMutableArray array];
+        for (i = 0; i < numClasses; i++)
+        {
+            Class c = classes[i];
 
-	  if (class_getSuperclass(c) == cls)
-	    {
-	      [result addObject: c];
-	    }
-	}
-      NSZoneFree(NSDefaultMallocZone(), classes);
-      return result;
+            if (class_getSuperclass(c) == cls)
+            {
+                [result addObject:c];
+            }
+        }
+        NSZoneFree(NSDefaultMallocZone(), classes);
+        return result;
     }
 }
 
-@interface 	GSAutoreleasedMemory : NSObject
+@interface  GSAutoreleasedMemory : NSObject
 @end
-@implementation	GSAutoreleasedMemory
+@implementation GSAutoreleasedMemory
 @end
 
 void *
 GSAutoreleasedBuffer(unsigned size)
 {
-#if GS_WITH_GC
-  return NSAllocateCollectable(size, NSScannedOption);
-#else
 #ifdef ALIGN
 #undef ALIGN
 #endif
 #define ALIGN __alignof__(double)
 
-  static Class	buffer_class = 0;
-  static Class	autorelease_class;
-  static SEL	autorelease_sel;
-  static IMP	autorelease_imp;
-  static int	instance_size;
-  static int	offset;
-  NSObject	*o;
+    static Class buffer_class = 0;
+    static Class autorelease_class;
+    static SEL autorelease_sel;
+    static IMP autorelease_imp;
+    static int instance_size;
+    static int offset;
+    NSObject  *o;
 
-  if (buffer_class == 0)
+    if (buffer_class == 0)
     {
-      buffer_class = [GSAutoreleasedMemory class];
-      instance_size = class_getInstanceSize(buffer_class);
-      offset = instance_size % ALIGN;
-      autorelease_class = [NSAutoreleasePool class];
-      autorelease_sel = @selector(addObject:);
-      autorelease_imp = [autorelease_class methodForSelector: autorelease_sel];
+        buffer_class = [GSAutoreleasedMemory class];
+        instance_size = class_getInstanceSize(buffer_class);
+        offset = instance_size % ALIGN;
+        autorelease_class = [NSAutoreleasePool class];
+        autorelease_sel = @selector(addObject:);
+        autorelease_imp = [autorelease_class methodForSelector:autorelease_sel];
     }
-  o = (NSObject*)NSAllocateObject(buffer_class,
-    size + offset, NSDefaultMallocZone());
-  (*autorelease_imp)(autorelease_class, autorelease_sel, o);
-  return ((void*)o) + instance_size + offset;
-#endif
+    o = (NSObject*)NSAllocateObject(buffer_class,
+                                    size + offset, NSDefaultMallocZone());
+    (*autorelease_imp)(autorelease_class, autorelease_sel, o);
+    return ((void*)o) + instance_size + offset;
 }
 
-
 
 /*
  * Deprecated function.
@@ -1911,47 +1978,46 @@ GSAutoreleasedBuffer(unsigned size)
 const char *
 GSLastErrorStr(long error_id)
 {
-  return [[[NSError _last] localizedDescription] cString];
+    return [[[NSError _last] localizedDescription] cString];
 }
 
-
 
 BOOL
 GSPrintf (FILE *fptr, NSString* format, ...)
 {
-  static Class                  stringClass = 0;
-  static NSStringEncoding       enc;
-  CREATE_AUTORELEASE_POOL(arp);
-  va_list       ap;
-  NSString      *message;
-  NSData        *data;
-  BOOL          ok = NO;
+    static Class stringClass = 0;
+    static NSStringEncoding enc;
+    CREATE_AUTORELEASE_POOL(arp);
+    va_list ap;
+    NSString      *message;
+    NSData        *data;
+    BOOL ok = NO;
 
-  if (stringClass == 0)
+    if (stringClass == 0)
     {
-      stringClass = [NSString class];
-      enc = [stringClass defaultCStringEncoding];
+        stringClass = [NSString class];
+        enc = [stringClass defaultCStringEncoding];
     }
-  message = [stringClass allocWithZone: NSDefaultMallocZone()];
-  va_start (ap, format);
-  message = [message initWithFormat: format locale: nil arguments: ap];
-  va_end (ap);
-  data = [message dataUsingEncoding: enc];
-  if (data == nil)
+    message = [stringClass allocWithZone:NSDefaultMallocZone()];
+    va_start (ap, format);
+    message = [message initWithFormat:format locale:nil arguments:ap];
+    va_end (ap);
+    data = [message dataUsingEncoding:enc];
+    if (data == nil)
     {
-      data = [message dataUsingEncoding: NSUTF8StringEncoding];
+        data = [message dataUsingEncoding:NSUTF8StringEncoding];
     }
-  RELEASE(message);
+    RELEASE(message);
 
-  if (data != nil)
+    if (data != nil)
     {
-      unsigned int      length = [data length];
+        unsigned int length = [data length];
 
-      if (length == 0 || fwrite([data bytes], 1, length, fptr) == length)
+        if (length == 0 || fwrite([data bytes], 1, length, fptr) == length)
         {
-          ok = YES;
+            ok = YES;
         }
     }
-  RELEASE(arp);
-  return ok;
+    RELEASE(arp);
+    return ok;
 }

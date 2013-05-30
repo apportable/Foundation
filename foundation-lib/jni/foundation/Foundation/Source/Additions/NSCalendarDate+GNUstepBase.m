@@ -21,7 +21,7 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-*/
+ */
 #import "common.h"
 #import "Foundation/NSAutoreleasePool.h"
 #import "GNUstepBase/NSCalendarDate+GNUstepBase.h"
@@ -41,50 +41,50 @@
  * last day of the year is a monday tuesday or wednesday, these days are
  * part of week 1 of the next year.
  */
-- (NSInteger) weekOfYear
+- (NSInteger)weekOfYear
 {
-  NSInteger	dayOfWeek = [self dayOfWeek];
-  NSInteger	dayOfYear;
+    NSInteger dayOfWeek = [self dayOfWeek];
+    NSInteger dayOfYear;
 
-  /*
-   * Whether a week is considered to be in a year or not depends on its
-   * thursday ... so find thursday for the receivers week.
-   * NB. this may result in a date which is not in the same year as the
-   * receiver.
-   */
-  if (dayOfWeek != 4)
+    /*
+     * Whether a week is considered to be in a year or not depends on its
+     * thursday ... so find thursday for the receivers week.
+     * NB. this may result in a date which is not in the same year as the
+     * receiver.
+     */
+    if (dayOfWeek != 4)
     {
-      CREATE_AUTORELEASE_POOL(arp);
-      NSCalendarDate	*thursday;
+        CREATE_AUTORELEASE_POOL(arp);
+        NSCalendarDate    *thursday;
 
-      /*
-       * A week starts on monday ... so adjust from 0 to 7 so that a
-       * sunday is counted as the last day of the week.
-       */
-      if (dayOfWeek == 0)
-	{
-	  dayOfWeek = 7;
-	}
-      thursday = [self dateByAddingYears: 0
-				  months: 0
-				    days: 4 - dayOfWeek
-				   hours: 0
-				 minutes: 0
-				 seconds: 0];
-      dayOfYear = [thursday dayOfYear];
-      RELEASE(arp);
+        /*
+         * A week starts on monday ... so adjust from 0 to 7 so that a
+         * sunday is counted as the last day of the week.
+         */
+        if (dayOfWeek == 0)
+        {
+            dayOfWeek = 7;
+        }
+        thursday = [self dateByAddingYears:0
+                    months:0
+                    days:4 - dayOfWeek
+                    hours:0
+                    minutes:0
+                    seconds:0];
+        dayOfYear = [thursday dayOfYear];
+        RELEASE(arp);
     }
-  else
+    else
     {
-      dayOfYear = [self dayOfYear];
+        dayOfYear = [self dayOfYear];
     }
 
-  /*
-   * Round up to a week boundary, so that when we divide by seven we
-   * get a result in the range 1 to 53 as mandated by the ISO standard.
-   */
-  dayOfYear += (7 - dayOfYear % 7);
-  return dayOfYear / 7;
+    /*
+     * Round up to a week boundary, so that when we divide by seven we
+     * get a result in the range 1 to 53 as mandated by the ISO standard.
+     */
+    dayOfYear += (7 - dayOfYear % 7);
+    return dayOfYear / 7;
 }
 
 @end

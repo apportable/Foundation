@@ -6,7 +6,7 @@
     (to compile on gnu/linux and mswindows,
     to meet coding/style standards,
     to restore lost functionality)
-   
+
    Date: February 2010
 
    This file is part of the GNUstep Base Library.
@@ -26,16 +26,16 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-   */
+ */
 
 
 #import "common.h"
 
-#if	!defined(LLONG_MAX)
-#  if	defined(__LONG_LONG_MAX__)
+#if !defined(LLONG_MAX)
+#  if   defined(__LONG_LONG_MAX__)
 #    define LLONG_MAX __LONG_LONG_MAX__
-#    define LLONG_MIN	(-LLONG_MAX-1)
-#    define ULLONG_MAX	(LLONG_MAX * 2ULL + 1)
+#    define LLONG_MIN   (-LLONG_MAX-1)
+#    define ULLONG_MAX  (LLONG_MAX * 2ULL + 1)
 #  else
 #    error Neither LLONG_MAX nor __LONG_LONG_MAX__ found
 #  endif
@@ -63,8 +63,8 @@
 
 @interface NSIntNumber : NSSignedIntegerNumber
 {
-@public
-  int value;
+    @public
+    int value;
 }
 @end
 
@@ -76,101 +76,103 @@
 
 @interface NSLongLongNumber : NSSignedIntegerNumber
 {
-@public
-  long long int value;
+    @public
+    long long int value;
 }
 @end
 
 @interface NSUnsignedLongLongNumber : NSNumber
 {
-@public
-  unsigned long long int value;
+    @public
+    unsigned long long int value;
 }
 @end
 
 // The value ivar in all of the concrete classes contains the real value.
 #define VALUE value
+// We must compare for equality or else we fail on NaNs (which are neither
+// greater nor less than other).
 #define COMPARE(value, other) \
-if (value < other)\
-  {\
-    return NSOrderedAscending;\
-  }\
-if (value > other)\
-  {\
-    return NSOrderedDescending;\
-  }\
-return NSOrderedSame;
+    if (value == other) \
+    { \
+        return NSOrderedSame; \
+    } \
+    if (value > other) \
+    { \
+        return NSOrderedDescending; \
+    } \
+    return NSOrderedAscending;
 
 @implementation NSSignedIntegerNumber
-- (NSComparisonResult) compare: (NSNumber*)aNumber
+- (NSComparisonResult)compare:(NSNumber*)aNumber
 {
-  if (aNumber == self)
+    if (aNumber == self)
     {
-      return NSOrderedSame;
+        return NSOrderedSame;
     }
-  if (aNumber == nil)
+    if (aNumber == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"nil argument for compare:"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"nil argument for compare:"];
     }
 
-  switch ([aNumber objCType][0])
+    switch ([aNumber objCType][0])
     {
-      /* For cases smaller than or equal to an int, we could get the int
-       * value and compare.
-       */
-      case 'c':
-      case 'C':
-      case 's':
-      case 'S':
-      case 'i':
-      case 'I':
-      case 'l':
-      case 'L':
-      case 'q':
-	{
-	  long long value = [self longLongValue];
-	  long long other = [aNumber longLongValue];
+    /* For cases smaller than or equal to an int, we could get the int
+     * value and compare.
+     */
+    case 'c':
+    case 'C':
+    case 's':
+    case 'S':
+    case 'i':
+    case 'I':
+    case 'l':
+    case 'L':
+    case 'q':
+    {
+        long long value = [self longLongValue];
+        long long other = [aNumber longLongValue];
 
-	  COMPARE (value, other);
-	}
-      case 'Q':
-	{
-	  unsigned long long other;
-	  unsigned long long value;
-	  long long v;
-
-	  /* According to the C type promotion rules, we should cast this to
-	   * an unsigned long long, however Apple's code does not do this.
-	   * Instead, it performs a real comparison.
-	   */
-	  v = [self longLongValue];
-
-	  /* If this value is less than 0, then it is less than any value
-	   * that can possibly be stored in an unsigned value.
-	   */
-	  if (v < 0)
-	    {
-	      return NSOrderedAscending;
-	    }
-
-	  other = [aNumber unsignedLongLongValue];
-	  value = (unsigned long long) v;
-	  COMPARE (value, other);
-	}
-      case 'f':
-      case 'd':
-	{
-	  double other = [aNumber doubleValue];
-	  double value = [self doubleValue];
-
-	  COMPARE (value, other);
-	}
-      default:
-	[NSException raise: NSInvalidArgumentException
-		    format: @"unrecognised type for compare:"];
+        COMPARE (value, other);
     }
-  return 0;			// Not reached.
+    case 'Q':
+    {
+        unsigned long long other;
+        unsigned long long value;
+        long long v;
+
+        /* According to the C type promotion rules, we should cast this to
+         * an unsigned long long, however Apple's code does not do this.
+         * Instead, it performs a real comparison.
+         */
+        v = [self longLongValue];
+
+        /* If this value is less than 0, then it is less than any value
+         * that can possibly be stored in an unsigned value.
+         */
+        if (v < 0)
+        {
+            return NSOrderedAscending;
+        }
+
+        other = [aNumber unsignedLongLongValue];
+        value = (unsigned long long) v;
+        COMPARE (value, other);
+    }
+    case 'f':
+    case 'd':
+    {
+        double other = [aNumber doubleValue];
+        double value = [self doubleValue];
+
+        COMPARE (value, other);
+    }
+    default:
+        [NSException raise:NSInvalidArgumentException
+         format:@"unrecognised type for compare:"];
+    }
+    return 0;       // Not reached.
 }
 @end
 
@@ -179,11 +181,23 @@ return NSOrderedSame;
 #include "NSNumberMethods.h"
 @end
 
-@implementation	NSBoolNumber
-- (const char *) objCType
+@implementation NSBoolNumber
+
+- (const char *)objCType
 {
-  return @encode(BOOL);
+    return @encode(BOOL);
 }
+
+- (NSUInteger)retainCount
+{
+    return UINT_MAX;
+}
+
+- (void)dealloc
+{
+    // NO! THAL SHALL NOT PASS!
+}
+
 @end
 
 @implementation NSLongLongNumber
@@ -194,59 +208,59 @@ return NSOrderedSame;
 @implementation NSUnsignedLongLongNumber
 #define FORMAT @"%llu"
 #include "NSNumberMethods.h"
-- (NSComparisonResult) compare: (NSNumber*)aNumber
+- (NSComparisonResult)compare:(NSNumber*)aNumber
 {
-  if (aNumber == self)
+    if (aNumber == self)
     {
-      return NSOrderedSame;
+        return NSOrderedSame;
     }
-  if (aNumber == nil)
+    if (aNumber == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"nil argument for compare:"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"nil argument for compare:"];
     }
 
-  switch ([aNumber objCType][0])
+    switch ([aNumber objCType][0])
     {
-      /* For cases smaller than or equal to an int, we could get the int
-       * value and compare.
-       */
-      case 'c':
-      case 'C':
-      case 's':
-      case 'S':
-      case 'i':
-      case 'I':
-      case 'l':
-      case 'L':
-      case 'q':
-	{
-	  long long other = [aNumber longLongValue];
+    /* For cases smaller than or equal to an int, we could get the int
+     * value and compare.
+     */
+    case 'c':
+    case 'C':
+    case 's':
+    case 'S':
+    case 'i':
+    case 'I':
+    case 'l':
+    case 'L':
+    case 'q':
+    {
+        long long other = [aNumber longLongValue];
 
-	  if (other < 0)
-	    {
-	      return NSOrderedDescending;
-	    }
-	  COMPARE (value, ((unsigned long long) other));
-	}
-      case 'Q':
-	{
-	  unsigned long long other = [aNumber unsignedLongLongValue];
-
-	  COMPARE (value, other);
-	}
-      case 'f':
-      case 'd':
-	{
-	  double other = [aNumber doubleValue];
-
-	  COMPARE (((double) value), other);
-	}
-      default:
-	[NSException raise: NSInvalidArgumentException
-		    format: @"unrecognised type for compare:"];
+        if (other < 0)
+        {
+            return NSOrderedDescending;
+        }
+        COMPARE (value, ((unsigned long long) other));
     }
-  return 0;			// Not reached.
+    case 'Q':
+    {
+        unsigned long long other = [aNumber unsignedLongLongValue];
+
+        COMPARE (value, other);
+    }
+    case 'f':
+    case 'd':
+    {
+        double other = [aNumber doubleValue];
+
+        COMPARE (((double) value), other);
+    }
+    default:
+        [NSException raise:NSInvalidArgumentException
+         format:@"unrecognised type for compare:"];
+    }
+    return 0;       // Not reached.
 }
 @end
 
@@ -255,40 +269,40 @@ return NSOrderedSame;
  */
 @interface NSFloatingPointNumber : NSNumber
 @end
- 
+
 @implementation NSFloatingPointNumber
 /* For floats, the type promotion rules say that we always promote to a
  * floating point type, even if the other value is really an integer.
  */
-- (BOOL) isEqualToNumber: (NSNumber*)aNumber
+- (BOOL)isEqualToNumber:(NSNumber*)aNumber
 {
-  return ([self doubleValue] == [aNumber doubleValue]) ? YES : NO;
+    return ([self doubleValue] == [aNumber doubleValue]) ? YES : NO;
 }
 
-- (NSComparisonResult) compare: (NSNumber*)aNumber
+- (NSComparisonResult)compare:(NSNumber*)aNumber
 {
-  double other;
-  double value;
+    double other;
+    double value;
 
-  if (aNumber == self)
+    if (aNumber == self)
     {
-      return NSOrderedSame;
+        return NSOrderedSame;
     }
-  if (aNumber == nil)
+    if (aNumber == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"nil argument for compare:"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"nil argument for compare:"];
     }
-  other = [aNumber doubleValue];
-  value = [self doubleValue];
-  COMPARE (value, other);
+    other = [aNumber doubleValue];
+    value = [self doubleValue];
+    COMPARE (value, other);
 }
 @end
 
 @interface NSFloatNumber : NSFloatingPointNumber
 {
-@public
-  float value;
+    @public
+    float value;
 }
 @end
 
@@ -299,8 +313,8 @@ return NSOrderedSame;
 
 @interface NSDoubleNumber : NSFloatingPointNumber
 {
-@public
-  double value;
+    @public
+    double value;
 }
 @end
 
@@ -323,8 +337,8 @@ static Class NSDoubleNumberClass;
  * Numbers from -1 to 12 inclusive that are reused.
  */
 static NSNumber *ReusedInstances[14];
-static NSBoolNumber *boolY;		// Boolean YES (integer 1)
-static NSBoolNumber *boolN;		// Boolean NO (integer 0)
+static NSBoolNumber *boolY;     // Boolean YES (integer 1)
+static NSBoolNumber *boolN;     // Boolean NO (integer 0)
 
 // The following globals are declared in order to put a value
 // to extern symbols declared in CFNumber.h.  This is quite a
@@ -334,412 +348,412 @@ static NSBoolNumber *boolN;		// Boolean NO (integer 0)
 void* kCFBooleanTrue;
 void* kCFBooleanFalse;
 
-+ (void) initialize
++ (void)initialize
 {
-  int i;
+    int i;
 
-  if ([NSNumber class] != self)
+    if ([NSNumber class] != self)
     {
-      return;
+        return;
     }
 
-  NSNumberClass = self;
-  NSBoolNumberClass = [NSBoolNumber class];
-  NSIntNumberClass = [NSIntNumber class];
-  NSLongLongNumberClass = [NSLongLongNumber class];
-  NSUnsignedLongLongNumberClass = [NSUnsignedLongLongNumber class];
-  NSFloatNumberClass = [NSFloatNumber class];
-  NSDoubleNumberClass = [NSDoubleNumber class];
+    NSNumberClass = self;
+    NSBoolNumberClass = [NSBoolNumber class];
+    NSIntNumberClass = [NSIntNumber class];
+    NSLongLongNumberClass = [NSLongLongNumber class];
+    NSUnsignedLongLongNumberClass = [NSUnsignedLongLongNumber class];
+    NSFloatNumberClass = [NSFloatNumber class];
+    NSDoubleNumberClass = [NSDoubleNumber class];
 
-  boolY = NSAllocateObject (NSBoolNumberClass, 0, 0);
-  boolY->value = 1;
-  boolN = NSAllocateObject (NSBoolNumberClass, 0, 0);
-  boolN->value = 0;
-  kCFBooleanTrue = boolY;
-  kCFBooleanFalse = boolN;
+    boolY = NSAllocateObject (NSBoolNumberClass, 0, 0);
+    boolY->value = 1;
+    boolN = NSAllocateObject (NSBoolNumberClass, 0, 0);
+    boolN->value = 0;
+    kCFBooleanTrue = boolY;
+    kCFBooleanFalse = boolN;
 
-  for (i = 0; i < 14; i++)
+    for (i = 0; i < 14; i++)
     {
-      NSIntNumber *n = NSAllocateObject (NSIntNumberClass, 0, 0);
+        NSIntNumber *n = NSAllocateObject (NSIntNumberClass, 0, 0);
 
-      n->value = i - 1;
-      ReusedInstances[i] = n;
+        n->value = i - 1;
+        ReusedInstances[i] = n;
     }
 }
 
 
-- (const char *) objCType
+- (const char *)objCType
 {
-  /* All concrete NSNumber types must implement this so we know which one
-   * they are.
-   */
-  [self subclassResponsibility: _cmd];
-  return NULL;			// Not reached
+    /* All concrete NSNumber types must implement this so we know which one
+     * they are.
+     */
+    [self subclassResponsibility:_cmd];
+    return NULL;        // Not reached
 }
 
-- (BOOL) isEqualToNumber: (NSNumber*)aNumber
+- (BOOL)isEqualToNumber:(NSNumber*)aNumber
 {
-  return ([self compare: aNumber] == NSOrderedSame) ? YES : NO;
+    return ([self compare:aNumber] == NSOrderedSame) ? YES : NO;
 }
 
-- (BOOL) isEqual: (id)anObject
+- (BOOL)isEqual:(id)anObject
 {
-  if ([anObject isKindOfClass: NSNumberClass])
+    if ([anObject isKindOfClass:NSNumberClass])
     {
-      return [self isEqualToNumber: anObject];
+        return [self isEqualToNumber:anObject];
     }
-  return [super isEqual: anObject];
+    return [super isEqual:anObject];
 }
 
-- (BOOL) isEqualToValue: (NSValue*)aValue
+- (BOOL)isEqualToValue:(NSValue*)aValue
 {
-  if ([aValue isKindOfClass: NSNumberClass])
+    if ([aValue isKindOfClass:NSNumberClass])
     {
-      return [self isEqualToNumber: (NSNumber*)aValue];
+        return [self isEqualToNumber:(NSNumber*)aValue];
     }
-  return NO;
+    return NO;
 }
 
-- (NSUInteger) hash
+- (NSUInteger)hash
 {
-  return (unsigned)[self doubleValue];
+    return (unsigned)[self doubleValue];
 }
 
-- (NSString*) stringValue
+- (NSString*)stringValue
 {
-  return [self descriptionWithLocale: nil];
+    return [self descriptionWithLocale:nil];
 }
 
-- (NSString*) descriptionWithLocale: (id)aLocale
+- (NSString*)descriptionWithLocale:(id)aLocale
 {
-  [self subclassResponsibility: _cmd];
-  return nil;			// Not reached
+    [self subclassResponsibility:_cmd];
+    return nil;         // Not reached
 }
 
-- (NSComparisonResult) compare: (NSNumber*)aNumber
+- (NSComparisonResult)compare:(NSNumber*)aNumber
 {
-  [self subclassResponsibility: _cmd];
-  return 0;			// Not reached
+    [self subclassResponsibility:_cmd];
+    return 0;       // Not reached
 }
 
 #define INTEGER_MACRO(encoding,type, ignored, name) \
-- (id) initWith ## name: (type)aValue \
-{\
-  DESTROY(self);\
-  return [[NSNumberClass numberWith ## name: aValue] retain];\
-}
+    - (id)initWith ## name:(type)aValue \
+    { \
+        DESTROY(self); \
+        return [[NSNumberClass numberWith ## name:aValue] retain]; \
+    }
 
 #include "GSNumberTypes.h"
 
-- (id) initWithBool: (BOOL)aValue
+- (id)initWithBool:(BOOL)aValue
 {
-  DESTROY(self);
-  return [(aValue == 0 ? boolN : boolY) retain];\
+    DESTROY(self);
+    return [(aValue == 0 ? boolN : boolY)retain]; \
 }
 
 /*
  * Macro for checking whether this value is the same as one of the singleton
- * instances.  
+ * instances.
  */
 #define CHECK_SINGLETON(aValue) \
-if (aValue >= -1 && aValue <= 12)\
-{\
-  return ReusedInstances[aValue+1];\
-}
-
-+ (NSNumber *) numberWithBool: (BOOL)aValue
-{
-  if (self != NSNumberClass)
-    {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(BOOL)] autorelease];
-    }
-  if (0 == aValue)
-    {
-      return boolN;
-    }
-  return boolY;
-}
-
-+ (NSNumber *) numberWithChar: (signed char)aValue
-{
-  if (self != NSNumberClass)
-    {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(char)] autorelease];
-    }
-  return [self numberWithInt: aValue];
-}
-
-+ (NSNumber *) numberWithUnsignedChar: (unsigned char)aValue
-{
-  if (self != NSNumberClass)
-    {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(unsigned char)] autorelease];
-    }
-  return [self numberWithInt: aValue];
-}
-
-+ (NSNumber *) numberWithShort: (short)aValue
-{
-  if (self != NSNumberClass)
-    {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(short)] autorelease];
-    }
-  return [self numberWithInt: aValue];
-}
-
-+ (NSNumber *) numberWithUnsignedShort: (unsigned short)aValue
-{
-  if (self != NSNumberClass)
-    {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(unsigned short)] autorelease];
-    }
-  return [self numberWithInt: aValue];
-}
-
-+ (NSNumber *) numberWithInt: (int)aValue
-{
-  NSIntNumber *n;
-
-  if (self != NSNumberClass)
-    {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(int)] autorelease];
+    if (aValue >= -1 && aValue <= 12) \
+    { \
+        return ReusedInstances[aValue+1]; \
     }
 
-  CHECK_SINGLETON (aValue);
-  n = NSAllocateObject (NSIntNumberClass, 0, 0);
-  n->value = aValue;
-  return AUTORELEASE(n);
++ (NSNumber *)numberWithBool:(BOOL)aValue
+{
+    if (self != NSNumberClass)
+    {
+        return [[[self alloc] initWithBytes:(const void *)&aValue
+                 objCType:@encode(BOOL)] autorelease];
+    }
+    if (0 == aValue)
+    {
+        return boolN;
+    }
+    return boolY;
 }
 
-+ (NSNumber *) numberWithUnsignedInt: (unsigned int)aValue
++ (NSNumber *)numberWithChar:(signed char)aValue
 {
-  if (self != NSNumberClass)
+    if (self != NSNumberClass)
     {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(unsigned int)] autorelease];
+        return [[[self alloc] initWithBytes:(const void *)&aValue
+                 objCType:@encode(char)] autorelease];
+    }
+    return [self numberWithInt:aValue];
+}
+
++ (NSNumber *)numberWithUnsignedChar:(unsigned char)aValue
+{
+    if (self != NSNumberClass)
+    {
+        return [[[self alloc] initWithBytes:(const void *)&aValue
+                 objCType:@encode(unsigned char)] autorelease];
+    }
+    return [self numberWithInt:aValue];
+}
+
++ (NSNumber *)numberWithShort:(short)aValue
+{
+    if (self != NSNumberClass)
+    {
+        return [[[self alloc] initWithBytes:(const void *)&aValue
+                 objCType:@encode(short)] autorelease];
+    }
+    return [self numberWithInt:aValue];
+}
+
++ (NSNumber *)numberWithUnsignedShort:(unsigned short)aValue
+{
+    if (self != NSNumberClass)
+    {
+        return [[[self alloc] initWithBytes:(const void *)&aValue
+                 objCType:@encode(unsigned short)] autorelease];
+    }
+    return [self numberWithInt:aValue];
+}
+
++ (NSNumber *)numberWithInt:(int)aValue
+{
+    NSIntNumber *n;
+
+    if (self != NSNumberClass)
+    {
+        return [[[self alloc] initWithBytes:(const void *)&aValue
+                 objCType:@encode(int)] autorelease];
     }
 
-  CHECK_SINGLETON (aValue);
-  if (aValue < (unsigned int) INT_MAX)
+    CHECK_SINGLETON (aValue);
+    n = NSAllocateObject (NSIntNumberClass, 0, 0);
+    n->value = aValue;
+    return AUTORELEASE(n);
+}
+
++ (NSNumber *)numberWithUnsignedInt:(unsigned int)aValue
+{
+    if (self != NSNumberClass)
     {
-      return [self numberWithInt: (int)aValue];
+        return [[[self alloc] initWithBytes:(const void *)&aValue
+                 objCType:@encode(unsigned int)] autorelease];
     }
-  return [self numberWithLongLong: aValue];
-}
 
-+ (NSNumber *) numberWithLong: (long)aValue
-{
-  if (self != NSNumberClass)
+    CHECK_SINGLETON (aValue);
+    if (aValue < (unsigned int) INT_MAX)
     {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(long)] autorelease];
+        return [self numberWithInt:(int)aValue];
     }
-  return [self numberWithLongLong: aValue];
+    return [self numberWithLongLong:aValue];
 }
 
-+ (NSNumber *) numberWithUnsignedLong: (unsigned long)aValue
++ (NSNumber *)numberWithLong:(long)aValue
 {
-  if (self != NSNumberClass)
+    if (self != NSNumberClass)
     {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(unsigned long)] autorelease];
+        return [[[self alloc] initWithBytes:(const void *)&aValue
+                 objCType:@encode(long)] autorelease];
     }
-  return [self numberWithUnsignedLongLong: aValue];
+    return [self numberWithLongLong:aValue];
 }
 
-+ (NSNumber *) numberWithLongLong: (long long)aValue
++ (NSNumber *)numberWithUnsignedLong:(unsigned long)aValue
 {
-  NSLongLongNumber *n;
-
-  if (self != NSNumberClass)
+    if (self != NSNumberClass)
     {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(long long)] autorelease];
+        return [[[self alloc] initWithBytes:(const void *)&aValue
+                 objCType:@encode(unsigned long)] autorelease];
     }
-  CHECK_SINGLETON (aValue);
-  if (aValue < (long long)INT_MAX && aValue > (long long)INT_MIN)
+    return [self numberWithUnsignedLongLong:aValue];
+}
+
++ (NSNumber *)numberWithLongLong:(long long)aValue
+{
+    NSLongLongNumber *n;
+
+    if (self != NSNumberClass)
     {
-      return [self numberWithInt: (int) aValue];
+        return [[[self alloc] initWithBytes:(const void *)&aValue
+                 objCType:@encode(long long)] autorelease];
     }
-  n = NSAllocateObject (NSLongLongNumberClass, 0, 0);
-  n->value = aValue;
-  return AUTORELEASE(n);
-}
-
-+ (NSNumber *) numberWithUnsignedLongLong: (unsigned long long)aValue
-{
-  NSUnsignedLongLongNumber *n;
-
-  if (self != NSNumberClass)
+    CHECK_SINGLETON (aValue);
+    if (aValue < (long long)INT_MAX && aValue > (long long)INT_MIN)
     {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(unsigned long long)] autorelease];
+        return [self numberWithInt:(int) aValue];
     }
-  if (aValue < (unsigned long long) LLONG_MAX)
+    n = NSAllocateObject (NSLongLongNumberClass, 0, 0);
+    n->value = aValue;
+    return AUTORELEASE(n);
+}
+
++ (NSNumber *)numberWithUnsignedLongLong:(unsigned long long)aValue
+{
+    NSUnsignedLongLongNumber *n;
+
+    if (self != NSNumberClass)
     {
-      return [self numberWithLongLong: (long long) aValue];
+        return [[[self alloc] initWithBytes:(const void *)&aValue
+                 objCType:@encode(unsigned long long)] autorelease];
     }
-  n = NSAllocateObject (NSUnsignedLongLongNumberClass, 0, 0);
-  n->value = aValue;
-  return AUTORELEASE(n);
-}
-
-+ (NSNumber *) numberWithFloat: (float)aValue
-{
-  NSFloatNumber *n;
-
-  if (self != NSNumberClass)
+    if (aValue < (unsigned long long) LLONG_MAX)
     {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(float)] autorelease];
+        return [self numberWithLongLong:(long long) aValue];
     }
-  n = NSAllocateObject (NSFloatNumberClass, 0, 0);
-  n->value = aValue;
-  return AUTORELEASE(n);
+    n = NSAllocateObject (NSUnsignedLongLongNumberClass, 0, 0);
+    n->value = aValue;
+    return AUTORELEASE(n);
 }
 
-+ (NSNumber *) numberWithDouble: (double)aValue
++ (NSNumber *)numberWithFloat:(float)aValue
 {
-  NSDoubleNumber *n;
+    NSFloatNumber *n;
 
-  if (self != NSNumberClass)
+    if (self != NSNumberClass)
     {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(double)] autorelease];
+        return [[[self alloc] initWithBytes:(const void *)&aValue
+                 objCType:@encode(float)] autorelease];
     }
-  n = NSAllocateObject (NSDoubleNumberClass, 0, 0);
-  n->value = aValue;
-  return AUTORELEASE(n);
+    n = NSAllocateObject (NSFloatNumberClass, 0, 0);
+    n->value = aValue;
+    return AUTORELEASE(n);
 }
 
-+ (NSNumber *) numberWithInteger: (NSInteger)aValue
++ (NSNumber *)numberWithDouble:(double)aValue
 {
-  if (self != NSNumberClass)
+    NSDoubleNumber *n;
+
+    if (self != NSNumberClass)
     {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(NSInteger)] autorelease];
+        return [[[self alloc] initWithBytes:(const void *)&aValue
+                 objCType:@encode(double)] autorelease];
     }
-  // Compile time constant; the compiler will remove this conditional
-  if (sizeof (NSInteger) == sizeof (int))
+    n = NSAllocateObject (NSDoubleNumberClass, 0, 0);
+    n->value = aValue;
+    return AUTORELEASE(n);
+}
+
++ (NSNumber *)numberWithInteger:(NSInteger)aValue
+{
+    if (self != NSNumberClass)
     {
-      return [self numberWithInt: aValue];
+        return [[[self alloc] initWithBytes:(const void *)&aValue
+                 objCType:@encode(NSInteger)] autorelease];
     }
-  return [self numberWithLongLong: aValue];
-}
-
-+ (NSNumber *) numberWithUnsignedInteger: (NSUInteger)aValue
-{
-  if (self != NSNumberClass)
+    // Compile time constant; the compiler will remove this conditional
+    if (sizeof (NSInteger) == sizeof (int))
     {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(NSUInteger)] autorelease];
+        return [self numberWithInt:aValue];
     }
-  // Compile time constant; the compiler will remove this conditional
-  if (sizeof (NSUInteger) == sizeof (unsigned int))
+    return [self numberWithLongLong:aValue];
+}
+
++ (NSNumber *)numberWithUnsignedInteger:(NSUInteger)aValue
+{
+    if (self != NSNumberClass)
     {
-      return [self numberWithUnsignedInt: aValue];
+        return [[[self alloc] initWithBytes:(const void *)&aValue
+                 objCType:@encode(NSUInteger)] autorelease];
     }
-  return [self numberWithUnsignedLongLong: aValue];
-}
-
-- (id) initWithBytes: (const void *)
-      value objCType: (const char *)type
-{
-  switch (type[0])
+    // Compile time constant; the compiler will remove this conditional
+    if (sizeof (NSUInteger) == sizeof (unsigned int))
     {
-      case 'c':
-	return [self initWithInteger: *(char *) value];
-      case 'C':
-	return [self initWithInteger: *(unsigned char *) value];
-      case 's':
-	return [self initWithInteger: *(short *) value];
-      case 'S':
-	return [self initWithInteger: *(unsigned short *) value];
-      case 'i':
-	return [self initWithInteger: *(int *) value];
-      case 'I':
-	return [self initWithInteger: *(unsigned int *) value];
-      case 'l':
-	return [self initWithLong: *(long *) value];
-      case 'L':
-	return [self initWithUnsignedLong: *(unsigned long *) value];
-      case 'q':
-	return [self initWithLongLong: *(long long *) value];
-      case 'Q':
-	return [self initWithUnsignedLongLong: *(unsigned long long *) value];
-      case 'f':
-	return [self initWithFloat: *(float *) value];
-      case 'd':
-	return [self initWithDouble: *(double *) value];
+        return [self numberWithUnsignedInt:aValue];
     }
-  return [super initWithBytes: value objCType: type];
+    return [self numberWithUnsignedLongLong:aValue];
 }
 
-- (void *) pointerValue
+- (id)initWithBytes:(const void *)
+    value objCType:(const char *)type
 {
-  return (void *)[self unsignedIntegerValue];
+    switch (type[0])
+    {
+    case 'c':
+        return [self initWithInteger:*(char *) value];
+    case 'C':
+        return [self initWithInteger:*(unsigned char *) value];
+    case 's':
+        return [self initWithInteger:*(short *) value];
+    case 'S':
+        return [self initWithInteger:*(unsigned short *) value];
+    case 'i':
+        return [self initWithInteger:*(int *) value];
+    case 'I':
+        return [self initWithInteger:*(unsigned int *) value];
+    case 'l':
+        return [self initWithLong:*(long *) value];
+    case 'L':
+        return [self initWithUnsignedLong:*(unsigned long *) value];
+    case 'q':
+        return [self initWithLongLong:*(long long *) value];
+    case 'Q':
+        return [self initWithUnsignedLongLong:*(unsigned long long *) value];
+    case 'f':
+        return [self initWithFloat:*(float *) value];
+    case 'd':
+        return [self initWithDouble:*(double *) value];
+    }
+    return [super initWithBytes:value objCType:type];
 }
 
-- (id) replacementObjectForPortCoder: (NSPortCoder *) encoder
+- (void *)pointerValue
 {
-  return self;
+    return (void *)[self unsignedIntegerValue];
 }
 
-- (Class) classForCoder
+- (id)replacementObjectForPortCoder:(NSPortCoder *)encoder
 {
-  return NSNumberClass;
+    return self;
 }
 
-- (void) encodeWithCoder: (NSCoder *) coder
+- (Class)classForCoder
 {
-  const char *type = [self objCType];
-  char buffer[16];
-
-  [coder encodeValueOfObjCType: @encode (char) at: type];
-  /* The most we currently store in an NSNumber is 8 bytes (double or long
-   * long), but we may add support for vectors or long doubles in future, so
-   * make this 16 bytes now so stuff doesn't break in fun and exciting ways
-   * later.
-   */
-  [self getValue: buffer];
-  [coder encodeValueOfObjCType: type at: buffer];
+    return NSNumberClass;
 }
 
-- (id) copyWithZone: (NSZone *) aZone
+- (void)encodeWithCoder:(NSCoder *)coder
 {
-  // OSX just returns the receive with no copy.
-  return RETAIN (self);
+    const char *type = [self objCType];
+    char buffer[16];
+
+    [coder encodeValueOfObjCType:@encode (char) at:type];
+    /* The most we currently store in an NSNumber is 8 bytes (double or long
+     * long), but we may add support for vectors or long doubles in future, so
+     * make this 16 bytes now so stuff doesn't break in fun and exciting ways
+     * later.
+     */
+    [self getValue:buffer];
+    [coder encodeValueOfObjCType:type at:buffer];
 }
 
-- (id) initWithCoder: (NSCoder *) coder
+- (id)copyWithZone:(NSZone *)aZone
 {
-  char type[2] = { 0 };
-  char buffer[16];
-
-  [coder decodeValueOfObjCType: @encode (char) at: type];
-  [coder decodeValueOfObjCType: type at: buffer];
-  return [self initWithBytes: buffer objCType: type];
+    // OSX just returns the receive with no copy.
+    return RETAIN (self);
 }
 
-- (NSString *) description
+- (id)initWithCoder:(NSCoder *)coder
 {
-  return [self stringValue];
+    char type[2] = { 0 };
+    char buffer[16];
+
+    [coder decodeValueOfObjCType:@encode (char) at:type];
+    [coder decodeValueOfObjCType:type at:buffer];
+    return [self initWithBytes:buffer objCType:type];
+}
+
+- (NSString *)description
+{
+    return [self stringValue];
 }
 
 /* Return nil for an NSNumber that is allocated and initalized without
  * providing a real value.  Yes, this seems weird, but it is actually what
  * happens on OS X.
  */
-- (id) init
+- (id)init
 {
-  DESTROY(self);
-  return nil;
+    DESTROY(self);
+    return nil;
 }
 
 /* Stop the compiler complaining about unimplemented methods.  Throwing an
@@ -747,29 +761,29 @@ if (aValue >= -1 && aValue <= 12)\
  * argument exception.
  */
 #define INTEGER_MACRO(encoding, type, name, ignored) \
-- (type) name ## Value\
-{\
-  [self subclassResponsibility: _cmd];\
-  return (type)0;\
-}
+    - (type)name ## Value \
+    { \
+        [self subclassResponsibility:_cmd]; \
+        return (type)0; \
+    }
 
 #include "GSNumberTypes.h"
 
-- (BOOL) boolValue
+- (BOOL)boolValue
 {
-  [self subclassResponsibility: _cmd];
-  return NO;
+    [self subclassResponsibility:_cmd];
+    return NO;
 }
 
-- (NSDecimal) decimalValue
+- (NSDecimal)decimalValue
 {
-  NSDecimalNumber *dn;
-  NSDecimal decimal;
+    NSDecimalNumber *dn;
+    NSDecimal decimal;
 
-  dn = [[NSDecimalNumber alloc] initWithString: [self stringValue]];
-  decimal = [dn decimalValue];
-  [dn release];
-  return decimal;
+    dn = [[NSDecimalNumber alloc] initWithString:[self stringValue]];
+    decimal = [dn decimalValue];
+    [dn release];
+    return decimal;
 }
 
 @end

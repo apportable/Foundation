@@ -23,17 +23,17 @@
 
    <title>NSNotification class reference</title>
    $Date: 2010-02-25 10:49:31 -0800 (Thu, 25 Feb 2010) $ $Revision: 29753 $
-*/
+ */
 
 #import "common.h"
-#define	EXPOSE_NSNotification_IVARS	1
+#define EXPOSE_NSNotification_IVARS 1
 #import "Foundation/NSNotification.h"
 #import "Foundation/NSCoder.h"
 #import "Foundation/NSDictionary.h"
 #import "GNUstepBase/NSObject+GNUstepBase.h"
 
-@class	GSNotification;
-@interface GSNotification : NSObject	// Help the compiler
+@class GSNotification;
+@interface GSNotification : NSObject    // Help the compiler
 @end
 
 /**
@@ -47,107 +47,107 @@
  */
 @implementation NSNotification
 
-static Class	abstractClass = 0;
-static Class	concreteClass = 0;
+static Class abstractClass = 0;
+static Class concreteClass = 0;
 
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
-  if (self == abstractClass)
+    if (self == abstractClass)
     {
-      return (id)NSAllocateObject(concreteClass, 0, z);
+        return (id)NSAllocateObject(concreteClass, 0, z);
     }
-  return (id)NSAllocateObject(self, 0, z);
+    return (id)NSAllocateObject(self, 0, z);
 }
 
-+ (void) initialize
++ (void)initialize
 {
-  if (concreteClass == 0)
+    if (concreteClass == 0)
     {
-      abstractClass = [NSNotification class];
-      concreteClass = [GSNotification class];
+        abstractClass = [NSNotification class];
+        concreteClass = [GSNotification class];
     }
 }
 
 /**
  * Create a new autoreleased notification.
  */
-+ (NSNotification*) notificationWithName: (NSString*)name
-				  object: (id)object
-			        userInfo: (NSDictionary*)info
++ (NSNotification*)notificationWithName:(NSString*)name
+    object:(id)object
+    userInfo:(NSDictionary*)info
 {
-  return [concreteClass notificationWithName: name
-				      object: object
-				    userInfo: info];
+    return [concreteClass notificationWithName:name
+            object:object
+            userInfo:info];
 }
 
 /**
  * Create a new autoreleased notification by calling
  * +notificationWithName:object:userInfo: with a nil user info argument.
  */
-+ (NSNotification*) notificationWithName: (NSString*)name
-				  object: (id)object
++ (NSNotification*)notificationWithName:(NSString*)name
+    object:(id)object
 {
-  return [concreteClass notificationWithName: name
-				      object: object
-				    userInfo: nil];
+    return [concreteClass notificationWithName:name
+            object:object
+            userInfo:nil];
 }
 
 /**
  * The abstract class implements a copy as a simple retain ...
  * subclasses override to perform more intelligent copy operations.
  */
-- (id) copyWithZone: (NSZone*)zone
+- (id)copyWithZone:(NSZone*)zone
 {
-  return [self retain];
+    return [self retain];
 }
 
 /**
  * Return a description of the parts of the notification.
  */
-- (NSString*) description
+- (NSString*)description
 {
-  return [[super description] stringByAppendingFormat:
-    @" Name: %@ Object: %@ Info: %@",
-    [self name], [self object], [self userInfo]];
+    return [[super description] stringByAppendingFormat:
+            @" Name: %@ Object: %@ Info: %@",
+            [self name], [self object], [self userInfo]];
 }
 
-- (id) init
+- (id)init
 {
-  if ([self class] == abstractClass)
+    if ([self class] == abstractClass)
     {
-      NSZone	*z = [self zone];
+        NSZone    *z = [self zone];
 
-      DESTROY(self);
-      self = (id)NSAllocateObject (concreteClass, 0, z);
+        DESTROY(self);
+        self = (id)NSAllocateObject (concreteClass, 0, z);
     }
-  return self;
+    return self;
 }
 
 /**
  *  Returns the notification name.
  */
-- (NSString*) name
+- (NSString*)name
 {
-  [self subclassResponsibility: _cmd];
-  return nil;
+    [self subclassResponsibility:_cmd];
+    return nil;
 }
 
 /**
  *  Returns the notification object.
  */
-- (id) object
+- (id)object
 {
-  [self subclassResponsibility: _cmd];
-  return nil;
+    [self subclassResponsibility:_cmd];
+    return nil;
 }
 
 /**
  * Returns the notification user information.
  */
-- (NSDictionary*) userInfo
+- (NSDictionary*)userInfo
 {
-  [self subclassResponsibility: _cmd];
-  return nil;
+    [self subclassResponsibility:_cmd];
+    return nil;
 }
 
 /*
@@ -155,34 +155,34 @@ static Class	concreteClass = 0;
  * but how can we meaningfully encode/decode the object and userInfo.
  * We do it anyway - at least it should make sense over DO.
  */
-- (void) encodeWithCoder: (NSCoder*)aCoder
+- (void)encodeWithCoder:(NSCoder*)aCoder
 {
-  id	o;
+    id o;
 
-  o = [self name];
-  [aCoder encodeValueOfObjCType: @encode(id) at: &o];
-  o = [self object];
-  [aCoder encodeValueOfObjCType: @encode(id) at: &o];
-  o = [self userInfo];
-  [aCoder encodeValueOfObjCType: @encode(id) at: &o];
+    o = [self name];
+    [aCoder encodeValueOfObjCType:@encode(id) at:&o];
+    o = [self object];
+    [aCoder encodeValueOfObjCType:@encode(id) at:&o];
+    o = [self userInfo];
+    [aCoder encodeValueOfObjCType:@encode(id) at:&o];
 }
 
-- (id) initWithCoder: (NSCoder*)aCoder
+- (id)initWithCoder:(NSCoder*)aCoder
 {
-  NSString	*name;
-  id		object;
-  NSDictionary	*info;
-  id		n;
+    NSString  *name;
+    id object;
+    NSDictionary  *info;
+    id n;
 
-  [aCoder decodeValueOfObjCType: @encode(id) at: &name];
-  [aCoder decodeValueOfObjCType: @encode(id) at: &object];
-  [aCoder decodeValueOfObjCType: @encode(id) at: &info];
-  n = [NSNotification notificationWithName: name object: object userInfo: info];
-  RELEASE(name);
-  RELEASE(object);
-  RELEASE(info);
-  DESTROY(self);
-  return RETAIN(n);
+    [aCoder decodeValueOfObjCType:@encode(id) at:&name];
+    [aCoder decodeValueOfObjCType:@encode(id) at:&object];
+    [aCoder decodeValueOfObjCType:@encode(id) at:&info];
+    n = [NSNotification notificationWithName:name object:object userInfo:info];
+    RELEASE(name);
+    RELEASE(object);
+    RELEASE(info);
+    DESTROY(self);
+    return RETAIN(n);
 }
 
 @end

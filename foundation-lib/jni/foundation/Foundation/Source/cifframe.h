@@ -28,20 +28,10 @@
 
 #include <ffi.h>
 
-#if	defined(__MINGW__)
-/*
- * Avoid conflicts when other headers try to define UINT32 and UINT64
- */
-#if	defined(UINT32)
-#undef UINT32
-#endif
-#if	defined(UINT64)
-#undef UINT64
-#endif
-#endif
 
-#include "Foundation/NSMethodSignature.h"
-#include "GNUstepBase/DistributedObjects.h"
+#import "Foundation/NSMethodSignature.h"
+#import "GNUstepBase/DistributedObjects.h"
+#import "GSPrivate.h"
 
 typedef struct _cifframe_t {
   ffi_cif cif;
@@ -53,6 +43,8 @@ typedef struct _cifframe_t {
 @class	NSMutableData;
 
 extern NSMutableData *cifframe_from_signature (NSMethodSignature *info);
+
+extern GSCodeBuffer* cifframe_closure (NSMethodSignature *sig, void (*func)());
 
 extern void cifframe_set_arg(cifframe_t *cframe, int index, void *buffer, 
 			     int size);

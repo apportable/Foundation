@@ -23,7 +23,7 @@
 
    <title>NSNull class reference</title>
    $Date: 2010-02-19 00:12:46 -0800 (Fri, 19 Feb 2010) $ $Revision: 29669 $
-   */
+ */
 
 #import "common.h"
 #import "Foundation/NSNull.h"
@@ -31,25 +31,25 @@
 /**
  * An object to use as a placeholder - in collections for instance.
  */
-@implementation	NSNull
+@implementation NSNull
 
-static NSNull	*null = 0;
+static NSNull   *null = 0;
 
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
-  return null;
+    return null;
 }
 
-+ (id) alloc
++ (id)alloc
 {
-  return null;
+    return null;
 }
 
-+ (void) initialize
++ (void)initialize
 {
-  if (null == 0)
+    if (null == 0)
     {
-      null = (NSNull*)NSAllocateObject(self, 0, NSDefaultMallocZone());
+        null = (NSNull*)NSAllocateObject(self, 0, NSDefaultMallocZone());
     }
 }
 
@@ -57,60 +57,62 @@ static NSNull	*null = 0;
  * Return an object that can be used as a placeholder in a collection.
  * This method always returns the same object.
  */
-+ (NSNull*) null
++ (NSNull*)null
 {
-  return null;
+    return null;
 }
 
-- (id) autorelease
+- (id)autorelease
 {
-  return self;
+    return self;
 }
 
-- (id) copyWithZone: (NSZone*)z
+- (id)copyWithZone:(NSZone*)z
 {
-  return self;
+    return self;
 }
 
-- (id) copy
+- (id)copy
 {
-  return self;
+    return self;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  GSNOSUPERDEALLOC;
+    GSNOSUPERDEALLOC;
 }
 
-- (NSString*) description
+- (NSString*)description
 {
-  return @"<null>";
+    return @"<null>";
 }
 
-- (void) encodeWithCoder: (NSCoder*)aCoder
-{
-}
-
-- (id) initWithCoder: (NSCoder*)aCoder
-{
-  return self;
-}
-
-- (BOOL) isEqual: (id)other
-{
-  if (other == self)
-    return YES;
-  else
-    return NO;
-}
-
-- (void) release
+- (void)encodeWithCoder:(NSCoder*)aCoder
 {
 }
 
-- (id) retain
+- (id)initWithCoder:(NSCoder*)aCoder
 {
-  return self;
+    return self;
+}
+
+- (BOOL)isEqual:(id)other
+{
+    if (other == self) {
+        return YES;
+    }
+    else{
+        return NO;
+    }
+}
+
+- (void)release
+{
+}
+
+- (id)retain
+{
+    return self;
 }
 @end
 

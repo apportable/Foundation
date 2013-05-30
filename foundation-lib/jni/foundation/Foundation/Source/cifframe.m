@@ -21,9 +21,11 @@
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
-   */
+ */
 
 #import "common.h"
+
+#include <objc/runtime.h>
 
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
@@ -36,9 +38,12 @@
 #import "Foundation/NSException.h"
 #import "Foundation/NSData.h"
 #import "GSInvocation.h"
+#import "GSPrivate.h"
 
 #if defined(ALPHA) || (defined(MIPS) && (_MIPS_SIM == _ABIN32))
 typedef long long smallret_t;
+#elif defined(__sparc)
+typedef NSInteger smallret_t;
 #else
 typedef int smallret_t;
 #endif
@@ -81,7 +86,7 @@ typedef int smallret_t;
 #error FFI Sizeof LONG case not handled
 #endif
 
-#ifdef	_C_LNG_LNG
+#ifdef  _C_LNG_LNG
 #if GS_SIZEOF_LONG_LONG == 8
 #define gsffi_type_ulong_long ffi_type_uint64
 #define gsffi_type_slong_long ffi_type_sint64
@@ -97,154 +102,166 @@ ffi_type *cifframe_type(const char *typePtr, const char **advance);
 int
 cifframe_guess_struct_size(ffi_type *stype)
 {
-  int      i, size;
-  unsigned align = __alignof(double);
+    int i, size;
+    unsigned align = __alignof(double);
 
-  if (stype->elements == NULL)
-    return stype->size;
-
-  size = 0;
-  i = 0;
-  while (stype->elements[i])
-    {
-      if (stype->elements[i]->elements)
-	size += cifframe_guess_struct_size(stype->elements[i]);
-      else
-	size += stype->elements[i]->size;
-
-      if (size % align != 0)
-	{
-	  size += (align - size % align);
-	}
-      i++;
+    if (stype->elements == NULL) {
+        return stype->size;
     }
-  return size;
+
+    size = 0;
+    i = 0;
+    while (stype->elements[i])
+    {
+        if (stype->elements[i]->elements) {
+            size += cifframe_guess_struct_size(stype->elements[i]);
+        }
+        else{
+            size += stype->elements[i]->size;
+        }
+
+        if (size % align != 0)
+        {
+            size += (align - size % align);
+        }
+        i++;
+    }
+    return size;
 }
 
 
 NSMutableData *
 cifframe_from_signature (NSMethodSignature *info)
 {
-  unsigned      size = sizeof(cifframe_t);
-  unsigned      align = __alignof(double);
-  unsigned      type_offset = 0;
-  unsigned      offset = 0;
-  NSMutableData	*result;
-  void          *buf;
-  int           i;
-  int		numargs = [info numberOfArguments];
-  ffi_type      *rtype;
-  ffi_type      *arg_types[numargs];
-  cifframe_t    *cframe;
+    unsigned size = sizeof(cifframe_t);
+    unsigned align = __alignof(double);
+    unsigned type_offset = 0;
+    unsigned offset = 0;
+    NSMutableData *result;
+    void          *buf;
+    int i;
+    int numargs = [info numberOfArguments];
+    ffi_type      *rtype;
+    ffi_type      *arg_types[numargs];
+    cifframe_t    *cframe;
 
-  /* FIXME: in cifframe_type, return values/arguments that are structures
-     have custom ffi_types with are allocated separately. We should allocate
-     them in our cifframe so we don't leak memory. Or maybe we could
-     cache structure types? */
-  rtype = cifframe_type([info methodReturnType], NULL);
-  for (i = 0; i < numargs; i++)
+    /* FIXME: in cifframe_type, return values/arguments that are structures
+       have custom ffi_types with are allocated separately. We should allocate
+       them in our cifframe so we don't leak memory. Or maybe we could
+       cache structure types? */
+    rtype = cifframe_type([info methodReturnType], NULL);
+    for (i = 0; i < numargs; i++)
     {
-      arg_types[i] = cifframe_type([info getArgumentTypeAtIndex: i], NULL);
+        arg_types[i] = cifframe_type([info getArgumentTypeAtIndex:i], NULL);
     }
 
-  if (numargs > 0)
+    if (numargs > 0)
     {
-      if (size % align != 0)
+        if (size % align != 0)
         {
-          size += align - (size % align);
+            size += align - (size % align);
         }
-      type_offset = size;
-      /* Make room to copy the arg_types */
-      size += sizeof(ffi_type *) * numargs;
-      if (size % align != 0)
+        type_offset = size;
+        /* Make room to copy the arg_types */
+        size += sizeof(ffi_type *) * numargs;
+        if (size % align != 0)
         {
-          size += align - (size % align);
+            size += align - (size % align);
         }
-      offset = size;
-      size += numargs * sizeof(void*);
-      if (size % align != 0)
+        offset = size;
+        size += numargs * sizeof(void*);
+        if (size % align != 0)
         {
-          size += (align - (size % align));
+            size += (align - (size % align));
         }
-      for (i = 0; i < numargs; i++)
+        for (i = 0; i < numargs; i++)
         {
-	  if (arg_types[i]->elements)
-	    size += cifframe_guess_struct_size(arg_types[i]);
-	  else
-	    size += arg_types[i]->size;
+            if (arg_types[i]->elements) {
+                size += cifframe_guess_struct_size(arg_types[i]);
+            }
+            else{
+                size += arg_types[i]->size;
+            }
 
-          if (size % align != 0)
+            if (size % align != 0)
             {
-              size += (align - size % align);
+                size += (align - size % align);
             }
         }
     }
 
-  result = [NSMutableData dataWithCapacity: size];
-  [result setLength: size];
-  cframe = buf = [result mutableBytes];
+    result = [NSMutableData dataWithCapacity:size];
+    [result setLength:size];
+    cframe = buf = [result mutableBytes];
 
-  if (cframe)
+    if (cframe)
     {
-      cframe->nargs = numargs;
-      cframe->arg_types = buf + type_offset;
-      memcpy(cframe->arg_types, arg_types, sizeof(ffi_type *) * numargs);
-      cframe->values = buf + offset;
+        cframe->nargs = numargs;
+        cframe->arg_types = buf + type_offset;
+        memcpy(cframe->arg_types, arg_types, sizeof(ffi_type *) * numargs);
+        cframe->values = buf + offset;
 
-      if (ffi_prep_cif (&cframe->cif, FFI_DEFAULT_ABI, cframe->nargs,
-	rtype, cframe->arg_types) != FFI_OK)
-	{
-	  cframe = NULL;
-	  result = NULL;
-	}
-      else
-	{
-	  /* Set values locations. This must be done after ffi_prep_cif so
-	     that any structure sizes get calculated first. */
-	  offset += numargs * sizeof(void*);
-	  if (offset % align != 0)
-	    {
-	      offset += align - (offset % align);
-	    }
-	  for (i = 0; i < cframe->nargs; i++)
-	    {
-	      cframe->values[i] = buf + offset;
+        if (ffi_prep_cif (&cframe->cif, FFI_DEFAULT_ABI, cframe->nargs,
+                          rtype, cframe->arg_types) != FFI_OK)
+        {
+            cframe = NULL;
+            result = NULL;
+        }
+        else
+        {
+            /* Set values locations. This must be done after ffi_prep_cif so
+               that any structure sizes get calculated first. */
+            offset += numargs * sizeof(void*);
+            if (offset % align != 0)
+            {
+                offset += align - (offset % align);
+            }
+            for (i = 0; i < cframe->nargs; i++)
+            {
+                cframe->values[i] = buf + offset;
 
-	      offset += arg_types[i]->size;
+                offset += arg_types[i]->size;
 
-	      if (offset % align != 0)
-		{
-		  offset += (align - offset % align);
-		}
-	    }
-	}
+                if (offset % align != 0)
+                {
+                    offset += (align - offset % align);
+                }
+            }
+        }
     }
-  return result;
+    return result;
 }
 
 void
 cifframe_set_arg(cifframe_t *cframe, int index, void *buffer, int size)
 {
-  if (index < 0 || index >= cframe->nargs)
-     return;
-  memcpy(cframe->values[index], buffer, size);
+    if (index < 0 || index >= cframe->nargs) {
+        return;
+    }
+    memcpy(cframe->values[index], buffer, size);
 }
 
 void
 cifframe_get_arg(cifframe_t *cframe, int index, void *buffer, int size)
 {
-  if (index < 0 || index >= cframe->nargs)
-     return;
-  memcpy(buffer, cframe->values[index], size);
+    if (index < 0 || index >= cframe->nargs) {
+        return;
+    }
+    memcpy(buffer, cframe->values[index], size);
 }
 
 void *
 cifframe_arg_addr(cifframe_t *cframe, int index)
 {
-  if (index < 0 || index >= cframe->nargs)
-     return NULL;
-  return cframe->values[index];
+    if (index < 0 || index >= cframe->nargs) {
+        return NULL;
+    }
+    return cframe->values[index];
 }
+
+#define POINT_ENCODING "{CGPoint=ff}"
+#define SIZE_ENCODING "{CGSize=ff}"
+#define RECT_ENCODING "{CGRect={CGPoint=ff}{CGSize=ff}}"
 
 /*
  * Get the ffi_type for this type
@@ -252,341 +269,386 @@ cifframe_arg_addr(cifframe_t *cframe, int index)
 ffi_type *
 cifframe_type(const char *typePtr, const char **advance)
 {
-  const char *type;
-  ffi_type *ftype;
+    const char *type;
+    ffi_type *ftype;
 
-  typePtr = objc_skip_type_qualifiers (typePtr);
-  type = typePtr;
+    typePtr = objc_skip_type_qualifiers (typePtr);
+    type = typePtr;
 
-  /*
-   *	Scan for size and alignment information.
-   */
-  switch (*typePtr++)
+    /*
+     *	Scan for size and alignment information.
+     */
+    switch (*typePtr++)
     {
     case _C_ID: ftype = &ffi_type_pointer;
-      break;
+        break;
     case _C_CLASS: ftype = &ffi_type_pointer;
-      break;
+        break;
     case _C_SEL: ftype = &ffi_type_pointer;
-      break;
+        break;
     case _C_CHR: ftype = &ffi_type_schar;
-      break;
+        break;
     case _C_UCHR: ftype = &ffi_type_uchar;
-      break;
+        break;
     case _C_SHT: ftype = &gsffi_type_sshort;
-      break;
+        break;
     case _C_USHT: ftype = &gsffi_type_ushort;
-      break;
+        break;
     case _C_INT: ftype = &gsffi_type_sint;
-      break;
+        break;
     case _C_UINT: ftype = &gsffi_type_uint;
-      break;
+        break;
     case _C_LNG: ftype = &gsffi_type_slong;
-      break;
+        break;
     case _C_ULNG: ftype = &gsffi_type_ulong;
-      break;
-#ifdef	_C_LNG_LNG
+        break;
+#ifdef  _C_LNG_LNG
     case _C_LNG_LNG: ftype = &gsffi_type_slong_long;
-      break;
+        break;
     case _C_ULNG_LNG: ftype = &gsffi_type_ulong_long;
-      break;
+        break;
 #endif
     case _C_FLT: ftype = &ffi_type_float;
-      break;
+        break;
     case _C_DBL: ftype = &ffi_type_double;
-      break;
+        break;
     case _C_PTR:
-      ftype = &ffi_type_pointer;
-      if (*typePtr == '?')
-	{
-	  typePtr++;
-	}
-      else
-	{
-	  const char *adv;
-	  cifframe_type(typePtr, &adv);
-	  typePtr = adv;
-	}
-      break;
+        ftype = &ffi_type_pointer;
+        if (*typePtr == '?')
+        {
+            typePtr++;
+        }
+        else
+        {
+            const char *adv;
+            cifframe_type(typePtr, &adv);
+            typePtr = adv;
+        }
+        break;
 
     case _C_ATOM:
     case _C_CHARPTR:
-      ftype = &ffi_type_pointer;
-      break;
+        ftype = &ffi_type_pointer;
+        break;
 
     case _C_ARY_B:
-      {
-	const char *adv;
-	ftype = &ffi_type_pointer;
+    {
+        const char *adv;
+        ftype = &ffi_type_pointer;
 
-	while (isdigit(*typePtr))
-	  {
-	    typePtr++;
-	  }
-	cifframe_type(typePtr, &adv);
-	typePtr = adv;
-	typePtr++;	/* Skip end-of-array	*/
-      }
-      break;
+        while (isdigit(*typePtr))
+        {
+            typePtr++;
+        }
+        cifframe_type(typePtr, &adv);
+        typePtr = adv;
+        typePtr++; /* Skip end-of-array	*/
+    }
+    break;
 
     case _C_STRUCT_B:
-      {
-	int types, maxtypes, size;
-	ffi_type *local;
-	const char *adv;
-	unsigned   align = __alignof(double);
+    {
+        int types, maxtypes, size;
+        ffi_type *local;
+        const char *adv;
+        unsigned align = __alignof(double);
 
-	/* Standard structures can be handled using cached type information.
-	   Since the switch statement has already skipped the _C_STRUCT_B
-	   character, we must use typePtr-1 below to successfully match the
-	   type encoding with one of the standard type encodings. The same
-	   holds for skipping past the whole structure type's encoding with
-	   objc_skip_typespec.
-	 */
-	if (GSSelectorTypesMatch(typePtr - 1, @encode(NSRange)))
-	  {
-	    static ffi_type	*elems[3];
-	    static ffi_type	stype = { 0 };
+        /* Standard structures can be handled using cached type information.
+           Since the switch statement has already skipped the _C_STRUCT_B
+           character, we must use typePtr-1 below to successfully match the
+           type encoding with one of the standard type encodings. The same
+           holds for skipping past the whole structure type's encoding with
+           objc_skip_typespec.
+         */
+        if (GSSelectorTypesMatch(typePtr - 1, @encode(NSRange)))
+        {
+            static ffi_type *elems[3];
+            static ffi_type stype = { 0 };
 
-	    if (stype.type == 0)
-	      {
+            if (stype.type == 0)
+            {
                 const char      *t = @encode(NSUInteger);
 
-		if (*t == _C_ULNG)
-		  {
-		    elems[0] = &gsffi_type_ulong;
-		  }
-#ifdef	_C_LNG_LNG
-		else if (*t == _C_ULNG_LNG)
-		  {
-		    elems[0] = &gsffi_type_ulong_long;
-		  }
+                if (*t == _C_ULNG)
+                {
+                    elems[0] = &gsffi_type_ulong;
+                }
+#ifdef  _C_LNG_LNG
+                else if (*t == _C_ULNG_LNG)
+                {
+                    elems[0] = &gsffi_type_ulong_long;
+                }
 #endif
-		else
-		  {
-		    elems[0] = &gsffi_type_uint;
-		  }
-		elems[1] = elems[0];
-		elems[2] = 0;
-		stype.elements = elems;
-		stype.type = FFI_TYPE_STRUCT;
-	      }
-	    ftype = &stype;
-	    typePtr = objc_skip_typespec (typePtr - 1);
-	    break;
-	  }
-	else if (GSSelectorTypesMatch(typePtr - 1, @encode(NSSize)))
-	  {
-	    static ffi_type	*elems[3];
-	    static ffi_type	stype = { 0 };
+                else
+                {
+                    elems[0] = &gsffi_type_uint;
+                }
+                elems[1] = elems[0];
+                elems[2] = 0;
+                stype.elements = elems;
+                stype.type = FFI_TYPE_STRUCT;
+            }
+            ftype = &stype;
+            typePtr = objc_skip_typespec (typePtr - 1);
+            break;
+        }
+        else if (GSSelectorTypesMatch(typePtr - 1, SIZE_ENCODING))
+        {
+            static ffi_type *elems[3];
+            static ffi_type stype = { 0 };
 
-	    if (stype.type == 0)
-	      {
-		if (*@encode(CGFloat) == _C_DBL)
-		  {
-		    elems[0] = &ffi_type_double;
-		  }
-		else
-		  {
-		    elems[0] = &ffi_type_float;
-		  }
-		elems[1] = elems[0];
-		elems[2] = 0;
-		stype.elements = elems;
-		stype.type = FFI_TYPE_STRUCT;
-	      }
-	    ftype = &stype;
-	    typePtr = objc_skip_typespec (typePtr - 1);
-	    break;
-	  }
-	else if (GSSelectorTypesMatch(typePtr - 1, @encode(NSRect)))
-	  {
-	    static ffi_type	*elems[3];
-	    static ffi_type	stype = { 0 };
+            if (stype.type == 0)
+            {
+                if (*@encode(CGFloat) == _C_DBL)
+                {
+                    elems[0] = &ffi_type_double;
+                }
+                else
+                {
+                    elems[0] = &ffi_type_float;
+                }
+                elems[1] = elems[0];
+                elems[2] = 0;
+                stype.elements = elems;
+                stype.type = FFI_TYPE_STRUCT;
+            }
+            ftype = &stype;
+            typePtr = objc_skip_typespec (typePtr - 1);
+            break;
+        }
+        else if (GSSelectorTypesMatch(typePtr - 1, RECT_ENCODING))
+        {
+            static ffi_type *elems[3];
+            static ffi_type stype = { 0 };
 
-	    if (stype.type == 0)
-	      {
-		/* An NSRect is an NSPoint and an NSSize, but those
-	 	 * two structures are actually identical.
-		 */
-		elems[0] = cifframe_type(@encode(NSSize), NULL);
-		elems[1] = elems[0];
-		elems[2] = 0;
-		stype.elements = elems;
-		stype.type = FFI_TYPE_STRUCT;
-	      }
-	    ftype = &stype;
-	    typePtr = objc_skip_typespec (typePtr - 1);
-	    break;
-	  }
+            if (stype.type == 0)
+            {
+                /* An NS/CGRect is an NS/CGPoint and an NS/CGSize, but those
+                 * two structures are actually identical.
+                 */
+                elems[0] = cifframe_type(SIZE_ENCODING, NULL);
+                elems[1] = elems[0];
+                elems[2] = 0;
+                stype.elements = elems;
+                stype.type = FFI_TYPE_STRUCT;
+            }
+            ftype = &stype;
+            typePtr = objc_skip_typespec (typePtr - 1);
+            break;
+        }
 
-	/*
-	 *	Skip "<name>=" stuff.
-	 */
-	while (*typePtr != _C_STRUCT_E)
-	  {
-	    if (*typePtr++ == '=')
-	      {
-		break;
-	      }
-	  }
 
-	types = 0;
-	maxtypes = 4;
-	size = sizeof(ffi_type);
-	if (size % align != 0)
-	  {
-	    size += (align - (size % align));
-	  }
-	ftype = objc_malloc(size + (maxtypes+1)*sizeof(ffi_type));
-	ftype->size = 0;
-	ftype->alignment = 0;
-	ftype->type = FFI_TYPE_STRUCT;
-	ftype->elements = (void*)ftype + size;
-	/*
-	 *	Continue accumulating structure size.
-	 */
-	while (*typePtr != _C_STRUCT_E)
-	  {
-	    local = cifframe_type(typePtr, &adv);
-	    typePtr = adv;
-	    NSCAssert(typePtr, @"End of signature while parsing");
-	    ftype->elements[types++] = local;
-	    if (types >= maxtypes)
-	      {
-		maxtypes *=2;
-		ftype = objc_realloc(ftype,
-                  size + (maxtypes+1)*sizeof(ffi_type));
-	        ftype->elements = (void*)ftype + size;
-	      }
-	  }
-	ftype->elements[types] = NULL;
-	typePtr++;	/* Skip end-of-struct	*/
-      }
-      break;
+        /*
+         *	Skip "<name>=" stuff.
+         */
+        while (*typePtr != _C_STRUCT_E)
+        {
+            if (*typePtr++ == '=')
+            {
+                break;
+            }
+        }
+
+        types = 0;
+        maxtypes = 4;
+        size = sizeof(ffi_type);
+        if (size % align != 0)
+        {
+            size += (align - (size % align));
+        }
+        ftype = malloc(size + (maxtypes+1)*sizeof(ffi_type));
+        ftype->size = 0;
+        ftype->alignment = 0;
+        ftype->type = FFI_TYPE_STRUCT;
+        ftype->elements = (void*)ftype + size;
+        /*
+         *	Continue accumulating structure size.
+         */
+        while (*typePtr != _C_STRUCT_E)
+        {
+            local = cifframe_type(typePtr, &adv);
+            typePtr = adv;
+            NSCAssert(typePtr, @"End of signature while parsing");
+            ftype->elements[types++] = local;
+            if (types >= maxtypes)
+            {
+                maxtypes *= 2;
+                ftype = realloc(ftype,
+                                size + (maxtypes+1)*sizeof(ffi_type));
+                ftype->elements = (void*)ftype + size;
+            }
+        }
+        ftype->elements[types] = NULL;
+        typePtr++; /* Skip end-of-struct	*/
+    }
+    break;
 
     case _C_UNION_B:
-      {
-	const char *adv;
-	int	max_align = 0;
+    {
+        const char *adv;
+        int max_align = 0;
 
-	/*
-	 *	Skip "<name>=" stuff.
-	 */
-	while (*typePtr != _C_UNION_E)
-	  {
-	    if (*typePtr++ == '=')
-	      {
-		break;
-	      }
-	  }
-	ftype = NULL;
-	while (*typePtr != _C_UNION_E)
-	  {
-	    ffi_type *local;
-	    int align = objc_alignof_type(typePtr);
-	    local = cifframe_type(typePtr, &adv);
-	    typePtr = adv;
-	    NSCAssert(typePtr, @"End of signature while parsing");
-	    if (align > max_align)
-	      {
-		if (ftype && ftype->type == FFI_TYPE_STRUCT)
-		  objc_free(ftype);
-		ftype = local;
-		max_align = align;
-	      }
-	  }
-	typePtr++;	/* Skip end-of-union	*/
-      }
-      break;
+        /*
+         *	Skip "<name>=" stuff.
+         */
+        while (*typePtr != _C_UNION_E)
+        {
+            if (*typePtr++ == '=')
+            {
+                break;
+            }
+        }
+        ftype = NULL;
+        while (*typePtr != _C_UNION_E)
+        {
+            ffi_type *local;
+            int align = objc_alignof_type(typePtr);
+            local = cifframe_type(typePtr, &adv);
+            typePtr = adv;
+            NSCAssert(typePtr, @"End of signature while parsing");
+            if (align > max_align)
+            {
+                if (ftype && ftype->type == FFI_TYPE_STRUCT) {
+                    free(ftype);
+                }
+                ftype = local;
+                max_align = align;
+            }
+        }
+        typePtr++; /* Skip end-of-union	*/
+    }
+    break;
 
     case _C_VOID: ftype = &ffi_type_void;
-      break;
+        break;
     default:
-      ftype = &ffi_type_void;
-      NSCAssert(0, @"Unknown type in sig");
+        ftype = &ffi_type_void;
+        NSCAssert(0, @"Unknown type in sig");
     }
 
-  /* Skip past any offset information, if there is any */
-  if (*type != _C_PTR || *type == '?')
+    /* Skip past any offset information, if there is any */
+    if (*type != _C_PTR || *type == '?')
     {
-      if (*typePtr == '+')
-	typePtr++;
-      if (*typePtr == '-')
-	typePtr++;
-      while (isdigit(*typePtr))
-	typePtr++;
+        if (*typePtr == '+') {
+            typePtr++;
+        }
+        if (*typePtr == '-') {
+            typePtr++;
+        }
+        while (isdigit(*typePtr))
+            typePtr++;
     }
-  if (advance)
-    *advance = typePtr;
+    if (advance) {
+        *advance = typePtr;
+    }
 
-  return ftype;
+    return ftype;
+}
+
+GSCodeBuffer*
+cifframe_closure (NSMethodSignature *sig, void (*cb)())
+{
+    NSMutableData     *frame;
+    cifframe_t            *cframe;
+    ffi_closure           *cclosure;
+    void          *executable;
+    GSCodeBuffer          *memory;
+
+    /* Construct the frame (stored in an NSMutableDate object) and sety it
+     * in a new closure.
+     */
+    frame = cifframe_from_signature(sig);
+    cframe = [frame mutableBytes];
+    memory = [GSCodeBuffer memoryWithSize:sizeof(ffi_closure)];
+    [memory setFrame:frame];
+    cclosure = [memory buffer];
+    executable = [memory executable];
+    if (cframe == NULL || cclosure == NULL)
+    {
+        [NSException raise:NSMallocException format:@"Allocating closure"];
+    }
+#if HAVE_FFI_PREP_CLOSURE_LOC
+    if (ffi_prep_closure_loc(cclosure, &(cframe->cif),
+                             cb, frame, executable) != FFI_OK)
+    {
+        [NSException raise:NSGenericException format:@"Preping closure"];
+    }
+#else
+    executable = (void*)cclosure;
+    if (ffi_prep_closure(cclosure, &(cframe->cif),
+                         cb, frame) != FFI_OK)
+    {
+        [NSException raise:NSGenericException format:@"Preping closure"];
+    }
+#endif
+    [memory protect];
+    return memory;
 }
 
 /*-------------------------------------------------------------------------*/
 /* Functions for handling sending and receiving messages accross a
    connection
-*/
+ */
 
 /* Some return types actually get coded differently. We need to convert
    back to the expected return type */
 BOOL
 cifframe_decode_arg (const char *type, void* buffer)
 {
-  type = objc_skip_type_qualifiers (type);
-  switch (*type)
+    type = objc_skip_type_qualifiers (type);
+    switch (*type)
     {
     case _C_CHR:
     case _C_UCHR:
-      {
-	*(unsigned char*)buffer = (unsigned char)(*((smallret_t *)buffer));
-	break;
-      }
+    {
+        *(unsigned char*)buffer = (unsigned char)(*((smallret_t *)buffer));
+        break;
+    }
     case _C_SHT:
     case _C_USHT:
-      {
-	*(unsigned short*)buffer = (unsigned short)(*((smallret_t *)buffer));
-	break;
-      }
+    {
+        *(unsigned short*)buffer = (unsigned short)(*((smallret_t *)buffer));
+        break;
+    }
     case _C_INT:
     case _C_UINT:
-      {
-	*(unsigned int*)buffer = (unsigned int)(*((smallret_t *)buffer));
-	break;
-      }
-    default:
-      return NO;
+    {
+        *(unsigned int*)buffer = (unsigned int)(*((smallret_t *)buffer));
+        break;
     }
-  return YES;
+    default:
+        return NO;
+    }
+    return YES;
 }
 
 BOOL
 cifframe_encode_arg (const char *type, void* buffer)
 {
-  type = objc_skip_type_qualifiers (type);
-  switch (*type)
+    type = objc_skip_type_qualifiers (type);
+    switch (*type)
     {
     case _C_CHR:
     case _C_UCHR:
-      {
-	*(smallret_t *)buffer = (smallret_t)(*((unsigned char *)buffer));
-	break;
-      }
+    {
+        *(smallret_t *)buffer = (smallret_t)(*((unsigned char *)buffer));
+        break;
+    }
     case _C_SHT:
     case _C_USHT:
-      {
-	*(smallret_t *)buffer = (smallret_t)(*((unsigned short *)buffer));
-	break;
-      }
+    {
+        *(smallret_t *)buffer = (smallret_t)(*((unsigned short *)buffer));
+        break;
+    }
     case _C_INT:
     case _C_UINT:
-      {
-	*(smallret_t *)buffer = (smallret_t)(*((unsigned int *)buffer));
-	break;
-      }
-    default:
-      return NO;
+    {
+        *(smallret_t *)buffer = (smallret_t)(*((unsigned int *)buffer));
+        break;
     }
-  return YES;
+    default:
+        return NO;
+    }
+    return YES;
 }
 

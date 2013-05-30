@@ -20,18 +20,19 @@
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
-*/
+ */
 
 #import "common.h"
 #import "Foundation/NSValue.h"
 #import "Foundation/NSData.h"
 #import "Foundation/NSException.h"
 #import "Foundation/NSCoder.h"
+#import "GNUstepBase/GSObjCRuntime.h"
 
 @interface GSValue : NSValue
 {
-  void *data;
-  char *objctype;
+    void *data;
+    char *objctype;
 }
 @end
 
@@ -44,216 +45,186 @@
 static inline int
 typeSize(const char* type)
 {
-  switch (*type)
+    switch (*type)
     {
-      case _C_ID:	return sizeof(id);
-      case _C_CLASS:	return sizeof(Class);
-      case _C_SEL:	return sizeof(SEL);
-      case _C_CHR:	return sizeof(char);
-      case _C_UCHR:	return sizeof(unsigned char);
-      case _C_SHT:	return sizeof(short);
-      case _C_USHT:	return sizeof(unsigned short);
-      case _C_INT:	return sizeof(int);
-      case _C_UINT:	return sizeof(unsigned int);
-      case _C_LNG:	return sizeof(long);
-      case _C_ULNG:	return sizeof(unsigned long);
-      case _C_LNG_LNG:	return sizeof(long long);
-      case _C_ULNG_LNG:	return sizeof(unsigned long long);
-      case _C_FLT:	return sizeof(float);
-      case _C_DBL:	return sizeof(double);
-      case _C_PTR:	return sizeof(void*);
-      case _C_CHARPTR:	return sizeof(char*);
-      case _C_BFLD:
-      case _C_ARY_B:
-      case _C_UNION_B:
-      case _C_STRUCT_B:	return objc_sizeof_type(type);
-      case _C_VOID:	return 0;
-      default:		return -1;
+    case _C_ID:   return sizeof(id);
+    case _C_CLASS:    return sizeof(Class);
+    case _C_SEL:  return sizeof(SEL);
+    case _C_CHR:  return sizeof(char);
+    case _C_UCHR: return sizeof(unsigned char);
+    case _C_SHT:  return sizeof(short);
+    case _C_USHT: return sizeof(unsigned short);
+    case _C_INT:  return sizeof(int);
+    case _C_UINT: return sizeof(unsigned int);
+    case _C_LNG:  return sizeof(long);
+    case _C_ULNG: return sizeof(unsigned long);
+    case _C_LNG_LNG:  return sizeof(long long);
+    case _C_ULNG_LNG: return sizeof(unsigned long long);
+    case _C_FLT:  return sizeof(float);
+    case _C_DBL:  return sizeof(double);
+    case _C_PTR:  return sizeof(void*);
+    case _C_CHARPTR:  return sizeof(char*);
+    case _C_BFLD:
+    case _C_ARY_B:
+    case _C_UNION_B:
+    case _C_STRUCT_B: return objc_sizeof_type(type);
+    case _C_VOID: return 0;
+    default:      return -1;
     }
 }
 
 // Allocating and Initializing
 
-- (id) initWithBytes: (const void *)value
-	    objCType: (const char *)type
+- (id)initWithBytes:(const void *)value
+    objCType:(const char *)type
 {
-  if (!value || !type)
+    if (!value || !type)
     {
-      NSLog(@"Tried to create NSValue with NULL value or NULL type");
-      DESTROY(self);
-      return nil;
+        NSLog(@"Tried to create NSValue with NULL value or NULL type");
+        DESTROY(self);
+        return nil;
     }
 
-  self = [super init];
-  if (self != nil)
+    self = [super init];
+    if (self != nil)
     {
-      int	size = typeSize(type);
+        int size = typeSize(type);
 
-      if (size < 0)
-	{
-	  NSLog(@"Tried to create NSValue with invalid Objective-C type");
-	  DESTROY(self);
-	  return nil;
-	}
-      if (size > 0)
-	{
-	  data = (void *)NSZoneMalloc([self zone], size);
-	  memcpy(data, value, size);
-	}
-      objctype = (char *)NSZoneMalloc([self zone], strlen(type)+1);
-      strcpy(objctype, type);
+        if (size < 0)
+        {
+            NSLog(@"Tried to create NSValue with invalid Objective-C type");
+            DESTROY(self);
+            return nil;
+        }
+        if (size > 0)
+        {
+            data = (void *)NSZoneMalloc([self zone], size);
+            memcpy(data, value, size);
+        }
+        objctype = (char *)NSZoneMalloc([self zone], strlen(type)+1);
+        strcpy(objctype, type);
     }
-  return self;
+    return self;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  if (objctype != 0)
-    NSZoneFree([self zone], objctype);
-  if (data != 0)
-    NSZoneFree([self zone], data);
-  [super dealloc];
+    if (objctype != 0) {
+        NSZoneFree([self zone], objctype);
+    }
+    if (data != 0) {
+        NSZoneFree([self zone], data);
+    }
+    [super dealloc];
 }
 
 // Accessing Data
-- (void) getValue: (void *)value
+- (void)getValue:(void *)value
 {
-  unsigned	size;
+    unsigned size;
 
-  size = (unsigned)typeSize(objctype);
-  if (size > 0)
+    size = (unsigned)typeSize(objctype);
+    if (size > 0)
     {
-      if (value == 0)
-	{
-	  [NSException raise: NSInvalidArgumentException
-		      format: @"Cannot copy value into NULL buffer"];
-	  /* NOT REACHED */
-	}
-      memcpy(value, data, size);
+        if (value == 0)
+        {
+            [NSException raise:NSInvalidArgumentException
+             format:@"Cannot copy value into NULL buffer"];
+            /* NOT REACHED */
+        }
+        memcpy(value, data, size);
     }
 }
 
-- (NSUInteger) hash
+- (NSUInteger)hash
 {
-  unsigned	size = typeSize(objctype);
-  unsigned	hash = 0;
+    unsigned size = typeSize(objctype);
+    unsigned hash = 0;
 
-  while (size-- > 0)
+    while (size-- > 0)
     {
-      hash += ((unsigned char*)data)[size];
+        hash += ((unsigned char*)data)[size];
     }
-  return hash;
+    return hash;
 }
 
-- (BOOL) isEqualToValue: (NSValue*)aValue
+- (BOOL)isEqualToValue:(NSValue*)aValue
 {
-  if (aValue == nil)
-    return NO;
-  if (object_getClass(aValue) != object_getClass(self))
-    return NO;
-  if (strcmp(objctype, ((GSValue*)aValue)->objctype) != 0)
-    return NO;
-  else
+    if (aValue == nil) {
+        return NO;
+    }
+    if (object_getClass(aValue) != object_getClass(self)) {
+        return NO;
+    }
+    if (strcmp(objctype, ((GSValue*)aValue)->objctype) != 0) {
+        return NO;
+    }
+    else
     {
-      unsigned	size = (unsigned)typeSize(objctype);
+        unsigned size = (unsigned)typeSize(objctype);
 
-      if (memcmp(((GSValue*)aValue)->data, data, size) != 0)
-	return NO;
-      return YES;
+        if (memcmp(((GSValue*)aValue)->data, data, size) != 0) {
+            return NO;
+        }
+        return YES;
     }
 }
 
 - (const char *)objCType
 {
-  return objctype;
+    return objctype;
 }
 
-- (id) nonretainedObjectValue
+- (id)nonretainedObjectValue
 {
-  unsigned	size = (unsigned)typeSize(objctype);
+    unsigned size = (unsigned)typeSize(objctype);
 
-  if (size != sizeof(void*))
+    if (size != sizeof(void*))
     {
-      [NSException raise: NSInternalInconsistencyException
-		  format: @"Return value of size %u as object", size];
+        [NSException raise:NSInternalInconsistencyException
+         format:@"Return value of size %u as object", size];
     }
-  return *((id *)data);
+    return *((id *)data);
 }
 
-- (NSPoint) pointValue
+- (void *)pointerValue
 {
-  unsigned	size = (unsigned)typeSize(objctype);
+    unsigned size = (unsigned)typeSize(objctype);
 
-  if (size != sizeof(NSPoint))
+    if (size != sizeof(void*))
     {
-      [NSException raise: NSInternalInconsistencyException
-		  format: @"Return value of size %u as NSPoint", size];
+        [NSException raise:NSInternalInconsistencyException
+         format:@"Return value of size %u as pointer", size];
     }
-  return *((NSPoint *)data);
+    return *((void **)data);
 }
 
-- (void *) pointerValue
+- (NSString *)description
 {
-  unsigned	size = (unsigned)typeSize(objctype);
+    unsigned size;
+    NSData    *rep;
 
-  if (size != sizeof(void*))
-    {
-      [NSException raise: NSInternalInconsistencyException
-		  format: @"Return value of size %u as pointer", size];
-    }
-  return *((void **)data);
+    size = (unsigned)typeSize(objctype);
+    rep = [NSData dataWithBytes:data length:size];
+    return [NSString stringWithFormat:@"(%s) %@", objctype, [rep description]];
 }
 
-- (NSRect) rectValue
+- (void)encodeWithCoder:(NSCoder *)coder
 {
-  unsigned	size = (unsigned)typeSize(objctype);
+    unsigned size;
+    NSMutableData *d;
 
-  if (size != sizeof(NSRect))
-    {
-      [NSException raise: NSInternalInconsistencyException
-		  format: @"Return value of size %u as NSRect", size];
-    }
-  return *((NSRect *)data);
-}
-
-- (NSSize) sizeValue
-{
-  unsigned	size = (unsigned)typeSize(objctype);
-
-  if (size != sizeof(NSSize))
-    {
-      [NSException raise: NSInternalInconsistencyException
-		  format: @"Return value of size %u as NSSize", size];
-    }
-  return *((NSSize *)data);
-}
-
-- (NSString *) description
-{
-  unsigned	size;
-  NSData	*rep;
-
-  size = (unsigned)typeSize(objctype);
-  rep = [NSData dataWithBytes: data length: size];
-  return [NSString stringWithFormat: @"(%s) %@", objctype, [rep description]];
-}
-
-- (void) encodeWithCoder: (NSCoder *)coder
-{
-  unsigned	size;
-  NSMutableData	*d;
-
-  size = strlen(objctype)+1;
-  [coder encodeValueOfObjCType: @encode(unsigned) at: &size];
-  [coder encodeArrayOfObjCType: @encode(signed char) count: size at: objctype];
-  size = objc_sizeof_type(objctype);
-  d = [NSMutableData new];
-  [d serializeDataAt: data ofObjCType: objctype context: nil];
-  size = [d length];
-  [coder encodeValueOfObjCType: @encode(unsigned) at: &size];
-  [coder encodeArrayOfObjCType: @encode(unsigned char)
-			 count: size
-			    at: [d bytes]];
-  RELEASE(d);
+    size = strlen(objctype)+1;
+    [coder encodeValueOfObjCType:@encode(unsigned) at:&size];
+    [coder encodeArrayOfObjCType:@encode(signed char) count:size at:objctype];
+    size = objc_sizeof_type(objctype);
+    d = [NSMutableData new];
+    [d serializeDataAt:data ofObjCType:objctype context:nil];
+    size = [d length];
+    [coder encodeValueOfObjCType:@encode(unsigned) at:&size];
+    [coder encodeArrayOfObjCType:@encode(unsigned char)
+     count:size
+     at:[d bytes]];
+    RELEASE(d);
 }
 @end

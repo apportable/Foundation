@@ -24,7 +24,7 @@
 
    <title>NSPathUtilities function reference</title>
    $Date: 2010-02-26 00:39:47 -0800 (Fri, 26 Feb 2010) $ $Revision: 29771 $
-   */
+ */
 
 #import "common.h"
 #import "GNUstepBase/preface.h"
@@ -42,35 +42,35 @@
 NSString *
 GSFindNamedFile(NSArray *paths, NSString *aName, NSString *anExtension)
 {
-  NSFileManager *file_mgr = [NSFileManager defaultManager];
-  NSString *file_name, *file_path, *path;
-  NSEnumerator *enumerator;
+    NSFileManager *file_mgr = [NSFileManager defaultManager];
+    NSString *file_name, *file_path, *path;
+    NSEnumerator *enumerator;
 
-  NSCParameterAssert(aName != nil);
-  NSCParameterAssert(paths != nil);
+    NSCParameterAssert(aName != nil);
+    NSCParameterAssert(paths != nil);
 
-GSOnceFLog(@"deprecated ... trivial to code directly");
+    GSOnceFLog(@"deprecated ... trivial to code directly");
 
-  /* make up the name with extension if given */
-  if (anExtension != nil)
+    /* make up the name with extension if given */
+    if (anExtension != nil)
     {
-      file_name = [aName stringByAppendingPathExtension: anExtension];
+        file_name = [aName stringByAppendingPathExtension:anExtension];
     }
-  else
+    else
     {
-      file_name = aName;
+        file_name = aName;
     }
 
-  enumerator = [paths objectEnumerator];
-  while ((path = [enumerator nextObject]))
+    enumerator = [paths objectEnumerator];
+    while ((path = [enumerator nextObject]))
     {
-      file_path = [path stringByAppendingPathComponent: file_name];
+        file_path = [path stringByAppendingPathComponent:file_name];
 
-      if ([file_mgr fileExistsAtPath: file_path] == YES)
+        if ([file_mgr fileExistsAtPath:file_path] == YES)
         {
-          return file_path; // Found it!
+            return file_path; // Found it!
         }
     }
-  return nil;
+    return nil;
 }
 

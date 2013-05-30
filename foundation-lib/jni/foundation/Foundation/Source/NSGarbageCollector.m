@@ -21,134 +21,80 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-   */
+ */
 
 #import "common.h"
-#import	"Foundation/NSGarbageCollector.h"
+#import "Foundation/NSGarbageCollector.h"
 
-static NSGarbageCollector	*collector = nil;
-static unsigned			disabled = 0;
+static NSGarbageCollector   *collector = nil;
+static unsigned disabled = 0;
 
-#if	GS_WITH_GC
 
-#include <gc.h>
+@implementation NSGarbageCollector
 
-#import	"Foundation/NSLock.h"
-#import	"Foundation/NSHashTable.h"
-static NSLock		*lock = nil;
-static NSHashTable	*uncollectable = 0;
-#endif
-
-@implementation	NSGarbageCollector
-
-+ (id) defaultCollector
++ (id)defaultCollector
 {
-  return collector;
+    return collector;
 }
 
-#if	GS_WITH_GC
-+ (void) initialize
-{
-  collector = [self alloc];
-  lock = [NSLock new];
-}
-#endif
 
-- (void) collectIfNeeded
+- (void)collectIfNeeded
 {
-#if	GS_WITH_GC
-  GC_collect_a_little();
-#endif
-  return;
+    return;
 }
 
-- (void) collectExhaustively
+- (void)collectExhaustively
 {
-#if	GS_WITH_GC
-  GC_gcollect();
-#endif
-  return;
+    return;
 }
 
-- (void) disable
+- (void)disable
 {
-#if	GS_WITH_GC
-  [lock lock];
-  GC_disable();
-  disabled++;
-  [lock unlock];
-#endif
-  return;
+    return;
 }
 
-- (void) disableCollectorForPointer: (void *)ptr
+- (void)disableCollectorForPointer:(void *)ptr
 {
-#if	GS_WITH_GC
-  [lock lock];
-  if (uncollectable == 0)
+    return;
+}
+
+- (void)enable
+{
+    return;
+}
+
+- (void)enableCollectorForPointer:(void *)ptr
+{
+    return;
+}
+
+- (id)init
+{
+    if (self != collector)
     {
-      uncollectable = NSCreateHashTable(NSOwnedPointerHashCallBacks, 0);
+        [self dealloc];
+        self = nil;
     }
-  NSHashInsertIfAbsent(uncollectable, ptr);
-  [lock unlock];
-#endif
-  return;
+    return self;
 }
 
-- (void) enable
+- (BOOL)isCollecting
 {
-#if	GS_WITH_GC
-  [lock lock];
-  if (disabled)
+    return NO;
+}
+
+- (BOOL)isEnabled
+{
+    if (disabled)
     {
-      GC_enable();
-      disabled--;
+        return NO;
     }
-  [lock unlock];
-#endif
-  return;
+    return YES;
 }
 
-- (void) enableCollectorForPointer: (void *)ptr
+- (NSZone*)zone
 {
-#if	GS_WITH_GC
-  [lock lock];
-  if (uncollectable != 0)
-    {
-      NSHashRemove(uncollectable, ptr);
-    }
-  [lock unlock];
-#endif
-  return;
-}
-
-- (id) init
-{
-  if (self != collector)
-    {
-      [self dealloc];
-      self = nil;
-    }
-  return self;
-}
-
-- (BOOL) isCollecting
-{
-  return NO;
-}
-
-- (BOOL) isEnabled
-{
-  if (disabled)
-    {
-      return NO;
-    }
-  return YES;
-}
-
-- (NSZone*) zone
-{
-  return NSDefaultMallocZone();
+    return NSDefaultMallocZone();
 }
 @end
 

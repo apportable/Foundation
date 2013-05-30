@@ -23,7 +23,7 @@
 
    <title>NSPortNameServer class reference</title>
    $Date: 2010-02-19 00:12:46 -0800 (Fri, 19 Feb 2010) $ $Revision: 29669 $
-   */
+ */
 
 #import "common.h"
 #import "Foundation/NSException.h"
@@ -35,7 +35,6 @@
 #import "GSPortPrivate.h"
 #import "GNUstepBase/NSObject+GNUstepBase.h"
 
-
 /**
  * The abstract port name server class.  This defines an API for
  * working with port name servers ... objects used to manage access
@@ -43,16 +42,16 @@
  */
 @implementation NSPortNameServer
 
-+ (id) allocWithZone: (NSZone*)aZone
++ (id)allocWithZone:(NSZone*)aZone
 {
-  [NSException raise: NSGenericException
-	      format: @"attempt to create extra port name server"];
-  return nil;
+    [NSException raise:NSGenericException
+     format:@"attempt to create extra port name server"];
+    return nil;
 }
 
-+ (void) initialize
++ (void)initialize
 {
-  if (self == [NSPortNameServer class])
+    if (self == [NSPortNameServer class])
     {
     }
 }
@@ -69,39 +68,39 @@
  * and you will have to use [NSMessagePortNameServer+sharedInstance]
  * for host-local, private connections.
  */
-+ (id) systemDefaultPortNameServer
++ (id)systemDefaultPortNameServer
 {
-  static id	nameServer = nil;
+    static id nameServer = nil;
 
-  if (nameServer == nil)
+    if (nameServer == nil)
     {
-      [gnustep_global_lock lock];
-      if (nameServer == nil)
-	{
-	  NSUserDefaults	*defs = [NSUserDefaults standardUserDefaults];
-	  id			o;
+        [gnustep_global_lock lock];
+        if (nameServer == nil)
+        {
+            NSUserDefaults    *defs = [NSUserDefaults standardUserDefaults];
+            id o;
 
-	  if ([defs objectForKey: @"NSPortIsMessagePort"] != nil
-	    && [defs boolForKey: @"NSPortIsMessagePort"] == NO)
-	    {
-	      o = [NSSocketPortNameServer sharedInstance];
-	    }
-	  else
-	    {
-	      o = [NSMessagePortNameServer sharedInstance];
-	    }
-	  nameServer = RETAIN(o);
-	}
-      [gnustep_global_lock unlock];
+            if ([defs objectForKey:@"NSPortIsMessagePort"] != nil
+                && [defs boolForKey:@"NSPortIsMessagePort"] == NO)
+            {
+                o = [NSSocketPortNameServer sharedInstance];
+            }
+            else
+            {
+                o = [NSMessagePortNameServer sharedInstance];
+            }
+            nameServer = RETAIN(o);
+        }
+        [gnustep_global_lock unlock];
     }
-  return nameServer;
+    return nameServer;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  [NSException raise: NSGenericException
-	      format: @"attempt to deallocate default port name server"];
-  GSNOSUPERDEALLOC;
+    [NSException raise:NSGenericException
+     format:@"attempt to deallocate default port name server"];
+    GSNOSUPERDEALLOC;
 }
 
 /**
@@ -114,9 +113,9 @@
  * This is a convenience method calling -portForName:onHost: with a nil
  * host argument.
  */
-- (NSPort*) portForName: (NSString*)name
+- (NSPort*)portForName:(NSString*)name
 {
-  return [self portForName: name onHost: nil];
+    return [self portForName:name onHost:nil];
 }
 
 /** <override-subclass />
@@ -127,11 +126,11 @@
  * nameserver does not guarantee that a port does with that name does
  * not exist.
  */
-- (NSPort*) portForName: (NSString*)name
-		 onHost: (NSString*)host
+- (NSPort*)portForName:(NSString*)name
+    onHost:(NSString*)host
 {
-  [self subclassResponsibility: _cmd];
-  return nil;
+    [self subclassResponsibility:_cmd];
+    return nil;
 }
 
 /** <override-subclass />
@@ -143,11 +142,11 @@
  * with the name.
  * Raises NSInvalidArgumentException if given bad arguments.
  */
-- (BOOL) registerPort: (NSPort*)port
-	      forName: (NSString*)name
+- (BOOL)registerPort:(NSPort*)port
+    forName:(NSString*)name
 {
-  [self subclassResponsibility: _cmd];
-  return NO;
+    [self subclassResponsibility:_cmd];
+    return NO;
 }
 
 /** <override-subclass />
@@ -157,54 +156,54 @@
  * with the name.<br />
  * Raises NSInvalidArgumentException if given bad arguments.
  */
-- (BOOL) removePortForName: (NSString*)name
+- (BOOL)removePortForName:(NSString*)name
 {
-  [self subclassResponsibility: _cmd];
-  return NO;
+    [self subclassResponsibility:_cmd];
+    return NO;
 }
 @end
 
 /**
  * Some extensions to make cleaning up port names easier.
  */
-@implementation	NSPortNameServer (GNUstep)
+@implementation NSPortNameServer (GNUstep)
 /** <override-subclass />
  * Return all names that have been registered with the receiver for port.
  */
-- (NSArray*) namesForPort: (NSPort*)port
+- (NSArray*)namesForPort:(NSPort*)port
 {
-  [self subclassResponsibility: _cmd];
-  return nil;
+    [self subclassResponsibility:_cmd];
+    return nil;
 }
 
 /**
  * Remove all names registered with the receiver for port.
  * Probably inefficient ... subclasses might want to override this.
  */
-- (BOOL) removePort: (NSPort*)port
+- (BOOL)removePort:(NSPort*)port
 {
-  NSEnumerator	*e = [[self namesForPort: port] objectEnumerator];
-  NSString	*n;
-  BOOL		removed = NO;
+    NSEnumerator  *e = [[self namesForPort:port] objectEnumerator];
+    NSString  *n;
+    BOOL removed = NO;
 
-  while ((n = [e nextObject]) != nil)
+    while ((n = [e nextObject]) != nil)
     {
-      if ([self removePort: port forName: n] == YES)
-	{
-	  removed = YES;
-	}
+        if ([self removePort:port forName:n] == YES)
+        {
+            removed = YES;
+        }
     }
-  return removed;
+    return removed;
 }
 
 /** <override-subclass />
  * Remove the name if and only if it is registered with the receiver
  * for the given port.
  */
-- (BOOL) removePort: (NSPort*)port forName: (NSString*)name
+- (BOOL)removePort:(NSPort*)port forName:(NSString*)name
 {
-  [self subclassResponsibility: _cmd];
-  return NO;
+    [self subclassResponsibility:_cmd];
+    return NO;
 }
 @end
 

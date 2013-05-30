@@ -22,7 +22,7 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-*/
+ */
 #import "common.h"
 #import "Foundation/NSArray.h"
 #import "Foundation/NSEnumerator.h"
@@ -31,33 +31,33 @@
 #import "Foundation/NSSet.h"
 #import "GNUstepBase/NSBundle+GNUstepBase.h"
 
-@implementation NSBundle(GNUstepBase)
+@implementation NSBundle (GNUstepBase)
 
 // In NSBundle.m
-+ (NSString *) pathForLibraryResource: (NSString *)name
-			       ofType: (NSString *)ext
-			  inDirectory: (NSString *)bundlePath
++ (NSString *)pathForLibraryResource:(NSString *)name
+    ofType:(NSString *)ext
+    inDirectory:(NSString *)bundlePath
 {
-  NSString	*path = nil;
-  NSString	*bundle_path = nil;
-  NSArray	*paths;
-  NSBundle	*bundle;
-  NSEnumerator	*enumerator;
+    NSString  *path = nil;
+    NSString  *bundle_path = nil;
+    NSArray   *paths;
+    NSBundle  *bundle;
+    NSEnumerator  *enumerator;
 
-  /* Gather up the paths */
-  paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory,
-                                              NSAllDomainsMask, YES);
+    /* Gather up the paths */
+    paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory,
+                                                NSAllDomainsMask, YES);
 
-  enumerator = [paths objectEnumerator];
-  while ((path == nil) && (bundle_path = [enumerator nextObject]))
+    enumerator = [paths objectEnumerator];
+    while ((path == nil) && (bundle_path = [enumerator nextObject]))
     {
-      bundle = [self bundleWithPath: bundle_path];
-      path = [bundle pathForResource: name
-                              ofType: ext
-                         inDirectory: bundlePath];
+        bundle = [self bundleWithPath:bundle_path];
+        path = [bundle pathForResource:name
+                ofType:ext
+                inDirectory:bundlePath];
     }
 
-  return path;
+    return path;
 }
 
 @end

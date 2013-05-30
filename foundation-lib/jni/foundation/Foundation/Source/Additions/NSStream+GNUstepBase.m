@@ -21,7 +21,7 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-*/
+ */
 
 #import "common.h"
 #import "GNUstepBase/NSObject+GNUstepBase.h"
@@ -30,70 +30,70 @@
 /* Code used in GNUstepBase
  */
 NSString * const GSStreamLocalAddressKey
-  = @"GSStreamLocalAddressKey";
+    = @"GSStreamLocalAddressKey";
 NSString * const GSStreamLocalPortKey
-  = @"GSStreamLocalPortKey";
+    = @"GSStreamLocalPortKey";
 NSString * const GSStreamRemoteAddressKey
-  = @"GSStreamRemoteAddressKey";
+    = @"GSStreamRemoteAddressKey";
 NSString * const GSStreamRemotePortKey
-  = @"GSStreamRemotePortKey";
+    = @"GSStreamRemotePortKey";
 
 
 /* The remaining code is specific to the Apple Foundation
  */
 /*
-#if	!defined(GNUSTEP)
+   #if	!defined(GNUSTEP)
 
-@implementation NSStream (GNUstepBase)
+   @implementation NSStream (GNUstepBase)
 
-+ (void) getLocalStreamsToPath: (NSString *)path 
-		   inputStream: (NSInputStream **)inputStream 
-		  outputStream: (NSOutputStream **)outputStream
-{
-  [self notImplemented: _cmd];
-}
+ + (void) getLocalStreamsToPath: (NSString *)path
+           inputStream: (NSInputStream **)inputStream
+          outputStream: (NSOutputStream **)outputStream
+   {
+   [self notImplemented: _cmd];
+   }
 
-+ (void) pipeWithInputStream: (NSInputStream **)inputStream 
+ + (void) pipeWithInputStream: (NSInputStream **)inputStream
                 outputStream: (NSOutputStream **)outputStream
-{
-  [self notImplemented: _cmd];
-}
+   {
+   [self notImplemented: _cmd];
+   }
 
-@end
+   @end
 
-@implementation GSServerStream
+   @implementation GSServerStream
 
-+ (id) allocWithZone: (NSZone*)z
-{
-  return [self notImplemented: _cmd];
-}
+ + (id) allocWithZone: (NSZone*)z
+   {
+   return [self notImplemented: _cmd];
+   }
 
-+ (id) serverStreamToAddr: (NSString*)addr port: (NSInteger)port
-{
-  return [self notImplemented: _cmd];
-}
+ + (id) serverStreamToAddr: (NSString*)addr port: (NSInteger)port
+   {
+   return [self notImplemented: _cmd];
+   }
 
-+ (id) serverStreamToAddr: (NSString*)addr
-{
-  return [self notImplemented: _cmd];
-}
+ + (id) serverStreamToAddr: (NSString*)addr
+   {
+   return [self notImplemented: _cmd];
+   }
 
-- (void) acceptWithInputStream: (NSInputStream **)inputStream 
+   - (void) acceptWithInputStream: (NSInputStream **)inputStream
                   outputStream: (NSOutputStream **)outputStream
-{
-  [self notImplemented: _cmd];
-}
+   {
+   [self notImplemented: _cmd];
+   }
 
-- (id) initToAddr: (NSString*)addr port: (NSInteger)port
-{
-  return [self notImplemented: _cmd];
-}
+   - (id) initToAddr: (NSString*)addr port: (NSInteger)port
+   {
+   return [self notImplemented: _cmd];
+   }
 
-- (id) initToAddr: (NSString*)addr
-{
-  return [self notImplemented: _cmd];
-}
+   - (id) initToAddr: (NSString*)addr
+   {
+   return [self notImplemented: _cmd];
+   }
 
-@end
-#endif
-*/
+   @end
+ +++#endif
+ */

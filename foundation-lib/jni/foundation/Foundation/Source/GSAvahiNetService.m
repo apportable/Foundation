@@ -20,7 +20,7 @@
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
-   */
+ */
 
 #import "GSNetServices.h"
 #import "GSAvahiClient.h"
@@ -57,43 +57,43 @@
 
 
 @interface GSAvahiNetService (GSAvahiNetServicePrivate)
-- (void) newData: (NSData*)data
-       forRRCode: (NSUInteger)rrCode;
+- (void)newData:(NSData*)data
+    forRRCode:(NSUInteger)rrCode;
 
-- (void) removedData: (NSData*)data
-           forRRCode: (NSUInteger)rrCode;
+- (void)removedData:(NSData*)data
+    forRRCode:(NSUInteger)rrCode;
 
-- (void) allForNowForRRCode: (NSUInteger)rrCode;
+- (void)allForNowForRRCode:(NSUInteger)rrCode;
 
-- (void) entryGroup: (AvahiEntryGroup*)group
-       enteredState: (AvahiEntryGroupState)state;
+- (void)entryGroup:(AvahiEntryGroup*)group
+    enteredState:(AvahiEntryGroupState)state;
 
-- (void) avahiResolver: (AvahiServiceResolver*)resolver
-  foundServiceWithName: (NSString*)name
-                  type: (NSString*)type
-                domain: (NSString*)domain
-              hostName: (NSString*)hostName
-               address: (NSData*)address
-                  port: (NSInteger)port
-             txtRecord: (NSData*)txtData
-               ifIndex: (AvahiIfIndex)ifIndex
-              protocol: (AvahiProtocol)protocol;
+- (void)avahiResolver:(AvahiServiceResolver*)resolver
+    foundServiceWithName:(NSString*)name
+    type:(NSString*)type
+    domain:(NSString*)domain
+    hostName:(NSString*)hostName
+    address:(NSData*)address
+    port:(NSInteger)port
+    txtRecord:(NSData*)txtData
+    ifIndex:(AvahiIfIndex)ifIndex
+    protocol:(AvahiProtocol)protocol;
 
-- (void) handleError: (int)error
-           forRRCode: (int)rrcode;
+- (void)handleError:(int)error
+    forRRCode:(int)rrcode;
 
-- (void) handleError: (int)error;
+- (void)handleError:(int)error;
 
 
 // Methods from the GSAvahiClient behaviour:
 
-- (id) avahiClientInit;
+- (id)avahiClientInit;
 
-- (void) avahiClientHandleError: (int)error;
+- (void)avahiClientHandleError:(int)error;
 
-- (void) avahiClientDealloc;
+- (void)avahiClientDealloc;
 
-- (NSDictionary*) errorDictWithErrorCode: (int)error;
+- (NSDictionary*)errorDictWithErrorCode:(int)error;
 @end
 
 /**
@@ -102,37 +102,37 @@
 static NSString*
 NSStringFromRRCode(NSUInteger code)
 {
-  /* NOTE: I still have a comprehensive plist for this in UnboundKit. I'll
-   * import it eventually, but for now, we need just a few rrCodes;
-   */
-  switch (code)
+    /* NOTE: I still have a comprehensive plist for this in UnboundKit. I'll
+     * import it eventually, but for now, we need just a few rrCodes;
+     */
+    switch (code)
     {
-      case 0x01:
+    case 0x01:
         return @"A";
-      case 0x02:
+    case 0x02:
         return @"NS";
-      case 0x1C:
+    case 0x1C:
         return @"AAAA";
-      case 0x05:
+    case 0x05:
         return @"CNAME";
-      case 0x06:
+    case 0x06:
         return @"SOA";
-      case 0x0C:
+    case 0x0C:
         return @"PTR";
-      case 0x0D:
+    case 0x0D:
         return @"HINFO";
-      case 0x0F:
-         return @"MX";
-       case 0x10:
-         return @"TXT";
-       case 0x21:
-         return @"SRV";
-       case 0x0A:
-         return @"NULL";
-       default:
-         return nil;
+    case 0x0F:
+        return @"MX";
+    case 0x10:
+        return @"TXT";
+    case 0x21:
+        return @"SRV";
+    case 0x0A:
+        return @"NULL";
+    default:
+        return nil;
     }
-  return nil;
+    return nil;
 }
 
 
@@ -143,51 +143,51 @@ NSStringFromRRCode(NSUInteger code)
 static NSUInteger
 RRCodeFromNSString(NSString* name)
 {
-  if ([name isEqualToString: @"A"])
+    if ([name isEqualToString:@"A"])
     {
-      return 0x01;
+        return 0x01;
     }
-  else if ([name isEqualToString: @"AAAA"])
+    else if ([name isEqualToString:@"AAAA"])
     {
-       return 0x1C;
+        return 0x1C;
     }
-  else if ([name isEqualToString: @"TXT"])
+    else if ([name isEqualToString:@"TXT"])
     {
-       return 0x10;
+        return 0x10;
     }
-  else if ([name isEqualToString: @"NULL"])
+    else if ([name isEqualToString:@"NULL"])
     {
-      return 0x0A;
+        return 0x0A;
     }
-  else if ([name isEqualToString: @"NS"])
+    else if ([name isEqualToString:@"NS"])
     {
-      return 0x02;
+        return 0x02;
     }
-  else if ([name isEqualToString: @"CNAME"])
+    else if ([name isEqualToString:@"CNAME"])
     {
-      return 0x05;
+        return 0x05;
     }
-  else if ([name isEqualToString: @"SOA"])
+    else if ([name isEqualToString:@"SOA"])
     {
-       return 0x06;
+        return 0x06;
     }
-  else if ([name isEqualToString: @"PTR"])
+    else if ([name isEqualToString:@"PTR"])
     {
-       return 0x0C;
+        return 0x0C;
     }
-  else if ([name isEqualToString: @"HINFO"])
+    else if ([name isEqualToString:@"HINFO"])
     {
-      return 0x0D;
+        return 0x0D;
     }
-  else if ([name isEqualToString: @"MX"])
+    else if ([name isEqualToString:@"MX"])
     {
-      return 0x0F;
+        return 0x0F;
     }
-  else if ([name isEqualToString: @"SRV"])
+    else if ([name isEqualToString:@"SRV"])
     {
-      return 0x21;
+        return 0x21;
     }
-  return 0x00;
+    return 0x00;
 }
 
 /**
@@ -196,11 +196,11 @@ RRCodeFromNSString(NSString* name)
 static inline const char*
 StringOrNullIfEmpty(NSString *domain)
 {
-  if ((domain != nil) && ![domain isEqualToString: @""])
+    if ((domain != nil) && ![domain isEqualToString:@""])
     {
-      return [domain UTF8String];
+        return [domain UTF8String];
     }
-  return NULL;
+    return NULL;
 }
 
 /**
@@ -209,44 +209,44 @@ StringOrNullIfEmpty(NSString *domain)
 static NSData*
 NSDataFromAvahiStringList(AvahiStringList* list)
 {
-  /* NOTE: The record is at most 255 bytes, but should we really allocate
-   * 255 bytes on the stack?
-   */
-  char *buffer = NULL;
-  size_t len = 0;
-  NSData *data = nil;
+    /* NOTE: The record is at most 255 bytes, but should we really allocate
+     * 255 bytes on the stack?
+     */
+    char *buffer = NULL;
+    size_t len = 0;
+    NSData *data = nil;
 
-  if (list == NULL)
+    if (list == NULL)
     {
-      return nil;
+        return nil;
     }
 
-  /* The avahi documentation on avahi_string_list_serialize() doesn't tell us
-   * this, but called with the arguments below, it just returns the size:
-   */
-  len = avahi_string_list_serialize(list, NULL, 0);
-  if (len == 0)
+    /* The avahi documentation on avahi_string_list_serialize() doesn't tell us
+     * this, but called with the arguments below, it just returns the size:
+     */
+    len = avahi_string_list_serialize(list, NULL, 0);
+    if (len == 0)
     {
-      return nil;
+        return nil;
     }
 
-  buffer = malloc(len);
-  // It's better to zero the buffer: memset(buffer, '\0', len);
-  if (buffer == NULL)
+    buffer = malloc(len);
+    // It's better to zero the buffer: memset(buffer, '\0', len);
+    if (buffer == NULL)
     {
-      // Should we raise an exception?
-      NSDebugLog(@"Couldn't allocate %lu bytes for txt record", len);
-      return nil;
+        // Should we raise an exception?
+        NSDebugLog(@"Couldn't allocate %lu bytes for txt record", len);
+        return nil;
     }
 
-  /* Proper serialization of the string list, we ignore the returned length
-   * since we already know it.
-   */
-  avahi_string_list_serialize(list, buffer, len);
-  data = [NSData dataWithBytes: buffer
-                        length: len];
-  free(buffer);
-  return data;
+    /* Proper serialization of the string list, we ignore the returned length
+     * since we already know it.
+     */
+    avahi_string_list_serialize(list, buffer, len);
+    data = [NSData dataWithBytes:buffer
+            length:len];
+    free(buffer);
+    return data;
 }
 
 
@@ -257,13 +257,13 @@ NSDataFromAvahiStringList(AvahiStringList* list)
 static int
 GSAvahiStringListFromNSData(NSData *txtData, AvahiStringList **list)
 {
-  if (nil != txtData)
+    if (nil != txtData)
     {
-      const void *bytes = [txtData bytes];
-      size_t len = [txtData length];
-      return avahi_string_list_parse(bytes, len, list);
+        const void *bytes = [txtData bytes];
+        size_t len = [txtData length];
+        return avahi_string_list_parse(bytes, len, list);
     }
-  return -1;
+    return -1;
 }
 
 /**
@@ -272,60 +272,59 @@ GSAvahiStringListFromNSData(NSData *txtData, AvahiStringList **list)
  */
 static NSData*
 NSDataFromAvahiAddressPortAndInterface(const AvahiAddress *addr,
-  uint16_t port,
-  AvahiIfIndex iface)
+                                       uint16_t port,
+                                       AvahiIfIndex iface)
 {
+    struct sockaddr_storage s;
+    size_t s_len = sizeof(struct sockaddr_storage);
+    if ((addr->proto != AVAHI_PROTO_INET) && (addr->proto != AVAHI_PROTO_INET6))
+    {
+        //We can't fill the struct if AVAHI_PROTO_UNSPEC
+        return nil;
+    }
+    // POSIX says we shall zero the structure:
+    memset(&s, '\0', s_len);
 
-  struct sockaddr_storage s;
-  size_t s_len = sizeof(struct sockaddr_storage);
-  if ((addr->proto != AVAHI_PROTO_INET) && (addr->proto != AVAHI_PROTO_INET6))
+    if (addr->proto == AVAHI_PROTO_INET)
     {
-      //We can't fill the struct if AVAHI_PROTO_UNSPEC
-      return nil;
+        struct sockaddr_in *s4 = (struct sockaddr_in*)&s;
+        // The address is already in network byte-order.
+        struct in_addr a = { a.s_addr = addr->data.ipv4.address };
+        s4->sin_family = AF_INET;
+        s4->sin_port = htons(port);
+        s4->sin_addr = a;
     }
-  // POSIX says we shall zero the structure:
-  memset(&s, '\0', s_len);
-
-  if (addr->proto == AVAHI_PROTO_INET)
+    else if (addr->proto == AVAHI_PROTO_INET6)
     {
-      struct sockaddr_in *s4 = (struct sockaddr_in*)&s;
-      // The address is already in network byte-order.
-      struct in_addr a = { a.s_addr = addr->data.ipv4.address };
-      s4->sin_family = AF_INET;
-      s4->sin_port = htons(port);
-      s4->sin_addr = a;
-    }
-  else if (addr->proto == AVAHI_PROTO_INET6)
-    {
-      struct sockaddr_in6 *s6 = (struct sockaddr_in6*)&s;
-      struct in6_addr a;
-      // Copy the address from the avahi structure to in6_addr:
-      memcpy(&(a.s6_addr), &(addr->data.ipv6.address), 16);
-      s6->sin6_family = AF_INET6;
-      s6->sin6_port = htons(port);
-      s6->sin6_addr = a;
-      if (IN6_IS_ADDR_LINKLOCAL(&a))
+        struct sockaddr_in6 *s6 = (struct sockaddr_in6*)&s;
+        struct in6_addr a;
+        // Copy the address from the avahi structure to in6_addr:
+        memcpy(&(a.s6_addr), &(addr->data.ipv6.address), 16);
+        s6->sin6_family = AF_INET6;
+        s6->sin6_port = htons(port);
+        s6->sin6_addr = a;
+        if (IN6_IS_ADDR_LINKLOCAL(&a))
         {
-           // For a link-local address set the interface index
-           // NOTE: These are implementation-defined but Avahi doesn't seem to
-           // mangle them.
-           s6->sin6_scope_id = iface;
+            // For a link-local address set the interface index
+            // NOTE: These are implementation-defined but Avahi doesn't seem to
+            // mangle them.
+            s6->sin6_scope_id = iface;
         }
-      else
+        else
         {
-           // FIXME: Do nothing. The structure was zeroed out. Please pray
-           // that every sensible implementation has 0 for the global
-           // scope. (Most of the time, people will be announcing link-local
-           // addresses, though)
+            // FIXME: Do nothing. The structure was zeroed out. Please pray
+            // that every sensible implementation has 0 for the global
+            // scope. (Most of the time, people will be announcing link-local
+            // addresses, though)
         }
     }
-  else
+    else
     {
-      // Shouldn't happen:
-      return nil;
+        // Shouldn't happen:
+        return nil;
     }
-  return [NSData dataWithBytes: &s
-                        length: s_len];
+    return [NSData dataWithBytes:&s
+            length:s_len];
 }
 
 /**
@@ -337,32 +336,32 @@ NSDataFromAvahiAddressPortAndInterface(const AvahiAddress *addr,
  */
 static NSData*
 NSDataWithAddrDataPortFamilyAndIface(NSData *old,
-  NSUInteger port,
-  AvahiProtocol family,
-  AvahiIfIndex index)
+                                     NSUInteger port,
+                                     AvahiProtocol family,
+                                     AvahiIfIndex index)
 {
-  AvahiAddress addr;
-  const void *addrBytes;
-  if (old == nil)
+    AvahiAddress addr;
+    const void *addrBytes;
+    if (old == nil)
     {
-      return nil;
+        return nil;
     }
-  addr.proto = family;
-  addrBytes = [old bytes];
-  //Copy the value into the data field:
-  if (family == AVAHI_PROTO_INET)
+    addr.proto = family;
+    addrBytes = [old bytes];
+    //Copy the value into the data field:
+    if (family == AVAHI_PROTO_INET)
     {
-      memcpy(addr.data.data, addrBytes, 4);
+        memcpy(addr.data.data, addrBytes, 4);
     }
-  else if (family == AVAHI_PROTO_INET6)
+    else if (family == AVAHI_PROTO_INET6)
     {
-      memcpy(addr.data.data, addrBytes, 16);
+        memcpy(addr.data.data, addrBytes, 16);
     }
-  else
+    else
     {
-      return nil;
+        return nil;
     }
-  return NSDataFromAvahiAddressPortAndInterface(&addr, port, index);
+    return NSDataFromAvahiAddressPortAndInterface(&addr, port, index);
 }
 
 /**
@@ -370,53 +369,53 @@ NSDataWithAddrDataPortFamilyAndIface(NSData *old,
  */
 static void
 GSAvahiServiceResolverEvent(
-  AvahiServiceResolver *resolver,
-  AvahiIfIndex interface,
-  AvahiProtocol protocol,
-  AvahiResolverEvent event,
-  const char *name,
-  const char *type,
-  const char *domain,
-  const char *hostName,
-  const AvahiAddress *addr,
-  uint16_t port,
-  AvahiStringList *txtRecord,
-  AvahiLookupResultFlags flags,
-  void *userInfo
-)
+    AvahiServiceResolver *resolver,
+    AvahiIfIndex interface,
+    AvahiProtocol protocol,
+    AvahiResolverEvent event,
+    const char *name,
+    const char *type,
+    const char *domain,
+    const char *hostName,
+    const AvahiAddress *addr,
+    uint16_t port,
+    AvahiStringList *txtRecord,
+    AvahiLookupResultFlags flags,
+    void *userInfo
+    )
 {
-  GSAvahiNetService *service = nil;
-  if (NULL == resolver)
+    GSAvahiNetService *service = nil;
+    if (NULL == resolver)
     {
-      NSDebugLog(@"NULL pointer to AvahiServiceResolver.");
-      return;
+        NSDebugLog(@"NULL pointer to AvahiServiceResolver.");
+        return;
     }
-  if (NULL == userInfo)
+    if (NULL == userInfo)
     {
-      NSDebugLog(@"NULL pointer to NSNetService.");
-      return;
+        NSDebugLog(@"NULL pointer to NSNetService.");
+        return;
     }
-  service = (GSAvahiNetService*)userInfo;
+    service = (GSAvahiNetService*)userInfo;
 
-  switch (event)
+    switch (event)
     {
-      case AVAHI_RESOLVER_FAILURE:
+    case AVAHI_RESOLVER_FAILURE:
         [service handleError:
-	  avahi_client_errno(avahi_service_resolver_get_client(resolver))];
+         avahi_client_errno(avahi_service_resolver_get_client(resolver))];
         break;
 
-      case AVAHI_RESOLVER_FOUND:
+    case AVAHI_RESOLVER_FOUND:
 
-        [service avahiResolver: resolver
-          foundServiceWithName: NSStringIfNotNull(name)
-	  type: NSStringIfNotNull(type)
-	  domain: GSNetServiceDotTerminatedNSStringFromString(domain)
-	  hostName: NSStringIfNotNull(hostName)
-	  address: NSDataFromAvahiAddressPortAndInterface(addr, port, interface)
-	  port: (NSInteger)port
-	  txtRecord: NSDataFromAvahiStringList(txtRecord)
-	  ifIndex: interface
-	  protocol: protocol];
+        [service avahiResolver:resolver
+         foundServiceWithName:NSStringIfNotNull(name)
+         type:NSStringIfNotNull(type)
+         domain:GSNetServiceDotTerminatedNSStringFromString(domain)
+         hostName:NSStringIfNotNull(hostName)
+         address:NSDataFromAvahiAddressPortAndInterface(addr, port, interface)
+         port:(NSInteger)port
+         txtRecord:NSDataFromAvahiStringList(txtRecord)
+         ifIndex:interface
+         protocol:protocol];
         break;
     }
 }
@@ -427,66 +426,66 @@ GSAvahiServiceResolverEvent(
  */
 static void
 GSAvahiRecordBrowserEvent(
-  AvahiRecordBrowser *browser,
-  AvahiIfIndex interface,
-  AvahiProtocol protocol,
-  AvahiBrowserEvent event,
-  const char *name,
-  uint16_t dnsClass,
-  uint16_t type,
-  const void *rdata,
-  size_t size,
-  AvahiLookupResultFlags flags,
-  void *userInfo)
+    AvahiRecordBrowser *browser,
+    AvahiIfIndex interface,
+    AvahiProtocol protocol,
+    AvahiBrowserEvent event,
+    const char *name,
+    uint16_t dnsClass,
+    uint16_t type,
+    const void *rdata,
+    size_t size,
+    AvahiLookupResultFlags flags,
+    void *userInfo)
 {
-  GSAvahiNetService *service = nil;
-  NSData *recordData = nil;
-  if (NULL == browser)
+    GSAvahiNetService *service = nil;
+    NSData *recordData = nil;
+    if (NULL == browser)
     {
-      NSDebugLog(@"NULL pointer to AvahiServiceResolver.");
-      return;
+        NSDebugLog(@"NULL pointer to AvahiServiceResolver.");
+        return;
     }
-  if (NULL == userInfo)
+    if (NULL == userInfo)
     {
-      NSDebugLog(@"NULL pointer to NSNetService.");
-      return;
+        NSDebugLog(@"NULL pointer to NSNetService.");
+        return;
     }
-  service = (GSAvahiNetService*)userInfo;
+    service = (GSAvahiNetService*)userInfo;
 
-  if (type == 0 && (event != AVAHI_BROWSER_FAILURE))
+    if (type == 0 && (event != AVAHI_BROWSER_FAILURE))
     {
-      [service handleError: NSNetServicesInvalidError];
-      return;
+        [service handleError:NSNetServicesInvalidError];
+        return;
     }
 
-  if (rdata != NULL)
+    if (rdata != NULL)
     {
-      recordData = [NSData dataWithBytes: rdata
-                                  length: size];
+        recordData = [NSData dataWithBytes:rdata
+                      length:size];
     }
-  switch (event)
+    switch (event)
     {
-      case AVAHI_BROWSER_NEW:
-        [service newData: recordData
-               forRRCode: type];
+    case AVAHI_BROWSER_NEW:
+        [service newData:recordData
+         forRRCode:type];
         break;
 
-      case AVAHI_BROWSER_REMOVE:
-        [service removedData: recordData
-                   forRRCode: type];
+    case AVAHI_BROWSER_REMOVE:
+        [service removedData:recordData
+         forRRCode:type];
         break;
 
-      case AVAHI_BROWSER_FAILURE:
+    case AVAHI_BROWSER_FAILURE:
         [service handleError:
-	  avahi_client_errno(avahi_record_browser_get_client(browser))
-                   forRRCode: type];
+         avahi_client_errno(avahi_record_browser_get_client(browser))
+         forRRCode:type];
         break;
 
-      case AVAHI_BROWSER_CACHE_EXHAUSTED: // Not interesting
+    case AVAHI_BROWSER_CACHE_EXHAUSTED:   // Not interesting
         break;
 
-      case AVAHI_BROWSER_ALL_FOR_NOW:
-        [service allForNowForRRCode: type];
+    case AVAHI_BROWSER_ALL_FOR_NOW:
+        [service allForNowForRRCode:type];
         break;
     }
 }
@@ -497,209 +496,207 @@ GSAvahiRecordBrowserEvent(
  */
 static void
 GSAvahiEntryGroupStateChanged(AvahiEntryGroup *group,
-  AvahiEntryGroupState state,
-  void *userInfo)
+                              AvahiEntryGroupState state,
+                              void *userInfo)
 {
-  if (NULL == group)
+    if (NULL == group)
     {
-      NSDebugLog(@"NULL pointer to AvahiEntryGroup.");
-      return;
+        NSDebugLog(@"NULL pointer to AvahiEntryGroup.");
+        return;
     }
-  if (NULL == userInfo)
+    if (NULL == userInfo)
     {
-      NSDebugLog(@"NULL pointer to NSNetService.");
-      return;
+        NSDebugLog(@"NULL pointer to NSNetService.");
+        return;
     }
-  [(GSAvahiNetService*)userInfo entryGroup: group
-                              enteredState: state];
+    [(GSAvahiNetService*)userInfo entryGroup : group
+     enteredState : state];
 }
 
 @implementation GSAvahiNetService
 
-+ (void) initialize
++ (void)initialize
 {
-  if (self == [GSAvahiNetService class])
+    if (self == [GSAvahiNetService class])
     {
-      GSObjCAddClassBehavior(self, [GSAvahiClient class]);
+        GSObjCAddClassBehavior(self, [GSAvahiClient class]);
     }
 }
 
-+ (NSData *) dataFromTXTRecordDictionary: (NSDictionary *) txtDictionary
++ (NSData *)dataFromTXTRecordDictionary:(NSDictionary *)txtDictionary
 {
-  // This NULL avahi-string list is the terminating element of the linked
-  // list.
-  AvahiStringList *list = NULL;
-  NSArray *keys = [txtDictionary allKeys];
-  NSData *data = nil;
+    // This NULL avahi-string list is the terminating element of the linked
+    // list.
+    AvahiStringList *list = NULL;
+    NSArray *keys = [txtDictionary allKeys];
+    NSData *data = nil;
 
-  FOR_IN(NSString*, key, keys)
+    FOR_IN(NSString*, key, keys)
     {
-      id value = [txtDictionary objectForKey: key];
-      if ([value isKindOfClass: [NSString class]])
+        id value = [txtDictionary objectForKey:key];
+        if ([value isKindOfClass:[NSString class]])
         {
-          list = avahi_string_list_add_pair(list,
-	    [key UTF8String], [value UTF8String]);
+            list = avahi_string_list_add_pair(list,
+                                              [key UTF8String], [value UTF8String]);
         }
-      else if ([value isKindOfClass: [NSNumber class]])
+        else if ([value isKindOfClass:[NSNumber class]])
         {
-          list = avahi_string_list_add_pair(list,
-	    [key UTF8String], [[(NSNumber*)value stringValue] UTF8String]);
+            list = avahi_string_list_add_pair(list,
+                                              [key UTF8String], [[(NSNumber*)value stringValue] UTF8String]);
         }
-      else if ([value isKindOfClass: [NSData class]])
+        else if ([value isKindOfClass:[NSData class]])
         {
-          NSUInteger len = [value length];
-          /* TXT record can only contain 256bytes, so there is no point in
-           * handling NSData values with len > 255.
-	   */
-          if (len <= 255)
+            NSUInteger len = [value length];
+            /* TXT record can only contain 256bytes, so there is no point in
+             * handling NSData values with len > 255.
+             */
+            if (len <= 255)
             {
-              list = avahi_string_list_add_pair_arbitrary(list,
-		[key UTF8String], [value bytes], len);
+                list = avahi_string_list_add_pair_arbitrary(list,
+                                                            [key UTF8String], [value bytes], len);
             }
         }
-      else
+        else
         {
-          /* We cannot handle any other type of value. We thus free the list
-           * and make sure we fail the subsequent assertion (because this is
-           * what the Apple documentation will do.
-           */
-          if (list)
+            /* We cannot handle any other type of value. We thus free the list
+             * and make sure we fail the subsequent assertion (because this is
+             * what the Apple documentation will do.
+             */
+            if (list)
             {
-              avahi_string_list_free(list);
-              list = NULL;
+                avahi_string_list_free(list);
+                list = NULL;
             }
         }
-      NSAssert(list,@"Error creating string list for TXT record");
+        NSAssert(list,@"Error creating string list for TXT record");
     }
-  END_FOR_IN(keys)
+    END_FOR_IN(keys)
 
-  // Convert string list into a data object:
-  data = NSDataFromAvahiStringList(list);
-  avahi_string_list_free(list);
-  list = NULL;
-  return data;
+    // Convert string list into a data object:
+    data = NSDataFromAvahiStringList(list);
+    avahi_string_list_free(list);
+    list = NULL;
+    return data;
 }
 
-+ (NSDictionary *) dictionaryFromTXTRecordData: (NSData *) txtData
++ (NSDictionary *)dictionaryFromTXTRecordData:(NSData *)txtData
 {
-  AvahiStringList *list = NULL;
-  int ret = 0;
-  NSMutableDictionary *dict = nil;
-  AvahiStringList *item = NULL;
-  NSAssert(([txtData length] > 0),
-    @"No data to convert to TXT record dictionary");
-  ret = GSAvahiStringListFromNSData(txtData, &list);
-  // ret == 0 on success.
-  NSAssert(!ret, @"Could not parse TXT data");
-  if (list == NULL)
+    AvahiStringList *list = NULL;
+    int ret = 0;
+    NSMutableDictionary *dict = nil;
+    AvahiStringList *item = NULL;
+    NSAssert(([txtData length] > 0),
+             @"No data to convert to TXT record dictionary");
+    ret = GSAvahiStringListFromNSData(txtData, &list);
+    // ret == 0 on success.
+    NSAssert(!ret, @"Could not parse TXT data");
+    if (list == NULL)
     {
-      // This means the txtData was empty (e.g. only zeros)
-      return nil;
+        // This means the txtData was empty (e.g. only zeros)
+        return nil;
     }
-  // Autoreleased:
-  dict = [NSMutableDictionary dictionary];
+    // Autoreleased:
+    dict = [NSMutableDictionary dictionary];
 
-  // Use the beginning of the list as the first element to handle:
-  item = list;
-  do
+    // Use the beginning of the list as the first element to handle:
+    item = list;
+    do
     {
-      char *key = NULL;
-      char *value = NULL;
-      size_t len = 0;
-      NSString *k = nil;
-      NSData *v = nil;
-      int ret = avahi_string_list_get_pair(item, &key, &value, &len);
-      // ret == 0 indicates success.
-      NSAssert(!ret, @"Could not create TXT record dictionary.");
-      if (key)
+        char *key = NULL;
+        char *value = NULL;
+        size_t len = 0;
+        NSString *k = nil;
+        NSData *v = nil;
+        int ret = avahi_string_list_get_pair(item, &key, &value, &len);
+        // ret == 0 indicates success.
+        NSAssert(!ret, @"Could not create TXT record dictionary.");
+        if (key)
         {
-          k = [NSString stringWithUTF8String: key];
-          avahi_free(key);
+            k = [NSString stringWithUTF8String:key];
+            avahi_free(key);
         }
 
-      if (value)
+        if (value)
         {
-          v = [NSData dataWithBytes: (void*)value
-                             length: len];
-          avahi_free(value);
+            v = [NSData dataWithBytes:(void*)value
+                 length:len];
+            avahi_free(value);
         }
-      else
+        else
         {
-          // If the value is empty, place an empty NSData object in the
-          // dictionary.
-          v = [NSData data];
+            // If the value is empty, place an empty NSData object in the
+            // dictionary.
+            v = [NSData data];
         }
-      NSAssert((k && v),@"Could not create TXT record dictionary");
-      [dict setObject: v forKey: k];
+        NSAssert((k && v),@"Could not create TXT record dictionary");
+        [dict setObject:v forKey:k];
     }
-  while (NULL != (item = avahi_string_list_get_next(item)));
-  avahi_string_list_free(list);
-  return dict;
+    while (NULL != (item = avahi_string_list_get_next(item)));
+    avahi_string_list_free(list);
+    return dict;
 }
 
 
-
-- (void) netService: (NSNetService*)service
- didUpdateAddresses: (NSArray*)addresses
+- (void)netService:(NSNetService*)service
+    didUpdateAddresses:(NSArray*)addresses
 {
-  if ([[self delegate] respondsToSelector:
-    @selector(netService:didUpdateAddresses:)])
+    if ([[self delegate] respondsToSelector:
+         @selector(netService:didUpdateAddresses:)])
     {
-      [[self delegate] netService: service
-	       didUpdateAddresses: addresses];
+        [[self delegate] netService:service
+         didUpdateAddresses:addresses];
     }
 }
 
-- (void) netService: (NSNetService*)service
-didUpdateRecordData: (id)data
-      forRecordType: (NSString*)rrType
+- (void)netService:(NSNetService*)service
+    didUpdateRecordData:(id)data
+    forRecordType:(NSString*)rrType
 {
-  SEL theSelector = NULL;
-  if ([rrType isEqualToString: @"A"] || [rrType isEqualToString: @"AAAA"])
+    SEL theSelector = NULL;
+    if ([rrType isEqualToString:@"A"] || [rrType isEqualToString:@"AAAA"])
     {
-      [self netService: service didUpdateAddresses: [self addresses]];
+        [self netService:service didUpdateAddresses:[self addresses]];
     }
-  theSelector = NSSelectorFromString([NSString stringWithFormat:
-    @"netService:didUpdate%@RecordData:", rrType]);
-  if ([[self delegate] respondsToSelector: theSelector])
+    theSelector = NSSelectorFromString([NSString stringWithFormat:
+                                        @"netService:didUpdate%@RecordData:", rrType]);
+    if ([[self delegate] respondsToSelector:theSelector])
     {
-      if (([rrType isEqualToString: @"TXT"])
-        && [data isKindOfClass: [NSArray class]])
+        if (([rrType isEqualToString:@"TXT"])
+            && [data isKindOfClass:[NSArray class]])
         {
-          /*
-           * Legacy case for TXT records (user code will always expect NSData,
-           * not NSArray).
-           */
-           data = [(NSArray*)data lastObject];
+            /*
+             * Legacy case for TXT records (user code will always expect NSData,
+             * not NSArray).
+             */
+            data = [(NSArray*)data lastObject];
         }
-      [[self delegate] performSelector: theSelector
-			    withObject: service
-			    withObject: data];
+        [[self delegate] performSelector:theSelector
+         withObject:service
+         withObject:data];
     }
-  else if ([[self delegate] respondsToSelector:
-    @selector(netService:didUpdateRecordData:forRecordType:)])
+    else if ([[self delegate] respondsToSelector:
+              @selector(netService:didUpdateRecordData:forRecordType:)])
     {
-      [[self delegate] netService: service
-	      didUpdateRecordData: data
-		    forRecordType: rrType];
+        [[self delegate] netService:service
+         didUpdateRecordData:data
+         forRecordType:rrType];
     }
 }
 
-- (void) netService: (NSNetService*)service
-      didNotMonitor: (NSDictionary*)errorDict
-      forRecordType: (NSString*)rrType
+- (void)netService:(NSNetService*)service
+    didNotMonitor:(NSDictionary*)errorDict
+    forRecordType:(NSString*)rrType
 {
-  SEL theSelector = NSSelectorFromString([NSString stringWithFormat:
-    @"netService:didNotMonitor%@RecordData:", rrType]);
+    SEL theSelector = NSSelectorFromString([NSString stringWithFormat:
+                                            @"netService:didNotMonitor%@RecordData:", rrType]);
 
-  if ([[self delegate] respondsToSelector: theSelector])
+    if ([[self delegate] respondsToSelector:theSelector])
     {
-      [[self delegate] performSelector: theSelector
-			    withObject: service
-			    withObject: errorDict];
+        [[self delegate] performSelector:theSelector
+         withObject:service
+         withObject:errorDict];
     }
 }
-
 
 
 /**
@@ -707,72 +704,72 @@ didUpdateRecordData: (id)data
  * alongside the usual information for a mDNS service. This is used by
  * GSAvahiNetServiceBrowser which already knows about these.
  */
-- (id) initWithDomain: (NSString*)domain
-                 type: (NSString*)type
-                 name: (NSString*)name
-                 port: (NSInteger)port
-         avahiIfIndex: (AvahiIfIndex)anIfIndex
-        avahiProtocol: (AvahiProtocol)aProtocol
+- (id)initWithDomain:(NSString*)domain
+    type:(NSString*)type
+    name:(NSString*)name
+    port:(NSInteger)port
+    avahiIfIndex:(AvahiIfIndex)anIfIndex
+    avahiProtocol:(AvahiProtocol)aProtocol
 {
-  const NSMapTableValueCallBacks valueCallbacks = {NULL, NULL, NULL};
-  if (nil == (self = [self avahiClientInit]))
+    const NSMapTableValueCallBacks valueCallbacks = {NULL, NULL, NULL};
+    if (nil == (self = [self avahiClientInit]))
     {
-      return nil;
+        return nil;
     }
-  _infoLock = [[NSRecursiveLock alloc] init];
-  _info = [[NSMutableDictionary alloc] init];
-  [_info setObject: domain forKey: @"domain"];
-  [_info setObject: type   forKey: @"type"];
-  [_info setObject: name   forKey: @"name"];
-  [_info setObject: [NSNumber numberWithInteger: port]
-            forKey: @"port"];
-  _browsers = NSCreateMapTable(NSIntMapKeyCallBacks, valueCallbacks, 10);
-  _browserTimeouts = NSCreateMapTable(NSIntMapKeyCallBacks,
-    NSObjectMapValueCallBacks, 10);
-  if (port > 0)
+    _infoLock = [[NSRecursiveLock alloc] init];
+    _info = [[NSMutableDictionary alloc] init];
+    [_info setObject:domain forKey:@"domain"];
+    [_info setObject:type forKey:@"type"];
+    [_info setObject:name forKey:@"name"];
+    [_info setObject:[NSNumber numberWithInteger:port]
+     forKey:@"port"];
+    _browsers = NSCreateMapTable(NSIntMapKeyCallBacks, valueCallbacks, 10);
+    _browserTimeouts = NSCreateMapTable(NSIntMapKeyCallBacks,
+                                        NSObjectMapValueCallBacks, 10);
+    if (port > 0)
     {
-      // If port is set to a sensible value in this initializer, we are
-      // initialized to publish and will create the entry group.
+        // If port is set to a sensible value in this initializer, we are
+        // initialized to publish and will create the entry group.
     }
-  _ifIndex = anIfIndex;
-  _protocol = aProtocol;
-  return self;
+    _ifIndex = anIfIndex;
+    _protocol = aProtocol;
+    return self;
 }
 
-- (id) initWithDomain: (NSString *) domain
-                 type: (NSString *) type
-                 name: (NSString *) name
-         avahiIfIndex: (AvahiIfIndex)index
-        avahiProtocol: (AvahiProtocol)proto
+- (id)initWithDomain:(NSString *)domain
+    type:(NSString *)type
+    name:(NSString *)name
+    avahiIfIndex:(AvahiIfIndex)index
+    avahiProtocol:(AvahiProtocol)proto
 {
-  return [self initWithDomain: domain
-                         type: type
-                         name: name
-                         port: -1
-                 avahiIfIndex: index
-                avahiProtocol: proto];
+    return [self initWithDomain:domain
+            type:type
+            name:name
+            port:-1
+            avahiIfIndex:index
+            avahiProtocol:proto];
 }
 
-- (id) initWithDomain: (NSString *) domain
-                 type: (NSString *) type
-                 name: (NSString *) name
+- (id)initWithDomain:(NSString *)domain
+    type:(NSString *)type
+    name:(NSString *)name
 {
-  return [self initWithDomain: domain
-                         type: type
-                         name: name
-                         port: -1];
+    return [self initWithDomain:domain
+            type:type
+            name:name
+            port:-1];
 }
-- (id) initWithDomain: (NSString *) domain
-                 type: (NSString *) type
-                 name: (NSString *) name
-                 port: (NSInteger) port
+- (id)initWithDomain:(NSString *)domain
+    type:(NSString *)type
+    name:(NSString *)name
+    port:(NSInteger)port
 {
-  return [self initWithDomain: domain
-                         type: type
-                         name: name
-                         port: port
-                 avahiIfIndex: AVAHI_IF_UNSPEC
-                avahiProtocol: AVAHI_PROTO_UNSPEC];
+    return [self initWithDomain:domain
+            type:type
+            name:name
+            port:port
+            avahiIfIndex:AVAHI_IF_UNSPEC
+            avahiProtocol:AVAHI_PROTO_UNSPEC];
 }
 
 /**
@@ -783,83 +780,83 @@ didUpdateRecordData: (id)data
  * that the sequence number is odd while an operation is in progress, and even
  * if it is safe for a reader to obtain the value.
  */
-- (void)setInfoObject: (id)object
-              forKey: (NSString*)key
+- (void)setInfoObject:(id)object
+    forKey:(NSString*)key
 {
-  if ((object == nil) || (key == nil))
+    if ((object == nil) || (key == nil))
     {
-      return;
+        return;
     }
-  [_infoLock lock];
-  _infoSeq++;
-  // Now the sequence number is odd: Write in progess.
-  [_info setObject: object
-            forKey: key];
-  _infoSeq++;
-  // Now the sequence number is even: Can be read
-  [_infoLock unlock];
+    [_infoLock lock];
+    _infoSeq++;
+    // Now the sequence number is odd: Write in progess.
+    [_info setObject:object
+     forKey:key];
+    _infoSeq++;
+    // Now the sequence number is even: Can be read
+    [_infoLock unlock];
 }
 
 /**
  * Removes an object from the dictionary in a synchronized fashion. Cf. note
  * about -setInfoObject:forKey:.
  */
-- (void) removeInfoObjectForKey: (NSString*)key
+- (void)removeInfoObjectForKey:(NSString*)key
 {
-  if (key == nil)
+    if (key == nil)
     {
-      return;
+        return;
     }
-  [_infoLock lock];
-  _infoSeq++;
-  // Now the sequence number is odd: Write in progess.
-  [_info removeObjectForKey: key];
-  _infoSeq++;
-  // Now the sequence number is even: Can be read
-  [_infoLock unlock];
+    [_infoLock lock];
+    _infoSeq++;
+    // Now the sequence number is odd: Write in progess.
+    [_info removeObjectForKey:key];
+    _infoSeq++;
+    // Now the sequence number is even: Can be read
+    [_infoLock unlock];
 }
 
 /**
  * Thread-safe (and fast) reading of an info key by comparing the sequence
  * numbers set by the writers. Cf. note about -setInfoObject:forKey:.
  */
-- (id) infoObjectForKey: (NSString*)key
+- (id)infoObjectForKey:(NSString*)key
 {
-  NSUInteger oldSeq = 0;
-  NSUInteger newSeq = 0;
-  BOOL isOdd = NO;
-  id object = nil;
-  if (key == nil)
+    NSUInteger oldSeq = 0;
+    NSUInteger newSeq = 0;
+    BOOL isOdd = NO;
+    id object = nil;
+    if (key == nil)
     {
-      return nil;
+        return nil;
     }
 
-  // Try to read the value until the sequence numbers match and are even:
-  do
+    // Try to read the value until the sequence numbers match and are even:
+    do
     {
-      // Store the sequence number before the read:
-      oldSeq = _infoSeq;
-      // Read the value:
-      object = [_info objectForKey: key];
-      // Store the sequence number after the read:
-      newSeq = _infoSeq;
+        // Store the sequence number before the read:
+        oldSeq = _infoSeq;
+        // Read the value:
+        object = [_info objectForKey:key];
+        // Store the sequence number after the read:
+        newSeq = _infoSeq;
 
-      while ((newSeq == 0) || (oldSeq == 0))
+        while ((newSeq == 0) || (oldSeq == 0))
         {
-          //Add 2 to prevent (0 % 2) because it's undefined.
-          newSeq = newSeq + 2;
-          oldSeq = oldSeq +2;
+            //Add 2 to prevent (0 % 2) because it's undefined.
+            newSeq = newSeq + 2;
+            oldSeq = oldSeq +2;
         }
-      isOdd = (BOOL)newSeq % 2;
+        isOdd = (BOOL)newSeq % 2;
     } while ((oldSeq != newSeq) || (isOdd));
 
-  return object;
+    return object;
 }
 
-- (NSInteger) port
+- (NSInteger)port
 {
-  NSInteger port = [(NSNumber*)[self infoObjectForKey: @"port"] integerValue];
-  return port ? MAX(port, -1) : -1;
+    NSInteger port = [(NSNumber*)[self infoObjectForKey:@"port"] integerValue];
+    return port ? MAX(port, -1) : -1;
 }
 
 
@@ -868,27 +865,27 @@ didUpdateRecordData: (id)data
  * before publication. There is no locking here because it will only be called
  * from methods that already obtained the lock. Returns 0 on success.
  */
-- (int) createEntryGroup
+- (int)createEntryGroup
 {
-  // We only care to publish if the service is still idle:
-  if (_serviceState != GSNetServiceIdle)
+    // We only care to publish if the service is still idle:
+    if (_serviceState != GSNetServiceIdle)
     {
-      [self netService: self
-         didNotPublish: [self errorDictWithErrorCode: NSNetServicesActivityInProgress]];
-      return NSNetServicesActivityInProgress;
+        [self netService:self
+         didNotPublish:[self errorDictWithErrorCode:NSNetServicesActivityInProgress]];
+        return NSNetServicesActivityInProgress;
     }
 
-  //Create the entry group:
-  _entryGroup = avahi_entry_group_new((AvahiClient*)_client, GSAvahiEntryGroupStateChanged, (void*)self);
+    //Create the entry group:
+    _entryGroup = avahi_entry_group_new((AvahiClient*)_client, GSAvahiEntryGroupStateChanged, (void*)self);
 
-  // Handle error:
-  if (NULL == _entryGroup)
+    // Handle error:
+    if (NULL == _entryGroup)
     {
-      int error = avahi_client_errno((AvahiClient*)_client);
-      [self handleError: error];
-      return error;
+        int error = avahi_client_errno((AvahiClient*)_client);
+        [self handleError:error];
+        return error;
     }
-  return 0;
+    return 0;
 }
 
 /**
@@ -899,227 +896,229 @@ didUpdateRecordData: (id)data
  */
 - (void)commitEntryGroup
 {
-  _serviceState = GSNetServicePublishing;
-  // Make sure there is an entry group to commit:
-  if (_entryGroup != NULL)
+    _serviceState = GSNetServicePublishing;
+    // Make sure there is an entry group to commit:
+    if (_entryGroup != NULL)
     {
-      // Make sure it is not empty:
-      if (!avahi_entry_group_is_empty((AvahiEntryGroup*)_entryGroup))
+        // Make sure it is not empty:
+        if (!avahi_entry_group_is_empty((AvahiEntryGroup*)_entryGroup))
         {
-          // Make sure it is not already committed:
-          if (avahi_entry_group_get_state((AvahiEntryGroup*)_entryGroup)
-	    == AVAHI_ENTRY_GROUP_UNCOMMITED)
+            // Make sure it is not already committed:
+            if (avahi_entry_group_get_state((AvahiEntryGroup*)_entryGroup)
+                == AVAHI_ENTRY_GROUP_UNCOMMITED)
             {
-              avahi_entry_group_commit((AvahiEntryGroup*)_entryGroup);
-              [self netServiceWillPublish: self];
-              return;
+                avahi_entry_group_commit((AvahiEntryGroup*)_entryGroup);
+                [self netServiceWillPublish:self];
+                return;
             }
-          else
+            else
             {
-              // The entryGroup is active:
-              [self handleError: NSNetServicesActivityInProgress];
-              return;
+                // The entryGroup is active:
+                [self handleError:NSNetServicesActivityInProgress];
+                return;
             }
         }
     }
-  // The entryGroup is not properly set up for publication:
-  [self handleError: NSNetServicesBadArgumentError];
-  return;
+    // The entryGroup is not properly set up for publication:
+    [self handleError:NSNetServicesBadArgumentError];
+    return;
 }
 
 /**
  * Private method to add a service entry to the entry group. Will only be called
  * from methods that already ensure that the entry can be added safely.
  */
-- (int) addServiceEntry
+- (int)addServiceEntry
 {
-  int ret = 0;
-  const char* d = StringOrNullIfEmpty([self infoObjectForKey: @"domain"]);
+    int ret = 0;
+    const char* d = StringOrNullIfEmpty([self infoObjectForKey:@"domain"]);
 
-  // It is possible that the TXT record has already been set, so we can
-  // publish it right away:
-  AvahiStringList *list = NULL;
-  NSData *txtData = [self infoObjectForKey: @"TXT"];
-  int res = 0;
-  res = GSAvahiStringListFromNSData(txtData, &list);
-  if (0 != res)
+    // It is possible that the TXT record has already been set, so we can
+    // publish it right away:
+    AvahiStringList *list = NULL;
+    NSData *txtData = [self infoObjectForKey:@"TXT"];
+    int res = 0;
+    res = GSAvahiStringListFromNSData(txtData, &list);
+    if (0 != res)
     {
-      if (NULL != list)
+        if (NULL != list)
         {
-          avahi_string_list_free(list);
-          list = NULL;
+            avahi_string_list_free(list);
+            list = NULL;
         }
     }
-  ret = avahi_entry_group_add_service_strlst((AvahiEntryGroup*)_entryGroup,
-    _ifIndex,
-    _protocol,
-    0, // Flags, we don't need them
-    [(NSString*)[self infoObjectForKey: @"name"] UTF8String],
-    [(NSString*)[self infoObjectForKey: @"type"] UTF8String],
-    d, // Domain (might be NULL for default)
-    NULL, // The hostname is filled automatically
-    [[self infoObjectForKey: @"port"] integerValue],
-    list // Possibly empty TXT record
-    );
-  if (NULL != list)
+    ret = avahi_entry_group_add_service_strlst((AvahiEntryGroup*)_entryGroup,
+                                               _ifIndex,
+                                               _protocol,
+                                               0, // Flags, we don't need them
+                                               [(NSString*)[self infoObjectForKey:@"name"] UTF8String],
+                                               [(NSString*)[self infoObjectForKey:@"type"] UTF8String],
+                                               d, // Domain (might be NULL for
+                                                  // default)
+                                               NULL, // The hostname is filled
+                                                     // automatically
+                                               [[self infoObjectForKey:@"port"] integerValue],
+                                               list // Possibly empty TXT record
+                                               );
+    if (NULL != list)
     {
-      // If we are not using the emptyList from the stack, we need to free the
-      // list that avahi created for us.
-      avahi_string_list_free(list);
+        // If we are not using the emptyList from the stack, we need to free the
+        // list that avahi created for us.
+        avahi_string_list_free(list);
     }
-  return ret;
+    return ret;
 }
 
-- (BOOL) addServiceRecordWithOptions: (NSNetServiceOptions)options
+- (BOOL)addServiceRecordWithOptions:(NSNetServiceOptions)options
 {
-  int ret = 0;
-  [_lock lock];
-  if (_serviceState != GSNetServiceIdle)
+    int ret = 0;
+    [_lock lock];
+    if (_serviceState != GSNetServiceIdle)
     {
-      [_lock unlock];
-      return NO;
+        [_lock unlock];
+        return NO;
     }
 
-  if (_entryGroup == NULL)
+    if (_entryGroup == NULL)
     {
-      if (0 != [self createEntryGroup])
+        if (0 != [self createEntryGroup])
         {
-          [_lock unlock];
-          return NO;
+            [_lock unlock];
+            return NO;
         }
     }
 
-  /* Try adding the service to the entry group until we find an unused name
-   * for it (but only if NSNetServiceNoAutoRename is not set).
-   */
-  while (AVAHI_ERR_COLLISION == (ret = [self addServiceEntry])
-    && !(options & NSNetServiceNoAutoRename))
+    /* Try adding the service to the entry group until we find an unused name
+     * for it (but only if NSNetServiceNoAutoRename is not set).
+     */
+    while (AVAHI_ERR_COLLISION == (ret = [self addServiceEntry])
+           && !(options & NSNetServiceNoAutoRename))
     {
-      char *newName = avahi_alternative_service_name([[self infoObjectForKey:
-	@"name"] UTF8String]);
-      if (newName)
+        char *newName = avahi_alternative_service_name([[self infoObjectForKey:
+                                                         @"name"] UTF8String]);
+        if (newName)
         {
-          [self setInfoObject: [NSString stringWithUTF8String: newName]
-                       forKey: @"name"];
-          avahi_free(newName);
+            [self setInfoObject:[NSString stringWithUTF8String:newName]
+             forKey:@"name"];
+            avahi_free(newName);
         }
-      else
+        else
         {
-           ret = AVAHI_ERR_FAILURE;
+            ret = AVAHI_ERR_FAILURE;
         }
     }
 
-  // Handle any new error condition.
-  if (ret != 0)
+    // Handle any new error condition.
+    if (ret != 0)
     {
-      [_lock unlock];
-      return NO;
+        [_lock unlock];
+        return NO;
     }
-  [_lock unlock];
-  return YES;
+    [_lock unlock];
+    return YES;
 }
 
-- (BOOL) addServiceRecord
+- (BOOL)addServiceRecord
 {
-  return [self addServiceRecordWithOptions: 0];
+    return [self addServiceRecordWithOptions:0];
 }
 
-- (void) publishWithOptions: (NSNetServiceOptions)options
+- (void)publishWithOptions:(NSNetServiceOptions)options
 {
-  [_lock lock];
-  if (_entryGroup != NULL)
+    [_lock lock];
+    if (_entryGroup != NULL)
     {
-      [self commitEntryGroup];
-      return;
+        [self commitEntryGroup];
+        return;
     }
 
-  if (NO == [self addServiceRecordWithOptions: options])
+    if (NO == [self addServiceRecordWithOptions:options])
     {
-      [self handleError: avahi_client_errno((AvahiClient*)_client)];
+        [self handleError:avahi_client_errno((AvahiClient*)_client)];
     }
-  [self commitEntryGroup];
-  [_lock unlock];
+    [self commitEntryGroup];
+    [_lock unlock];
 }
 
 /**
  * Convenience method to return the full name of the service.
  */
-- (NSString *) fullServiceName
+- (NSString *)fullServiceName
 {
-  NSString *full = nil;
-  NSString *domain = [self infoObjectForKey: @"domain"];
+    NSString *full = nil;
+    NSString *domain = [self infoObjectForKey:@"domain"];
 
-  if (([domain isEqualToString: @""]) || domain == nil)
+    if (([domain isEqualToString:@""]) || domain == nil)
     {
-      // Pick the default domain:
-      domain = [NSString stringWithUTF8String:
-	avahi_client_get_domain_name((AvahiClient*)_client)];
+        // Pick the default domain:
+        domain = [NSString stringWithUTF8String:
+                  avahi_client_get_domain_name((AvahiClient*)_client)];
     }
-  full = [NSString stringWithFormat: @"%@.%@.%@", [self name],
-                                             [self type], domain];
-  if ((unichar)'.' != [full characterAtIndex: ([full length] - 1)])
+    full = [NSString stringWithFormat:@"%@.%@.%@", [self name],
+            [self type], domain];
+    if ((unichar)'.' != [full characterAtIndex:([full length] - 1)])
     {
-      return [full stringByAppendingString: @"."];
+        return [full stringByAppendingString:@"."];
     }
-  return full;
+    return full;
 }
 
-- (void) publish
+- (void)publish
 {
-  // Publish and allow renaming:
-  [self publishWithOptions: 0];
+    // Publish and allow renaming:
+    [self publishWithOptions:0];
 }
 
-- (void) resolve
+- (void)resolve
 {
-  [self resolveWithTimeout: 5];
+    [self resolveWithTimeout:5];
 }
 
 /**
  * Called by the resolver timeout to cease service resolution.
  */
-- (void) didTimeout: (NSTimer*)theTimer
+- (void)didTimeout:(NSTimer*)theTimer
 {
-  [self stop];
-  _timer = nil;
+    [self stop];
+    _timer = nil;
 }
 
-- (void) resolveWithTimeout: (NSTimeInterval) timeout
+- (void)resolveWithTimeout:(NSTimeInterval)timeout
 {
-  if (_serviceState < GSNetServiceResolving)
+    if (_serviceState < GSNetServiceResolving)
     {
-      _resolver =  (void*)avahi_service_resolver_new((AvahiClient*)_client,
-                                                             _ifIndex,
-                                                            _protocol,
-                           [[self infoObjectForKey: @"name"] UTF8String],
-                           [[self infoObjectForKey: @"type"] UTF8String],
-                         [[self infoObjectForKey: @"domain"] UTF8String],
-                                                  AVAHI_PROTO_UNSPEC,
-                                                                   0,
-                                         GSAvahiServiceResolverEvent,
-                                                        (void*)self);
+        _resolver =  (void*)avahi_service_resolver_new((AvahiClient*)_client,
+                                                       _ifIndex,
+                                                       _protocol,
+                                                       [[self infoObjectForKey:@"name"] UTF8String],
+                                                       [[self infoObjectForKey:@"type"] UTF8String],
+                                                       [[self infoObjectForKey:@"domain"] UTF8String],
+                                                       AVAHI_PROTO_UNSPEC,
+                                                       0,
+                                                       GSAvahiServiceResolverEvent,
+                                                       (void*)self);
 
-      if (NULL == _resolver)
+        if (NULL == _resolver)
         {
-          [self handleError: avahi_client_errno((AvahiClient*)_client)];
-          return;
+            [self handleError:avahi_client_errno((AvahiClient*)_client)];
+            return;
         }
-      _serviceState = GSNetServiceResolving;
-      if (_timer != nil)
+        _serviceState = GSNetServiceResolving;
+        if (_timer != nil)
         {
-          [_timer invalidate];
-          _timer = nil;
+            [_timer invalidate];
+            _timer = nil;
         }
-      _timer = [[NSTimer timerWithTimeInterval: timeout
-                                       target: self
-                                     selector: @selector(didTimeout:)
-                                     userInfo: nil
-                                      repeats: NO] retain];
+        _timer = [[NSTimer timerWithTimeInterval:timeout
+                   target:self
+                   selector:@selector(didTimeout:)
+                   userInfo:nil
+                   repeats:NO] retain];
 
-      [[ctx runLoop] addTimer: _timer
-                      forMode: [ctx mode]];
+        [[ctx runLoop] addTimer:_timer
+         forMode:[ctx mode]];
     }
-  // BOOM
+    // BOOM
 }
 
 /**
@@ -1128,830 +1127,829 @@ didUpdateRecordData: (id)data
  * the whole service needs to be reset. Otherwise, it will only clean up the
  * browser for the specified record type.
  */
-- (void) stopWithError: (BOOL)hadError
-             forRRCode: (NSInteger)rrCode
+- (void)stopWithError:(BOOL)hadError
+    forRRCode:(NSInteger)rrCode
 {
-  /*
-   * If an RRCode was set (a value of zero possibly indicating an unknown
-   * RRCode, fo which we won't do anything), we only clean up the
-   * corresponding browser.
-   */
-  if (rrCode == 0)
+    /*
+     * If an RRCode was set (a value of zero possibly indicating an unknown
+     * RRCode, fo which we won't do anything), we only clean up the
+     * corresponding browser.
+     */
+    if (rrCode == 0)
     {
-      return;
+        return;
     }
-  [_lock lock];
-  if (rrCode != -1)
+    [_lock lock];
+    if (rrCode != -1)
     {
-      AvahiRecordBrowser *browser
-	= NSMapGet(_browsers, (void*)(uintptr_t)rrCode);
-      if (browser != NULL)
+        AvahiRecordBrowser *browser
+            = NSMapGet(_browsers, (void*)(uintptr_t)rrCode);
+        if (browser != NULL)
         {
-          avahi_record_browser_free(browser);
-          NSMapRemove(_browsers, (void*)(uintptr_t)rrCode);
-          [(NSTimer*)NSMapGet(_browserTimeouts,
-	    (void*)(uintptr_t)rrCode) invalidate];
-          NSMapRemove(_browserTimeouts, (void*)(uintptr_t)rrCode);
-          if ((NSCountMapTable(_browsers) == 0)
-            && (_serviceState == GSNetServiceRecordBrowsing))
+            avahi_record_browser_free(browser);
+            NSMapRemove(_browsers, (void*)(uintptr_t)rrCode);
+            [(NSTimer*)NSMapGet(_browserTimeouts,
+                                (void*)(uintptr_t)rrCode) invalidate];
+            NSMapRemove(_browserTimeouts, (void*)(uintptr_t)rrCode);
+            if ((NSCountMapTable(_browsers) == 0)
+                && (_serviceState == GSNetServiceRecordBrowsing))
             {
-              _serviceState = GSNetServiceResolved;
+                _serviceState = GSNetServiceResolved;
             }
         }
-      return;
+        return;
     }
 
-  if (_timer != nil)
+    if (_timer != nil)
     {
-      [_timer invalidate];
-      _timer = nil;
+        [_timer invalidate];
+        _timer = nil;
     }
-  if (_resolver != NULL)
+    if (_resolver != NULL)
     {
-      avahi_service_resolver_free((AvahiServiceResolver*)_resolver);
-      _resolver = NULL;
+        avahi_service_resolver_free((AvahiServiceResolver*)_resolver);
+        _resolver = NULL;
     }
-  if (_entryGroup != NULL)
+    if (_entryGroup != NULL)
     {
-      //Make sure to unpublish it.
-      avahi_entry_group_reset((AvahiEntryGroup*)_entryGroup);
-      avahi_entry_group_free((AvahiEntryGroup*)_entryGroup);
-      _entryGroup = NULL;
+        //Make sure to unpublish it.
+        avahi_entry_group_reset((AvahiEntryGroup*)_entryGroup);
+        avahi_entry_group_free((AvahiEntryGroup*)_entryGroup);
+        _entryGroup = NULL;
     }
 
-  if (0 != NSCountMapTable(_browsers))
+    if (0 != NSCountMapTable(_browsers))
     {
-      NSMapTable *enumerationTable;
-      NSMapEnumerator bEnum;
-      NSUInteger code;
-      AvahiRecordBrowser *browser;
+        NSMapTable *enumerationTable;
+        NSMapEnumerator bEnum;
+        NSUInteger code;
+        AvahiRecordBrowser *browser;
 
-      enumerationTable
-	= NSCopyMapTableWithZone(_browsers, NSDefaultMallocZone());
-      bEnum = NSEnumerateMapTable(enumerationTable);
-      while (NSNextMapEnumeratorPair(&bEnum,(void*)&code,(void*)&browser))
+        enumerationTable
+            = NSCopyMapTableWithZone(_browsers, NSDefaultMallocZone());
+        bEnum = NSEnumerateMapTable(enumerationTable);
+        while (NSNextMapEnumeratorPair(&bEnum,(void*)&code,(void*)&browser))
         {
-          avahi_record_browser_free(browser);
-          NSMapRemove(_browsers, (void*)code);
-          [(NSTimer*)NSMapGet(_browserTimeouts,
-	    (void*)(uintptr_t)code) invalidate];
-          NSMapRemove(_browserTimeouts, (void*)(uintptr_t)code);
+            avahi_record_browser_free(browser);
+            NSMapRemove(_browsers, (void*)code);
+            [(NSTimer*)NSMapGet(_browserTimeouts,
+                                (void*)(uintptr_t)code) invalidate];
+            NSMapRemove(_browserTimeouts, (void*)(uintptr_t)code);
         }
-      NSEndMapTableEnumeration(&bEnum);
-      NSFreeMapTable(enumerationTable);
+        NSEndMapTableEnumeration(&bEnum);
+        NSFreeMapTable(enumerationTable);
     }
-  if (!hadError)
+    if (!hadError)
     {
-      [self netServiceDidStop: self];
+        [self netServiceDidStop:self];
     }
-  _serviceState = GSNetServiceIdle;
-  [_lock unlock];
+    _serviceState = GSNetServiceIdle;
+    [_lock unlock];
 }
 
-- (void) stop
+- (void)stop
 {
-  [self stopWithError: NO
-            forRRCode: -1];
+    [self stopWithError:NO
+     forRRCode:-1];
 }
 
-- (void) startMonitoringForRecordType: (NSString*)rrType
+- (void)startMonitoringForRecordType:(NSString*)rrType
 {
-  NSUInteger code = RRCodeFromNSString(rrType);
-  AvahiRecordBrowser *browser = NULL;
-  // Raise error for bad record type:
-  if (code == 0)
+    NSUInteger code = RRCodeFromNSString(rrType);
+    AvahiRecordBrowser *browser = NULL;
+    // Raise error for bad record type:
+    if (code == 0)
     {
-      [self handleError: NSNetServicesBadArgumentError
-              forRRCode: code];
-      return;
+        [self handleError:NSNetServicesBadArgumentError
+         forRRCode:code];
+        return;
     }
-  [_lock lock];
-  if ((_serviceState < GSNetServiceResolved)
-    || (_serviceState > GSNetServiceRecordBrowsing))
+    [_lock lock];
+    if ((_serviceState < GSNetServiceResolved)
+        || (_serviceState > GSNetServiceRecordBrowsing))
     {
-      [self handleError: NSNetServicesBadArgumentError
-              forRRCode: code];
-      [_lock unlock];
-      return;
+        [self handleError:NSNetServicesBadArgumentError
+         forRRCode:code];
+        [_lock unlock];
+        return;
     }
 
-  browser = NSMapGet(_browsers, (void*)(uintptr_t)code);
-  if (browser)
+    browser = NSMapGet(_browsers, (void*)(uintptr_t)code);
+    if (browser)
     {
-      NSDebugLog(@"Browser for RR code %@ already monitoring", rrType);
-      [self handleError: NSNetServicesActivityInProgress];
-      [_lock unlock];
-      return;
+        NSDebugLog(@"Browser for RR code %@ already monitoring", rrType);
+        [self handleError:NSNetServicesActivityInProgress];
+        [_lock unlock];
+        return;
     }
-  browser = avahi_record_browser_new((AvahiClient*)_client,
-                                    _ifIndex,
-                                   _protocol,
-        [[self fullServiceName] UTF8String],
-                         AVAHI_DNS_CLASS_IN,
-                             (uint16_t)code,
-                                          0,
-                   GSAvahiRecordBrowserEvent,
+    browser = avahi_record_browser_new((AvahiClient*)_client,
+                                       _ifIndex,
+                                       _protocol,
+                                       [[self fullServiceName] UTF8String],
+                                       AVAHI_DNS_CLASS_IN,
+                                       (uint16_t)code,
+                                       0,
+                                       GSAvahiRecordBrowserEvent,
                                        self);
-  if (browser == NULL)
+    if (browser == NULL)
     {
-      // Something went wrong:
-      [self handleError: avahi_client_errno((AvahiClient*)_client)];
+        // Something went wrong:
+        [self handleError:avahi_client_errno((AvahiClient*)_client)];
     }
-  else
+    else
     {
-      // The browser was successfully created, we add it to the mapTable.
-      NSMapInsert(_browsers, (void*)(uintptr_t)code, browser);
-      // Set the proper state if the new browser is responsible for a state
-      // change.
-      if (_serviceState == GSNetServiceResolved)
+        // The browser was successfully created, we add it to the mapTable.
+        NSMapInsert(_browsers, (void*)(uintptr_t)code, browser);
+        // Set the proper state if the new browser is responsible for a state
+        // change.
+        if (_serviceState == GSNetServiceResolved)
         {
-          _serviceState = GSNetServiceRecordBrowsing;
+            _serviceState = GSNetServiceRecordBrowsing;
         }
     }
-  [_lock unlock];
+    [_lock unlock];
 }
 
-- (void) stopMonitoringForRecordType: (NSString*)rrType
+- (void)stopMonitoringForRecordType:(NSString*)rrType
 {
-  NSUInteger rrCode = RRCodeFromNSString(rrType);
-  AvahiRecordBrowser *browser = NULL;
-  [_lock lock];
-  if (_serviceState > GSNetServiceRecordBrowsing)
+    NSUInteger rrCode = RRCodeFromNSString(rrType);
+    AvahiRecordBrowser *browser = NULL;
+    [_lock lock];
+    if (_serviceState > GSNetServiceRecordBrowsing)
     {
-      //Don't do anything for a publishing service.
-      [_lock unlock];
-      return;
+        //Don't do anything for a publishing service.
+        [_lock unlock];
+        return;
     }
-  browser = NSMapGet(_browsers, (void*)(uintptr_t)rrCode);
-  if (browser != NULL)
+    browser = NSMapGet(_browsers, (void*)(uintptr_t)rrCode);
+    if (browser != NULL)
     {
-      avahi_record_browser_free(browser);
+        avahi_record_browser_free(browser);
     }
-  if (0 == NSCountMapTable(_browsers))
+    if (0 == NSCountMapTable(_browsers))
     {
-      _serviceState = GSNetServiceResolved;
+        _serviceState = GSNetServiceResolved;
     }
-  [_lock unlock];
+    [_lock unlock];
 }
 
-- (void) startMonitoring
+- (void)startMonitoring
 {
-  if ((_serviceState == GSNetServiceResolved)
-    || (_serviceState == GSNetServiceRecordBrowsing))
+    if ((_serviceState == GSNetServiceResolved)
+        || (_serviceState == GSNetServiceRecordBrowsing))
     {
-      [self startMonitoringForRecordType: @"TXT"];
+        [self startMonitoringForRecordType:@"TXT"];
     }
 }
-- (void) stopMonitoring
+- (void)stopMonitoring
 {
-  [self stopMonitoringForRecordType: @"TXT"];
+    [self stopMonitoringForRecordType:@"TXT"];
 }
 
 
-- (NSArray *) addresses
+- (NSArray *)addresses
 {
-  NSArray *addresses = [self infoObjectForKey: @"addresses"];
-  if (nil == addresses)
+    NSArray *addresses = [self infoObjectForKey:@"addresses"];
+    if (nil == addresses)
     {
-      // As per Apple documentation "If no addresses were resolved for the
-      // service, the returned array contains zero elements."
-      return [[[NSArray alloc] init] autorelease];
+        // As per Apple documentation "If no addresses were resolved for the
+        // service, the returned array contains zero elements."
+        return [[[NSArray alloc] init] autorelease];
     }
-  return addresses;
+    return addresses;
 }
 
 /**
  * Private method to add new address data to the service.
  */
-- (void) addAddressData: (NSData*)data
+- (void)addAddressData:(NSData*)data
 {
-  NSMutableArray *addresses = nil;
+    NSMutableArray *addresses = nil;
 
-  if (data == nil)
+    if (data == nil)
     {
-      return;
+        return;
     }
-  addresses = [self infoObjectForKey: @"addresses"];
-  if (addresses == nil)
+    addresses = [self infoObjectForKey:@"addresses"];
+    if (addresses == nil)
     {
-      // Autoreleased:
-      addresses = [NSMutableArray array];
-      [self setInfoObject: addresses
-                   forKey: @"addresses"];
+        // Autoreleased:
+        addresses = [NSMutableArray array];
+        [self setInfoObject:addresses
+         forKey:@"addresses"];
     }
-  if (![addresses containsObject: data])
+    if (![addresses containsObject:data])
     {
-      [addresses addObject: data];
+        [addresses addObject:data];
     }
 }
 
 /**
  * Private method to remove stale address data from the service.
  */
-- (void) removeAddressData: (NSData*)data
+- (void)removeAddressData:(NSData*)data
 {
-  NSMutableArray *addresses = nil;
-  // Index of the address in the array:
-  NSUInteger index = NSNotFound;
-  if (data == nil)
+    NSMutableArray *addresses = nil;
+    // Index of the address in the array:
+    NSUInteger index = NSNotFound;
+    if (data == nil)
     {
-      return;
+        return;
     }
-  addresses = [self infoObjectForKey: @"addresses"];
-  if (addresses == nil)
+    addresses = [self infoObjectForKey:@"addresses"];
+    if (addresses == nil)
     {
-      // Autoreleased:
-      addresses = [NSMutableArray array];
-      [self setInfoObject: addresses
-                   forKey: @"addresses"];
+        // Autoreleased:
+        addresses = [NSMutableArray array];
+        [self setInfoObject:addresses
+         forKey:@"addresses"];
     }
-  index = [addresses indexOfObjectIdenticalTo: data];
-  if (index != NSNotFound)
+    index = [addresses indexOfObjectIdenticalTo:data];
+    if (index != NSNotFound)
     {
-      [addresses removeObjectAtIndex: index];
+        [addresses removeObjectAtIndex:index];
     }
 }
 
-- (NSString *) domain
+- (NSString *)domain
 {
-  return [self infoObjectForKey: @"domain"];
+    return [self infoObjectForKey:@"domain"];
 }
 
-- (NSString *) hostName
+- (NSString *)hostName
 {
-  return [self infoObjectForKey: @"hostName"];
+    return [self infoObjectForKey:@"hostName"];
 }
 
-- (NSString *) name
+- (NSString *)name
 {
-  return [self infoObjectForKey: @"name"];
+    return [self infoObjectForKey:@"name"];
 }
 
-- (NSString *) type
+- (NSString *)type
 {
-  return [self infoObjectForKey: @"type"];
+    return [self infoObjectForKey:@"type"];
 }
 
 /**
  * This method is called from the Avahi callback when a service has successfully
  * resolved.
  */
-- (void) avahiResolver: (AvahiServiceResolver*)aResolver
-  foundServiceWithName: (NSString*)name
-		  type: (NSString*)type
-		domain: (NSString*)domain
-	      hostName: (NSString*)hostName
-	       address: (NSData*)address
-		  port: (NSInteger)port
-	     txtRecord: (NSData*)txtRecord
-	       ifIndex: (AvahiIfIndex)anIfIndex
-	      protocol: (AvahiProtocol)aProtocol
+- (void)avahiResolver:(AvahiServiceResolver*)aResolver
+    foundServiceWithName:(NSString*)name
+    type:(NSString*)type
+    domain:(NSString*)domain
+    hostName:(NSString*)hostName
+    address:(NSData*)address
+    port:(NSInteger)port
+    txtRecord:(NSData*)txtRecord
+    ifIndex:(AvahiIfIndex)anIfIndex
+    protocol:(AvahiProtocol)aProtocol
 {
-  [_lock lock];
-  if ((void*)aResolver != _resolver)
+    [_lock lock];
+    if ((void*)aResolver != _resolver)
     {
-      // This callback comes from the wrong resolver:
-      [self handleError: NSNetServicesInvalidError];
-      // Free the erratic resolver, the real one will have been freed by the
-      // error handler.
-      if (NULL != aResolver)
+        // This callback comes from the wrong resolver:
+        [self handleError:NSNetServicesInvalidError];
+        // Free the erratic resolver, the real one will have been freed by the
+        // error handler.
+        if (NULL != aResolver)
         {
-          avahi_service_resolver_free(aResolver);
+            avahi_service_resolver_free(aResolver);
         }
-      [_lock unlock];
-      return;
+        [_lock unlock];
+        return;
     }
-  if (![name isEqualToString: [self name]]
-    || ![type isEqualToString: [self type]]
-    || ![domain isEqualToString: [self domain]])
+    if (![name isEqualToString:[self name]]
+        || ![type isEqualToString:[self type]]
+        || ![domain isEqualToString:[self domain]])
     {
-      // This resolver callback is for the wrong service!
-      [self handleError: NSNetServicesInvalidError];
-      [_lock unlock];
-      return;
+        // This resolver callback is for the wrong service!
+        [self handleError:NSNetServicesInvalidError];
+        [_lock unlock];
+        return;
     }
-  if (hostName)
+    if (hostName)
     {
-      [self setInfoObject: hostName forKey: @"hostName"];
+        [self setInfoObject:hostName forKey:@"hostName"];
     }
-  if (port)
+    if (port)
     {
-      [self setInfoObject: [NSNumber numberWithInteger: port]
-                forKey: @"port"];
+        [self setInfoObject:[NSNumber numberWithInteger:port]
+         forKey:@"port"];
     }
-  if (txtRecord)
+    if (txtRecord)
     {
-      [self setInfoObject: txtRecord forKey: @"TXT"];
+        [self setInfoObject:txtRecord forKey:@"TXT"];
     }
 
-  if (address)
+    if (address)
     {
-      [self addAddressData: address];
+        [self addAddressData:address];
     }
 
-  // This makes sure all further actions happen on the same if/protocol
-  // combination (they might have been AVAHI_(IF|PROTO)_UNSPEC before).
-  _ifIndex = anIfIndex;
-  _protocol = aProtocol;
+    // This makes sure all further actions happen on the same if/protocol
+    // combination (they might have been AVAHI_(IF|PROTO)_UNSPEC before).
+    _ifIndex = anIfIndex;
+    _protocol = aProtocol;
 
-  // Clean up the resolver, we don't need it anymore:
-  avahi_service_resolver_free((AvahiServiceResolver*)_resolver);
-  _resolver = NULL;
+    // Clean up the resolver, we don't need it anymore:
+    avahi_service_resolver_free((AvahiServiceResolver*)_resolver);
+    _resolver = NULL;
 
-  _serviceState = GSNetServiceResolved;
-  [self netServiceDidResolveAddress: self];
-  if (_timer != nil)
+    _serviceState = GSNetServiceResolved;
+    [self netServiceDidResolveAddress:self];
+    if (_timer != nil)
     {
-      [_timer invalidate];
-      _timer = nil;
+        [_timer invalidate];
+        _timer = nil;
     }
-  [_lock unlock];
-
+    [_lock unlock];
 }
 
 /**
  * Callback for timers on record browsing, to mimic AllForNow.
  */
-- (void) didTimeoutRRBrowsing: (NSTimer*)aTimer
+- (void)didTimeoutRRBrowsing:(NSTimer*)aTimer
 {
-  // Invoke our AllForNow callback, which will take care to invalidate the
-  // timer.
-  [self allForNowForRRCode:
-    [(NSNumber*)[aTimer userInfo] unsignedIntegerValue]];
+    // Invoke our AllForNow callback, which will take care to invalidate the
+    // timer.
+    [self allForNowForRRCode:
+     [(NSNumber*)[aTimer userInfo] unsignedIntegerValue]];
 }
 
 /**
  * Called whenever a new event appears for the resource record
  * <code>code</code>. Postpones the timeout.
  */
-- (void) rescheduleBrowserTimeoutForRRCode: (NSUInteger)code
+- (void)rescheduleBrowserTimeoutForRRCode:(NSUInteger)code
 {
-  NSTimer *aTimer = nil;
-  [_lock lock];
-  /* Do AllForNow handling to supplement what Avahi is doing. (The AllForNow
-   * event seems to be sent exactly once over the lifetime of the record
-   * browser, which makes it quite useless.
-   */
-  aTimer = (NSTimer*)NSMapGet(_browserTimeouts, (void*)(uintptr_t)code);
-  if (aTimer != nil)
+    NSTimer *aTimer = nil;
+    [_lock lock];
+    /* Do AllForNow handling to supplement what Avahi is doing. (The AllForNow
+     * event seems to be sent exactly once over the lifetime of the record
+     * browser, which makes it quite useless.
+     */
+    aTimer = (NSTimer*)NSMapGet(_browserTimeouts, (void*)(uintptr_t)code);
+    if (aTimer != nil)
     {
-      [aTimer invalidate];
-      NSMapRemove(_browserTimeouts, (void*)(uintptr_t)code);
+        [aTimer invalidate];
+        NSMapRemove(_browserTimeouts, (void*)(uintptr_t)code);
     }
-  aTimer = [NSTimer
-    timerWithTimeInterval: BROWSER_UPDATE_INTERVAL
-    target: self
-    selector: @selector(didTimeoutRRBrowsing:)
-    userInfo: [NSNumber numberWithUnsignedInteger: code]
-    repeats: NO];
-  [[ctx runLoop] addTimer: aTimer
-                  forMode: [ctx mode]];
-  NSMapInsert(_browserTimeouts, (void*)(uintptr_t)code, aTimer);
-  [_lock unlock];
+    aTimer = [NSTimer
+              timerWithTimeInterval:BROWSER_UPDATE_INTERVAL
+              target:self
+              selector:@selector(didTimeoutRRBrowsing:)
+              userInfo:[NSNumber numberWithUnsignedInteger:code]
+              repeats:NO];
+    [[ctx runLoop] addTimer:aTimer
+     forMode:[ctx mode]];
+    NSMapInsert(_browserTimeouts, (void*)(uintptr_t)code, aTimer);
+    [_lock unlock];
 }
 
 /**
  * Private method to add new data for a record type.
  */
-- (void) newData: (NSData*)data
-       forRRCode: (NSUInteger)code
+- (void)newData:(NSData*)data
+    forRRCode:(NSUInteger)code
 {
-  NSString *rrType = NSStringFromRRCode(code);
-  id oldValue = nil;
+    NSString *rrType = NSStringFromRRCode(code);
+    id oldValue = nil;
 
-  [self rescheduleBrowserTimeoutForRRCode: code];
-  if (data == nil)
+    [self rescheduleBrowserTimeoutForRRCode:code];
+    if (data == nil)
     {
-      return;
-    }
-
-  // We dynamically transform between an NSData object and an array as the
-  // value for the rrType:
-  [_infoLock lock];
-  oldValue = [self infoObjectForKey: rrType];
-  if (oldValue == nil)
-    {
-      [self setInfoObject: data
-                forKey: rrType];
-    }
-  else if ([oldValue isKindOfClass: [NSData class]])
-    {
-      NSMutableArray *container = [NSMutableArray array];
-      [container addObject: oldValue];
-      [container addObject: data];
-      [self setInfoObject: container
-                   forKey: rrType];
-    }
-  else if ([oldValue isKindOfClass: [NSMutableArray class]])
-    {
-      [oldValue addObject: data];
-    }
-  else
-    {
-      [_infoLock unlock];
-      [NSException raise: @"NSInternalInconsistencyException"
-                  format: @"Invalid value of NSNetService info key %@", rrType];
-      return;
+        return;
     }
 
-  // Special case for addresses, they need to update the addresses key
-  // properly:
-  if ((code == AVAHI_DNS_TYPE_A) || code == AVAHI_DNS_TYPE_AAAA)
+    // We dynamically transform between an NSData object and an array as the
+    // value for the rrType:
+    [_infoLock lock];
+    oldValue = [self infoObjectForKey:rrType];
+    if (oldValue == nil)
     {
-      AvahiProtocol proto = AVAHI_PROTO_UNSPEC;
-      if (code == AVAHI_DNS_TYPE_A)
+        [self setInfoObject:data
+         forKey:rrType];
+    }
+    else if ([oldValue isKindOfClass:[NSData class]])
+    {
+        NSMutableArray *container = [NSMutableArray array];
+        [container addObject:oldValue];
+        [container addObject:data];
+        [self setInfoObject:container
+         forKey:rrType];
+    }
+    else if ([oldValue isKindOfClass:[NSMutableArray class]])
+    {
+        [oldValue addObject:data];
+    }
+    else
+    {
+        [_infoLock unlock];
+        [NSException raise:@"NSInternalInconsistencyException"
+         format:@"Invalid value of NSNetService info key %@", rrType];
+        return;
+    }
+
+    // Special case for addresses, they need to update the addresses key
+    // properly:
+    if ((code == AVAHI_DNS_TYPE_A) || code == AVAHI_DNS_TYPE_AAAA)
+    {
+        AvahiProtocol proto = AVAHI_PROTO_UNSPEC;
+        if (code == AVAHI_DNS_TYPE_A)
         {
-          proto = AVAHI_PROTO_INET;
+            proto = AVAHI_PROTO_INET;
         }
-      else if (code == AVAHI_DNS_TYPE_AAAA)
+        else if (code == AVAHI_DNS_TYPE_AAAA)
         {
-          proto = AVAHI_PROTO_INET6;
+            proto = AVAHI_PROTO_INET6;
         }
-      [self addAddressData: NSDataWithAddrDataPortFamilyAndIface(data,
-        [self port], proto, _ifIndex)];
+        [self addAddressData:NSDataWithAddrDataPortFamilyAndIface(data,
+                                                                  [self port], proto, _ifIndex)];
     }
-  [_infoLock unlock];
+    [_infoLock unlock];
 }
 
 /**
  * Private method to remove stale data for a resource record.
  */
-- (void) removedData: (NSData*)data
-           forRRCode: (NSUInteger)code
+- (void)removedData:(NSData*)data
+    forRRCode:(NSUInteger)code
 {
-  NSString *rrType = NSStringFromRRCode(code);
-  id oldValue = nil;
-  [self rescheduleBrowserTimeoutForRRCode: code];
-  if (data == nil)
+    NSString *rrType = NSStringFromRRCode(code);
+    id oldValue = nil;
+    [self rescheduleBrowserTimeoutForRRCode:code];
+    if (data == nil)
     {
-      return;
+        return;
     }
-  [_infoLock lock];
-  oldValue = [self infoObjectForKey: rrType];
-  if (oldValue == nil)
+    [_infoLock lock];
+    oldValue = [self infoObjectForKey:rrType];
+    if (oldValue == nil)
     {
-      //Nothing to be done.
-      [_infoLock unlock];
-      return;
+        //Nothing to be done.
+        [_infoLock unlock];
+        return;
     }
-  else if ([oldValue isKindOfClass: [NSData class]])
+    else if ([oldValue isKindOfClass:[NSData class]])
     {
-      if ([oldValue isEqual: data])
+        if ([oldValue isEqual:data])
         {
-          [self removeInfoObjectForKey: rrType];
+            [self removeInfoObjectForKey:rrType];
         }
     }
-  else if ([oldValue isKindOfClass: [NSMutableArray class]])
+    else if ([oldValue isKindOfClass:[NSMutableArray class]])
     {
-      NSUInteger index = [oldValue indexOfObjectIdenticalTo: data];
-      if (index != NSNotFound)
+        NSUInteger index = [oldValue indexOfObjectIdenticalTo:data];
+        if (index != NSNotFound)
         {
-          NSUInteger count;
-          [oldValue removeObjectAtIndex: index];
-          count = [oldValue count];
-          if (count == 1)
+            NSUInteger count;
+            [oldValue removeObjectAtIndex:index];
+            count = [oldValue count];
+            if (count == 1)
             {
-              //Go back to a plain data record:
-              [self setInfoObject: [oldValue objectAtIndex: 0]
-                           forKey: rrType];
+                //Go back to a plain data record:
+                [self setInfoObject:[oldValue objectAtIndex:0]
+                 forKey:rrType];
             }
-          else if (count == 0)
+            else if (count == 0)
             {
-               // Remove empty array:
-              [self removeInfoObjectForKey: rrType];
+                // Remove empty array:
+                [self removeInfoObjectForKey:rrType];
             }
         }
     }
-  else
+    else
     {
-      [_infoLock unlock];
-      [NSException raise: @"NSInternalInconsistencyException"
-      format: @"Invalid value of NSNetService info key %@", rrType];
-      return;
+        [_infoLock unlock];
+        [NSException raise:@"NSInternalInconsistencyException"
+         format:@"Invalid value of NSNetService info key %@", rrType];
+        return;
     }
 
-  // Special case for address records:
-  if ((code == AVAHI_DNS_TYPE_A) || code == AVAHI_DNS_TYPE_AAAA)
+    // Special case for address records:
+    if ((code == AVAHI_DNS_TYPE_A) || code == AVAHI_DNS_TYPE_AAAA)
     {
-      AvahiProtocol proto = AVAHI_PROTO_UNSPEC;
-      if (code == AVAHI_DNS_TYPE_A)
+        AvahiProtocol proto = AVAHI_PROTO_UNSPEC;
+        if (code == AVAHI_DNS_TYPE_A)
         {
-          proto = AVAHI_PROTO_INET;
+            proto = AVAHI_PROTO_INET;
         }
-      else if (code == AVAHI_DNS_TYPE_AAAA)
+        else if (code == AVAHI_DNS_TYPE_AAAA)
         {
-          proto = AVAHI_PROTO_INET6;
+            proto = AVAHI_PROTO_INET6;
         }
-      [self removeAddressData: NSDataWithAddrDataPortFamilyAndIface(data,
-        [self port], proto, _ifIndex)];
+        [self removeAddressData:NSDataWithAddrDataPortFamilyAndIface(data,
+                                                                     [self port], proto, _ifIndex)];
     }
-  [_infoLock unlock];
+    [_infoLock unlock];
 }
 
 /**
  * Called both by the native timeout mechanism and the Avahi callback to notify
  * the delegate about record data changes.
  */
-- (void) allForNowForRRCode: (NSUInteger)code
+- (void)allForNowForRRCode:(NSUInteger)code
 {
-  NSString *rrType = nil;
-  NSData *data = nil;
-  [_lock lock];
+    NSString *rrType = nil;
+    NSData *data = nil;
+    [_lock lock];
     {
-      // Remove a dangling timer if any:
-      NSTimer *aTimer = (NSTimer*)NSMapGet(_browserTimeouts,
-	(void*)(uintptr_t)code);
-      if (aTimer != nil)
+        // Remove a dangling timer if any:
+        NSTimer *aTimer = (NSTimer*)NSMapGet(_browserTimeouts,
+                                             (void*)(uintptr_t)code);
+        if (aTimer != nil)
         {
-          [aTimer invalidate];
-          NSMapRemove(_browserTimeouts, (void*)(uintptr_t)code);
+            [aTimer invalidate];
+            NSMapRemove(_browserTimeouts, (void*)(uintptr_t)code);
         }
     }
-  [_lock unlock];
-  rrType = NSStringFromRRCode(code);
-  data = [self infoObjectForKey: rrType];
-  [self netService: self didUpdateRecordData: data
-     forRecordType: rrType];
+    [_lock unlock];
+    rrType = NSStringFromRRCode(code);
+    data = [self infoObjectForKey:rrType];
+    [self netService:self didUpdateRecordData:data
+     forRecordType:rrType];
 }
 
 
 /**
  * Dispatcher method for error notifications to the delegate.
  */
-- (void) handleError: (int)errorCode
-           forRRCode: (int)RRCode
+- (void)handleError:(int)errorCode
+    forRRCode:(int)RRCode
 {
-  [_lock lock];
-  if (_serviceState < GSNetServiceResolved)
+    [_lock lock];
+    if (_serviceState < GSNetServiceResolved)
     {
-      [self netService: self
-         didNotResolve: [self errorDictWithErrorCode: errorCode]];
+        [self netService:self
+         didNotResolve:[self errorDictWithErrorCode:errorCode]];
     }
-  else if (_serviceState <= GSNetServiceRecordBrowsing)
+    else if (_serviceState <= GSNetServiceRecordBrowsing)
     {
-      /* Strangely enough, the Apple documentation does not specify that an
-       * error should be raised when monitoring a record fails. Since we are
-       * not Apple, we can actually be nice and notify the delegate, if it is
-       * interested.
-       */
-      [self netService: self
-         didNotMonitor: [self errorDictWithErrorCode: errorCode]
-         forRecordType: NSStringFromRRCode(RRCode)];
+        /* Strangely enough, the Apple documentation does not specify that an
+         * error should be raised when monitoring a record fails. Since we are
+         * not Apple, we can actually be nice and notify the delegate, if it is
+         * interested.
+         */
+        [self netService:self
+         didNotMonitor:[self errorDictWithErrorCode:errorCode]
+         forRecordType:NSStringFromRRCode(RRCode)];
     }
-  else if (_serviceState > GSNetServiceRecordBrowsing)
+    else if (_serviceState > GSNetServiceRecordBrowsing)
     {
-      [self netService: self
-         didNotPublish: [self errorDictWithErrorCode: errorCode]];
+        [self netService:self
+         didNotPublish:[self errorDictWithErrorCode:errorCode]];
     }
-  [self stopWithError: YES
-            forRRCode: RRCode];
-  [self avahiClientHandleError: errorCode];
-  [_lock unlock];
+    [self stopWithError:YES
+     forRRCode:RRCode];
+    [self avahiClientHandleError:errorCode];
+    [_lock unlock];
 }
 
 /**
  * Dispatcher method for error notifications to the delegate.
  */
-- (void) handleError: (int)errorCode
+- (void)handleError:(int)errorCode
 {
-  [self handleError: errorCode
-	  forRRCode: -1];
+    [self handleError:errorCode
+     forRRCode:-1];
 }
 
-- (id) recordDataForRecordType: (NSString*)key
+- (id)recordDataForRecordType:(NSString*)key
 {
-  return [self infoObjectForKey: key];
+    return [self infoObjectForKey:key];
 }
 
-- (NSData*) TXTRecordData
+- (NSData*)TXTRecordData
 {
-  id retVal = nil;
-  id value = [self infoObjectForKey: @"TXT"];
-  //Retain because somebody might remove it while we do this:
-  [value retain];
-  if ([value isKindOfClass: [NSData class]])
+    id retVal = nil;
+    id value = [self infoObjectForKey:@"TXT"];
+    //Retain because somebody might remove it while we do this:
+    [value retain];
+    if ([value isKindOfClass:[NSData class]])
     {
-      return [value autorelease];
+        return [value autorelease];
     }
-  else if ([value isKindOfClass: [NSArray class]])
+    else if ([value isKindOfClass:[NSArray class]])
     {
-      // Only return the last (= newest) object:
-      retVal = [[(NSArray*)value lastObject] retain];
+        // Only return the last (= newest) object:
+        retVal = [[(NSArray*)value lastObject] retain];
     }
-  [value release];
-  return [retVal autorelease];
+    [value release];
+    return [retVal autorelease];
 }
 
-- (BOOL) setTXTRecordData: (NSData*)data
+- (BOOL)setTXTRecordData:(NSData*)data
 {
-  AvahiStringList *list = NULL;
-  int ret = GSAvahiStringListFromNSData(data, &list);
-  if (0 == ret)
+    AvahiStringList *list = NULL;
+    int ret = GSAvahiStringListFromNSData(data, &list);
+    if (0 == ret)
     {
-      // We could successfully parse it, so we set it as the value of the
-      // dictionary.
-      [self setInfoObject: data
-                   forKey: @"TXT"];
+        // We could successfully parse it, so we set it as the value of the
+        // dictionary.
+        [self setInfoObject:data
+         forKey:@"TXT"];
     }
-  [_lock lock];
-  switch (_serviceState)
+    [_lock lock];
+    switch (_serviceState)
     {
-      case (GSNetServiceIdle):
+    case (GSNetServiceIdle):
         // We don't need to do anything more, the TXT will be published along
         // with the service:
         if (list != NULL)
-          {
+        {
             avahi_string_list_free(list);
-          }
+        }
         [_lock unlock];
         return YES;
-      case (GSNetServiceResolving):
-      case (GSNetServiceResolved):
-      case (GSNetServiceRecordBrowsing):
-      case GSNetServiceStateMax:
+    case (GSNetServiceResolving):
+    case (GSNetServiceResolved):
+    case (GSNetServiceRecordBrowsing):
+    case GSNetServiceStateMax:
         // TODO: Raise error?
         if (list != NULL)
-          {
+        {
             avahi_string_list_free(list);
-          }
+        }
         [_lock unlock];
         return NO;
-      case (GSNetServicePublishing):
-      case (GSNetServicePublished):
+    case (GSNetServicePublishing):
+    case (GSNetServicePublished):
         break;
     }
 
-  // Ret will still be 0 at this point, so we can reuse the variable:
-  ret = avahi_entry_group_update_service_txt_strlst(
-    (AvahiEntryGroup*)_entryGroup,
-    _ifIndex,
-    _protocol,
-    0, //no flags
-    [[self infoObjectForKey: @"name"] UTF8String],
-    [[self infoObjectForKey: @"type"] UTF8String],
-    StringOrNullIfEmpty([self infoObjectForKey: @"domain"]),
-    list);
-  if (list != NULL)
+    // Ret will still be 0 at this point, so we can reuse the variable:
+    ret = avahi_entry_group_update_service_txt_strlst(
+        (AvahiEntryGroup*)_entryGroup,
+        _ifIndex,
+        _protocol,
+        0, //no flags
+        [[self infoObjectForKey:@"name"] UTF8String],
+        [[self infoObjectForKey:@"type"] UTF8String],
+        StringOrNullIfEmpty([self infoObjectForKey:@"domain"]),
+        list);
+    if (list != NULL)
     {
-      avahi_string_list_free(list);
+        avahi_string_list_free(list);
     }
-  if (ret != 0)
+    if (ret != 0)
     {
-      // TODO: Raise error:
-      [_lock unlock];
-      return NO;
+        // TODO: Raise error:
+        [_lock unlock];
+        return NO;
     }
-  /*
-   * FIXME: Apple's NSNetService API is a bit crappy, meaning that almost
-   * everything is asynchronous, but not -setTXTRecordData:. One
-   * solution would be to actually be asynchronous and run the runloop for
-   * ourselves a bit. Unfortunately Avahi does not call any of its
-   * callbacks to inform us about the fact that the record has
-   * successfully been changed. So we are a bit out of luck. Right now,
-   * this means that we might be returning 'YES' wrongly and also break
-   * code that _expects_ the record to be published before the method
-   * returns. Life sucks sometimes.
-   */
-  [_lock unlock];
-  return YES;
+    /*
+     * FIXME: Apple's NSNetService API is a bit crappy, meaning that almost
+     * everything is asynchronous, but not -setTXTRecordData:. One
+     * solution would be to actually be asynchronous and run the runloop for
+     * ourselves a bit. Unfortunately Avahi does not call any of its
+     * callbacks to inform us about the fact that the record has
+     * successfully been changed. So we are a bit out of luck. Right now,
+     * this means that we might be returning 'YES' wrongly and also break
+     * code that _expects_ the record to be published before the method
+     * returns. Life sucks sometimes.
+     */
+    [_lock unlock];
+    return YES;
 }
 
-- (BOOL) addRecordData: (NSData*)data
-         forRecordType: (NSString*)type
-               withTTL: (NSUInteger)ttl
+- (BOOL)addRecordData:(NSData*)data
+    forRecordType:(NSString*)type
+    withTTL:(NSUInteger)ttl
 {
-  int rrCode = RRCodeFromNSString(type);
-  int ret = 0;
-  [_lock lock];
-  if (_serviceState == GSNetServiceIdle)
+    int rrCode = RRCodeFromNSString(type);
+    int ret = 0;
+    [_lock lock];
+    if (_serviceState == GSNetServiceIdle)
     {
-      if (NULL == _entryGroup)
+        if (NULL == _entryGroup)
         {
-          int ret = [self createEntryGroup];
-          if (ret != 0)
+            int ret = [self createEntryGroup];
+            if (ret != 0)
             {
-              [_lock unlock];
-              return NO;
+                [_lock unlock];
+                return NO;
             }
         }
     }
-  else
+    else
     {
-      [_lock unlock];
-      return NO;
+        [_lock unlock];
+        return NO;
     }
 
-  if (!rrCode)
+    if (!rrCode)
     {
-      //FIXME: Raise error.
-      [self handleError: NSNetServicesBadArgumentError];
-      [_lock unlock];
-      return NO;
+        //FIXME: Raise error.
+        [self handleError:NSNetServicesBadArgumentError];
+        [_lock unlock];
+        return NO;
     }
 
-  // NOTE: This function is crazly a bit different than the others: The name
-  // parameter is the full service name!
-  ret = avahi_entry_group_add_record((AvahiEntryGroup*)_entryGroup,
-    _ifIndex,
-    _protocol,
-    0,
-    [[self fullServiceName] UTF8String],
-    AVAHI_DNS_CLASS_IN, // DNS class
-    rrCode,
-    ttl,
-    [data bytes],
-    [data length]);
-  if (ret != 0)
+    // NOTE: This function is crazly a bit different than the others: The name
+    // parameter is the full service name!
+    ret = avahi_entry_group_add_record((AvahiEntryGroup*)_entryGroup,
+                                       _ifIndex,
+                                       _protocol,
+                                       0,
+                                       [[self fullServiceName] UTF8String],
+                                       AVAHI_DNS_CLASS_IN, // DNS class
+                                       rrCode,
+                                       ttl,
+                                       [data bytes],
+                                       [data length]);
+    if (ret != 0)
     {
-      [self handleError: ret];
-      [_lock unlock];
-      return NO;
+        [self handleError:ret];
+        [_lock unlock];
+        return NO;
     }
-  [_lock unlock];
-  return YES;
+    [_lock unlock];
+    return YES;
 }
 
-- (BOOL) addRecordData: (NSData*)data
-         forRecordType: (NSString*)type
+- (BOOL)addRecordData:(NSData*)data
+    forRecordType:(NSString*)type
 {
-  return [self addRecordData: data
-               forRecordType: type
-                     withTTL: DEFAULT_OTHER_RECORD_TTL];
+    return [self addRecordData:data
+            forRecordType:type
+            withTTL:DEFAULT_OTHER_RECORD_TTL];
 }
 
 /**
  * Private method called upon state changes in the entry group.
  */
-- (void) entryGroup: (AvahiEntryGroup*)group
-       enteredState: (AvahiEntryGroupState)groupState
+- (void)entryGroup:(AvahiEntryGroup*)group
+    enteredState:(AvahiEntryGroupState)groupState
 {
-  [_lock lock];
-  if (_serviceState == GSNetServicePublishing)
+    [_lock lock];
+    if (_serviceState == GSNetServicePublishing)
     {
-      switch (groupState)
+        switch (groupState)
         {
-          case (AVAHI_ENTRY_GROUP_UNCOMMITED):
-          case (AVAHI_ENTRY_GROUP_REGISTERING):
+        case (AVAHI_ENTRY_GROUP_UNCOMMITED):
+        case (AVAHI_ENTRY_GROUP_REGISTERING):
             break;
-          case (AVAHI_ENTRY_GROUP_COLLISION):
-            [self handleError: NSNetServicesCollisionError];
+        case (AVAHI_ENTRY_GROUP_COLLISION):
+            [self handleError:NSNetServicesCollisionError];
             break;
-          case (AVAHI_ENTRY_GROUP_FAILURE):
-            [self handleError: avahi_client_errno((AvahiClient*)_client)];
+        case (AVAHI_ENTRY_GROUP_FAILURE):
+            [self handleError:avahi_client_errno((AvahiClient*)_client)];
             break;
-          case (AVAHI_ENTRY_GROUP_ESTABLISHED):
+        case (AVAHI_ENTRY_GROUP_ESTABLISHED):
             _serviceState = GSNetServicePublished;
-            [self netServiceDidPublish: self];
+            [self netServiceDidPublish:self];
             break;
         }
     }
-  else if (_serviceState == GSNetServicePublished)
+    else if (_serviceState == GSNetServicePublished)
     {
-      switch (groupState)
+        switch (groupState)
         {
-          case AVAHI_ENTRY_GROUP_COLLISION:
-          case AVAHI_ENTRY_GROUP_FAILURE:
-            [self handleError: avahi_client_errno((AvahiClient*)_client)];
-          case AVAHI_ENTRY_GROUP_ESTABLISHED:
-          case AVAHI_ENTRY_GROUP_UNCOMMITED:
-          case AVAHI_ENTRY_GROUP_REGISTERING:
+        case AVAHI_ENTRY_GROUP_COLLISION:
+        case AVAHI_ENTRY_GROUP_FAILURE:
+            [self handleError:avahi_client_errno((AvahiClient*)_client)];
+        case AVAHI_ENTRY_GROUP_ESTABLISHED:
+        case AVAHI_ENTRY_GROUP_UNCOMMITED:
+        case AVAHI_ENTRY_GROUP_REGISTERING:
             break;
         }
     }
-  [_lock unlock];
+    [_lock unlock];
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  /*
-   * Obtain the super-class lock so that nothing fishy can happen while
-   * we clean up:
-   */
-  [_lock lock];
+    /*
+     * Obtain the super-class lock so that nothing fishy can happen while
+     * we clean up:
+     */
+    [_lock lock];
 
-  /*
-   * Unset the delegate. We might have been gone away because the delegate
-   * didn't need us anymore, so there's a reasonable chance that it has also
-   * been deallocated.
-   */
-  [self setDelegate: nil];
+    /*
+     * Unset the delegate. We might have been gone away because the delegate
+     * didn't need us anymore, so there's a reasonable chance that it has also
+     * been deallocated.
+     */
+    [self setDelegate:nil];
 
-  /*
-   * Call -stop to cleanup all avahi-related resources.
-   */
-  [self stop];
+    /*
+     * Call -stop to cleanup all avahi-related resources.
+     */
+    [self stop];
 
-  /* Clean up evrything else. */
-  NSFreeMapTable(_browsers);
-  _browsers = NULL;
-  NSFreeMapTable(_browserTimeouts);
-  _browserTimeouts = NULL;
-  [_info release];
-  _info = nil;
-  [_infoLock release];
-  _infoLock = nil;
-  [_lock unlock];
-  [self avahiClientDealloc];
-  [super dealloc];
+    /* Clean up evrything else. */
+    NSFreeMapTable(_browsers);
+    _browsers = NULL;
+    NSFreeMapTable(_browserTimeouts);
+    _browserTimeouts = NULL;
+    [_info release];
+    _info = nil;
+    [_infoLock release];
+    _infoLock = nil;
+    [_lock unlock];
+    [self avahiClientDealloc];
+    [super dealloc];
 }
 @end

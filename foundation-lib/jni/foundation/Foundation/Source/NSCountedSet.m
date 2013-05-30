@@ -23,7 +23,7 @@
 
    <title>NSCountedSet class reference</title>
    $Date: 2010-02-25 10:49:31 -0800 (Thu, 25 Feb 2010) $ $Revision: 29753 $
-   */
+ */
 
 #import "common.h"
 #import "GNUstepBase/GSLock.h"
@@ -36,19 +36,19 @@
 #import "Foundation/NSThread.h"
 #import "GNUstepBase/NSObject+GNUstepBase.h"
 
-@class	GSCountedSet;
-@interface GSCountedSet : NSObject	// Help the compiler
+@class GSCountedSet;
+@interface GSCountedSet : NSObject  // Help the compiler
 @end
 
 /*
  *	Class variables for uniquing objects;
  */
-static NSRecursiveLock	*uniqueLock = nil;
-static NSCountedSet	*uniqueSet = nil;
-static IMP		uniqueImp = 0;
-static IMP		lockImp = 0;
-static IMP		unlockImp = 0;
-static BOOL		uniquing = NO;
+static NSRecursiveLock  *uniqueLock = nil;
+static NSCountedSet *uniqueSet = nil;
+static IMP uniqueImp = 0;
+static IMP lockImp = 0;
+static IMP unlockImp = 0;
+static BOOL uniquing = NO;
 
 /**
  * <p>
@@ -67,27 +67,27 @@ static BOOL		uniquing = NO;
 static Class NSCountedSet_abstract_class;
 static Class NSCountedSet_concrete_class;
 
-+ (void) initialize
++ (void)initialize
 {
-  if (self == [NSCountedSet class])
+    if (self == [NSCountedSet class])
     {
-      NSCountedSet_abstract_class = self;
-      NSCountedSet_concrete_class = [GSCountedSet class];
-      uniqueLock = [GSLazyLock new];
-      lockImp = [uniqueLock methodForSelector: @selector(lock)];
-      unlockImp = [uniqueLock methodForSelector: @selector(unlock)];
+        NSCountedSet_abstract_class = self;
+        NSCountedSet_concrete_class = [GSCountedSet class];
+        uniqueLock = [GSLazyLock new];
+        lockImp = [uniqueLock methodForSelector:@selector(lock)];
+        unlockImp = [uniqueLock methodForSelector:@selector(unlock)];
     }
 }
 
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
-  if (self == NSCountedSet_abstract_class)
+    if (self == NSCountedSet_abstract_class)
     {
-      return NSAllocateObject(NSCountedSet_concrete_class, 0, z);
+        return NSAllocateObject(NSCountedSet_concrete_class, 0, z);
     }
-  else
+    else
     {
-      return NSAllocateObject(self, 0, z);
+        return NSAllocateObject(self, 0, z);
     }
 }
 
@@ -96,170 +96,169 @@ static Class NSCountedSet_concrete_class;
  * specified object (as determined by the [-isEqual:] method) has
  * been added to the set and not removed from it.
  */
-- (NSUInteger) countForObject: (id)anObject
+- (NSUInteger)countForObject:(id)anObject
 {
-  [self subclassResponsibility: _cmd];
-  return 0;
+    [self subclassResponsibility:_cmd];
+    return 0;
 }
 
-- (id) copyWithZone: (NSZone*)z
+- (id)copyWithZone:(NSZone*)z
 {
-  return [[[self class] allocWithZone: z] initWithSet: self copyItems: YES];
+    return [[[self class] allocWithZone:z] initWithSet:self copyItems:YES];
 }
 
-- (id) mutableCopyWithZone: (NSZone*)z
+- (id)mutableCopyWithZone:(NSZone*)z
 {
-  return [[[self class] allocWithZone: z] initWithSet: self copyItems: NO];
+    return [[[self class] allocWithZone:z] initWithSet:self copyItems:NO];
 }
 
-- (id) initWithCoder: (NSCoder*)aCoder
+- (id)initWithCoder:(NSCoder*)aCoder
 {
-  unsigned	count;
-  Class		c = object_getClass(self);
+    unsigned count;
+    Class c = object_getClass(self);
 
-  if (c == NSCountedSet_abstract_class)
+    if (c == NSCountedSet_abstract_class)
     {
-      DESTROY(self);
-      self = [NSCountedSet_concrete_class allocWithZone: NSDefaultMallocZone()];
-      return [self initWithCoder: aCoder];
+        DESTROY(self);
+        self = [NSCountedSet_concrete_class allocWithZone:NSDefaultMallocZone()];
+        return [self initWithCoder:aCoder];
     }
-  [aCoder decodeValueOfObjCType: @encode(unsigned) at: &count];
-  {
-    id		objs[count];
-    unsigned	refs[count];
-    unsigned	i;
-    IMP		addImp = [self methodForSelector: @selector(addObject:)];
-
-    for (i = 0; i < count; i++)
-      {
-	[aCoder decodeValueOfObjCType: @encode(id) at: &objs[i]];
-	[aCoder decodeValueOfObjCType: @encode(unsigned) at: &refs[i]];
-      }
-    self = [self initWithObjects: objs count: count];
-    for (i = 0; i < count; i++)
-      {
-	unsigned	j = refs[i];
-
-	while (j-- > 1)
-	  {
-	    (*addImp)(self, @selector(addObject:), objs[i]);
-	  }
-	RELEASE(objs[i]);
-      }
-  }
-  return self;
-}
-
-- (Class) classForCoder
-{
-  return NSCountedSet_abstract_class;
-}
-
-- (void) encodeWithCoder: (NSCoder*)aCoder
-{
-  unsigned	count = [self count];
-  NSEnumerator	*e = [self objectEnumerator];
-  id		o;
-
-  [aCoder encodeValueOfObjCType: @encode(unsigned) at: &count];
-  while ((o = [e nextObject]) != nil)
+    [aCoder decodeValueOfObjCType:@encode(unsigned) at:&count];
     {
-      [aCoder encodeValueOfObjCType: @encode(id) at: &o];
-      count = [self countForObject: o];
-      [aCoder encodeValueOfObjCType: @encode(unsigned) at: &count];
+        id objs[count];
+        unsigned refs[count];
+        unsigned i;
+        IMP addImp = [self methodForSelector:@selector(addObject:)];
+
+        for (i = 0; i < count; i++)
+        {
+            [aCoder decodeValueOfObjCType:@encode(id) at:&objs[i]];
+            [aCoder decodeValueOfObjCType:@encode(unsigned) at:&refs[i]];
+        }
+        self = [self initWithObjects:objs count:count];
+        for (i = 0; i < count; i++)
+        {
+            unsigned j = refs[i];
+
+            while (j-- > 1)
+            {
+                (*addImp)(self, @selector(addObject:), objs[i]);
+            }
+            RELEASE(objs[i]);
+        }
     }
+    return self;
 }
 
-- (id) initWithSet: (NSSet*)other copyItems: (BOOL)flag
+- (Class)classForCoder
 {
-  unsigned	c = [other count];
-  id		os[c], o, e = [other objectEnumerator];
-  unsigned	i = 0;
-  NSZone	*z = [self zone];
-  IMP		next = [e methodForSelector: @selector(nextObject)];
-
-  while ((o = (*next)(e, @selector(nextObject))) != nil)
-    {
-      if (flag)
-	os[i] = [o copyWithZone: z];
-      else
-	os[i] = o;
-      i++;
-    }
-  self = [self initWithObjects: os count: c];
-  if ([other isKindOfClass: NSCountedSet_abstract_class])
-    {
-      unsigned	j;
-      IMP	addImp = [self methodForSelector: @selector(addObject:)];
-
-      for (j = 0; j < i; j++)
-	{
-          unsigned	extra = [(NSCountedSet*)other countForObject: os[j]];
-
-	  while (extra-- > 1)
-	    (*addImp)(self, @selector(addObject:), os[j]);
-	}
-    }
-#if	!GS_WITH_GC
-  if (flag)
-    while (i--)
-      [os[i] release];
-#endif
-  return self;
+    return NSCountedSet_abstract_class;
 }
 
-- (void) purge: (NSInteger)level
+- (void)encodeWithCoder:(NSCoder*)aCoder
 {
-  if (level > 0)
+    unsigned count = [self count];
+    NSEnumerator  *e = [self objectEnumerator];
+    id o;
+
+    [aCoder encodeValueOfObjCType:@encode(unsigned) at:&count];
+    while ((o = [e nextObject]) != nil)
     {
-      NSEnumerator	*enumerator = [self objectEnumerator];
-
-      if (enumerator != nil)
-	{
-	  id		obj;
-	  id		(*nImp)(NSEnumerator*, SEL);
-	  unsigned	(*cImp)(NSCountedSet*, SEL, id);
-	  void		(*rImp)(NSCountedSet*, SEL, id);
-
-	  nImp = (id (*)(NSEnumerator*, SEL))
-	    [enumerator methodForSelector: @selector(nextObject)];
-	  cImp = (unsigned (*)(NSCountedSet*, SEL, id))
-	    [self methodForSelector: @selector(countForObject:)];
-	  rImp = (void (*)(NSCountedSet*, SEL, id))
-	    [self methodForSelector: @selector(removeObject:)];
-	  while ((obj = (*nImp)(enumerator, @selector(nextObject))) != nil)
-	    {
-	      unsigned	c = (*cImp)(self, @selector(countForObject:), obj);
-
-	      if (c <= (NSUInteger)level)
-		{
-		  while (c-- > 0)
-		    {
-		      (*rImp)(self, @selector(removeObject:), obj);
-		    }
-		}
-	    }
-	}
+        [aCoder encodeValueOfObjCType:@encode(id) at:&o];
+        count = [self countForObject:o];
+        [aCoder encodeValueOfObjCType:@encode(unsigned) at:&count];
     }
 }
 
-- (id) unique: (id)anObject
+- (id)initWithSet:(NSSet*)other copyItems:(BOOL)flag
 {
-  id	o = [self member: anObject];
+    unsigned c = [other count];
+    id os[c], o, e = [other objectEnumerator];
+    unsigned i = 0;
+    NSZone    *z = [self zone];
+    IMP next = [e methodForSelector:@selector(nextObject)];
 
-  [self addObject: anObject];
-  if (o == nil)
+    while ((o = (*next)(e, @selector(nextObject))) != nil)
     {
-      o = anObject;
+        if (flag) {
+            os[i] = [o copyWithZone:z];
+        }
+        else{
+            os[i] = o;
+        }
+        i++;
     }
-#if	!GS_WITH_GC
-  if (o != anObject)
+    self = [self initWithObjects:os count:c];
+    if ([other isKindOfClass:NSCountedSet_abstract_class])
     {
-      [anObject release];
-      [o retain];
+        unsigned j;
+        IMP addImp = [self methodForSelector:@selector(addObject:)];
+
+        for (j = 0; j < i; j++)
+        {
+            unsigned extra = [(NSCountedSet*)other countForObject : os[j]];
+
+            while (extra-- > 1)
+                (*addImp)(self, @selector(addObject:), os[j]);
+        }
     }
-#endif
-  return o;
+    if (flag) {
+        while (i--)
+            [os[i] release];
+    }
+    return self;
+}
+
+- (void)purge:(NSInteger)level
+{
+    if (level > 0)
+    {
+        NSEnumerator  *enumerator = [self objectEnumerator];
+
+        if (enumerator != nil)
+        {
+            id obj;
+            id (*nImp)(NSEnumerator*, SEL);
+            unsigned (*cImp)(NSCountedSet*, SEL, id);
+            void (*rImp)(NSCountedSet*, SEL, id);
+
+            nImp = (id (*)(NSEnumerator*, SEL))
+                   [enumerator methodForSelector : @selector(nextObject)];
+            cImp = (unsigned (*)(NSCountedSet*, SEL, id))
+                   [self methodForSelector : @selector(countForObject:)];
+            rImp = (void (*)(NSCountedSet*, SEL, id))
+                   [self methodForSelector : @selector(removeObject:)];
+            while ((obj = (*nImp)(enumerator, @selector(nextObject))) != nil)
+            {
+                unsigned c = (*cImp)(self, @selector(countForObject:), obj);
+
+                if (c <= (NSUInteger)level)
+                {
+                    while (c-- > 0)
+                    {
+                        (*rImp)(self, @selector(removeObject:), obj);
+                    }
+                }
+            }
+        }
+    }
+}
+
+- (id)unique:(id)anObject
+{
+    id o = [self member:anObject];
+
+    [self addObject:anObject];
+    if (o == nil)
+    {
+        o = anObject;
+    }
+    if (o != anObject)
+    {
+        [anObject release];
+        [o retain];
+    }
+    return o;
 }
 @end
 
@@ -271,14 +270,14 @@ static Class NSCountedSet_concrete_class;
 void
 GSUPurge(NSUInteger count)
 {
-  if (uniqueLock != nil)
+    if (uniqueLock != nil)
     {
-      (*lockImp)(uniqueLock, @selector(lock));
+        (*lockImp)(uniqueLock, @selector(lock));
     }
-  [uniqueSet purge: count];
-  if (uniqueLock != nil)
+    [uniqueSet purge:count];
+    if (uniqueLock != nil)
     {
-      (*unlockImp)(uniqueLock, @selector(unlock));
+        (*unlockImp)(uniqueLock, @selector(unlock));
     }
 }
 
@@ -293,47 +292,47 @@ GSUPurge(NSUInteger count)
 id
 GSUSet(id anObject, NSUInteger count)
 {
-  id		found;
-  NSUInteger	i;
+    id found;
+    NSUInteger i;
 
-  if (uniqueLock != nil)
+    if (uniqueLock != nil)
     {
-      (*lockImp)(uniqueLock, @selector(lock));
+        (*lockImp)(uniqueLock, @selector(lock));
     }
-  found = [uniqueSet member: anObject];
-  if (found == nil)
+    found = [uniqueSet member:anObject];
+    if (found == nil)
     {
-      found = anObject;
-      for (i = 0; i < count; i++)
-	{
-	  [uniqueSet addObject: anObject];
-	}
+        found = anObject;
+        for (i = 0; i < count; i++)
+        {
+            [uniqueSet addObject:anObject];
+        }
     }
-  else
+    else
     {
-      i = [uniqueSet countForObject: found];
-      if (i < count)
-	{
-	  while (i < count)
-	    {
-	      [uniqueSet addObject: found];
-	      i++;
-	    }
-	}
-      else if (i > count)
-	{
-	  while (i > count)
-	    {
-	      [uniqueSet removeObject: found];
-	      i--;
-	    }
-	}
+        i = [uniqueSet countForObject:found];
+        if (i < count)
+        {
+            while (i < count)
+            {
+                [uniqueSet addObject:found];
+                i++;
+            }
+        }
+        else if (i > count)
+        {
+            while (i > count)
+            {
+                [uniqueSet removeObject:found];
+                i--;
+            }
+        }
     }
-  if (uniqueLock != nil)
+    if (uniqueLock != nil)
     {
-      (*unlockImp)(uniqueLock, @selector(unlock));
+        (*unlockImp)(uniqueLock, @selector(unlock));
     }
-  return found;
+    return found;
 }
 
 /**
@@ -345,19 +344,19 @@ GSUSet(id anObject, NSUInteger count)
 id
 GSUnique(id anObject)
 {
-  if (uniquing == YES)
+    if (uniquing == YES)
     {
-      if (uniqueLock != nil)
-	{
-	  (*lockImp)(uniqueLock, @selector(lock));
-	}
-      anObject = (*uniqueImp)(uniqueSet, @selector(unique:), anObject);
-      if (uniqueLock != nil)
-	{
-	  (*unlockImp)(uniqueLock, @selector(unlock));
-	}
+        if (uniqueLock != nil)
+        {
+            (*lockImp)(uniqueLock, @selector(lock));
+        }
+        anObject = (*uniqueImp)(uniqueSet, @selector(unique:), anObject);
+        if (uniqueLock != nil)
+        {
+            (*unlockImp)(uniqueLock, @selector(unlock));
+        }
     }
-  return anObject;
+    return anObject;
 }
 
 /**
@@ -369,11 +368,11 @@ GSUnique(id anObject)
 void
 GSUniquing(BOOL flag)
 {
-  if (uniqueSet == nil)
+    if (uniqueSet == nil)
     {
-      uniqueSet = [NSCountedSet new];
-      uniqueImp = [uniqueSet methodForSelector: @selector(unique:)];
+        uniqueSet = [NSCountedSet new];
+        uniqueImp = [uniqueSet methodForSelector:@selector(unique:)];
     }
-  uniquing = flag;
+    uniquing = flag;
 }
 

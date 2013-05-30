@@ -21,7 +21,7 @@
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
-   */
+ */
 
 #define NDEBUG
 
@@ -37,72 +37,66 @@
 #import "Foundation/NSKeyedArchiver.h"
 #import "GSPrivate.h"
 
-#define	GSI_MAP_HAS_VALUE	0
-#define	GSI_MAP_KTYPES		GSUNION_OBJ
-#if	GS_WITH_GC
-#include	<gc_typed.h>
-static GC_descr	nodeDesc;	// Type descriptor for map node.
-#define	GSI_MAP_NODES(M, X) \
-(GSIMapNode)GC_calloc_explicitly_typed(X, sizeof(GSIMapNode_t), nodeDesc)
-#endif
+#define GSI_MAP_HAS_VALUE   0
+#define GSI_MAP_KTYPES      GSUNION_OBJ
 
 
 #include "GNUstepBase/GSIMap.h"
 
-static SEL	memberSel;
+static SEL memberSel;
 
 @interface GSSet : NSSet
 {
-@public
-  GSIMapTable_t	map;
+    @public
+    GSIMapTable_t map;
 }
 @end
 
 @interface GSMutableSet : NSMutableSet
 {
-@public
-  GSIMapTable_t	map;
-@private
-  NSUInteger _version;
+    @public
+    GSIMapTable_t map;
+    @private
+    NSUInteger _version;
 }
 @end
 
 @interface GSSetEnumerator : NSEnumerator
 {
-  GSSet			*set;
-  GSIMapEnumerator_t	enumerator;
+    GSSet         *set;
+    GSIMapEnumerator_t enumerator;
 }
 @end
 
 @implementation GSSetEnumerator
 
-- (id) initWithSet: (NSSet*)d
+- (id)initWithSet:(NSSet*)d
 {
-  self = [super init];
-  if (self != nil)
+    self = [super init];
+    if (self != nil)
     {
-      set = (GSSet*)RETAIN(d);
-      enumerator = GSIMapEnumeratorForMap(&set->map);
+        set = (GSSet*)RETAIN(d);
+        enumerator = GSIMapEnumeratorForMap(&set->map);
     }
-  return self;
+    return self;
 }
 
-- (id) nextObject
+- (id)nextObject
 {
-  GSIMapNode node = GSIMapEnumeratorNextNode(&enumerator);
+    GSIMapNode node = GSIMapEnumeratorNextNode(&enumerator);
 
-  if (node == 0)
+    if (node == 0)
     {
-      return nil;
+        return nil;
     }
-  return node->key.obj;
+    return node->key.obj;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  GSIMapEndEnumerator(&enumerator);
-  RELEASE(set);
-  [super dealloc];
+    GSIMapEndEnumerator(&enumerator);
+    RELEASE(set);
+    [super dealloc];
 }
 
 @end
@@ -110,660 +104,651 @@ static SEL	memberSel;
 
 @implementation GSSet
 
-static Class	arrayClass;
-static Class	setClass;
-static Class	mutableSetClass;
+static Class arrayClass;
+static Class setClass;
+static Class mutableSetClass;
 
-+ (void) initialize
++ (void)initialize
 {
-  if (self == [GSSet class])
+    if (self == [GSSet class])
     {
-      arrayClass = [NSArray class];
-      setClass = [GSSet class];
-      mutableSetClass = [GSMutableSet class];
-      memberSel = @selector(member:);
-#if	GS_WITH_GC
-      /* We create a typed memory descriptor for map nodes.
-       * Only the pointer to the key needs to be scanned.
-       */
-      GC_word	w[GC_BITMAP_SIZE(GSIMapNode_t)] = {0};
-      GC_set_bit(w, GC_WORD_OFFSET(GSIMapNode_t, key));
-      nodeDesc = GC_make_descriptor(w, GC_WORD_LEN(GSIMapNode_t));
-#endif
+        arrayClass = [NSArray class];
+        setClass = [GSSet class];
+        mutableSetClass = [GSMutableSet class];
+        memberSel = @selector(member:);
     }
 }
 
-- (NSArray*) allObjects
+- (NSArray*)allObjects
 {
-  GSIMapEnumerator_t	enumerator = GSIMapEnumeratorForMap(&map);
-  GSIMapNode 		node = GSIMapEnumeratorNextNode(&enumerator);
-  NSUInteger		i = 0;
-  NSArray		*result;
-  GS_BEGINIDBUF(objects, map.nodeCount);
+    GSIMapEnumerator_t enumerator = GSIMapEnumeratorForMap(&map);
+    GSIMapNode node = GSIMapEnumeratorNextNode(&enumerator);
+    NSUInteger i = 0;
+    NSArray       *result;
+    GS_BEGINIDBUF(objects, map.nodeCount);
 
-  while (node != 0)
+    while (node != 0)
     {
-      objects[i++] = node->key.obj;
-      node = GSIMapEnumeratorNextNode(&enumerator);
+        objects[i++] = node->key.obj;
+        node = GSIMapEnumeratorNextNode(&enumerator);
     }
-  GSIMapEndEnumerator(&enumerator);
-  result = AUTORELEASE([[arrayClass allocWithZone: NSDefaultMallocZone()]
-    initWithObjects: objects count: i]);
-  GS_ENDIDBUF();
-  return result;
+    GSIMapEndEnumerator(&enumerator);
+    result = AUTORELEASE([[arrayClass allocWithZone:NSDefaultMallocZone()]
+                          initWithObjects:objects count:i]);
+    GS_ENDIDBUF();
+    return result;
 }
 
-- (id) anyObject
+- (id)anyObject
 {
-  if (map.nodeCount > 0)
+    if (map.nodeCount > 0)
     {
-      GSIMapBucket bucket = map.buckets;
+        GSIMapBucket bucket = map.buckets;
 
-      while (1)
-	{
-	  if (bucket->firstNode)
-	    {
-	      return bucket->firstNode->key.obj;
-	    }
-	  else
-	    {
-	      bucket++;
-	    }
-	}
-    }
-  else
-    {
-      return nil;
-    }
-}
-
-- (id) copyWithZone: (NSZone*)z
-{
-  return RETAIN(self);
-}
-
-- (NSUInteger) count
-{
-  return map.nodeCount;
-}
-
-- (void) dealloc
-{
-  GSIMapEmptyMap(&map);
-  [super dealloc];
-}
-
-- (void) encodeWithCoder: (NSCoder*)aCoder
-{
-  if ([aCoder allowsKeyedCoding])
-    {
-      [super encodeWithCoder: aCoder];
-    }
-  else
-    {
-      unsigned		count = map.nodeCount;
-      SEL			sel = @selector(encodeObject:);
-      IMP			imp = [aCoder methodForSelector: sel];
-      GSIMapEnumerator_t	enumerator = GSIMapEnumeratorForMap(&map);
-      GSIMapNode 		node = GSIMapEnumeratorNextNode(&enumerator);
-
-      [aCoder encodeValueOfObjCType: @encode(unsigned) at: &count];
-      while (node != 0)
-	{
-	  (*imp)(aCoder, sel, node->key.obj);
-	  node = GSIMapEnumeratorNextNode(&enumerator);
-	}
-      GSIMapEndEnumerator(&enumerator);
-    }
-}
-
-- (NSUInteger) hash
-{
-  return map.nodeCount;
-}
-
-- (id) init
-{
-  return [self initWithObjects: 0 count: 0];
-}
-
-- (id) initWithCoder: (NSCoder*)aCoder
-{
-  if ([aCoder allowsKeyedCoding])
-    {
-      self = [super initWithCoder: aCoder];
-    }
-  else
-    {
-      unsigned	count;
-      id		value;
-      SEL		sel = @selector(decodeValueOfObjCType:at:);
-      IMP		imp = [aCoder methodForSelector: sel];
-      const char	*type = @encode(id);
-
-      (*imp)(aCoder, sel, @encode(unsigned), &count);
-
-      GSIMapInitWithZoneAndCapacity(&map, [self zone], count);
-      while (count-- > 0)
+        while (1)
         {
-	  (*imp)(aCoder, sel, type, &value);
-	  GSIMapAddKeyNoRetain(&map, (GSIMapKey)value);
-	}
+            if (bucket->firstNode)
+            {
+                return bucket->firstNode->key.obj;
+            }
+            else
+            {
+                bucket++;
+            }
+        }
     }
-  return self;
+    else
+    {
+        return nil;
+    }
+}
+
+- (id)copyWithZone:(NSZone*)z
+{
+    return RETAIN(self);
+}
+
+- (NSUInteger)count
+{
+    return map.nodeCount;
+}
+
+- (void)dealloc
+{
+    GSIMapEmptyMap(&map);
+    [super dealloc];
+}
+
+- (void)encodeWithCoder:(NSCoder*)aCoder
+{
+    if ([aCoder allowsKeyedCoding])
+    {
+        [super encodeWithCoder:aCoder];
+    }
+    else
+    {
+        unsigned count = map.nodeCount;
+        SEL sel = @selector(encodeObject:);
+        IMP imp = [aCoder methodForSelector:sel];
+        GSIMapEnumerator_t enumerator = GSIMapEnumeratorForMap(&map);
+        GSIMapNode node = GSIMapEnumeratorNextNode(&enumerator);
+
+        [aCoder encodeValueOfObjCType:@encode(unsigned) at:&count];
+        while (node != 0)
+        {
+            (*imp)(aCoder, sel, node->key.obj);
+            node = GSIMapEnumeratorNextNode(&enumerator);
+        }
+        GSIMapEndEnumerator(&enumerator);
+    }
+}
+
+- (NSUInteger)hash
+{
+    return map.nodeCount;
+}
+
+- (id)init
+{
+    return [self initWithObjects:0 count:0];
+}
+
+- (id)initWithCoder:(NSCoder*)aCoder
+{
+    if ([aCoder allowsKeyedCoding])
+    {
+        self = [super initWithCoder:aCoder];
+    }
+    else
+    {
+        unsigned count;
+        id value;
+        SEL sel = @selector(decodeValueOfObjCType:at:);
+        IMP imp = [aCoder methodForSelector:sel];
+        const char    *type = @encode(id);
+
+        (*imp)(aCoder, sel, @encode(unsigned), &count);
+
+        GSIMapInitWithZoneAndCapacity(&map, [self zone], count);
+        while (count-- > 0)
+        {
+            (*imp)(aCoder, sel, type, &value);
+            GSIMapAddKeyNoRetain(&map, (GSIMapKey)value);
+        }
+    }
+    return self;
 }
 
 /* Designated initialiser */
-- (id) initWithObjects: (id*)objs count: (NSUInteger)c
+- (id)initWithObjects:(id*)objs count:(NSUInteger)c
 {
-  NSUInteger i;
+    NSUInteger i;
 
-  GSIMapInitWithZoneAndCapacity(&map, [self zone], c);
-  for (i = 0; i < c; i++)
+    GSIMapInitWithZoneAndCapacity(&map, [self zone], c);
+    for (i = 0; i < c; i++)
     {
-      GSIMapNode     node;
+        GSIMapNode node;
 
-      if (objs[i] == nil)
-	{
-	  DESTROY(self);
-	  [NSException raise: NSInvalidArgumentException
-		      format: @"Tried to init set with nil value"];
-	}
-      node = GSIMapNodeForKey(&map, (GSIMapKey)objs[i]);
-      if (node == 0)
-	{
-	  GSIMapAddKey(&map, (GSIMapKey)objs[i]);
+        if (objs[i] == nil)
+        {
+            DESTROY(self);
+            [NSException raise:NSInvalidArgumentException
+             format:@"Tried to init set with nil value"];
+        }
+        node = GSIMapNodeForKey(&map, (GSIMapKey)objs[i]);
+        if (node == 0)
+        {
+            GSIMapAddKey(&map, (GSIMapKey)objs[i]);
         }
     }
-  return self;
+    return self;
 }
 
-- (BOOL) intersectsSet: (NSSet*) otherSet
+- (BOOL)intersectsSet:(NSSet*)otherSet
 {
-  Class	c;
+    Class c;
 
-  /*
-   *  If this set is empty, or the other is nil, this method should return NO.
-   */
-  if (map.nodeCount == 0)
+    /*
+     *  If this set is empty, or the other is nil, this method should return NO.
+     */
+    if (map.nodeCount == 0)
     {
-      return NO;
+        return NO;
     }
-  if (otherSet == nil)
+    if (otherSet == nil)
     {
-      return NO;
+        return NO;
     }
 
-  // Loop for all members in otherSet
-  c = object_getClass(otherSet);
-  if (c == setClass || c == mutableSetClass)
+    // Loop for all members in otherSet
+    c = object_getClass(otherSet);
+    if (c == setClass || c == mutableSetClass)
     {
-      GSIMapTable		m = &((GSSet*)otherSet)->map;
-      GSIMapEnumerator_t	enumerator = GSIMapEnumeratorForMap(m);
-      GSIMapNode 		node = GSIMapEnumeratorNextNode(&enumerator);
+        GSIMapTable m = &((GSSet*)otherSet)->map;
+        GSIMapEnumerator_t enumerator = GSIMapEnumeratorForMap(m);
+        GSIMapNode node = GSIMapEnumeratorNextNode(&enumerator);
 
-      while (node != 0)
-	{
-	  if (GSIMapNodeForKey(&map, node->key) != 0)
-	    {
-	      GSIMapEndEnumerator(&enumerator);
-	      return YES;
-	    }
-	  node = GSIMapEnumeratorNextNode(&enumerator);
-	}
-      GSIMapEndEnumerator(&enumerator);
+        while (node != 0)
+        {
+            if (GSIMapNodeForKey(&map, node->key) != 0)
+            {
+                GSIMapEndEnumerator(&enumerator);
+                return YES;
+            }
+            node = GSIMapEnumeratorNextNode(&enumerator);
+        }
+        GSIMapEndEnumerator(&enumerator);
     }
-  else
+    else
     {
-      NSEnumerator	*e;
-      id		o;
+        NSEnumerator  *e;
+        id o;
 
-      e = [otherSet objectEnumerator];
-      while ((o = [e nextObject])) // 1. pick a member from otherSet.
-	{
-	  if (GSIMapNodeForKey(&map, (GSIMapKey)o) != 0)
-	    {
-	      return YES;
-	    }
-	}
+        e = [otherSet objectEnumerator];
+        while ((o = [e nextObject])) // 1. pick a member from otherSet.
+        {
+            if (GSIMapNodeForKey(&map, (GSIMapKey)o) != 0)
+            {
+                return YES;
+            }
+        }
     }
-  return NO;
+    return NO;
 }
 
-- (BOOL) isSubsetOfSet: (NSSet*) otherSet
+- (BOOL)isSubsetOfSet:(NSSet*)otherSet
 {
-  GSIMapEnumerator_t	enumerator;
-  GSIMapNode 		node;
-  IMP			imp;
+    GSIMapEnumerator_t enumerator;
+    GSIMapNode node;
+    IMP imp;
 
-  // -1. members of this set(self) <= that of otherSet
-  if (map.nodeCount > [otherSet count])
+    // -1. members of this set(self) <= that of otherSet
+    if (map.nodeCount > [otherSet count])
     {
-      return NO;
+        return NO;
     }
-  if (map.nodeCount == 0)
+    if (map.nodeCount == 0)
     {
-      return YES;
+        return YES;
     }
 
-  imp = [otherSet methodForSelector: memberSel];
-  enumerator = GSIMapEnumeratorForMap(&map);
-  node = GSIMapEnumeratorNextNode(&enumerator);
+    imp = [otherSet methodForSelector:memberSel];
+    enumerator = GSIMapEnumeratorForMap(&map);
+    node = GSIMapEnumeratorNextNode(&enumerator);
 
-  // 0. Loop for all members in this set(self).
-  while (node != 0)
+    // 0. Loop for all members in this set(self).
+    while (node != 0)
     {
-      // 1. check the member is in the otherSet.
-      if ((*imp)(otherSet, memberSel, node->key.obj) != nil)
-	{
-	  // 1.1 if true -> continue, try to check the next member.
-	  node = GSIMapEnumeratorNextNode(&enumerator);
-	}
-      else
-	{
-	  // 1.2 if false -> return NO;
-	  GSIMapEndEnumerator(&enumerator);
-	  return NO;
-	}
+        // 1. check the member is in the otherSet.
+        if ((*imp)(otherSet, memberSel, node->key.obj) != nil)
+        {
+            // 1.1 if true -> continue, try to check the next member.
+            node = GSIMapEnumeratorNextNode(&enumerator);
+        }
+        else
+        {
+            // 1.2 if false -> return NO;
+            GSIMapEndEnumerator(&enumerator);
+            return NO;
+        }
     }
-  GSIMapEndEnumerator(&enumerator);
-  // 2. return YES; all members in this set are also in the otherSet.
-  return YES;
+    GSIMapEndEnumerator(&enumerator);
+    // 2. return YES; all members in this set are also in the otherSet.
+    return YES;
 }
 
-- (BOOL) isEqualToSet: (NSSet*)other
+- (BOOL)isEqualToSet:(NSSet*)other
 {
-  if (other == nil)
+    if (other == nil)
     {
-      return NO;
+        return NO;
     }
-  else if (other == self)
+    else if (other == self)
     {
-      return YES;
+        return YES;
     }
-  else
+    else
     {
-      Class	c = object_getClass(other);
+        Class c = object_getClass(other);
 
-      if (c == setClass || c == mutableSetClass)
-	{
-	  if (map.nodeCount != ((GSSet*)other)->map.nodeCount)
-	    {
-	      return NO;
-	    }
-	  else if (map.nodeCount == 0)
-	    {
-	      return YES;
-	    }
-	  else
-	    {
-	      GSIMapEnumerator_t	enumerator;
-	      GSIMapNode 		node;
+        if (c == setClass || c == mutableSetClass)
+        {
+            if (map.nodeCount != ((GSSet*)other)->map.nodeCount)
+            {
+                return NO;
+            }
+            else if (map.nodeCount == 0)
+            {
+                return YES;
+            }
+            else
+            {
+                GSIMapEnumerator_t enumerator;
+                GSIMapNode node;
 
-	      enumerator = GSIMapEnumeratorForMap(&map);
-	      node = GSIMapEnumeratorNextNode(&enumerator);
+                enumerator = GSIMapEnumeratorForMap(&map);
+                node = GSIMapEnumeratorNextNode(&enumerator);
 
-	      while (node != 0)
-		{
-		  if (GSIMapNodeForKey(&(((GSSet*)other)->map), node->key) == 0)
-		    {
-		      GSIMapEndEnumerator(&enumerator);
-		      return NO;
-		    }
-		  node = GSIMapEnumeratorNextNode(&enumerator);
-		}
-	      GSIMapEndEnumerator(&enumerator);
-	    }
-	}
-      else
-	{
-	  if (map.nodeCount != [other count])
-	    {
-	      return NO;
-	    }
-	  else if (map.nodeCount == 0)
-	    {
-	      return YES;
-	    }
-	  else
-	    {
-	      GSIMapEnumerator_t	enumerator;
-	      GSIMapNode 		node;
-	      IMP			imp;
+                while (node != 0)
+                {
+                    if (GSIMapNodeForKey(&(((GSSet*)other)->map), node->key) == 0)
+                    {
+                        GSIMapEndEnumerator(&enumerator);
+                        return NO;
+                    }
+                    node = GSIMapEnumeratorNextNode(&enumerator);
+                }
+                GSIMapEndEnumerator(&enumerator);
+            }
+        }
+        else
+        {
+            if (map.nodeCount != [other count])
+            {
+                return NO;
+            }
+            else if (map.nodeCount == 0)
+            {
+                return YES;
+            }
+            else
+            {
+                GSIMapEnumerator_t enumerator;
+                GSIMapNode node;
+                IMP imp;
 
-	      imp = [other methodForSelector: memberSel];
-	      enumerator = GSIMapEnumeratorForMap(&map);
-	      node = GSIMapEnumeratorNextNode(&enumerator);
+                imp = [other methodForSelector:memberSel];
+                enumerator = GSIMapEnumeratorForMap(&map);
+                node = GSIMapEnumeratorNextNode(&enumerator);
 
-	      while (node != 0)
-		{
-		  if ((*imp)(other, memberSel, node->key.obj) == nil)
-		    {
-		      GSIMapEndEnumerator(&enumerator);
-		      return NO;
-		    }
-		  node = GSIMapEnumeratorNextNode(&enumerator);
-		}
-	      GSIMapEndEnumerator(&enumerator);
-	    }
-	}
-      return YES;
+                while (node != 0)
+                {
+                    if ((*imp)(other, memberSel, node->key.obj) == nil)
+                    {
+                        GSIMapEndEnumerator(&enumerator);
+                        return NO;
+                    }
+                    node = GSIMapEnumeratorNextNode(&enumerator);
+                }
+                GSIMapEndEnumerator(&enumerator);
+            }
+        }
+        return YES;
     }
 }
 
-- (void) makeObjectsPerform: (SEL)aSelector
+- (void)makeObjectsPerform:(SEL)aSelector
 {
-  GSIMapEnumerator_t	enumerator = GSIMapEnumeratorForMap(&map);
-  GSIMapNode 		node = GSIMapEnumeratorNextNode(&enumerator);
+    GSIMapEnumerator_t enumerator = GSIMapEnumeratorForMap(&map);
+    GSIMapNode node = GSIMapEnumeratorNextNode(&enumerator);
 
-  while (node != 0)
+    while (node != 0)
     {
-      [node->key.obj performSelector: aSelector];
-      node = GSIMapEnumeratorNextNode(&enumerator);
+        [node->key.obj performSelector:aSelector];
+        node = GSIMapEnumeratorNextNode(&enumerator);
     }
-  GSIMapEndEnumerator(&enumerator);
+    GSIMapEndEnumerator(&enumerator);
 }
 
-- (void) makeObjectsPerformSelector: (SEL)aSelector
+- (void)makeObjectsPerformSelector:(SEL)aSelector
 {
-  GSIMapEnumerator_t	enumerator = GSIMapEnumeratorForMap(&map);
-  GSIMapNode 		node = GSIMapEnumeratorNextNode(&enumerator);
+    GSIMapEnumerator_t enumerator = GSIMapEnumeratorForMap(&map);
+    GSIMapNode node = GSIMapEnumeratorNextNode(&enumerator);
 
-  while (node != 0)
+    while (node != 0)
     {
-      [node->key.obj performSelector: aSelector];
-      node = GSIMapEnumeratorNextNode(&enumerator);
+        [node->key.obj performSelector:aSelector];
+        node = GSIMapEnumeratorNextNode(&enumerator);
     }
-  GSIMapEndEnumerator(&enumerator);
+    GSIMapEndEnumerator(&enumerator);
 }
 
-- (void) makeObjectsPerformSelector: (SEL)aSelector withObject: argument
+- (void)makeObjectsPerformSelector:(SEL)aSelector withObject:argument
 {
-  GSIMapEnumerator_t	enumerator = GSIMapEnumeratorForMap(&map);
-  GSIMapNode 		node = GSIMapEnumeratorNextNode(&enumerator);
+    GSIMapEnumerator_t enumerator = GSIMapEnumeratorForMap(&map);
+    GSIMapNode node = GSIMapEnumeratorNextNode(&enumerator);
 
-  while (node != 0)
+    while (node != 0)
     {
-      [node->key.obj performSelector: aSelector withObject: argument];
-      node = GSIMapEnumeratorNextNode(&enumerator);
+        [node->key.obj performSelector:aSelector withObject:argument];
+        node = GSIMapEnumeratorNextNode(&enumerator);
     }
-  GSIMapEndEnumerator(&enumerator);
+    GSIMapEndEnumerator(&enumerator);
 }
 
-- (void) makeObjectsPerform: (SEL)aSelector withObject: argument
+- (void)makeObjectsPerform:(SEL)aSelector withObject:argument
 {
-  GSIMapEnumerator_t	enumerator = GSIMapEnumeratorForMap(&map);
-  GSIMapNode 		node = GSIMapEnumeratorNextNode(&enumerator);
+    GSIMapEnumerator_t enumerator = GSIMapEnumeratorForMap(&map);
+    GSIMapNode node = GSIMapEnumeratorNextNode(&enumerator);
 
-  while (node != 0)
+    while (node != 0)
     {
-      [node->key.obj performSelector: aSelector withObject: argument];
-      node = GSIMapEnumeratorNextNode(&enumerator);
+        [node->key.obj performSelector:aSelector withObject:argument];
+        node = GSIMapEnumeratorNextNode(&enumerator);
     }
-  GSIMapEndEnumerator(&enumerator);
+    GSIMapEndEnumerator(&enumerator);
 }
 
-- (id) member: (id)anObject
+- (id)member:(id)anObject
 {
-  if (anObject != nil)
+    if (anObject != nil)
     {
-      GSIMapNode node = GSIMapNodeForKey(&map, (GSIMapKey)anObject);
+        GSIMapNode node = GSIMapNodeForKey(&map, (GSIMapKey)anObject);
 
-      if (node != 0)
-	{
-	  return node->key.obj;
-	}
+        if (node != 0)
+        {
+            return node->key.obj;
+        }
     }
-  return nil;
+    return nil;
 }
 
-- (NSEnumerator*) objectEnumerator
+- (NSEnumerator*)objectEnumerator
 {
-  return AUTORELEASE([[GSSetEnumerator alloc] initWithSet: self]);
+    return AUTORELEASE([[GSSetEnumerator alloc] initWithSet:self]);
 }
 
-- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState*)state
-                                   objects: (id*)stackbuf
-                                     count: (NSUInteger)len
+- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState*)state
+    objects:(id*)stackbuf
+    count:(NSUInteger)len
 {
-  state->mutationsPtr = (unsigned long *)self;
-  return GSIMapCountByEnumeratingWithStateObjectsCount
-    (&map, state, stackbuf, len);
+    state->mutationsPtr = (unsigned long *)self;
+    return GSIMapCountByEnumeratingWithStateObjectsCount
+               (&map, state, stackbuf, len);
 }
 @end
 
 @implementation GSMutableSet
 
-+ (void) initialize
++ (void)initialize
 {
-  if (self == [GSMutableSet class])
+    if (self == [GSMutableSet class])
     {
-      GSObjCAddClassBehavior(self, [GSSet class]);
+        GSObjCAddClassBehavior(self, [GSSet class]);
     }
 }
 
-- (void) addObject: (id)anObject
+- (void)addObject:(id)anObject
 {
-  GSIMapNode node;
+    GSIMapNode node;
 
-  if (anObject == nil)
+    if (anObject == nil)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"Tried to add nil to set"];
+        [NSException raise:NSInvalidArgumentException
+         format:@"Tried to add nil to set"];
     }
-  node = GSIMapNodeForKey(&map, (GSIMapKey)anObject);
-  if (node == 0)
+    node = GSIMapNodeForKey(&map, (GSIMapKey)anObject);
+    if (node == 0)
     {
-      GSIMapAddKey(&map, (GSIMapKey)anObject);
-      _version++;
+        GSIMapAddKey(&map, (GSIMapKey)anObject);
+        _version++;
     }
 }
 
-- (void) addObjectsFromArray: (NSArray*)array
+- (void)addObjectsFromArray:(NSArray*)array
 {
-  NSUInteger	count = [array count];
+    NSUInteger count = [array count];
 
-  while (count-- > 0)
+    while (count-- > 0)
     {
-      id	anObject = [array objectAtIndex: count];
+        id anObject = [array objectAtIndex:count];
 
-      if (anObject == nil)
-	{
-	  [NSException raise: NSInvalidArgumentException
-		      format: @"Tried to add nil to set"];
-	}
-      else
-	{
-	  GSIMapNode node;
+        if (anObject == nil)
+        {
+            [NSException raise:NSInvalidArgumentException
+             format:@"Tried to add nil to set"];
+        }
+        else
+        {
+            GSIMapNode node;
 
-	  node = GSIMapNodeForKey(&map, (GSIMapKey)anObject);
-	  if (node == 0)
-	    {
-	      GSIMapAddKey(&map, (GSIMapKey)anObject);
-	      _version++;
-	    }
-	}
+            node = GSIMapNodeForKey(&map, (GSIMapKey)anObject);
+            if (node == 0)
+            {
+                GSIMapAddKey(&map, (GSIMapKey)anObject);
+                _version++;
+            }
+        }
     }
 }
 
 /* Override _version from GSSet */
-- (id) copyWithZone: (NSZone*)z
+- (id)copyWithZone:(NSZone*)z
 {
-  NSSet	*copy = [setClass allocWithZone: z];
+    NSSet *copy = [setClass allocWithZone:z];
 
-  return [copy initWithSet: self copyItems: NO];
+    return [copy initWithSet:self copyItems:NO];
 }
 
-- (id) init
+- (id)init
 {
-  return [self initWithCapacity: 0];
+    return [self initWithCapacity:0];
 }
 
 /* Designated initialiser */
-- (id) initWithCapacity: (NSUInteger)cap
+- (id)initWithCapacity:(NSUInteger)cap
 {
-  GSIMapInitWithZoneAndCapacity(&map, [self zone], cap);
-  return self;
+    GSIMapInitWithZoneAndCapacity(&map, [self zone], cap);
+    return self;
 }
 
-- (id) initWithObjects: (id*)objects
-		 count: (NSUInteger)count
+- (id)initWithObjects:(id*)objects
+    count:(NSUInteger)count
 {
-  self = [self initWithCapacity: count];
+    self = [self initWithCapacity:count];
 
-  while (count--)
+    while (count--)
     {
-      id	anObject = objects[count];
+        id anObject = objects[count];
 
-      if (anObject == nil)
-	{
-	  NSLog(@"Tried to init a set with a nil object");
-	  continue;
-	}
-      else
-	{
-	  GSIMapNode node;
+        if (anObject == nil)
+        {
+            NSLog(@"Tried to init a set with a nil object");
+            continue;
+        }
+        else
+        {
+            GSIMapNode node;
 
-	  node = GSIMapNodeForKey(&map, (GSIMapKey)anObject);
-	  if (node == 0)
-	    {
-	      GSIMapAddKey(&map, (GSIMapKey)anObject);
-	    }
-	}
+            node = GSIMapNodeForKey(&map, (GSIMapKey)anObject);
+            if (node == 0)
+            {
+                GSIMapAddKey(&map, (GSIMapKey)anObject);
+            }
+        }
     }
-  return self;
+    return self;
 }
 
-- (void) intersectSet: (NSSet*) other
+- (void)intersectSet:(NSSet*)other
 {
-  if (other != self)
+    if (other != self)
     {
-      GSIMapEnumerator_t	enumerator = GSIMapEnumeratorForMap(&map);
-      GSIMapBucket		bucket = GSIMapEnumeratorBucket(&enumerator);
-      GSIMapNode 		node = GSIMapEnumeratorNextNode(&enumerator);
+        GSIMapEnumerator_t enumerator = GSIMapEnumeratorForMap(&map);
+        GSIMapBucket bucket = GSIMapEnumeratorBucket(&enumerator);
+        GSIMapNode node = GSIMapEnumeratorNextNode(&enumerator);
 
-      while (node != 0)
-	{
-
-	  if ([other containsObject: node->key.obj] == NO)
-	    {
-	      GSIMapRemoveNodeFromMap(&map, bucket, node);
-	      GSIMapFreeNode(&map, node);
-	    }
-	  bucket = GSIMapEnumeratorBucket(&enumerator);
-	  node = GSIMapEnumeratorNextNode(&enumerator);
-	}
-      GSIMapEndEnumerator(&enumerator);
+        while (node != 0)
+        {
+            if ([other containsObject:node->key.obj] == NO)
+            {
+                GSIMapRemoveNodeFromMap(&map, bucket, node);
+                GSIMapFreeNode(&map, node);
+            }
+            bucket = GSIMapEnumeratorBucket(&enumerator);
+            node = GSIMapEnumeratorNextNode(&enumerator);
+        }
+        GSIMapEndEnumerator(&enumerator);
     }
 }
 
-- (id) makeImmutableCopyOnFail: (BOOL)force
+- (id)makeImmutableCopyOnFail:(BOOL)force
 {
 #ifndef NDEBUG
-  GSDebugAllocationRemove(isa, self);
+    GSDebugAllocationRemove(isa, self);
 #endif
-  isa = [GSSet class];
+    GSPrivateSwizzle(self, [GSSet class]);
 #ifndef NDEBUG
-  GSDebugAllocationAdd(isa, self);
+    GSDebugAllocationAdd(isa, self);
 #endif
-  return self;
+    return self;
 }
 
-- (void) minusSet: (NSSet*) other
+- (void)minusSet:(NSSet*)other
 {
-  if (other == self)
+    if (other == self)
     {
-      GSIMapCleanMap(&map);
+        GSIMapCleanMap(&map);
     }
-  else
+    else
     {
-      NSEnumerator	*e = [other objectEnumerator];
-      id		anObject;
+        NSEnumerator  *e = [other objectEnumerator];
+        id anObject;
 
-      while ((anObject = [e nextObject]) != nil)
-	{
-	  GSIMapRemoveKey(&map, (GSIMapKey)anObject);
-	  _version++;
-	}
-    }
-}
-
-- (void) removeAllObjects
-{
-  GSIMapCleanMap(&map);
-}
-
-- (void) removeObject: (id)anObject
-{
-  if (anObject == nil)
-    {
-      NSWarnMLog(@"attempt to remove nil object");
-      return;
-    }
-  GSIMapRemoveKey(&map, (GSIMapKey)anObject);
-  _version++;
-}
-
-- (void) unionSet: (NSSet*) other
-{
-  if (other != self)
-    {
-      NSEnumerator	*e = [other objectEnumerator];
-
-      if (e != nil)
-	{
-	  id	anObject;
-	  SEL	sel = @selector(nextObject);
-	  IMP	imp = [e methodForSelector: sel];
-
-	  while ((anObject = (*imp)(e, sel)) != nil)
-	    {
-	      GSIMapNode node;
-
-	      node = GSIMapNodeForKey(&map, (GSIMapKey)anObject);
-	      if (node == 0)
-		{
-		  GSIMapAddKey(&map, (GSIMapKey)anObject);
-		  _version++;
-		}
-	    }
-	}
+        while ((anObject = [e nextObject]) != nil)
+        {
+            GSIMapRemoveKey(&map, (GSIMapKey)anObject);
+            _version++;
+        }
     }
 }
 
-- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState*)state
-                                   objects: (id*)stackbuf
-                                     count: (NSUInteger)len
+- (void)removeAllObjects
 {
-  state->mutationsPtr = (unsigned long *)&_version;
-  return GSIMapCountByEnumeratingWithStateObjectsCount
-    (&map, state, stackbuf, len);
+    GSIMapCleanMap(&map);
+}
+
+- (void)removeObject:(id)anObject
+{
+    if (anObject == nil)
+    {
+        NSWarnMLog(@"attempt to remove nil object");
+        return;
+    }
+    GSIMapRemoveKey(&map, (GSIMapKey)anObject);
+    _version++;
+}
+
+- (void)unionSet:(NSSet*)other
+{
+    if (other != self)
+    {
+        NSEnumerator  *e = [other objectEnumerator];
+
+        if (e != nil)
+        {
+            id anObject;
+            SEL sel = @selector(nextObject);
+            IMP imp = [e methodForSelector:sel];
+
+            while ((anObject = (*imp)(e, sel)) != nil)
+            {
+                GSIMapNode node;
+
+                node = GSIMapNodeForKey(&map, (GSIMapKey)anObject);
+                if (node == 0)
+                {
+                    GSIMapAddKey(&map, (GSIMapKey)anObject);
+                    _version++;
+                }
+            }
+        }
+    }
+}
+
+- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState*)state
+    objects:(id*)stackbuf
+    count:(NSUInteger)len
+{
+    state->mutationsPtr = (unsigned long *)&_version;
+    return GSIMapCountByEnumeratingWithStateObjectsCount
+               (&map, state, stackbuf, len);
 }
 @end
 
-@interface	NSGSet : NSSet
+@interface  NSGSet : NSSet
 @end
-@implementation	NSGSet
-- (id) initWithCoder: (NSCoder*)aCoder
+@implementation NSGSet
+- (id)initWithCoder:(NSCoder*)aCoder
 {
-  NSLog(@"Warning - decoding archive containing obsolete %@ object - please delete/replace this archive", NSStringFromClass([self class]));
-  DESTROY(self);
-  self = (id)NSAllocateObject([GSSet class], 0, NSDefaultMallocZone());
-  self = [self initWithCoder: aCoder];
-  return self;
+    NSLog(@"Warning - decoding archive containing obsolete %@ object - please delete/replace this archive", NSStringFromClass([self class]));
+    DESTROY(self);
+    self = (id)NSAllocateObject([GSSet class], 0, NSDefaultMallocZone());
+    self = [self initWithCoder:aCoder];
+    return self;
 }
 @end
 
-@interface	NSGMutableSet : NSMutableSet
+@interface  NSGMutableSet : NSMutableSet
 @end
-@implementation	NSGMutableSet
-- (id) initWithCoder: (NSCoder*)aCoder
+@implementation NSGMutableSet
+- (id)initWithCoder:(NSCoder*)aCoder
 {
-  NSLog(@"Warning - decoding archive containing obsolete %@ object - please delete/replace this archive", NSStringFromClass([self class]));
-  DESTROY(self);
-  self = (id)NSAllocateObject([GSMutableSet class], 0, NSDefaultMallocZone());
-  self = [self initWithCoder: aCoder];
-  return self;
+    NSLog(@"Warning - decoding archive containing obsolete %@ object - please delete/replace this archive", NSStringFromClass([self class]));
+    DESTROY(self);
+    self = (id)NSAllocateObject([GSMutableSet class], 0, NSDefaultMallocZone());
+    self = [self initWithCoder:aCoder];
+    return self;
 }
 @end
 

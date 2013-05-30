@@ -3,132 +3,132 @@
 
    Written by:  Richard Frith-Macdonald <rfm@gnu.org>
    Date: 2006
-   
+
    This file is part of the GNUstep Base Library.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
    version 2 of the License, or (at your option) any later version.
-   
+
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Library General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
-   */ 
+ */
 
 #import "common.h"
 
-#define	EXPOSE_NSURLAuthenticationChallenge_IVARS	1
+#define EXPOSE_NSURLAuthenticationChallenge_IVARS   1
 #import "GSURLPrivate.h"
 #import "Foundation/NSError.h"
 
 
 // Internal data storage
 typedef struct {
-  NSURLProtectionSpace				*space;
-  NSURLCredential				*credential;
-  int						previousFailureCount;
-  NSURLResponse					*response;
-  NSError					*error;
-  id<NSURLAuthenticationChallengeSender>	sender;
+    NSURLProtectionSpace              *space;
+    NSURLCredential               *credential;
+    int previousFailureCount;
+    NSURLResponse                 *response;
+    NSError                   *error;
+    id<NSURLAuthenticationChallengeSender>    sender;
 } Internal;
- 
-#define	this	((Internal*)(self->_NSURLAuthenticationChallengeInternal))
 
-@implementation	NSURLAuthenticationChallenge
+#define this    ((Internal*)(self->_NSURLAuthenticationChallengeInternal))
 
-+ (id) allocWithZone: (NSZone*)z
+@implementation NSURLAuthenticationChallenge
+
++ (id)allocWithZone:(NSZone*)z
 {
-  NSURLAuthenticationChallenge	*o = [super allocWithZone: z];
+    NSURLAuthenticationChallenge  *o = [super allocWithZone:z];
 
-  if (o != nil)
+    if (o != nil)
     {
-      o->_NSURLAuthenticationChallengeInternal
-        = NSZoneCalloc(z, 1, sizeof(Internal));
+        o->_NSURLAuthenticationChallengeInternal
+            = NSZoneCalloc(z, 1, sizeof(Internal));
     }
-  return o;
+    return o;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  if (this != 0)
+    if (this != 0)
     {
-      RELEASE(this->space);
-      RELEASE(this->credential);
-      RELEASE(this->response);
-      RELEASE(this->error);
-      RELEASE(this->sender);
-      NSZoneFree([self zone], this);
+        RELEASE(this->space);
+        RELEASE(this->credential);
+        RELEASE(this->response);
+        RELEASE(this->error);
+        RELEASE(this->sender);
+        NSZoneFree([self zone], this);
     }
-  [super dealloc];
+    [super dealloc];
 }
 
-- (NSError *) error
+- (NSError *)error
 {
-  return this->error;
+    return this->error;
 }
 
-- (NSURLResponse *) failureResponse
+- (NSURLResponse *)failureResponse
 {
-  return this->response;
+    return this->response;
 }
 
-- (id) initWithAuthenticationChallenge:
-  (NSURLAuthenticationChallenge *)challenge
-				sender:
-  (id<NSURLAuthenticationChallengeSender>)sender
+- (id)initWithAuthenticationChallenge:
+    (NSURLAuthenticationChallenge *)challenge
+    sender:
+    (id<NSURLAuthenticationChallengeSender>)sender
 {
-  return [self initWithProtectionSpace: [challenge protectionSpace]
-		    proposedCredential: [challenge proposedCredential]
-		  previousFailureCount: [challenge previousFailureCount]
-		       failureResponse: [challenge failureResponse]
-				 error: [challenge error]
-				sender: sender];
+    return [self initWithProtectionSpace:[challenge protectionSpace]
+            proposedCredential:[challenge proposedCredential]
+            previousFailureCount:[challenge previousFailureCount]
+            failureResponse:[challenge failureResponse]
+            error:[challenge error]
+            sender:sender];
 }
 
-- (id) initWithProtectionSpace: (NSURLProtectionSpace *)space
-	    proposedCredential: (NSURLCredential *)credential
-	  previousFailureCount: (NSInteger)previousFailureCount
-	       failureResponse: (NSURLResponse *)response
-			 error: (NSError *)error
-			sender: (id<NSURLAuthenticationChallengeSender>)sender
+- (id)initWithProtectionSpace:(NSURLProtectionSpace *)space
+    proposedCredential:(NSURLCredential *)credential
+    previousFailureCount:(NSInteger)previousFailureCount
+    failureResponse:(NSURLResponse *)response
+    error:(NSError *)error
+    sender:(id<NSURLAuthenticationChallengeSender>)sender
 {
-  if ((self = [super init]) != nil)
+    if ((self = [super init]) != nil)
     {
-      this->space = [space copy];
-      this->credential = [credential copy];
-      this->response = [response copy];
-      this->error = [error copy];
-      this->sender = RETAIN(sender);
-      this->previousFailureCount = previousFailureCount;
+        this->space = [space copy];
+        this->credential = [credential copy];
+        this->response = [response copy];
+        this->error = [error copy];
+        this->sender = RETAIN(sender);
+        this->previousFailureCount = previousFailureCount;
     }
-  return self;
+    return self;
 }
 
-- (NSInteger) previousFailureCount
+- (NSInteger)previousFailureCount
 {
-  return this->previousFailureCount;
+    return this->previousFailureCount;
 }
 
-- (NSURLCredential *) proposedCredential
+- (NSURLCredential *)proposedCredential
 {
-  return this->credential;
+    return this->credential;
 }
 
-- (NSURLProtectionSpace *) protectionSpace
+- (NSURLProtectionSpace *)protectionSpace
 {
-  return this->space;
+    return this->space;
 }
 
-- (id<NSURLAuthenticationChallengeSender>) sender
+- (id<NSURLAuthenticationChallengeSender>)sender
 {
-  return this->sender;
+    return this->sender;
 }
 
 @end

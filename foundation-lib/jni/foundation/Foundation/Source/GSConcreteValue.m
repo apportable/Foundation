@@ -1,4 +1,4 @@
-/* GSConcreteValue - Handle preprocessor magic for GSConcreteValueTemplate 
+/* GSConcreteValue - Handle preprocessor magic for GSConcreteValueTemplate
    Copyright (C) 1993,1994 Free Software Foundation, Inc.
 
    Written by: Andrew Ruder <andy@aeruder.net>
@@ -20,18 +20,15 @@
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
-*/
+ */
 
 #import "common.h"
 #import "Foundation/NSValue.h"
 #import "Foundation/NSException.h"
 #import "Foundation/NSCoder.h"
+#import "GNUstepBase/GSObjCRuntime.h"
 
 #define TYPE_ORDER 0
-#include "GSConcreteValueTemplate.m"
-#undef TYPE_ORDER
-
-#define TYPE_ORDER 1
 #include "GSConcreteValueTemplate.m"
 #undef TYPE_ORDER
 
@@ -42,12 +39,3 @@
 #define TYPE_ORDER 3
 #include "GSConcreteValueTemplate.m"
 #undef TYPE_ORDER
-
-#define TYPE_ORDER 4
-#include "GSConcreteValueTemplate.m"
-#undef TYPE_ORDER
-
-#define TYPE_ORDER 5
-#include "GSConcreteValueTemplate.m"
-#undef TYPE_ORDER
-

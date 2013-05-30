@@ -22,11 +22,11 @@
    Boston, MA 02111 USA.
 
    $Date: 2010-03-19 05:10:11 -0700 (Fri, 19 Mar 2010) $ $Revision: 30001 $
-   */
+ */
 
 #import "common.h"
 
-#define	EXPOSE_NSPipe_IVARS	1
+#define EXPOSE_NSPipe_IVARS 1
 
 #import "Foundation/NSFileHandle.h"
 #import "GSPrivate.h"
@@ -50,77 +50,55 @@
  * Returns a newly allocated and initialized NSPipe object that has been
  * sent an autorelease message.
  */
-+ (id) pipe
++ (id)pipe
 {
-  return AUTORELEASE([[self alloc] init]);
+    return AUTORELEASE([[self alloc] init]);
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  RELEASE(_readHandle);
-  RELEASE(_writeHandle);
-  [super dealloc];
+    RELEASE(_readHandle);
+    RELEASE(_writeHandle);
+    [super dealloc];
 }
 
-- (id) init
+- (id)init
 {
-  self = [super init];
-  if (self != nil)
+    self = [super init];
+    if (self != nil)
     {
-#ifndef __MINGW__
-      int	p[2];
+        int p[2];
 
-      if (pipe(p) == 0)
+        if (pipe(p) == 0)
         {
-          _readHandle = [[NSFileHandle alloc] initWithFileDescriptor: p[0]
-						      closeOnDealloc: YES];
-          _writeHandle = [[NSFileHandle alloc] initWithFileDescriptor: p[1]
-						       closeOnDealloc: YES];
+            _readHandle = [[NSFileHandle alloc] initWithFileDescriptor:p[0]
+                           closeOnDealloc:YES];
+            _writeHandle = [[NSFileHandle alloc] initWithFileDescriptor:p[1]
+                            closeOnDealloc:YES];
         }
-      else
-	{
-	  NSLog(@"Failed to create pipe ... %@", [NSError _last]);
-	  DESTROY(self);
-	}
-#else
-      SECURITY_ATTRIBUTES saAttr;
-      HANDLE readh, writeh;
-
-      saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-      saAttr.bInheritHandle = FALSE;
-      saAttr.lpSecurityDescriptor = NULL;
-
-      if (CreatePipe(&readh, &writeh, &saAttr, 0) != 0)
+        else
         {
-          _readHandle = [[NSFileHandle alloc] initWithNativeHandle: readh
-						    closeOnDealloc: YES];
-          _writeHandle = [[NSFileHandle alloc] initWithNativeHandle: writeh
-						     closeOnDealloc: YES];
+            NSLog(@"Failed to create pipe ... %@", [NSError _last]);
+            DESTROY(self);
         }
-      else
-	{
-	  NSLog(@"Failed to create pipe ... %@", [NSError _last]);
-	  DESTROY(self);
-	}
-#endif
     }
-  return self;
+    return self;
 }
 
 /**
  * Returns the file handle for reading from the pipe.
  */
-- (NSFileHandle*) fileHandleForReading
+- (NSFileHandle*)fileHandleForReading
 {
-  return _readHandle;
+    return _readHandle;
 }
 
 /**
  * Returns the file handle for writing to the pipe.
  */
-- (NSFileHandle*) fileHandleForWriting
+- (NSFileHandle*)fileHandleForWriting
 {
-  return _writeHandle;
+    return _writeHandle;
 }
 
 @end

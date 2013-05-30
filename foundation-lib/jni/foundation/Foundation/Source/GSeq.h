@@ -630,9 +630,11 @@ GSEQ_STRRANGE(NSString *ss, NSString *os, unsigned mask, NSRange aRange)
 
   /* Ensure the string can be found */
   strLength = GSEQ_OLEN;
-  if (strLength > aRange.length || strLength == 0)
-    return (NSRange){NSNotFound, 0};
+  if (strLength > aRange.length)
+     return NSMakeRange(NSNotFound, 0); 
 
+  if (strLength == 0)
+     return NSMakeRange(NSNotFound, 0); 
   /*
    * Cache method implementations for getting characters and ranges
    */
@@ -691,7 +693,7 @@ GSEQ_STRRANGE(NSString *ss, NSString *os, unsigned mask, NSRange aRange)
 		break;
 	      myIndex++;
 	    }
-	  return (NSRange){NSNotFound, 0};
+	  return (NSRange)NSMakeRange(NSNotFound, 0);
 	}
 
       case BCLS : 
@@ -726,7 +728,7 @@ GSEQ_STRRANGE(NSString *ss, NSString *os, unsigned mask, NSRange aRange)
 		break;
 	      myIndex--;
 	    }
-	  return (NSRange){NSNotFound, 0};
+	  return (NSRange)NSMakeRange(NSNotFound, 0);
 	}
 
       case FLS : 
@@ -760,7 +762,7 @@ GSEQ_STRRANGE(NSString *ss, NSString *os, unsigned mask, NSRange aRange)
 		break;
 	      myIndex++;
 	    }
-	  return (NSRange){NSNotFound, 0};
+	  return (NSRange)NSMakeRange(NSNotFound, 0);
 	}
 
       case BLS : 

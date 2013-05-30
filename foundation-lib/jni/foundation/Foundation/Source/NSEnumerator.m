@@ -23,7 +23,7 @@
 
    <title>NSEnumerator class reference</title>
    $Date: 2010-02-19 00:12:46 -0800 (Fri, 19 Feb 2010) $ $Revision: 29669 $
-*/
+ */
 
 #import "common.h"
 #import "Foundation/NSArray.h"
@@ -43,59 +43,54 @@
  *  Calling this method 'exhausts' the enumerator, leaving it at the
  *  end of the collection being enumerated.
  */
-- (NSArray*) allObjects
+- (NSArray*)allObjects
 {
-  NSMutableArray	*array;
-  id			obj;
-  SEL			nsel;
-  IMP			nimp;
-  SEL			asel;
-  IMP			aimp;
+    NSMutableArray    *array;
+    id obj;
+    SEL nsel;
+    IMP nimp;
+    SEL asel;
+    IMP aimp;
 
-  array = [NSMutableArray arrayWithCapacity: 10];
+    array = [NSMutableArray arrayWithCapacity:10];
 
-  nsel = @selector(nextObject);
-  nimp = [self methodForSelector: nsel];
-  asel = @selector(addObject:);
-  aimp = [array methodForSelector: asel];
+    nsel = @selector(nextObject);
+    nimp = [self methodForSelector:nsel];
+    asel = @selector(addObject:);
+    aimp = [array methodForSelector:asel];
 
-  while ((obj = (*nimp)(self, nsel)) != nil)
+    while ((obj = (*nimp)(self, nsel)) != nil)
     {
-      (*aimp)(array, asel, obj);
+        (*aimp)(array, asel, obj);
     }
-  return array;
+    return array;
 }
 
 /**
  *  Returns next object in enumeration, or nil if none remain.  Use code like
  *  <code>while (object = [enumerator nextObject]) { ... }</code>.
  */
-- (id) nextObject
+- (id)nextObject
 {
-  [self subclassResponsibility:_cmd];
-  return nil;
+    [self subclassResponsibility:_cmd];
+    return nil;
 }
 
-- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState*)state 	
-				   objects: (id*)stackbuf
-				     count: (NSUInteger)len
+- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState*)state
+    objects:(id*)stackbuf
+    count:(NSUInteger)len
 {
-  IMP nextObject = [self methodForSelector: @selector(nextObject)];
-  int i;
-
-  state->itemsPtr = stackbuf;
-  state->mutationsPtr = (unsigned long*)self;
-  for (i = 0; i < len; i++)
+    state->itemsPtr = stackbuf;
+    state->mutationsPtr = (unsigned long*)self;
+    id next = [self nextObject];
+    if (nil == next)
     {
-      id next = nextObject(self, @selector(nextObject));
-
-      if (nil == next)
-	{
-	  return i;
-	}
-      *(stackbuf+i) = next;
+        state->state = -1;
+        return 0;
     }
-  return len;
+    *stackbuf = next;
+    state->state++;
+    return 1;
 }
 @end
 
@@ -106,7 +101,8 @@
 // This is already defined in the objective-C runtime.
 // void objc_enumerationMutation(id obj)
 // {
-// 	[NSException raise: NSGenericException 
-// 	               format: @"Collection %@ was mutated while being enumerated", 
-// 	                       obj];
+//      [NSException raise: NSGenericException
+//                     format: @"Collection %@ was mutated while being
+// enumerated",
+//                             obj];
 // }

@@ -1,30 +1,30 @@
 /**
- Copyright (C) 1995, 1996, 1997, 2000, 2002 Free Software Foundation, Inc.
- 
- Written by:  Andrew Kachites McCallum <mccallum@gnu.ai.mit.edu>
- Date: March 1995
- Rewritten by:  Richard Frith-Macdonald <richard@brainstorm.co.uk>
- Date: September 1997
- 
- This file is part of the GNUstep Base Library.
- 
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public
- License as published by the Free Software Foundation; either
- version 2 of the License, or (at your option) any later version.
- 
- This library is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Library General Public License for more details.
- 
- You should have received a copy of the GNU Lesser General Public
- License along with this library; if not, write to the Free
- Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- Boston, MA 02111 USA.
- 
- <title>NSData class reference</title>
- $Date: 2010-09-09 09:30:10 -0700 (Thu, 09 Sep 2010) $ $Revision: 31268 $
+   Copyright (C) 1995, 1996, 1997, 2000, 2002 Free Software Foundation, Inc.
+
+   Written by:  Andrew Kachites McCallum <mccallum@gnu.ai.mit.edu>
+   Date: March 1995
+   Rewritten by:  Richard Frith-Macdonald <richard@brainstorm.co.uk>
+   Date: September 1997
+
+   This file is part of the GNUstep Base Library.
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2 of the License, or (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Library General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; if not, write to the Free
+   Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+   Boston, MA 02111 USA.
+
+   <title>NSData class reference</title>
+   $Date: 2010-09-09 09:30:10 -0700 (Thu, 09 Sep 2010) $ $Revision: 31268 $
  */
 
 /* NOTES  - Richard Frith-Macdonald 1997
@@ -64,7 +64,7 @@
  *  Since all the other subclasses are based on NSDataMalloc or
  *  NSMutableDataMalloc, we can put most methods in here and not
  *  bother with duplicating them in the other classes.
- *    
+ *
  */
 
 #import "common.h"
@@ -86,15 +86,13 @@
 #include <unistd.h>             /* SEEK_* on SunOS 4 */
 #endif
 
-#ifdef  HAVE_MMAP
 #include  <unistd.h>
 #include  <sys/mman.h>
 #include  <fcntl.h>
 #ifndef MAP_FAILED
 #define MAP_FAILED  ((void*)-1) /* Failure address. */
 #endif
-@class  NSDataMappedFile;
-#endif
+@class NSDataMappedFile;
 
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
@@ -106,33 +104,171 @@
 
 #define VM_RDONLY 0644    /* self read/write - other readonly */
 #define VM_ACCESS 0666    /* read/write access for all */
-@class  NSDataShared;
-@class  NSMutableDataShared;
+@class NSDataShared;
+@class NSMutableDataShared;
 #endif
 
-@class  NSDataMalloc;
-@class  NSDataStatic;
-@class  NSMutableDataMalloc;
-#if GS_WITH_GC
-@class  NSDataFinalized;
-@class  NSMutableDataFinalized;
-#endif
+@class NSDataMalloc;
+@class NSDataStatic;
+@class NSMutableDataMalloc;
 
 /*
  *  Some static variables to cache classes and methods for quick access -
  *  these are set up at process startup or in [NSData +initialize]
  */
-static Class  dataStatic;
-static Class  dataMalloc;
-static Class  mutableDataMalloc;
-static Class  NSDataAbstract;
-static Class  NSMutableDataAbstract;
-#if GS_WITH_GC
-static Class  dataFinalized;
-static Class  mutableDataFinalized;
-#endif
-static SEL  appendSel;
-static IMP  appendImp;
+static Class dataStatic;
+static Class dataMalloc;
+static Class mutableDataMalloc;
+static Class NSDataAbstract;
+static Class NSMutableDataAbstract;
+static SEL appendSel;
+static IMP appendImp;
+
+static BOOL
+readContentsOfFile(NSString* path, void** buf, unsigned int* len, NSZone* zone, NSError** error)
+{
+    const char    *thePath = 0;
+    FILE      *theFile = 0;
+    void      *tmp = 0;
+    int c;
+    long fileLength;
+    NSError   *failure = nil;
+
+    thePath = [path fileSystemRepresentation];
+    if (thePath == 0)
+    {
+        failure = [NSError _systemError:ENOENT];
+        NSWarnFLog(@"Open (%@) attempt failed - bad path", path);
+        goto failure;
+    }
+
+    theFile = fopen(thePath, "rb");
+
+    if (theFile == 0)   /* We failed to open the file. */
+    {
+        failure = [NSError _last];
+        NSDebugFLog(@"Open (%@) attempt failed - %@", path, failure);
+        goto failure;
+    }
+
+    /*
+     *    Seek to the end of the file.
+     */
+    c = fseek(theFile, 0L, SEEK_END);
+    if (c != 0)
+    {
+        failure = [NSError _last];
+        NSWarnFLog(@"Seek to end of file (%@) failed - %@", path, failure);
+        goto failure;
+    }
+
+    /*
+     *    Determine the length of the file (having seeked to the end of the
+     *    file) by calling ftell().
+     */
+    fileLength = ftell(theFile);
+    if (fileLength == -1)
+    {
+        failure = [NSError _last];
+        NSWarnFLog(@"Ftell on %@ failed - %@", path, failure);
+        goto failure;
+    }
+
+    /*
+     *    Rewind the file pointer to the beginning, preparing to read in
+     *    the file.
+     */
+    c = fseek(theFile, 0L, SEEK_SET);
+    if (c != 0)
+    {
+        failure = [NSError _last];
+        NSWarnFLog(@"Fseek to start of file (%@) failed - %@", path, failure);
+        goto failure;
+    }
+
+    clearerr(theFile);
+    if (fileLength == 0)
+    {
+        unsigned char readbuf[BUFSIZ];
+
+        /*
+         * Special case ... a file of length zero may be a named pipe or some
+         * file in the /proc filesystem, which will return us data if we read
+         * from it ... so we try reading as much as we can.
+         */
+        while ((c = fread(readbuf, 1, BUFSIZ, theFile)) != 0)
+        {
+            if (tmp == 0)
+            {
+                tmp = NSZoneMalloc(zone, c);
+            }
+            else
+            {
+                tmp = NSZoneRealloc(zone, tmp, fileLength + c);
+            }
+            if (tmp == 0)
+            {
+                failure = [NSError _last];
+                NSLog(@"Malloc failed for file (%@) of length %ld - %@", path, fileLength + c, failure);
+                goto failure;
+            }
+            memcpy(tmp + fileLength, readbuf, c);
+            fileLength += c;
+        }
+    }
+    else
+    {
+        long offset = 0;
+
+        tmp = NSZoneMalloc(zone, fileLength);
+        if (tmp == 0)
+        {
+            failure = [NSError _last];
+            NSLog(@"Malloc failed for file (%@) of length %ld - %@", path, fileLength, failure);
+            goto failure;
+        }
+
+        while (offset < fileLength
+               && (c = fread(tmp + offset, 1, fileLength - offset, theFile)) != 0)
+        {
+            offset += c;
+        }
+        if (offset < fileLength)
+        {
+            fileLength = offset;
+            tmp = NSZoneRealloc(zone, tmp, fileLength);
+        }
+    }
+    if (ferror(theFile))
+    {
+        failure = [NSError _last];
+        NSWarnFLog(@"read of file (%@) contents failed - %@", path, failure);
+        goto failure;
+    }
+
+    *buf = tmp;
+    *len = fileLength;
+    fclose(theFile);
+    return YES;
+
+    /*
+     *    Just in case the failure action needs to be changed.
+     */
+failure:
+    if (tmp != 0)
+    {
+        NSZoneFree(zone, tmp);
+    }
+    if (theFile != 0)
+    {
+        fclose(theFile);
+    }
+    if (error)
+    {
+        *error = failure;
+    }
+    return NO;
+}
 
 /*
  *  NB, The start of the NSMutableDataMalloc instance variables must be
@@ -140,12 +276,12 @@ static IMP  appendImp;
  */
 @interface  NSDataStatic : NSData
 {
-    NSUInteger  length;
+    NSUInteger length;
     void    *bytes;
 }
 @end
 
-@interface  NSDataEmpty: NSDataStatic
+@interface  NSDataEmpty : NSDataStatic
 @end
 
 @interface  NSDataMalloc : NSDataStatic
@@ -153,49 +289,35 @@ static IMP  appendImp;
 
 @interface  NSMutableDataMalloc : NSMutableData
 {
-    NSUInteger  length;
+    NSUInteger length;
     void    *bytes;
-#if GS_WITH_GC
-    BOOL    owned;
-#else
     NSZone  *zone;
-#endif
-    NSUInteger  capacity;
-    NSUInteger  growth;
+    NSUInteger capacity;
+    NSUInteger growth;
 }
 /* Increase capacity to at least the specified minimum value. */
-- (void) _grow: (NSUInteger)minimum;
+- (void)_grow:(NSUInteger)minimum;
 @end
 
-#if GS_WITH_GC
-@interface  NSDataFinalized : NSDataMalloc
-@end
 
-@interface  NSMutableDataFinalized : NSMutableDataMalloc
-@end
-#endif
-
-#ifdef  HAVE_MMAP
 @interface  NSDataMappedFile : NSDataMalloc
 @end
-#endif
 
 #ifdef  HAVE_SHMCTL
 @interface  NSDataShared : NSDataMalloc
 {
-    int   shmid;
+    int shmid;
 }
-- (id) initWithShmID: (int)anId length: (NSUInteger)bufferSize;
+- (id)initWithShmID:(int)anId length:(NSUInteger)bufferSize;
 @end
 
 @interface  NSMutableDataShared : NSMutableDataMalloc
 {
-    int   shmid;
+    int shmid;
 }
-- (id) initWithShmID: (int)anId length: (NSUInteger)bufferSize;
+- (id)initWithShmID:(int)anId length:(NSUInteger)bufferSize;
 @end
 #endif
-
 
 
 /**
@@ -210,7 +332,7 @@ static IMP  appendImp;
  */
 @implementation NSData
 
-+ (void) initialize
++ (void)initialize
 {
     if (self == [NSData class])
     {
@@ -219,16 +341,12 @@ static IMP  appendImp;
         dataStatic = [NSDataStatic class];
         dataMalloc = [NSDataMalloc class];
         mutableDataMalloc = [NSMutableDataMalloc class];
-#if GS_WITH_GC
-        dataFinalized = [NSDataFinalized class];
-        mutableDataFinalized = [NSMutableDataFinalized class];
-#endif
         appendSel = @selector(appendBytes:length:);
-        appendImp = [mutableDataMalloc instanceMethodForSelector: appendSel];
+        appendImp = [mutableDataMalloc instanceMethodForSelector:appendSel];
     }
 }
 
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
     if (self == NSDataAbstract)
     {
@@ -243,14 +361,14 @@ static IMP  appendImp;
 /**
  * Returns an empty data object.
  */
-+ (id) data
++ (id)data
 {
     static NSData *empty = nil;
-    
+
     if (empty == nil)
     {
-        empty = [dataStatic allocWithZone: NSDefaultMallocZone()];
-        empty = [empty initWithBytesNoCopy: 0 length: 0 freeWhenDone: NO];
+        empty = [dataStatic allocWithZone:NSDefaultMallocZone()];
+        empty = [empty initWithBytesNoCopy:0 length:0 freeWhenDone:NO];
     }
     return empty;
 }
@@ -259,13 +377,13 @@ static IMP  appendImp;
  * Returns an autoreleased data object containing data copied from bytes
  * and with the specified length.  Invokes -initWithBytes:length:
  */
-+ (id) dataWithBytes: (const void*)bytes
-              length: (NSUInteger)length
++ (id)dataWithBytes:(const void*)bytes
+    length:(NSUInteger)length
 {
     NSData  *d;
-    
-    d = [dataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithBytes: bytes length: length];
+
+    d = [dataMalloc allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithBytes:bytes length:length];
     return AUTORELEASE(d);
 }
 
@@ -274,13 +392,13 @@ static IMP  appendImp;
  * and with the specified length.  Invokes
  * -initWithBytesNoCopy:length:freeWhenDone: with YES
  */
-+ (id) dataWithBytesNoCopy: (void*)bytes
-                    length: (NSUInteger)length
++ (id)dataWithBytesNoCopy:(void*)bytes
+    length:(NSUInteger)length
 {
     NSData  *d;
-    
-    d = [dataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithBytesNoCopy: bytes length: length freeWhenDone: YES];
+
+    d = [dataMalloc allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithBytesNoCopy:bytes length:length freeWhenDone:YES];
     return AUTORELEASE(d);
 }
 
@@ -289,23 +407,23 @@ static IMP  appendImp;
  * and with the specified length.  Invokes
  * -initWithBytesNoCopy:length:freeWhenDone:
  */
-+ (id) dataWithBytesNoCopy: (void*)aBuffer
-                    length: (NSUInteger)bufferSize
-              freeWhenDone: (BOOL)shouldFree
++ (id)dataWithBytesNoCopy:(void*)aBuffer
+    length:(NSUInteger)bufferSize
+    freeWhenDone:(BOOL)shouldFree
 {
     NSData  *d;
-    
+
     if (shouldFree == YES)
     {
-        d = [dataMalloc allocWithZone: NSDefaultMallocZone()];
+        d = [dataMalloc allocWithZone:NSDefaultMallocZone()];
     }
     else
     {
-        d = [dataStatic allocWithZone: NSDefaultMallocZone()];
+        d = [dataStatic allocWithZone:NSDefaultMallocZone()];
     }
-    d = [d initWithBytesNoCopy: aBuffer
-                        length: bufferSize
-                  freeWhenDone: shouldFree];
+    d = [d initWithBytesNoCopy:aBuffer
+         length:bufferSize
+         freeWhenDone:shouldFree];
     return AUTORELEASE(d);
 }
 
@@ -313,18 +431,18 @@ static IMP  appendImp;
  * Returns a data object encapsulating the contents of the specified file.
  * Invokes -initWithContentsOfFile:
  */
-+ (id) dataWithContentsOfFile: (NSString*)path
++ (id)dataWithContentsOfFile:(NSString*)path
 {
     NSData  *d;
-    
-    d = [dataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithContentsOfFile: path];
+
+    d = [dataMalloc allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithContentsOfFile:path];
     return AUTORELEASE(d);
 }
 
-+ (id) dataWithContentsOfFile: (NSString *)path
-                      options: (NSUInteger)options
-                        error: (NSError **)errorp
++ (id)dataWithContentsOfFile:(NSString *)path
+    options:(NSUInteger)options
+    error:(NSError **)errorp
 {
     // TODO: incomplete implementation
     return [NSData dataWithContentsOfFile:path];
@@ -335,17 +453,12 @@ static IMP  appendImp;
  * file mapped directly into memory.
  * Invokes -initWithContentsOfMappedFile:
  */
-+ (id) dataWithContentsOfMappedFile: (NSString*)path
++ (id)dataWithContentsOfMappedFile:(NSString*)path
 {
     NSData  *d;
-    
-#ifdef  HAVE_MMAP
-    d = [NSDataMappedFile allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithContentsOfMappedFile: path];
-#else
-    d = [dataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithContentsOfMappedFile: path];
-#endif
+
+    d = [NSDataMappedFile allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithContentsOfMappedFile:path];
     return AUTORELEASE(d);
 }
 
@@ -353,41 +466,54 @@ static IMP  appendImp;
  * Retrieves the information at the specified url and returns an NSData
  * instance encapsulating it.
  */
-+ (id) dataWithContentsOfURL: (NSURL*)url
++ (id)dataWithContentsOfURL:(NSURL*)url
 {
     NSData  *d;
-    
-    d = [url resourceDataUsingCache: YES];
+
+    d = [url resourceDataUsingCache:YES];
     return d;
 }
 
 /**
+ * Retrieves the information at the specified url and returns an NSData
+ * instance encapsulating it.
+ * TODO implement 2nd and 3rd parameters
+ * mask is a hint
+ * error should return reason for failure
+ */
++ (id)dataWithContentsOfURL:(NSURL *)aURL options:(NSDataReadingOptions)mask error:(NSError **)errorPtr
+{
+    return [aURL resourceDataUsingCache:YES error:errorPtr];
+}
+
+
+/**
  * Returns an autoreleased instance initialised by copying the contents of data.
  */
-+ (id) dataWithData: (NSData*)data
++ (id)dataWithData:(NSData*)data
 {
     NSData  *d;
-    
-    d = [dataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithBytes: [data bytes] length: [data length]];
+
+    d = [dataMalloc allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithBytes:[data bytes] length:[data length]];
     return AUTORELEASE(d);
 }
 
 /**
  * Returns a new empty data object.
  */
-+ (id) new
++ (id)new
 {
     NSData  *d;
-    
-    d = [dataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithBytesNoCopy: 0 length: 0 freeWhenDone: YES];
+
+    d = [dataMalloc allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithBytesNoCopy:0 length:0 freeWhenDone:YES];
     return d;
 }
 
-- (id) init
+- (id)init
 {
-    return [self initWithBytesNoCopy: 0 length: 0 freeWhenDone: YES];
+    return [self initWithBytesNoCopy:0 length:0 freeWhenDone:YES];
 }
 
 /**
@@ -395,24 +521,20 @@ static IMP  appendImp;
  * -initWithBytesNoCopy:length:freeWhenDone: with a YES argument in order
  * to initialise the receiver.  Returns the result.
  */
-- (id) initWithBytes: (const void*)aBuffer
-              length: (NSUInteger)bufferSize
+- (id)initWithBytes:(const void*)aBuffer
+    length:(NSUInteger)bufferSize
 {
     void  *ptr = 0;
-    
+
     if (bufferSize > 0)
     {
         if (aBuffer == 0)
         {
-            [NSException raise: NSInvalidArgumentException
-                        format: @"[%@-initWithBytes:length:] called with "
-             @"length but null bytes", NSStringFromClass([self class])];
+            [NSException raise:NSInvalidArgumentException
+             format:@"[%@-initWithBytes:length:] called with "
+                    @"length but null bytes", NSStringFromClass([self class])];
         }
-#if GS_WITH_GC
-        ptr = NSAllocateCollectable(bufferSize, 0);
-#else
         ptr = NSZoneMalloc(NSDefaultMallocZone(), bufferSize);
-#endif
         if (ptr == 0)
         {
             DESTROY(self);
@@ -420,9 +542,9 @@ static IMP  appendImp;
         }
         memcpy(ptr, aBuffer, bufferSize);
     }
-    return [self initWithBytesNoCopy: ptr
-                              length: bufferSize
-                        freeWhenDone: YES];
+    return [self initWithBytesNoCopy:ptr
+            length:bufferSize
+            freeWhenDone:YES];
 }
 
 /**
@@ -430,12 +552,12 @@ static IMP  appendImp;
  * set to YES.  Returns the resulting initialised data object (which may not
  * be the receiver).
  */
-- (id) initWithBytesNoCopy: (void*)aBuffer
-                    length: (NSUInteger)bufferSize
+- (id)initWithBytesNoCopy:(void*)aBuffer
+    length:(NSUInteger)bufferSize
 {
-    return [self initWithBytesNoCopy: aBuffer
-                              length: bufferSize
-                        freeWhenDone: YES];
+    return [self initWithBytesNoCopy:aBuffer
+            length:bufferSize
+            freeWhenDone:YES];
 }
 
 /** <init /><override-subclass />
@@ -448,11 +570,11 @@ static IMP  appendImp;
  * the memory.  Supplying the wrong value here will lead to memory
  * leaks or crashes.
  */
-- (id) initWithBytesNoCopy: (void*)aBuffer
-                    length: (NSUInteger)bufferSize
-              freeWhenDone: (BOOL)shouldFree
+- (id)initWithBytesNoCopy:(void*)aBuffer
+    length:(NSUInteger)bufferSize
+    freeWhenDone:(BOOL)shouldFree
 {
-    [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
     return nil;
 }
 
@@ -461,10 +583,23 @@ static IMP  appendImp;
  * Returns the resulting object.<br />
  * Returns nil if the file does not exist or can not be read for some reason.
  */
-- (id) initWithContentsOfFile: (NSString*)path
+- (id)initWithContentsOfFile:(NSString*)path
 {
-    DESTROY(self);
-    return [[[NSFileManager defaultManager] contentsAtPath:path] retain];
+    return [self initWithContentsOfFile:path options:0 error:nil];
+}
+
+- (id)initWithContentsOfFile:(NSString *)path options:(NSDataReadingOptions)options error:(NSError **)error
+{
+    void      *fileBytes;
+    unsigned fileLength;
+
+    if (readContentsOfFile(path, &fileBytes, &fileLength, [self zone], error) == NO)
+    {
+        DESTROY(self);
+        return nil;
+    }
+    self = [self initWithBytesNoCopy:fileBytes length:fileLength freeWhenDone:YES];
+    return self;
 }
 
 /**
@@ -472,45 +607,48 @@ static IMP  appendImp;
  *  only "swapped in" as needed.  File should not be moved or deleted for
  *  the life of this object.
  */
-- (id) initWithContentsOfMappedFile: (NSString *)path
+- (id)initWithContentsOfMappedFile:(NSString *)path
 {
-#ifdef  HAVE_MMAP
-    NSZone  *z = [self zone];
-    DESTROY(self);
-    self = [NSDataMappedFile allocWithZone: z];
-    return [self initWithContentsOfMappedFile: path];
-#else
-    return [self initWithContentsOfFile: path];
-#endif
+    return [self initWithContentsOfFile:path];
+}
+
+- (id)initWithContentsOfURL:(NSURL *)url options:(NSDataReadingOptions)mask error:(NSError **)errorPtr
+{
+    return [self initWithContentsOfURL:url options:mask];
+}
+
+- (id)initWithContentsOfURL:(NSURL *)url options:(NSDataReadingOptions)mask
+{
+    return [self initWithContentsOfURL:url];
 }
 
 /**
  *  Initialize with data pointing to contents of URL, which will be
  *  retrieved immediately in a blocking manner.
  */
-- (id) initWithContentsOfURL: (NSURL*)url
+- (id)initWithContentsOfURL:(NSURL*)url
 {
-    NSData  *data = [url resourceDataUsingCache: YES];
-    
-    return [self initWithData: data];
+    NSData  *data = [url resourceDataUsingCache:YES];
+
+    return [self initWithData:data];
 }
 
 /**
  *  Initializes by copying data's bytes into a new buffer.
  */
-- (id) initWithData: (NSData*)data
+- (id)initWithData:(NSData*)data
 {
     if (data == nil)
     {
-        return [self initWithBytesNoCopy: 0 length: 0 freeWhenDone: YES];
+        return [self initWithBytesNoCopy:0 length:0 freeWhenDone:YES];
     }
-    if ([data isKindOfClass: [NSData class]] == NO)
+    if ([data isKindOfClass:[NSData class]] == NO)
     {
         NSLog(@"-initWithData: passed a non-data object");
         DESTROY(self);
         return nil;
     }
-    return [self initWithBytes: [data bytes] length: [data length]];
+    return [self initWithBytes:[data bytes] length:[data length]];
 }
 
 
@@ -519,20 +657,20 @@ static IMP  appendImp;
 /** <override-subclass>
  * Returns a pointer to the data encapsulated by the receiver.
  */
-- (const void*) bytes
+- (const void*)bytes
 {
-    [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
     return 0;
 }
 
 /**
  *  Returns a short description of this object.
  */
-- (NSString*) description
+- (NSString*)description
 {
     extern void     GSPropertyListMake(id,NSDictionary*,BOOL,BOOL,unsigned,id*);
     NSMutableString       *result = nil;
-    
+
     GSPropertyListMake(self, nil, NO, YES, 0, &result);
     return result;
 }
@@ -543,9 +681,9 @@ static IMP  appendImp;
  * -length bytes of data ... if it isn't then a crash is likely to occur.<br />
  * Invokes -getBytes:range: with the range set to the whole of the receiver.
  */
-- (void) getBytes: (void*)buffer
+- (void)getBytes:(void*)buffer
 {
-    [self getBytes: buffer range: NSMakeRange(0, [self length])];
+    [self getBytes:buffer range:NSMakeRange(0, [self length])];
 }
 
 /**
@@ -555,11 +693,11 @@ static IMP  appendImp;
  * If length is greater than the size of the receiver, only the available
  * bytes are copied.
  */
-- (void) getBytes: (void*)buffer length: (NSUInteger)length
+- (void)getBytes:(void*)buffer length:(NSUInteger)length
 {
-    NSUInteger  l = [self length];
-    
-    [self getBytes: buffer range: NSMakeRange(0,  l < length ? l : length)];
+    NSUInteger l = [self length];
+
+    [self getBytes:buffer range:NSMakeRange(0,  l < length ? l : length)];
 }
 
 /**
@@ -570,15 +708,15 @@ static IMP  appendImp;
  * If aRange specifies a range which does not entirely lie within the
  * receiver, an exception is raised.
  */
-- (void) getBytes: (void*)buffer range: (NSRange)aRange
+- (void)getBytes:(void*)buffer range:(NSRange)aRange
 {
-    unsigned  size = [self length];
-    
+    unsigned size = [self length];
+
     GS_RANGE_CHECK(aRange, size);
     memcpy(buffer, [self bytes] + aRange.location, aRange.length);
 }
 
-- (id) replacementObjectForPortCoder: (NSPortCoder*)aCoder
+- (id)replacementObjectForPortCoder:(NSPortCoder*)aCoder
 {
     return self;
 }
@@ -589,36 +727,32 @@ static IMP  appendImp;
  * If aRange specifies a range which does not entirely lie within the
  * receiver, an exception is raised.
  */
-- (NSData*) subdataWithRange: (NSRange)aRange
+- (NSData*)subdataWithRange:(NSRange)aRange
 {
     void    *buffer;
-    unsigned  l = [self length];
-    
+    unsigned l = [self length];
+
     GS_RANGE_CHECK(aRange, l);
-    
-#if GS_WITH_GC
-    buffer = NSAllocateCollectable(aRange.length, 0);
-#else
+
     buffer = NSZoneMalloc(NSDefaultMallocZone(), aRange.length);
-#endif
     if (buffer == 0)
     {
-        [NSException raise: NSMallocException
-                    format: @"No memory for subdata of NSData object"];
+        [NSException raise:NSMallocException
+         format:@"No memory for subdata of NSData object"];
     }
-    [self getBytes: buffer range: aRange];
-    
-    return [NSData dataWithBytesNoCopy: buffer length: aRange.length];
+    [self getBytes:buffer range:aRange];
+
+    return [NSData dataWithBytesNoCopy:buffer length:aRange.length];
 }
 
-- (NSUInteger) hash
+- (NSUInteger)hash
 {
     unsigned char buf[64];
-    unsigned  l = [self length];
-    unsigned  ret =0;
-    
+    unsigned l = [self length];
+    unsigned ret = 0;
+
     l = MIN(l,64);
-    
+
     /*
      * hash for empty data matches hash for empty string
      */
@@ -626,9 +760,9 @@ static IMP  appendImp;
     {
         return 0xfffffffe;
     }
-    
-    [self getBytes: &buf range: NSMakeRange(0, l)];
-    
+
+    [self getBytes:&buf range:NSMakeRange(0, l)];
+
     while (l-- > 0)
     {
         ret = (ret << 5) + ret + buf[l];
@@ -641,10 +775,11 @@ static IMP  appendImp;
     return ret;
 }
 
-- (BOOL) isEqual: anObject
+- (BOOL)isEqual:anObject
 {
-    if ([anObject isKindOfClass: [NSData class]])
-        return [self isEqualToData: anObject];
+    if ([anObject isKindOfClass:[NSData class]]) {
+        return [self isEqualToData:anObject];
+    }
     return NO;
 }
 
@@ -653,7 +788,7 @@ static IMP  appendImp;
  * identical data (using a byte by byte comparison).  Assumes that the
  * other object is an NSData instance ... may raise an exception if it isn't.
  */
-- (BOOL) isEqualToData: (NSData*)other
+- (BOOL)isEqualToData:(NSData*)other
 {
     NSUInteger len;
     if (other == self)
@@ -670,34 +805,34 @@ static IMP  appendImp;
 /** <override-subclass>
  * Returns the number of bytes of data encapsulated by the receiver.
  */
-- (NSUInteger) length
+- (NSUInteger)length
 {
     /* This is left to concrete subclasses to implement. */
-    [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
     return 0;
 }
 
-- (BOOL) writeToFile: (NSString*)path atomically: (BOOL)useAuxiliaryFile
+- (BOOL)writeToFile:(NSString*)path atomically:(BOOL)useAuxiliaryFile
 {
     if (useAuxiliaryFile)
     {
-        return [self writeToFile: path options: NSAtomicWrite error: 0];
+        return [self writeToFile:path options:NSAtomicWrite error:NULL];
     }
     else
     {
-        return [self writeToFile: path options: 0 error: 0];
+        return [self writeToFile:path options:0 error:NULL];
     }
 }
 
-- (BOOL) writeToURL: (NSURL*)anURL atomically: (BOOL)flag
+- (BOOL)writeToURL:(NSURL*)anURL atomically:(BOOL)flag
 {
     if (flag)
     {
-        return [self writeToURL: anURL options: NSAtomicWrite error: 0];
+        return [self writeToURL:anURL options:NSAtomicWrite error:NULL];
     }
     else
     {
-        return [self writeToURL: anURL options: 0 error: 0];
+        return [self writeToURL:anURL options:0 error:NULL];
     }
 }
 
@@ -708,298 +843,286 @@ static IMP  appendImp;
  *  Copies data from buffer starting from cursor.  <strong>Deprecated</strong>.
  *  Use [-getBytes:] and related methods instead.
  */
-- (unsigned int) deserializeAlignedBytesLengthAtCursor: (unsigned int*)cursor
+- (unsigned int)deserializeAlignedBytesLengthAtCursor:(unsigned int*)cursor
 {
-    return (unsigned)[self deserializeIntAtCursor: cursor];
+    return (unsigned)[self deserializeIntAtCursor : cursor];
 }
 
 /**
  *  Copies data from buffer starting from cursor.  <strong>Deprecated</strong>.
  *  Use [-getBytes:] and related methods instead.
  */
-- (void) deserializeBytes: (void*)buffer
-                   length: (unsigned int)bytes
-                 atCursor: (unsigned int*)cursor
+- (void)deserializeBytes:(void*)buffer
+    length:(unsigned int)bytes
+    atCursor:(unsigned int*)cursor
 {
     NSRange range = { *cursor, bytes };
-    
-    [self getBytes: buffer range: range];
+
+    [self getBytes:buffer range:range];
     *cursor += bytes;
 }
 
-- (void) deserializeDataAt: (void*)data
-                ofObjCType: (const char*)type
-                  atCursor: (unsigned int*)cursor
-                   context: (id <NSObjCTypeSerializationCallBack>)callback
+- (void)deserializeDataAt:(void*)data
+    ofObjCType:(const char*)type
+    atCursor:(unsigned int*)cursor
+    context:(id <NSObjCTypeSerializationCallBack>)callback
 {
-    if (!type || !data)
+    if (!type || !data) {
         return;
-    
+    }
+
     switch (*type)
     {
-        case _C_ID:
+    case _C_ID:
+    {
+        [callback deserializeObjectAt:data
+         ofObjCType:type
+         fromData:self
+         atCursor:cursor];
+        return;
+    }
+    case _C_CHARPTR:
+    {
+        int32_t length;
+
+        [self deserializeBytes:&length
+         length:sizeof(length)
+         atCursor:cursor];
+        length = GSSwapBigI32ToHost(length);
+        if (length == -1)
         {
-            [callback deserializeObjectAt: data
-                               ofObjCType: type
-                                 fromData: self
-                                 atCursor: cursor];
+            *(const char**)data = 0;
             return;
         }
-        case _C_CHARPTR:
+        else
         {
-            int32_t length;
-            
-            [self deserializeBytes: &length
-                            length: sizeof(length)
-                          atCursor: cursor];
-            length = GSSwapBigI32ToHost(length);
-            if (length == -1)
-            {
-                *(const char**)data = 0;
-                return;
-            }
-            else
-            {
-                unsigned  len = (length+1)*sizeof(char);
-                
-#if GS_WITH_GC
-                *(char**)data = (char*)NSAllocateCollectable(len, 0);
-#else
-                *(char**)data = (char*)NSZoneMalloc(NSDefaultMallocZone(), len);
-#endif
-                if (*(char**)data == 0)
-                {
-                    [NSException raise: NSMallocException
-                                format: @"out of memory to deserialize bytes"];
-                }
-            }
-            
-            [self deserializeBytes: *(char**)data
-                            length: length
-                          atCursor: cursor];
-            (*(char**)data)[length] = '\0';
-            return;
-        }
-        case _C_ARY_B:
-        {
-            unsigned  offset = 0;
-            unsigned  size;
-            unsigned  count = atoi(++type);
-            unsigned  i;
-            
-            while (isdigit(*type))
-            {
-                type++;
-            }
-            size = objc_sizeof_type(type);
-            
-            for (i = 0; i < count; i++)
-            {
-                [self deserializeDataAt: (char*)data + offset
-                             ofObjCType: type
-                               atCursor: cursor
-                                context: callback];
-                offset += size;
-            }
-            return;
-        }
-        case _C_STRUCT_B:
-        {
-            struct objc_struct_layout layout;
-            
-            objc_layout_structure (type, &layout);
-            while (objc_layout_structure_next_member (&layout))
-            {
-                unsigned    offset;
-                unsigned    align;
-                const char  *ftype;
-                
-                objc_layout_structure_get_info (&layout, &offset, &align, &ftype);
-                
-                [self deserializeDataAt: ((char*)data) + offset
-                             ofObjCType: ftype
-                               atCursor: cursor
-                                context: callback];
-            }
-            return;
-        }
-        case _C_PTR:
-        {
-            unsigned  len = objc_sizeof_type(++type);
-            
-#if GS_WITH_GC
-            *(char**)data = (char*)NSAllocateCollectable(len, 0);
-#else
+            unsigned len = (length+1)*sizeof(char);
+
             *(char**)data = (char*)NSZoneMalloc(NSDefaultMallocZone(), len);
-#endif
             if (*(char**)data == 0)
             {
-                [NSException raise: NSMallocException
-                            format: @"out of memory to deserialize bytes"];
+                [NSException raise:NSMallocException
+                 format:@"out of memory to deserialize bytes"];
             }
-            [self deserializeDataAt: *(char**)data
-                         ofObjCType: type
-                           atCursor: cursor
-                            context: callback];
-            return;
         }
-        case _C_CHR:
-        case _C_UCHR:
+
+        [self deserializeBytes:*(char**)data
+         length:length
+         atCursor:cursor];
+        (*(char**)data)[length] = '\0';
+        return;
+    }
+    case _C_ARY_B:
+    {
+        unsigned offset = 0;
+        unsigned size;
+        unsigned count = atoi(++type);
+        unsigned i;
+
+        while (isdigit(*type))
         {
-            [self deserializeBytes: data
-                            length: sizeof(unsigned char)
-                          atCursor: cursor];
-            return;
+            type++;
         }
-        case _C_SHT:
-        case _C_USHT:
+        size = objc_sizeof_type(type);
+
+        for (i = 0; i < count; i++)
         {
-            unsigned short ns;
-            
-            [self deserializeBytes: &ns
-                            length: sizeof(unsigned short)
-                          atCursor: cursor];
-            *(unsigned short*)data = NSSwapBigShortToHost(ns);
-            return;
+            [self deserializeDataAt:(char*)data + offset
+             ofObjCType:type
+             atCursor:cursor
+             context:callback];
+            offset += size;
         }
-        case _C_INT:
-        case _C_UINT:
+        return;
+    }
+    case _C_STRUCT_B:
+    {
+        DEBUG_BREAK();
+        // struct objc_struct_layout layout;
+
+        // objc_layout_structure (type, &layout);
+        // while (objc_layout_structure_next_member (&layout))
+        // {
+        //     unsigned    offset;
+        //     unsigned    align;
+        //     const char  *ftype;
+
+        //     objc_layout_structure_get_info (&layout, &offset, &align,
+        // &ftype);
+
+        //     [self deserializeDataAt: ((char*)data) + offset
+        //                  ofObjCType: ftype
+        //                    atCursor: cursor
+        //                     context: callback];
+        // }
+        return;
+    }
+    case _C_PTR:
+    {
+        unsigned len = objc_sizeof_type(++type);
+
+        *(char**)data = (char*)NSZoneMalloc(NSDefaultMallocZone(), len);
+        if (*(char**)data == 0)
         {
-            unsigned ni;
-            
-            [self deserializeBytes: &ni
-                            length: sizeof(unsigned)
-                          atCursor: cursor];
-            *(unsigned*)data = NSSwapBigIntToHost(ni);
-            return;
+            [NSException raise:NSMallocException
+             format:@"out of memory to deserialize bytes"];
         }
-        case _C_LNG:
-        case _C_ULNG:
+        [self deserializeDataAt:*(char**)data
+         ofObjCType:type
+         atCursor:cursor
+         context:callback];
+        return;
+    }
+    case _C_CHR:
+    case _C_UCHR:
+    {
+        [self deserializeBytes:data
+         length:sizeof(unsigned char)
+         atCursor:cursor];
+        return;
+    }
+    case _C_SHT:
+    case _C_USHT:
+    {
+        unsigned short ns;
+
+        [self deserializeBytes:&ns
+         length:sizeof(unsigned short)
+         atCursor:cursor];
+        *(unsigned short*)data = NSSwapBigShortToHost(ns);
+        return;
+    }
+    case _C_INT:
+    case _C_UINT:
+    {
+        unsigned ni;
+
+        [self deserializeBytes:&ni
+         length:sizeof(unsigned)
+         atCursor:cursor];
+        *(unsigned*)data = NSSwapBigIntToHost(ni);
+        return;
+    }
+    case _C_LNG:
+    case _C_ULNG:
+    {
+        unsigned long nl;
+
+        [self deserializeBytes:&nl
+         length:sizeof(unsigned long)
+         atCursor:cursor];
+        *(unsigned long*)data = NSSwapBigLongToHost(nl);
+        return;
+    }
+    case _C_LNG_LNG:
+    case _C_ULNG_LNG:
+    {
+        unsigned long long nl;
+
+        [self deserializeBytes:&nl
+         length:sizeof(unsigned long long)
+         atCursor:cursor];
+        *(unsigned long long*)data = NSSwapBigLongLongToHost(nl);
+        return;
+    }
+    case _C_FLT:
+    {
+        NSSwappedFloat nf;
+
+        [self deserializeBytes:&nf
+         length:sizeof(NSSwappedFloat)
+         atCursor:cursor];
+        *(float*)data = NSSwapBigFloatToHost(nf);
+        return;
+    }
+    case _C_DBL:
+    {
+        NSSwappedDouble nd;
+
+        [self deserializeBytes:&nd
+         length:sizeof(NSSwappedDouble)
+         atCursor:cursor];
+        *(double*)data = NSSwapBigDoubleToHost(nd);
+        return;
+    }
+    case _C_CLASS:
+    {
+        uint16_t ni;
+
+        [self deserializeBytes:&ni
+         length:sizeof(ni)
+         atCursor:cursor];
+        ni = GSSwapBigI16ToHost(ni);
+        if (ni == 0)
         {
-            unsigned long nl;
-            
-            [self deserializeBytes: &nl
-                            length: sizeof(unsigned long)
-                          atCursor: cursor];
-            *(unsigned long*)data = NSSwapBigLongToHost(nl);
-            return;
+            *(Class*)data = 0;
         }
-        case _C_LNG_LNG:
-        case _C_ULNG_LNG:
+        else
         {
-            unsigned long long nl;
-            
-            [self deserializeBytes: &nl
-                            length: sizeof(unsigned long long)
-                          atCursor: cursor];
-            *(unsigned long long*)data = NSSwapBigLongLongToHost(nl);
-            return;
-        }
-        case _C_FLT:
-        {
-            NSSwappedFloat nf;
-            
-            [self deserializeBytes: &nf
-                            length: sizeof(NSSwappedFloat)
-                          atCursor: cursor];
-            *(float*)data = NSSwapBigFloatToHost(nf);
-            return;
-        }
-        case _C_DBL:
-        {
-            NSSwappedDouble nd;
-            
-            [self deserializeBytes: &nd
-                            length: sizeof(NSSwappedDouble)
-                          atCursor: cursor];
-            *(double*)data = NSSwapBigDoubleToHost(nd);
-            return;
-        }
-        case _C_CLASS:
-        {
-            uint16_t ni;
-            
-            [self deserializeBytes: &ni
-                            length: sizeof(ni)
-                          atCursor: cursor];
-            ni = GSSwapBigI16ToHost(ni);
-            if (ni == 0)
+            char name[ni+1];
+            Class c;
+
+            [self deserializeBytes:name
+             length:ni
+             atCursor:cursor];
+            name[ni] = '\0';
+            c = objc_lookUpClass(name);
+            if (c == 0)
             {
-                *(Class*)data = 0;
+                NSLog(@"[%s %s] can't find class - %s",
+                      class_getName([self class]),
+                      sel_getName(_cmd), name);
             }
-            else
-            {
-                char  name[ni+1];
-                Class c;
-                
-                [self deserializeBytes: name
-                                length: ni
-                              atCursor: cursor];
-                name[ni] = '\0';
-                c = objc_lookUpClass(name);
-                if (c == 0)
-                {
-                    NSLog(@"[%s %s] can't find class - %s",
-                          class_getName([self class]),
-                          sel_getName(_cmd), name);
-                }
-                *(Class*)data = c;
-            }
-            return;
+            *(Class*)data = c;
         }
-        case _C_SEL:
+        return;
+    }
+    case _C_SEL:
+    {
+        uint16_t ln;
+        uint16_t lt;
+
+        [self deserializeBytes:&ln
+         length:sizeof(ln)
+         atCursor:cursor];
+        ln = GSSwapBigI16ToHost(ln);
+        [self deserializeBytes:&lt
+         length:sizeof(lt)
+         atCursor:cursor];
+        lt = GSSwapBigI16ToHost(lt);
+        if (ln == 0)
         {
-            uint16_t  ln;
-            uint16_t  lt;
-            
-            [self deserializeBytes: &ln
-                            length: sizeof(ln)
-                          atCursor: cursor];
-            ln = GSSwapBigI16ToHost(ln);
-            [self deserializeBytes: &lt
-                            length: sizeof(lt)
-                          atCursor: cursor];
-            lt = GSSwapBigI16ToHost(lt);
-            if (ln == 0)
-            {
-                *(SEL*)data = 0;
-            }
-            else
-            {
-                char  name[ln+1];
-                char  types[lt+1];
-                SEL sel;
-                
-                [self deserializeBytes: name
-                                length: ln
-                              atCursor: cursor];
-                name[ln] = '\0';
-                [self deserializeBytes: types
-                                length: lt
-                              atCursor: cursor];
-                types[lt] = '\0';
-                
-                if (lt)
-                {
-                    sel = sel_registerTypedName_np(name, types);
-                }
-                else
-                {
-                    sel = sel_registerTypedName_np(name, 0);
-                }
-                if (sel == 0)
-                {
-                    [NSException raise: NSInternalInconsistencyException
-                                format: @"can't make sel with name '%s' "
-                     @"and types '%s'", name, types];
-                }
-                *(SEL*)data = sel;
-            }
-            return;
+            *(SEL*)data = 0;
         }
-        default:
-            [NSException raise: NSGenericException
-                        format: @"Unknown type to deserialize - '%s'", type];
+        else
+        {
+            char name[ln+1];
+            char types[lt+1];
+            SEL sel;
+
+            [self deserializeBytes:name
+             length:ln
+             atCursor:cursor];
+            name[ln] = '\0';
+            [self deserializeBytes:types
+             length:lt
+             atCursor:cursor];
+            types[lt] = '\0';
+
+            sel = sel_getUid(name);
+            if (sel == 0)
+            {
+                [NSException raise:NSInternalInconsistencyException
+                 format:@"can't make sel with name '%s' "
+                        @"and types '%s'", name, types];
+            }
+            *(SEL*)data = sel;
+        }
+        return;
+    }
+    default:
+        [NSException raise:NSGenericException
+         format:@"Unknown type to deserialize - '%s'", type];
     }
 }
 
@@ -1007,11 +1130,11 @@ static IMP  appendImp;
  *  Retrieve an int from this data, which is assumed to be in network
  *  (big-endian) byte order.  Cursor refers to byte position.
  */
-- (int) deserializeIntAtCursor: (unsigned int*)cursor
+- (int)deserializeIntAtCursor:(unsigned int*)cursor
 {
     unsigned ni, result;
-    
-    [self deserializeBytes: &ni length: sizeof(unsigned) atCursor: cursor];
+
+    [self deserializeBytes:&ni length:sizeof(unsigned) atCursor:cursor];
     result = NSSwapBigIntToHost(ni);
     return result;
 }
@@ -1020,11 +1143,11 @@ static IMP  appendImp;
  *  Retrieve an int from this data, which is assumed to be in network
  *  (big-endian) byte order.  Index refers to byte position.
  */
-- (int) deserializeIntAtIndex: (unsigned int)index
+- (int)deserializeIntAtIndex:(unsigned int)index
 {
     unsigned ni, result;
-    
-    [self deserializeBytes: &ni length: sizeof(unsigned) atCursor: &index];
+
+    [self deserializeBytes:&ni length:sizeof(unsigned) atCursor:&index];
     result = NSSwapBigIntToHost(ni);
     return result;
 }
@@ -1034,15 +1157,15 @@ static IMP  appendImp;
  *  byte order.  Count refers to number of ints, but index refers to byte
  *  position.
  */
-- (void) deserializeInts: (int*)intBuffer
-                   count: (unsigned int)numInts
-                atCursor: (unsigned int*)cursor
+- (void)deserializeInts:(int*)intBuffer
+    count:(unsigned int)numInts
+    atCursor:(unsigned int*)cursor
 {
     unsigned i;
-    
-    [self deserializeBytes: &intBuffer
-                    length: numInts * sizeof(unsigned)
-                  atCursor: cursor];
+
+    [self deserializeBytes:&intBuffer
+     length:numInts * sizeof(unsigned)
+     atCursor:cursor];
     for (i = 0; i < numInts; i++)
         intBuffer[i] = NSSwapBigIntToHost(intBuffer[i]);
 }
@@ -1052,53 +1175,55 @@ static IMP  appendImp;
  *  byte order.  Count refers to number of ints, but index refers to byte
  *  position.
  */
-- (void) deserializeInts: (int*)intBuffer
-                   count: (unsigned int)numInts
-                 atIndex: (unsigned int)index
+- (void)deserializeInts:(int*)intBuffer
+    count:(unsigned int)numInts
+    atIndex:(unsigned int)index
 {
     unsigned i;
-    
-    [self deserializeBytes: &intBuffer
-                    length: numInts * sizeof(int)
-                  atCursor: &index];
+
+    [self deserializeBytes:&intBuffer
+     length:numInts * sizeof(int)
+     atCursor:&index];
     for (i = 0; i < numInts; i++)
     {
         intBuffer[i] = NSSwapBigIntToHost(intBuffer[i]);
     }
 }
 
-- (id) copyWithZone: (NSZone*)z
+- (id)copyWithZone:(NSZone*)z
 {
     if (NSShouldRetainWithZone(self, z) &&
-        [self isKindOfClass: [NSMutableData class]] == NO)
+        [self isKindOfClass:[NSMutableData class]] == NO) {
         return RETAIN(self);
-    else
-        return [[dataMalloc allocWithZone: z]
-                initWithBytes: [self bytes] length: [self length]];
+    }
+    else{
+        return [[dataMalloc allocWithZone:z]
+                initWithBytes:[self bytes] length:[self length]];
+    }
 }
 
-- (id) mutableCopyWithZone: (NSZone*)zone
+- (id)mutableCopyWithZone:(NSZone*)zone
 {
-    return [[mutableDataMalloc allocWithZone: zone]
-            initWithBytes: [self bytes] length: [self length]];
+    return [[mutableDataMalloc allocWithZone:zone]
+            initWithBytes:[self bytes] length:[self length]];
 }
 
-- (void) encodeWithCoder: (NSCoder*)coder
+- (void)encodeWithCoder:(NSCoder*)coder
 {
     if ([coder allowsKeyedCoding])
     {
-        [coder encodeObject: self];
+        [coder encodeObject:self];
     }
     else
     {
-        [coder encodeDataObject: self];
+        [coder encodeDataObject:self];
     }
 }
 
-- (id) initWithCoder: (NSCoder*)coder
+- (id)initWithCoder:(NSCoder*)coder
 {
-    id  obj = nil;
-    
+    id obj = nil;
+
     if ([coder allowsKeyedCoding])
     {
         // FIXME
@@ -1108,7 +1233,7 @@ static IMP  appendImp;
     {
         obj = [coder decodeDataObject];
     }
-    
+
     if (obj != self)
     {
         ASSIGN(self, obj);
@@ -1116,26 +1241,34 @@ static IMP  appendImp;
     return self;
 }
 
-- (BOOL) writeToFile: (NSString *)path
-             options: (NSUInteger)writeOptionsMask
-               error: (NSError **)errorPtr
+- (BOOL)writeToFile:(NSString *)path
+    options:(NSDataWritingOptions)writeOptionsMask
+    error:(NSError **)errorPtr
 {
-    return [[NSFileManager defaultManager] writeContentsOfFile:path bytes:[self bytes] length:[self length]];
+    BOOL atomically = (writeOptionsMask & NSDataWritingAtomic) != 0;
+    BOOL success = [[NSFileManager defaultManager] writeContentsOfFile:path bytes:[self bytes] length:[self length] atomically:atomically];
+
+    if (!success && errorPtr) {
+        //TODO: writeContentsOfFile should create an error object for us.
+        *errorPtr = [NSError errorWithDomain:@"default" code:0 userInfo:[NSDictionary dictionary]];
+    }
+
+    return success;
 }
 
-- (BOOL) writeToURL: (NSURL *)url
-            options: (NSUInteger)writeOptionsMask
-              error: (NSError **)errorPtr
+- (BOOL)writeToURL:(NSURL *)url
+    options:(NSDataWritingOptions)writeOptionsMask
+    error:(NSError **)errorPtr
 {
     if ([url isFileURL] == YES)
     {
-        return [self writeToFile: [url path]
-                         options: writeOptionsMask
-                           error: errorPtr];
+        return [self writeToFile:[url path]
+                options:writeOptionsMask
+                error:errorPtr];
     }
     else
     {
-        return [url setResourceData: self];
+        return [url setResourceData:self];
     }
     return NO;
 }
@@ -1149,13 +1282,13 @@ static IMP  appendImp;
 /**
  *  New instance with given shared memory ID.
  */
-+ (id) dataWithShmID: (int)anID length: (NSUInteger)length
++ (id)dataWithShmID:(int)anID length:(NSUInteger)length
 {
 #ifdef  HAVE_SHMCTL
     NSDataShared  *d;
-    
-    d = [NSDataShared allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithShmID: anID length: length];
+
+    d = [NSDataShared allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithShmID:anID length:length];
     return AUTORELEASE(d);
 #else
     NSLog(@"[NSData -dataWithSmdID:length:] no shared memory support");
@@ -1166,78 +1299,78 @@ static IMP  appendImp;
 /**
  *  New instance with given bytes in shared memory.
  */
-+ (id) dataWithSharedBytes: (const void*)bytes length: (NSUInteger)length
++ (id)dataWithSharedBytes:(const void*)bytes length:(NSUInteger)length
 {
     NSData  *d;
-    
+
 #ifdef  HAVE_SHMCTL
-    d = [NSDataShared allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithBytes: bytes length: length];
+    d = [NSDataShared allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithBytes:bytes length:length];
 #else
-    d = [dataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithBytes: bytes length: length];
+    d = [dataMalloc allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithBytes:bytes length:length];
 #endif
     return AUTORELEASE(d);
 }
 
-+ (id) dataWithStaticBytes: (const void*)bytes length: (NSUInteger)length
++ (id)dataWithStaticBytes:(const void*)bytes length:(NSUInteger)length
 {
     NSDataStatic  *d;
-    
-    d = [dataStatic allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithBytesNoCopy: (void*)bytes length: length freeWhenDone: NO];
+
+    d = [dataStatic allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithBytesNoCopy:(void*)bytes length:length freeWhenDone:NO];
     return AUTORELEASE(d);
 }
 
-- (void) deserializeTypeTag: (unsigned char*)tag
-                andCrossRef: (unsigned int*)ref
-                   atCursor: (unsigned int*)cursor
+- (void)deserializeTypeTag:(unsigned char*)tag
+    andCrossRef:(unsigned int*)ref
+    atCursor:(unsigned int*)cursor
 {
-    [self deserializeDataAt: (void*)tag
-                 ofObjCType: @encode(uint8_t)
-                   atCursor: cursor
-                    context: nil];
+    [self deserializeDataAt:(void*)tag
+     ofObjCType:@encode(uint8_t)
+     atCursor:cursor
+     context:nil];
     if (*tag & _GSC_MAYX)
     {
         switch (*tag & _GSC_SIZE)
         {
-            case _GSC_X_0:
-            {
-                return;
-            }
-            case _GSC_X_1:
-            {
-                uint8_t x;
-                
-                [self deserializeDataAt: (void*)&x
-                             ofObjCType: @encode(uint8_t)
-                               atCursor: cursor
-                                context: nil];
-                *ref = (unsigned int)x;
-                return;
-            }
-            case _GSC_X_2:
-            {
-                uint16_t  x;
-                
-                [self deserializeDataAt: (void*)&x
-                             ofObjCType: @encode(uint16_t)
-                               atCursor: cursor
-                                context: nil];
-                *ref = (unsigned int)x;
-                return;
-            }
-            default:
-            {
-                uint32_t  x;
-                
-                [self deserializeDataAt: (void*)&x
-                             ofObjCType: @encode(uint32_t)
-                               atCursor: cursor
-                                context: nil];
-                *ref = (unsigned int)x;
-                return;
-            }
+        case _GSC_X_0:
+        {
+            return;
+        }
+        case _GSC_X_1:
+        {
+            uint8_t x;
+
+            [self deserializeDataAt:(void*)&x
+             ofObjCType:@encode(uint8_t)
+             atCursor:cursor
+             context:nil];
+            *ref = (unsigned int)x;
+            return;
+        }
+        case _GSC_X_2:
+        {
+            uint16_t x;
+
+            [self deserializeDataAt:(void*)&x
+             ofObjCType:@encode(uint16_t)
+             atCursor:cursor
+             context:nil];
+            *ref = (unsigned int)x;
+            return;
+        }
+        default:
+        {
+            uint32_t x;
+
+            [self deserializeDataAt:(void*)&x
+             ofObjCType:@encode(uint32_t)
+             atCursor:cursor
+             context:nil];
+            *ref = (unsigned int)x;
+            return;
+        }
         }
     }
 }
@@ -1250,7 +1383,7 @@ static IMP  appendImp;
  *  replacing bytes in the buffer, which will be grown as needed.
  */
 @implementation NSMutableData
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
     if (self == NSMutableDataAbstract)
     {
@@ -1262,32 +1395,32 @@ static IMP  appendImp;
     }
 }
 
-+ (id) data
++ (id)data
 {
     NSMutableData *d;
-    
-    d = [mutableDataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithCapacity: 0];
+
+    d = [mutableDataMalloc allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithCapacity:0];
     return AUTORELEASE(d);
 }
 
-+ (id) dataWithBytes: (const void*)bytes
-              length: (NSUInteger)length
++ (id)dataWithBytes:(const void*)bytes
+    length:(NSUInteger)length
 {
     NSData  *d;
-    
-    d = [mutableDataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithBytes: bytes length: length];
+
+    d = [mutableDataMalloc allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithBytes:bytes length:length];
     return AUTORELEASE(d);
 }
 
-+ (id) dataWithBytesNoCopy: (void*)bytes
-                    length: (NSUInteger)length
++ (id)dataWithBytesNoCopy:(void*)bytes
+    length:(NSUInteger)length
 {
     NSData  *d;
-    
-    d = [mutableDataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithBytesNoCopy: bytes length: length];
+
+    d = [mutableDataMalloc allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithBytesNoCopy:bytes length:length];
     return AUTORELEASE(d);
 }
 
@@ -1295,51 +1428,51 @@ static IMP  appendImp;
  *  New instance with buffer of given numBytes with length of valid data set
  *  to zero.  Note that capacity will be automatically increased as necessary.
  */
-+ (id) dataWithCapacity: (NSUInteger)numBytes
++ (id)dataWithCapacity:(NSUInteger)numBytes
 {
     NSMutableData *d;
-    
-    d = [mutableDataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithCapacity: numBytes];
+
+    d = [mutableDataMalloc allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithCapacity:numBytes];
     return AUTORELEASE(d);
 }
 
-+ (id) dataWithContentsOfFile: (NSString*)path
++ (id)dataWithContentsOfFile:(NSString*)path
 {
     return [[[self alloc] initWithContentsOfFile:path] autorelease];
 }
 
-+ (id) dataWithContentsOfFile:(NSString *)path options:(NSUInteger)options error:(NSError **)errorp
++ (id)dataWithContentsOfFile:(NSString *)path options:(NSUInteger)options error:(NSError **)errorp
 {
     return [[[self alloc] initWithContentsOfFile:path] autorelease];
 }
 
-+ (id) dataWithContentsOfMappedFile: (NSString*)path
++ (id)dataWithContentsOfMappedFile:(NSString*)path
 {
     NSMutableData *d;
-    
-    d = [mutableDataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithContentsOfMappedFile: path];
+
+    d = [mutableDataMalloc allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithContentsOfMappedFile:path];
     return AUTORELEASE(d);
 }
 
-+ (id) dataWithContentsOfURL: (NSURL*)url
++ (id)dataWithContentsOfURL:(NSURL*)url
 {
     NSMutableData *d;
     NSData  *data;
-    
-    d = [mutableDataMalloc allocWithZone: NSDefaultMallocZone()];
-    data = [url resourceDataUsingCache: YES];
-    d = [d initWithBytes: [data bytes] length: [data length]];
+
+    d = [mutableDataMalloc allocWithZone:NSDefaultMallocZone()];
+    data = [url resourceDataUsingCache:YES];
+    d = [d initWithBytes:[data bytes] length:[data length]];
     return AUTORELEASE(d);
 }
 
-+ (id) dataWithData: (NSData*)data
++ (id)dataWithData:(NSData*)data
 {
     NSMutableData *d;
-    
-    d = [mutableDataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithBytes: [data bytes] length: [data length]];
+
+    d = [mutableDataMalloc allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithBytes:[data bytes] length:[data length]];
     return AUTORELEASE(d);
 }
 
@@ -1349,49 +1482,49 @@ static IMP  appendImp;
  *  valid data is set to zero.  Note that buffer will be automatically
  *  increased as necessary.
  */
-+ (id) dataWithLength: (NSUInteger)length
++ (id)dataWithLength:(NSUInteger)length
 {
     NSMutableData *d;
-    
-    d = [mutableDataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithLength: length];
+
+    d = [mutableDataMalloc allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithLength:length];
     return AUTORELEASE(d);
 }
 
-+ (id) new
++ (id)new
 {
     NSMutableData *d;
-    
-    d = [mutableDataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithCapacity: 0];
+
+    d = [mutableDataMalloc allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithCapacity:0];
     return d;
 }
 
-- (const void*) bytes
+- (const void*)bytes
 {
     return [self mutableBytes];
 }
 
-- (void) encodeWithCoder: (NSCoder*)aCoder
+- (void)encodeWithCoder:(NSCoder*)aCoder
 {
-    unsigned  length = [self length];
+    unsigned length = [self length];
     void    *bytes = [self mutableBytes];
-    
+
     if ([aCoder allowsKeyedCoding])
     {
-        [aCoder encodeBytes: bytes
-                     length: length
-                     forKey:@"NS.data"]; 
+        [aCoder encodeBytes:bytes
+         length:length
+         forKey:@"NS.data"];
     }
     else
-    {  
-        [aCoder encodeValueOfObjCType: @encode(unsigned int)
-                                   at: &length];
+    {
+        [aCoder encodeValueOfObjCType:@encode(unsigned int)
+         at:&length];
         if (length)
         {
-            [aCoder encodeArrayOfObjCType: @encode(unsigned char)
-                                    count: length
-                                       at: bytes];
+            [aCoder encodeArrayOfObjCType:@encode(unsigned char)
+             count:length
+             at:bytes];
         }
     }
 }
@@ -1401,38 +1534,34 @@ static IMP  appendImp;
  *  data is initially set to zero.
  *  <init/>
  */
-- (id) initWithCapacity: (NSUInteger)capacity
+- (id)initWithCapacity:(NSUInteger)capacity
 {
-    [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
     return nil;
 }
 
-- (id) initWithCoder: (NSCoder*)aCoder
+- (id)initWithCoder:(NSCoder*)aCoder
 {
     if ([aCoder allowsKeyedCoding])
     {
         const uint8_t *data;
-        NSUInteger  l;
-        
-        
-        data = [aCoder decodeBytesForKey: @"NS.data"
-                          returnedLength: &l]; 
-        self = [self initWithBytes: data length: l];
+        NSUInteger l;
+
+
+        data = [aCoder decodeBytesForKey:@"NS.data"
+                returnedLength:&l];
+        self = [self initWithBytes:data length:l];
     }
     else
-    {  
-        unsigned  l;
-        
-        [aCoder decodeValueOfObjCType: @encode(unsigned int) at: &l];
+    {
+        unsigned l;
+
+        [aCoder decodeValueOfObjCType:@encode(unsigned int) at:&l];
         if (l)
         {
             void *b;
-            
-#if GS_WITH_GC
-            b = NSAllocateCollectable(l, 0);
-#else
+
             b = NSZoneMalloc([self zone], l);
-#endif
             if (b == 0)
             {
                 NSLog(@"[NSDataMalloc -initWithCoder:] unable to get %u bytes",
@@ -1440,12 +1569,12 @@ static IMP  appendImp;
                 DESTROY(self);
                 return nil;
             }
-            [aCoder decodeArrayOfObjCType: @encode(unsigned char) count: l at: b];
-            self = [self initWithBytesNoCopy: b length: l];
+            [aCoder decodeArrayOfObjCType:@encode(unsigned char) count:l at:b];
+            self = [self initWithBytesNoCopy:b length:l];
         }
         else
         {
-            self = [self initWithBytesNoCopy: 0 length: 0];
+            self = [self initWithBytesNoCopy:0 length:0];
         }
     }
     return self;
@@ -1461,9 +1590,9 @@ static IMP  appendImp;
  *  Initialize with buffer of capacity equal to length, and with the length
  *  of valid data set to length.  Data is set to zero.
  */
-- (id) initWithLength: (NSUInteger)length
+- (id)initWithLength:(NSUInteger)length
 {
-    [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
     return nil;
 }
 
@@ -1472,9 +1601,9 @@ static IMP  appendImp;
  *  Increases buffer length by given number of bytes, filling the new space
  *  with zeros.
  */
-- (void) increaseLengthBy: (NSUInteger)extraLength
+- (void)increaseLengthBy:(NSUInteger)extraLength
 {
-    [self setLength: [self length]+extraLength];
+    [self setLength:[self length]+extraLength];
 }
 
 /**
@@ -1488,9 +1617,9 @@ static IMP  appendImp;
  *   if you write a subclass of NSMutableData.
  * </p>
  */
-- (void) setLength: (NSUInteger)size
+- (void)setLength:(NSUInteger)size
 {
-    [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
 }
 
 /**
@@ -1511,9 +1640,9 @@ static IMP  appendImp;
  *   if you write a subclass of NSMutableData.
  * </p>
  */
-- (void*) mutableBytes
+- (void*)mutableBytes
 {
-    [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
     return 0;
 }
 
@@ -1523,13 +1652,13 @@ static IMP  appendImp;
  *  Appends bufferSize bytes from aBuffer to data, increasing capacity if
  *  necessary.
  */
-- (void) appendBytes: (const void*)aBuffer
-              length: (NSUInteger)bufferSize
+- (void)appendBytes:(const void*)aBuffer
+    length:(NSUInteger)bufferSize
 {
-    unsigned  oldLength = [self length];
+    unsigned oldLength = [self length];
     void*   buffer;
-    
-    [self setLength: oldLength + bufferSize];
+
+    [self setLength:oldLength + bufferSize];
     buffer = [self mutableBytes];
     memcpy(buffer + oldLength, aBuffer, bufferSize);
 }
@@ -1538,9 +1667,9 @@ static IMP  appendImp;
  *  Copies and appends data from other to data, increasing capacity if
  *  necessary.
  */
-- (void) appendData: (NSData*)other
+- (void)appendData:(NSData*)other
 {
-    [self appendBytes: [other bytes] length: [other length]];
+    [self appendBytes:[other bytes] length:[other length]];
 }
 
 /**
@@ -1553,22 +1682,22 @@ static IMP  appendImp;
  * of the data, then the size of the data is increased to
  * accommodate the new bytes.<br />
  */
-- (void) replaceBytesInRange: (NSRange)aRange
-                   withBytes: (const void*)bytes
+- (void)replaceBytesInRange:(NSRange)aRange
+    withBytes:(const void*)bytes
 {
-    unsigned  size = [self length];
-    unsigned  need = NSMaxRange(aRange);
-    
+    unsigned size = [self length];
+    unsigned need = NSMaxRange(aRange);
+
     if (aRange.location > size)
     {
-        [NSException raise: NSRangeException
-                    format: @"location bad in replaceByteInRange:withBytes:"];
+        [NSException raise:NSRangeException
+         format:@"location bad in replaceByteInRange:withBytes:"];
     }
     if (aRange.length > 0)
     {
         if (need > size)
         {
-            [self setLength: need];
+            [self setLength:need];
         }
         memmove([self mutableBytes] + aRange.location, bytes, aRange.length);
     }
@@ -1579,24 +1708,24 @@ static IMP  appendImp;
  * the specified length of data from the buffer pointed to by bytes.<br />
  * The size of the receiver is adjusted to allow for the change.
  */
-- (void) replaceBytesInRange: (NSRange)aRange
-                   withBytes: (const void*)bytes
-                      length: (NSUInteger)length
+- (void)replaceBytesInRange:(NSRange)aRange
+    withBytes:(const void*)bytes
+    length:(NSUInteger)length
 {
-    unsigned  size = [self length];
-    unsigned  end = NSMaxRange(aRange);
-    int   shift = length - aRange.length;
-    unsigned  need = size + shift;
+    unsigned size = [self length];
+    unsigned end = NSMaxRange(aRange);
+    int shift = length - aRange.length;
+    unsigned need = size + shift;
     void    *buf;
-    
+
     if (aRange.location > size)
     {
-        [NSException raise: NSRangeException
-                    format: @"location bad in replaceByteInRange:withBytes:"];
+        [NSException raise:NSRangeException
+         format:@"location bad in replaceByteInRange:withBytes:"];
     }
     if (need > size)
     {
-        [self setLength: need];
+        [self setLength:need];
     }
     buf = [self mutableBytes];
     if (shift < 0)
@@ -1624,17 +1753,17 @@ static IMP  appendImp;
     }
     if (need < size)
     {
-        [self setLength: need];
+        [self setLength:need];
     }
 }
 
 /**
  *  Set bytes in aRange to 0.
  */
-- (void) resetBytesInRange: (NSRange)aRange
+- (void)resetBytesInRange:(NSRange)aRange
 {
-    unsigned  size = [self length];
-    
+    unsigned size = [self length];
+
     GS_RANGE_CHECK(aRange, size);
     memset((char*)[self bytes] + aRange.location, 0, aRange.length);
 }
@@ -1643,12 +1772,12 @@ static IMP  appendImp;
  *  Replaces contents of buffer with contents of data's buffer, increasing
  *  or shrinking capacity to match.
  */
-- (void) setData: (NSData*)data
+- (void)setData:(NSData*)data
 {
     NSRange r = NSMakeRange(0, [data length]);
-    
-    [self setCapacity: r.length];
-    [self replaceBytesInRange: r withBytes: [data bytes]];
+
+    [self setCapacity:r.length];
+    [self replaceBytesInRange:r withBytes:[data bytes]];
 }
 
 // Serializing Data
@@ -1657,177 +1786,180 @@ static IMP  appendImp;
  *  Does not act as the name suggests.  Instead, serializes length itself
  *  as an int into buffer.
  */
-- (void) serializeAlignedBytesLength: (unsigned int)length
+- (void)serializeAlignedBytesLength:(unsigned int)length
 {
-    [self serializeInt: length];
+    [self serializeInt:length];
 }
 
-- (void) serializeDataAt: (const void*)data
-              ofObjCType: (const char*)type
-                 context: (id <NSObjCTypeSerializationCallBack>)callback
+- (void)serializeDataAt:(const void*)data
+    ofObjCType:(const char*)type
+    context:(id <NSObjCTypeSerializationCallBack>)callback
 {
-    if (!data || !type)
+    if (!data || !type) {
         return;
-    
+    }
+
     switch (*type)
     {
-        case _C_ID:
-            [callback serializeObjectAt: (id*)data
-                             ofObjCType: type
-                               intoData: self];
-            return;
-            
-        case _C_CHARPTR:
+    case _C_ID:
+        [callback serializeObjectAt:(id*)data
+         ofObjCType:type
+         intoData:self];
+        return;
+
+    case _C_CHARPTR:
+    {
+        uint32_t len;
+        uint32_t ni;
+
+        if (!*(void**)data)
         {
-            uint32_t  len;
-            uint32_t  ni;
-            
-            if (!*(void**)data)
-            {
-                ni = (uint32_t)-1;
-                ni = GSSwapHostI32ToBig(ni);
-                [self appendBytes: (void*)&ni length: sizeof(ni)];
-                return;
-            }
-            len = (uint32_t)strlen(*(void**)data);
-            ni = GSSwapHostI32ToBig(len);
-            [self appendBytes: (void*)&ni length: sizeof(ni)];
-            [self appendBytes: *(void**)data length: len];
+            ni = (uint32_t)-1;
+            ni = GSSwapHostI32ToBig(ni);
+            [self appendBytes:(void*)&ni length:sizeof(ni)];
             return;
         }
-        case _C_ARY_B:
+        len = (uint32_t)strlen(*(void**)data);
+        ni = GSSwapHostI32ToBig(len);
+        [self appendBytes:(void*)&ni length:sizeof(ni)];
+        [self appendBytes:*(void**)data length:len];
+        return;
+    }
+    case _C_ARY_B:
+    {
+        unsigned offset = 0;
+        unsigned size;
+        unsigned count = atoi(++type);
+        unsigned i;
+
+        while (isdigit(*type))
         {
-            unsigned  offset = 0;
-            unsigned  size;
-            unsigned  count = atoi(++type);
-            unsigned  i;
-            
-            while (isdigit(*type))
-            {
-                type++;
-            }
-            size = objc_sizeof_type(type);
-            
-            for (i = 0; i < count; i++)
-            {
-                [self serializeDataAt: (char*)data + offset
-                           ofObjCType: type
-                              context: callback];
-                offset += size;
-            }
-            return;
+            type++;
         }
-        case _C_STRUCT_B:
+        size = objc_sizeof_type(type);
+
+        for (i = 0; i < count; i++)
         {
-            struct objc_struct_layout layout;
-            
-            objc_layout_structure (type, &layout);
-            while (objc_layout_structure_next_member (&layout))
-            {
-                unsigned    offset;
-                unsigned    align;
-                const char  *ftype;
-                
-                objc_layout_structure_get_info (&layout, &offset, &align, &ftype);
-                
-                [self serializeDataAt: ((char*)data) + offset
-                           ofObjCType: ftype
-                              context: callback];
-            }
-            return;
+            [self serializeDataAt:(char*)data + offset
+             ofObjCType:type
+             context:callback];
+            offset += size;
         }
-        case _C_PTR:
-            [self serializeDataAt: *(char**)data
-                       ofObjCType: ++type
-                          context: callback];
-            return;
-        case _C_CHR:
-        case _C_UCHR:
-            [self appendBytes: data length: sizeof(unsigned char)];
-            return;
-        case _C_SHT:
-        case _C_USHT:
+        return;
+    }
+    case _C_STRUCT_B:
+    {
+        DEBUG_BREAK();
+        // struct objc_struct_layout layout;
+
+        // objc_layout_structure (type, &layout);
+        // while (objc_layout_structure_next_member (&layout))
+        // {
+        //     unsigned    offset;
+        //     unsigned    align;
+        //     const char  *ftype;
+
+        //     objc_layout_structure_get_info (&layout, &offset, &align,
+        // &ftype);
+
+        //     [self serializeDataAt: ((char*)data) + offset
+        //                ofObjCType: ftype
+        //                   context: callback];
+        // }
+        return;
+    }
+    case _C_PTR:
+        [self serializeDataAt:*(char**)data
+         ofObjCType:++type
+         context:callback];
+        return;
+    case _C_CHR:
+    case _C_UCHR:
+        [self appendBytes:data length:sizeof(unsigned char)];
+        return;
+    case _C_SHT:
+    case _C_USHT:
+    {
+        unsigned short ns = NSSwapHostShortToBig(*(unsigned short*)data);
+        [self appendBytes:&ns length:sizeof(unsigned short)];
+        return;
+    }
+    case _C_INT:
+    case _C_UINT:
+    {
+        unsigned ni = NSSwapHostIntToBig(*(unsigned int*)data);
+        [self appendBytes:&ni length:sizeof(unsigned)];
+        return;
+    }
+    case _C_LNG:
+    case _C_ULNG:
+    {
+        unsigned long nl = NSSwapHostLongToBig(*(unsigned long*)data);
+        [self appendBytes:&nl length:sizeof(unsigned long)];
+        return;
+    }
+    case _C_LNG_LNG:
+    case _C_ULNG_LNG:
+    {
+        unsigned long long nl;
+
+        nl = NSSwapHostLongLongToBig(*(unsigned long long*)data);
+        [self appendBytes:&nl length:sizeof(unsigned long long)];
+        return;
+    }
+    case _C_FLT:
+    {
+        NSSwappedFloat nf = NSSwapHostFloatToBig(*(float*)data);
+
+        [self appendBytes:&nf length:sizeof(NSSwappedFloat)];
+        return;
+    }
+    case _C_DBL:
+    {
+        NSSwappedDouble nd = NSSwapHostDoubleToBig(*(double*)data);
+
+        [self appendBytes:&nd length:sizeof(NSSwappedDouble)];
+        return;
+    }
+    case _C_CLASS:
+    {
+        const char  *name = *(Class*)data ? class_getName(*(Class*)data) : "";
+        uint16_t ln = (uint16_t)strlen(name);
+        uint16_t ni;
+
+        ni = GSSwapHostI16ToBig(ln);
+        [self appendBytes:&ni length:sizeof(ni)];
+        if (ln)
         {
-            unsigned short ns = NSSwapHostShortToBig(*(unsigned short*)data);
-            [self appendBytes: &ns length: sizeof(unsigned short)];
-            return;
+            [self appendBytes:name length:ln];
         }
-        case _C_INT:
-        case _C_UINT:
+        return;
+    }
+    case _C_SEL:
+    {
+        const char  *name = *(SEL*)data ? sel_getName(*(SEL*)data) : "";
+        uint16_t ln = (name == 0) ? 0 : (uint16_t)strlen(name);
+        const char  *types = *(SEL*)data ? GSTypesFromSelector(*(SEL*)data) : "";
+        uint16_t lt = (types == 0) ? 0 : (uint16_t)strlen(types);
+        uint16_t ni;
+
+        ni = GSSwapHostI16ToBig(ln);
+        [self appendBytes:&ni length:sizeof(ni)];
+        ni = GSSwapHostI16ToBig(lt);
+        [self appendBytes:&ni length:sizeof(ni)];
+        if (ln)
         {
-            unsigned ni = NSSwapHostIntToBig(*(unsigned int*)data);
-            [self appendBytes: &ni length: sizeof(unsigned)];
-            return;
+            [self appendBytes:name length:ln];
         }
-        case _C_LNG:
-        case _C_ULNG:
+        if (lt)
         {
-            unsigned long nl = NSSwapHostLongToBig(*(unsigned long*)data);
-            [self appendBytes: &nl length: sizeof(unsigned long)];
-            return;
+            [self appendBytes:types length:lt];
         }
-        case _C_LNG_LNG:
-        case _C_ULNG_LNG:
-        {
-            unsigned long long nl;
-            
-            nl = NSSwapHostLongLongToBig(*(unsigned long long*)data);
-            [self appendBytes: &nl length: sizeof(unsigned long long)];
-            return;
-        }
-        case _C_FLT:
-        {
-            NSSwappedFloat nf = NSSwapHostFloatToBig(*(float*)data);
-            
-            [self appendBytes: &nf length: sizeof(NSSwappedFloat)];
-            return;
-        }
-        case _C_DBL:
-        {
-            NSSwappedDouble nd = NSSwapHostDoubleToBig(*(double*)data);
-            
-            [self appendBytes: &nd length: sizeof(NSSwappedDouble)];
-            return;
-        }
-        case _C_CLASS:
-        {
-            const char  *name = *(Class*)data?class_getName(*(Class*)data):"";
-            uint16_t  ln = (uint16_t)strlen(name);
-            uint16_t  ni;
-            
-            ni = GSSwapHostI16ToBig(ln);
-            [self appendBytes: &ni length: sizeof(ni)];
-            if (ln)
-            {
-                [self appendBytes: name length: ln];
-            }
-            return;
-        }
-        case _C_SEL:
-        {
-            const char  *name = *(SEL*)data?sel_getName(*(SEL*)data):"";
-            uint16_t  ln = (name == 0) ? 0 : (uint16_t)strlen(name);
-            const char  *types = *(SEL*)data?GSTypesFromSelector(*(SEL*)data):"";
-            uint16_t  lt = (types == 0) ? 0 : (uint16_t)strlen(types);
-            uint16_t  ni;
-            
-            ni = GSSwapHostI16ToBig(ln);
-            [self appendBytes: &ni length: sizeof(ni)];
-            ni = GSSwapHostI16ToBig(lt);
-            [self appendBytes: &ni length: sizeof(ni)];
-            if (ln)
-            {
-                [self appendBytes: name length: ln];
-            }
-            if (lt)
-            {
-                [self appendBytes: types length: lt];
-            }
-            return;
-        }
-        default:
-            [NSException raise: NSGenericException
-                        format: @"Unknown type to serialize - '%s'", type];
+        return;
+    }
+    default:
+        [NSException raise:NSGenericException
+         format:@"Unknown type to serialize - '%s'", type];
     }
 }
 
@@ -1835,10 +1967,10 @@ static IMP  appendImp;
  * Serialize an int into this object's data buffer, swapping it to network
  * (big-endian) byte order first.
  */
-- (void) serializeInt: (int)value
+- (void)serializeInt:(int)value
 {
     unsigned ni = NSSwapHostIntToBig(value);
-    [self appendBytes: &ni length: sizeof(unsigned)];
+    [self appendBytes:&ni length:sizeof(unsigned)];
 }
 
 /**
@@ -1846,25 +1978,25 @@ static IMP  appendImp;
  * anything there currently), swapping it to network (big-endian) byte order
  * first.
  */
-- (void) serializeInt: (int)value atIndex: (unsigned int)index
+- (void)serializeInt:(int)value atIndex:(unsigned int)index
 {
     unsigned ni = NSSwapHostIntToBig(value);
     NSRange range = { index, sizeof(int) };
-    
-    [self replaceBytesInRange: range withBytes: &ni];
+
+    [self replaceBytesInRange:range withBytes:&ni];
 }
 
 /**
  * Serialize one or more ints into this object's data buffer, swapping them to
  * network (big-endian) byte order first.
  */
-- (void) serializeInts: (int*)intBuffer
-                 count: (unsigned int)numInts
+- (void)serializeInts:(int*)intBuffer
+    count:(unsigned int)numInts
 {
-    unsigned  i;
-    SEL   sel = @selector(serializeInt:);
-    IMP   imp = [self methodForSelector: sel];
-    
+    unsigned i;
+    SEL sel = @selector(serializeInt:);
+    IMP imp = [self methodForSelector:sel];
+
     for (i = 0; i < numInts; i++)
     {
         (*imp)(self, sel, intBuffer[i]);
@@ -1876,17 +2008,17 @@ static IMP  appendImp;
  * (replacing anything there currently), swapping them to network (big-endian)
  * byte order first.
  */
-- (void) serializeInts: (int*)intBuffer
-                 count: (unsigned int)numInts
-               atIndex: (unsigned int)index
+- (void)serializeInts:(int*)intBuffer
+    count:(unsigned int)numInts
+    atIndex:(unsigned int)index
 {
-    unsigned  i;
-    SEL   sel = @selector(serializeInt:atIndex:);
-    IMP   imp = [self methodForSelector: sel];
-    
+    unsigned i;
+    SEL sel = @selector(serializeInt:atIndex:);
+    IMP imp = [self methodForSelector:sel];
+
     for (i = 0; i < numInts; i++)
     {
-        (*imp)(self, sel, intBuffer[i], index++);
+        (*imp)(self, sel, intBuffer[i], index ++);
     }
 }
 
@@ -1901,13 +2033,13 @@ static IMP  appendImp;
 /**
  *  New instance with given shared memory ID.
  */
-+ (id) dataWithShmID: (int)anID length: (NSUInteger)length
++ (id)dataWithShmID:(int)anID length:(NSUInteger)length
 {
 #ifdef  HAVE_SHMCTL
     NSDataShared  *d;
-    
-    d = [NSMutableDataShared allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithShmID: anID length: length];
+
+    d = [NSMutableDataShared allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithShmID:anID length:length];
     return AUTORELEASE(d);
 #else
     NSLog(@"[NSMutableData -dataWithSmdID:length:] no shared memory support");
@@ -1918,16 +2050,16 @@ static IMP  appendImp;
 /**
  *  New instance with given bytes in shared memory.
  */
-+ (id) dataWithSharedBytes: (const void*)bytes length: (NSUInteger)length
++ (id)dataWithSharedBytes:(const void*)bytes length:(NSUInteger)length
 {
     NSData  *d;
-    
+
 #ifdef  HAVE_SHMCTL
-    d = [NSMutableDataShared allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithBytes: bytes length: length];
+    d = [NSMutableDataShared allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithBytes:bytes length:length];
 #else
-    d = [mutableDataMalloc allocWithZone: NSDefaultMallocZone()];
-    d = [d initWithBytes: bytes length: length];
+    d = [mutableDataMalloc allocWithZone:NSDefaultMallocZone()];
+    d = [d initWithBytes:bytes length:length];
 #endif
     return AUTORELEASE(d);
 }
@@ -1935,9 +2067,9 @@ static IMP  appendImp;
 /**
  *  Returns current capacity of data buffer.
  */
-- (NSUInteger) capacity
+- (NSUInteger)capacity
 {
-    [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
     return 0;
 }
 
@@ -1945,65 +2077,65 @@ static IMP  appendImp;
  *  Sets current capacity of data buffer.  Unlike [-setLength:], this will
  *  shrink the buffer if requested.
  */
-- (id) setCapacity: (NSUInteger)newCapacity
+- (id)setCapacity:(NSUInteger)newCapacity
 {
-    [self subclassResponsibility: _cmd];
+    [self subclassResponsibility:_cmd];
     return nil;
 }
 
 /**
  *  Return shared memory ID, if using one, else -1.
  */
-- (int) shmID
+- (int)shmID
 {
     return -1;
 }
 
-- (void) serializeTypeTag: (unsigned char)tag
+- (void)serializeTypeTag:(unsigned char)tag
 {
-    [self serializeDataAt: (void*)&tag
-               ofObjCType: @encode(unsigned char)
-                  context: nil];
+    [self serializeDataAt:(void*)&tag
+     ofObjCType:@encode(unsigned char)
+     context:nil];
 }
 
-- (void) serializeTypeTag: (unsigned char)tag
-              andCrossRef: (unsigned int)xref
+- (void)serializeTypeTag:(unsigned char)tag
+    andCrossRef:(unsigned int)xref
 {
     if (xref <= 0xff)
     {
         uint8_t x = (uint8_t)xref;
-        
+
         tag = (tag & ~_GSC_SIZE) | _GSC_X_1;
-        [self serializeDataAt: (void*)&tag
-                   ofObjCType: @encode(unsigned char)
-                      context: nil];
-        [self serializeDataAt: (void*)&x
-                   ofObjCType: @encode(uint8_t)
-                      context: nil];
+        [self serializeDataAt:(void*)&tag
+         ofObjCType:@encode(unsigned char)
+         context:nil];
+        [self serializeDataAt:(void*)&x
+         ofObjCType:@encode(uint8_t)
+         context:nil];
     }
     else if (xref <= 0xffff)
     {
-        uint16_t  x = (uint16_t)xref;
-        
+        uint16_t x = (uint16_t)xref;
+
         tag = (tag & ~_GSC_SIZE) | _GSC_X_2;
-        [self serializeDataAt: (void*)&tag
-                   ofObjCType: @encode(unsigned char)
-                      context: nil];
-        [self serializeDataAt: (void*)&x
-                   ofObjCType: @encode(uint16_t)
-                      context: nil];
+        [self serializeDataAt:(void*)&tag
+         ofObjCType:@encode(unsigned char)
+         context:nil];
+        [self serializeDataAt:(void*)&x
+         ofObjCType:@encode(uint16_t)
+         context:nil];
     }
     else
     {
-        uint32_t  x = (uint32_t)xref;
-        
+        uint32_t x = (uint32_t)xref;
+
         tag = (tag & ~_GSC_SIZE) | _GSC_X_4;
-        [self serializeDataAt: (void*)&tag
-                   ofObjCType: @encode(unsigned char)
-                      context: nil];
-        [self serializeDataAt: (void*)&x
-                   ofObjCType: @encode(uint32_t)
-                      context: nil];
+        [self serializeDataAt:(void*)&tag
+         ofObjCType:@encode(unsigned char)
+         context:nil];
+        [self serializeDataAt:(void*)&x
+         ofObjCType:@encode(uint32_t)
+         context:nil];
     }
 }
 @end
@@ -2015,67 +2147,67 @@ static IMP  appendImp;
  */
 @implementation NSDataStatic
 
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
     return (NSData*)NSAllocateObject(self, 0, z);
 }
 
 /*  Creation and Destruction of objects.  */
 
-- (id) copyWithZone: (NSZone*)z
+- (id)copyWithZone:(NSZone*)z
 {
     return RETAIN(self);
 }
 
-- (id) mutableCopyWithZone: (NSZone*)z
+- (id)mutableCopyWithZone:(NSZone*)z
 {
-    return [[mutableDataMalloc allocWithZone: z]
-            initWithBytes: bytes length: length];
+    return [[mutableDataMalloc allocWithZone:z]
+            initWithBytes:bytes length:length];
 }
 
-- (void) dealloc
+- (void)dealloc
 {
     bytes = 0;
     length = 0;
     [super dealloc];
 }
 
-- (id) initWithBytesNoCopy: (void*)aBuffer
-                    length: (NSUInteger)bufferSize
-              freeWhenDone: (BOOL)shouldFree
+- (id)initWithBytesNoCopy:(void*)aBuffer
+    length:(NSUInteger)bufferSize
+    freeWhenDone:(BOOL)shouldFree
 {
     // FIXME(salem): shouldfree ignored
     if (bytes == 0 && length > 0)
     {
-        [NSException raise: NSInvalidArgumentException
-                    format: @"[%@-initWithBytesNoCopy:length:freeWhenDone:] called with "
-         @"length but null bytes", NSStringFromClass([self class])];
+        [NSException raise:NSInvalidArgumentException
+         format:@"[%@-initWithBytesNoCopy:length:freeWhenDone:] called with "
+                @"length but null bytes", NSStringFromClass([self class])];
     }
     bytes = aBuffer;
     length = bufferSize;
     return self;
 }
 
-- (Class) classForCoder
+- (Class)classForCoder
 {
     return NSDataAbstract;
 }
 
 /* Basic methods  */
 
-- (const void*) bytes
+- (const void*)bytes
 {
     return bytes;
 }
 
-- (void) getBytes: (void*)buffer
-            range: (NSRange)aRange
+- (void)getBytes:(void*)buffer
+    range:(NSRange)aRange
 {
     GS_RANGE_CHECK(aRange, length);
     memcpy(buffer, bytes + aRange.location, aRange.length);
 }
 
-- (NSUInteger) length
+- (NSUInteger)length
 {
     return length;
 }
@@ -2085,18 +2217,18 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 {
     if (*pos > limit || len > limit || len+*pos > limit)
     {
-        [NSException raise: NSRangeException
-                    format: @"Range: (%u, %u) Size: %d",
+        [NSException raise:NSRangeException
+         format:@"Range: (%u, %u) Size: %d",
          *pos, len, limit];
     }
     memcpy(dst, src + *pos, len);
     *pos += len;
 }
 
-- (void) deserializeDataAt: (void*)data
-                ofObjCType: (const char*)type
-                  atCursor: (unsigned int*)cursor
-                   context: (id <NSObjCTypeSerializationCallBack>)callback
+- (void)deserializeDataAt:(void*)data
+    ofObjCType:(const char*)type
+    atCursor:(unsigned int*)cursor
+    context:(id <NSObjCTypeSerializationCallBack>)callback
 {
     if (data == 0 || type == 0)
     {
@@ -2110,313 +2242,302 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
         }
         return;
     }
-    
+
     switch (*type)
     {
-        case _C_ID:
+    case _C_ID:
+    {
+        [callback deserializeObjectAt:data
+         ofObjCType:type
+         fromData:self
+         atCursor:cursor];
+        return;
+    }
+    case _C_CHARPTR:
+    {
+        int32_t len;
+
+        [self deserializeBytes:&len
+         length:sizeof(len)
+         atCursor:cursor];
+        len = GSSwapBigI32ToHost(len);
+        if (len == -1)
         {
-            [callback deserializeObjectAt: data
-                               ofObjCType: type
-                                 fromData: self
-                                 atCursor: cursor];
+            *(const char**)data = 0;
             return;
         }
-        case _C_CHARPTR:
+        else
         {
-            int32_t len;
-            
-            [self deserializeBytes: &len
-                            length: sizeof(len)
-                          atCursor: cursor];
-            len = GSSwapBigI32ToHost(len);
-            if (len == -1)
-            {
-                *(const char**)data = 0;
-                return;
-            }
-            else
-            {
-#if GS_WITH_GC
-                *(char**)data = (char*)NSAllocateCollectable(len+1, 0);
-#else
-                *(char**)data = (char*)NSZoneMalloc(NSDefaultMallocZone(), len+1);
-#endif
-                if (*(char**)data == 0)
-                {
-                    [NSException raise: NSMallocException
-                                format: @"out of memory to deserialize bytes"];
-                }
-            }
-            getBytes(*(void**)data, bytes, len, length, cursor);
-            (*(char**)data)[len] = '\0';
-            return;
-        }
-        case _C_ARY_B:
-        {
-            unsigned  offset = 0;
-            unsigned  size;
-            unsigned  count = atoi(++type);
-            unsigned  i;
-            
-            while (isdigit(*type))
-            {
-                type++;
-            }
-            size = objc_sizeof_type(type);
-            
-            for (i = 0; i < count; i++)
-            {
-                [self deserializeDataAt: (char*)data + offset
-                             ofObjCType: type
-                               atCursor: cursor
-                                context: callback];
-                offset += size;
-            }
-            return;
-        }
-        case _C_STRUCT_B:
-        {
-            struct objc_struct_layout layout;
-            
-            objc_layout_structure (type, &layout);
-            while (objc_layout_structure_next_member (&layout))
-            {
-                unsigned    offset;
-                unsigned    align;
-                const char  *ftype;
-                
-                objc_layout_structure_get_info (&layout, &offset, &align, &ftype);
-                
-                [self deserializeDataAt: ((char*)data) + offset
-                             ofObjCType: ftype
-                               atCursor: cursor
-                                context: callback];
-            }
-            return;
-        }
-        case _C_PTR:
-        {
-            unsigned  len = objc_sizeof_type(++type);
-            
-#if GS_WITH_GC
-            *(char**)data = (char*)NSAllocateCollectable(len, 0);
-#else
-            *(char**)data = (char*)NSZoneMalloc(NSDefaultMallocZone(), len);
-#endif
+            *(char**)data = (char*)NSZoneMalloc(NSDefaultMallocZone(), len+1);
             if (*(char**)data == 0)
             {
-                [NSException raise: NSMallocException
-                            format: @"out of memory to deserialize bytes"];
+                [NSException raise:NSMallocException
+                 format:@"out of memory to deserialize bytes"];
             }
-            [self deserializeDataAt: *(char**)data
-                         ofObjCType: type
-                           atCursor: cursor
-                            context: callback];
-            return;
         }
-        case _C_CHR:
-        case _C_UCHR:
+        getBytes(*(void**)data, bytes, len, length, cursor);
+        (*(char**)data)[len] = '\0';
+        return;
+    }
+    case _C_ARY_B:
+    {
+        unsigned offset = 0;
+        unsigned size;
+        unsigned count = atoi(++type);
+        unsigned i;
+
+        while (isdigit(*type))
         {
-            getBytes(data, bytes, sizeof(unsigned char), length, cursor);
-            return;
+            type++;
         }
-        case _C_SHT:
-        case _C_USHT:
+        size = objc_sizeof_type(type);
+
+        for (i = 0; i < count; i++)
         {
-            unsigned short ns;
-            
-            getBytes((void*)&ns, bytes, sizeof(ns), length, cursor);
-            *(unsigned short*)data = NSSwapBigShortToHost(ns);
-            return;
+            [self deserializeDataAt:(char*)data + offset
+             ofObjCType:type
+             atCursor:cursor
+             context:callback];
+            offset += size;
         }
-        case _C_INT:
-        case _C_UINT:
+        return;
+    }
+    case _C_STRUCT_B:
+    {
+        DEBUG_BREAK();
+        // struct objc_struct_layout layout;
+
+        // objc_layout_structure (type, &layout);
+        // while (objc_layout_structure_next_member (&layout))
+        // {
+        //     unsigned    offset;
+        //     unsigned    align;
+        //     const char  *ftype;
+
+        //     objc_layout_structure_get_info (&layout, &offset, &align,
+        // &ftype);
+
+        //     [self deserializeDataAt: ((char*)data) + offset
+        //                  ofObjCType: ftype
+        //                    atCursor: cursor
+        //                     context: callback];
+        // }
+        return;
+    }
+    case _C_PTR:
+    {
+        unsigned len = objc_sizeof_type(++type);
+
+        *(char**)data = (char*)NSZoneMalloc(NSDefaultMallocZone(), len);
+        if (*(char**)data == 0)
         {
-            unsigned ni;
-            
-            getBytes((void*)&ni, bytes, sizeof(ni), length, cursor);
-            *(unsigned*)data = NSSwapBigIntToHost(ni);
-            return;
+            [NSException raise:NSMallocException
+             format:@"out of memory to deserialize bytes"];
         }
-        case _C_LNG:
-        case _C_ULNG:
+        [self deserializeDataAt:*(char**)data
+         ofObjCType:type
+         atCursor:cursor
+         context:callback];
+        return;
+    }
+    case _C_CHR:
+    case _C_UCHR:
+    {
+        getBytes(data, bytes, sizeof(unsigned char), length, cursor);
+        return;
+    }
+    case _C_SHT:
+    case _C_USHT:
+    {
+        unsigned short ns;
+
+        getBytes((void*)&ns, bytes, sizeof(ns), length, cursor);
+        *(unsigned short*)data = NSSwapBigShortToHost(ns);
+        return;
+    }
+    case _C_INT:
+    case _C_UINT:
+    {
+        unsigned ni;
+
+        getBytes((void*)&ni, bytes, sizeof(ni), length, cursor);
+        *(unsigned*)data = NSSwapBigIntToHost(ni);
+        return;
+    }
+    case _C_LNG:
+    case _C_ULNG:
+    {
+        unsigned long nl;
+
+        getBytes((void*)&nl, bytes, sizeof(nl), length, cursor);
+        *(unsigned long*)data = NSSwapBigLongToHost(nl);
+        return;
+    }
+    case _C_LNG_LNG:
+    case _C_ULNG_LNG:
+    {
+        unsigned long long nl;
+
+        getBytes((void*)&nl, bytes, sizeof(nl), length, cursor);
+        *(unsigned long long*)data = NSSwapBigLongLongToHost(nl);
+        return;
+    }
+    case _C_FLT:
+    {
+        NSSwappedFloat nf;
+
+        getBytes((void*)&nf, bytes, sizeof(nf), length, cursor);
+        *(float*)data = NSSwapBigFloatToHost(nf);
+        return;
+    }
+    case _C_DBL:
+    {
+        NSSwappedDouble nd;
+
+        getBytes((void*)&nd, bytes, sizeof(nd), length, cursor);
+        *(double*)data = NSSwapBigDoubleToHost(nd);
+        return;
+    }
+    case _C_CLASS:
+    {
+        uint16_t ni;
+
+        getBytes((void*)&ni, bytes, sizeof(ni), length, cursor);
+        ni = GSSwapBigI16ToHost(ni);
+        if (ni == 0)
         {
-            unsigned long nl;
-            
-            getBytes((void*)&nl, bytes, sizeof(nl), length, cursor);
-            *(unsigned long*)data = NSSwapBigLongToHost(nl);
-            return;
+            *(Class*)data = 0;
         }
-        case _C_LNG_LNG:
-        case _C_ULNG_LNG:
+        else
         {
-            unsigned long long nl;
-            
-            getBytes((void*)&nl, bytes, sizeof(nl), length, cursor);
-            *(unsigned long long*)data = NSSwapBigLongLongToHost(nl);
-            return;
-        }
-        case _C_FLT:
-        {
-            NSSwappedFloat nf;
-            
-            getBytes((void*)&nf, bytes, sizeof(nf), length, cursor);
-            *(float*)data = NSSwapBigFloatToHost(nf);
-            return;
-        }
-        case _C_DBL:
-        {
-            NSSwappedDouble nd;
-            
-            getBytes((void*)&nd, bytes, sizeof(nd), length, cursor);
-            *(double*)data = NSSwapBigDoubleToHost(nd);
-            return;
-        }
-        case _C_CLASS:
-        {
-            uint16_t  ni;
-            
-            getBytes((void*)&ni, bytes, sizeof(ni), length, cursor);
-            ni = GSSwapBigI16ToHost(ni);
-            if (ni == 0)
+            char name[ni+1];
+            Class c;
+
+            getBytes((void*)name, bytes, ni, length, cursor);
+            name[ni] = '\0';
+            c = objc_lookUpClass(name);
+            if (c == 0)
             {
-                *(Class*)data = 0;
+                NSLog(@"[%s %s] can't find class - %s",
+                      class_getName([self class]),
+                      sel_getName(_cmd), name);
             }
-            else
-            {
-                char  name[ni+1];
-                Class c;
-                
-                getBytes((void*)name, bytes, ni, length, cursor);
-                name[ni] = '\0';
-                c = objc_lookUpClass(name);
-                if (c == 0)
-                {
-                    NSLog(@"[%s %s] can't find class - %s",
-                          class_getName([self class]),
-                          sel_getName(_cmd), name);
-                }
-                *(Class*)data = c;
-            }
-            return;
+            *(Class*)data = c;
         }
-        case _C_SEL:
+        return;
+    }
+    case _C_SEL:
+    {
+        uint16_t ln;
+        uint16_t lt;
+
+        getBytes((void*)&ln, bytes, sizeof(ln), length, cursor);
+        ln = GSSwapBigI16ToHost(ln);
+        getBytes((void*)&lt, bytes, sizeof(lt), length, cursor);
+        lt = GSSwapBigI16ToHost(lt);
+        if (ln == 0)
         {
-            uint16_t  ln;
-            uint16_t  lt;
-            
-            getBytes((void*)&ln, bytes, sizeof(ln), length, cursor);
-            ln = GSSwapBigI16ToHost(ln);
-            getBytes((void*)&lt, bytes, sizeof(lt), length, cursor);
-            lt = GSSwapBigI16ToHost(lt);
-            if (ln == 0)
-            {
-                *(SEL*)data = 0;
-            }
-            else
-            {
-                char  name[ln+1];
-                char  types[lt+1];
-                SEL sel;
-                
-                getBytes((void*)name, bytes, ln, length, cursor);
-                name[ln] = '\0';
-                getBytes((void*)types, bytes, lt, length, cursor);
-                types[lt] = '\0';
-                
-                if (lt)
-                {
-                    sel = sel_registerTypedName_np(name, types);
-                }
-                else
-                {
-                    sel = sel_registerName(name);
-                }
-                if (sel == 0)
-                {
-                    [NSException raise: NSInternalInconsistencyException
-                                format: @"can't make sel with name '%s' "
-                     @"and types '%s'", name, types];
-                }
-                *(SEL*)data = sel;
-            }
-            return;
+            *(SEL*)data = 0;
         }
-        default:
-            [NSException raise: NSGenericException
-                        format: @"Unknown type to deserialize - '%s'", type];
+        else
+        {
+            char name[ln+1];
+            char types[lt+1];
+            SEL sel;
+
+            getBytes((void*)name, bytes, ln, length, cursor);
+            name[ln] = '\0';
+            getBytes((void*)types, bytes, lt, length, cursor);
+            types[lt] = '\0';
+
+            sel = sel_getUid(name);
+            if (sel == 0)
+            {
+                [NSException raise:NSInternalInconsistencyException
+                 format:@"can't make sel with name '%s' "
+                        @"and types '%s'", name, types];
+            }
+            *(SEL*)data = sel;
+        }
+        return;
+    }
+    default:
+        [NSException raise:NSGenericException
+         format:@"Unknown type to deserialize - '%s'", type];
     }
 }
 
-- (void) deserializeTypeTag: (unsigned char*)tag
-                andCrossRef: (unsigned int*)ref
-                   atCursor: (unsigned int*)cursor
+- (void)deserializeTypeTag:(unsigned char*)tag
+    andCrossRef:(unsigned int*)ref
+    atCursor:(unsigned int*)cursor
 {
     if (*cursor >= length)
     {
-        [NSException raise: NSRangeException
-                    format: @"Range: (%u, 1) Size: %d", *cursor, length];
+        [NSException raise:NSRangeException
+         format:@"Range: (%u, 1) Size: %d", *cursor, length];
     }
     *tag = *((unsigned char*)bytes + (*cursor)++);
     if (*tag & _GSC_MAYX)
     {
         switch (*tag & _GSC_SIZE)
         {
-            case _GSC_X_0:
+        case _GSC_X_0:
+        {
+            return;
+        }
+        case _GSC_X_1:
+        {
+            if (*cursor >= length)
             {
-                return;
+                [NSException raise:NSRangeException
+                 format:@"Range: (%u, 1) Size: %d",
+                 *cursor, length];
             }
-            case _GSC_X_1:
+            *ref = (unsigned int)*((unsigned char*)bytes + (*cursor)++);
+            return;
+        }
+        case _GSC_X_2:
+        {
+            uint16_t x;
+
+            if (*cursor >= length-1)
             {
-                if (*cursor >= length)
-                {
-                    [NSException raise: NSRangeException
-                                format: @"Range: (%u, 1) Size: %d",
-                     *cursor, length];
-                }
-                *ref = (unsigned int)*((unsigned char*)bytes + (*cursor)++);
-                return;
+                [NSException raise:NSRangeException
+                 format:@"Range: (%u, 1) Size: %d",
+                 *cursor, length];
             }
-            case _GSC_X_2:
-            {
-                uint16_t  x;
-                
-                if (*cursor >= length-1)
-                {
-                    [NSException raise: NSRangeException
-                                format: @"Range: (%u, 1) Size: %d",
-                     *cursor, length];
-                }
 #if NEED_WORD_ALIGNMENT
-                if ((*cursor % __alignof__(uint16_t)) != 0)
-                    memcpy(&x, (bytes + *cursor), 2);
-                else
-#endif
-                    x = *(uint16_t*)(bytes + *cursor);
-                *cursor += 2;
-                *ref = (unsigned int)GSSwapBigI16ToHost(x);
-                return;
+            if ((*cursor % __alignof__(uint16_t)) != 0) {
+                memcpy(&x, (bytes + *cursor), 2);
             }
-            default:
+            else
+#endif
+            x = *(uint16_t*)(bytes + *cursor);
+            *cursor += 2;
+            *ref = (unsigned int)GSSwapBigI16ToHost(x);
+            return;
+        }
+        default:
+        {
+            uint32_t x;
+
+            if (*cursor >= length-3)
             {
-                uint32_t  x;
-                
-                if (*cursor >= length-3)
-                {
-                    [NSException raise: NSRangeException
-                                format: @"Range: (%u, 1) Size: %d",
-                     *cursor, length];
-                }
-#if NEED_WORD_ALIGNMENT
-                if ((*cursor % __alignof__(uint32_t)) != 0)
-                    memcpy(&x, (bytes + *cursor), 4);
-                else
-#endif
-                    x = *(uint32_t*)(bytes + *cursor);
-                *cursor += 4;
-                *ref = (unsigned int)GSSwapBigI32ToHost(x);
-                return;
+                [NSException raise:NSRangeException
+                 format:@"Range: (%u, 1) Size: %d",
+                 *cursor, length];
             }
+#if NEED_WORD_ALIGNMENT
+            if ((*cursor % __alignof__(uint32_t)) != 0) {
+                memcpy(&x, (bytes + *cursor), 4);
+            }
+            else
+#endif
+            x = *(uint32_t*)(bytes + *cursor);
+            *cursor += 4;
+            *ref = (unsigned int)GSSwapBigI32ToHost(x);
+            return;
+        }
         }
     }
 }
@@ -2425,7 +2546,7 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 
 
 @implementation NSDataEmpty
-- (void) dealloc
+- (void)dealloc
 {
     GSNOSUPERDEALLOC;
 }
@@ -2434,16 +2555,18 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 
 @implementation NSDataMalloc
 
-- (id) copyWithZone: (NSZone*)z
+- (id)copyWithZone:(NSZone*)z
 {
-    if (NSShouldRetainWithZone(self, z))
+    if (NSShouldRetainWithZone(self, z)) {
         return RETAIN(self);
-    else
-        return [[dataMalloc allocWithZone: z]
-                initWithBytes: bytes length: length];
+    }
+    else{
+        return [[dataMalloc allocWithZone:z]
+                initWithBytes:bytes length:length];
+    }
 }
 
-- (void) dealloc
+- (void)dealloc
 {
     if (bytes != 0)
     {
@@ -2453,26 +2576,20 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
     [super dealloc];
 }
 
-- (id) initWithBytesNoCopy: (void*)aBuffer
-                    length: (NSUInteger)bufferSize
-              freeWhenDone: (BOOL)shouldFree
+- (id)initWithBytesNoCopy:(void*)aBuffer
+    length:(NSUInteger)bufferSize
+    freeWhenDone:(BOOL)shouldFree
 {
     if (aBuffer == 0 && bufferSize > 0)
     {
-        [NSException raise: NSInvalidArgumentException
-                    format: @"[%@-initWithBytesNoCopy:length:freeWhenDone:] called with "
-         @"length but null bytes", NSStringFromClass([self class])];
+        [NSException raise:NSInvalidArgumentException
+         format:@"[%@-initWithBytesNoCopy:length:freeWhenDone:] called with "
+                @"length but null bytes", NSStringFromClass([self class])];
     }
     if (shouldFree == NO)
     {
         GSPrivateSwizzle(self, dataStatic);
     }
-#if GS_WITH_GC
-    else if (aBuffer != 0 && GSPrivateIsCollectable(aBuffer) == NO)
-    {
-        GSPrivateSwizzle(self, dataFinalized);
-    }
-#endif
     bytes = aBuffer;
     length = bufferSize;
     return self;
@@ -2480,31 +2597,20 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 
 @end
 
-#if GS_WITH_GC
-@implementation NSDataFinalized
-- (void) finalize
-{
-    NSZoneFree(NSDefaultMallocZone(), bytes);
-    [super finalize];
-}
-@end
-#endif
 
-
-#ifdef  HAVE_MMAP
 @implementation NSDataMappedFile
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
     return (NSData*)NSAllocateObject([NSDataMappedFile class], 0, z);
 }
 
-- (void) dealloc
+- (void)dealloc
 {
     [self finalize];
     [super dealloc];
 }
 
-- (void) finalize
+- (void)finalize
 {
     if (bytes != 0)
     {
@@ -2519,28 +2625,20 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
  *  only "swapped in" as needed.  File should not be moved or deleted for
  *  the life of this object.
  */
-- (id) initWithContentsOfMappedFile: (NSString*)path
+- (id)initWithContentsOfMappedFile:(NSString*)path
 {
-    int   fd;
-  
-#if defined(__MINGW__)
-    const unichar *thePath = (const unichar*)[path filesystemRepresentation];
-#else
+    int fd;
+
     const char  *thePath = [path fileSystemRepresentation];
-#endif
-    
-    if (thePath == 0) 
+
+    if (thePath == 0)
     {
         NSWarnMLog(@"Open (%@) attempt failed - bad path", path);
         DESTROY(self);
         return nil;
     }
-    
-#if defined(__MINGW__)
-    fd = _wopen(thePath, _O_RDONLY);
-#else
+
     fd = open(thePath, O_RDONLY);
-#endif
     if (fd < 0)
     {
         NSWarnMLog(@"unable to open %@ - %@", path, [NSError _last]);
@@ -2548,14 +2646,15 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
         return nil;
     }
     /* Find size of file to be mapped. */
-    length = lseek(fd, 0, SEEK_END);
-    if (length < 0)
+    off_t offset = lseek(fd, 0, SEEK_END);
+    if (offset < 0)
     {
         NSWarnMLog(@"unable to seek to eof %@ - %@", path, [NSError _last]);
         close(fd);
         DESTROY(self);
         return nil;
     }
+    length = offset;
     /* Position at start of file. */
     if (lseek(fd, 0, SEEK_SET) != 0)
     {
@@ -2570,39 +2669,42 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
         NSWarnMLog(@"mapping failed for %s - %@", path, [NSError _last]);
         close(fd);
         DESTROY(self);
-        self = [dataMalloc allocWithZone: NSDefaultMallocZone()];
-        self = [self initWithContentsOfFile: path];
+        self = [dataMalloc allocWithZone:NSDefaultMallocZone()];
+        self = [self initWithContentsOfFile:path];
     }
     close(fd);
     return self;
 }
 
 @end
-#endif  /* HAVE_MMAP  */
 
 #ifdef  HAVE_SHMCTL
 @implementation NSDataShared
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
     return (NSData*)NSAllocateObject([NSDataShared class], 0, z);
 }
 
-- (void) dealloc
+- (void)dealloc
 {
     if (bytes != 0)
     {
         struct shmid_ds buf;
-        
-        if (shmctl(shmid, IPC_STAT, &buf) < 0)
+
+        if (shmctl(shmid, IPC_STAT, &buf) < 0) {
             NSLog(@"[NSDataShared -dealloc] shared memory control failed - %@",
                   [NSError _last]);
-        else if (buf.shm_nattch == 1)
-            if (shmctl(shmid, IPC_RMID, &buf) < 0)  /* Mark for deletion. */
+        }
+        else if (buf.shm_nattch == 1) {
+            if (shmctl(shmid, IPC_RMID, &buf) < 0) { /* Mark for deletion. */
                 NSLog(@"[NSDataShared -dealloc] shared memory delete failed - %@",
                       [NSError _last]);
-        if (shmdt(bytes) < 0)
+            }
+        }
+        if (shmdt(bytes) < 0) {
             NSLog(@"[NSDataShared -dealloc] shared memory detach failed - %@",
                   [NSError _last]);
+        }
         bytes = 0;
         length = 0;
         shmid = -1;
@@ -2610,16 +2712,16 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
     [super dealloc];
 }
 
-- (id) initWithBytes: (const void*)aBuffer length: (NSUInteger)bufferSize
+- (id)initWithBytes:(const void*)aBuffer length:(NSUInteger)bufferSize
 {
     shmid = -1;
     if (bufferSize > 0)
     {
         if (aBuffer == 0)
         {
-            [NSException raise: NSInvalidArgumentException
-                        format: @"[%@-initWithBytes:length:] called with "
-             @"length but null bytes", NSStringFromClass([self class])];
+            [NSException raise:NSInvalidArgumentException
+             format:@"[%@-initWithBytes:length:] called with "
+                    @"length but null bytes", NSStringFromClass([self class])];
         }
         shmid = shmget(IPC_PRIVATE, bufferSize, IPC_CREAT|VM_RDONLY);
         if (shmid == -1)      /* Created memory? */
@@ -2627,10 +2729,10 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
             NSLog(@"[-initWithBytes:length:] shared mem get failed for %u - %@",
                   bufferSize, [NSError _last]);
             DESTROY(self);
-            self = [dataMalloc allocWithZone: NSDefaultMallocZone()];
-            return [self initWithBytes: aBuffer length: bufferSize];
+            self = [dataMalloc allocWithZone:NSDefaultMallocZone()];
+            return [self initWithBytes:aBuffer length:bufferSize];
         }
-        
+
         bytes = shmat(shmid, 0, 0);
         if (bytes == (void*)-1)
         {
@@ -2638,18 +2740,18 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
                   bufferSize, [NSError _last]);
             bytes = 0;
             DESTROY(self);
-            self = [dataMalloc allocWithZone: NSDefaultMallocZone()];
-            return [self initWithBytes: aBuffer length: bufferSize];
+            self = [dataMalloc allocWithZone:NSDefaultMallocZone()];
+            return [self initWithBytes:aBuffer length:bufferSize];
         }
         length = bufferSize;
     }
     return self;
 }
 
-- (id) initWithShmID: (int)anId length: (NSUInteger)bufferSize
+- (id)initWithShmID:(int)anId length:(NSUInteger)bufferSize
 {
     struct shmid_ds buf;
-    
+
     shmid = anId;
     if (shmctl(shmid, IPC_STAT, &buf) < 0)
     {
@@ -2678,7 +2780,7 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
     return self;
 }
 
-- (int) shmID
+- (int)shmID
 {
     return shmid;
 }
@@ -2688,7 +2790,7 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 
 
 @implementation NSMutableDataMalloc
-+ (void) initialize
++ (void)initialize
 {
     if (self == [NSMutableDataMalloc class])
     {
@@ -2696,25 +2798,24 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
     }
 }
 
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
     return (NSData*)NSAllocateObject(mutableDataMalloc, 0, z);
 }
 
-- (Class) classForCoder
+- (Class)classForCoder
 {
     return NSMutableDataAbstract;
 }
 
-- (id) copyWithZone: (NSZone*)z
+- (id)copyWithZone:(NSZone*)z
 {
-    return [[dataMalloc allocWithZone: z]
-            initWithBytes: bytes length: length];
+    return [[dataMalloc allocWithZone:z]
+            initWithBytes:bytes length:length];
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-#if !GS_WITH_GC
     if (bytes != 0)
     {
         if (zone != 0)
@@ -2723,22 +2824,21 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
         }
         bytes = 0;
     }
-#endif
     [super dealloc];
 }
 
-- (id) initWithBytes: (const void*)aBuffer length: (NSUInteger)bufferSize
+- (id)initWithBytes:(const void*)aBuffer length:(NSUInteger)bufferSize
 {
-    self = [self initWithCapacity: bufferSize];
+    self = [self initWithCapacity:bufferSize];
     if (self)
     {
         if (bufferSize > 0)
         {
             if (aBuffer == 0)
             {
-                [NSException raise: NSInvalidArgumentException
-                            format: @"[%@-initWithBytes:length:] called with "
-                 @"length but null bytes", NSStringFromClass([self class])];
+                [NSException raise:NSInvalidArgumentException
+                 format:@"[%@-initWithBytes:length:] called with "
+                        @"length but null bytes", NSStringFromClass([self class])];
             }
             length = bufferSize;
             memcpy(bytes, aBuffer, length);
@@ -2747,34 +2847,25 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
     return self;
 }
 
-- (id) initWithBytesNoCopy: (void*)aBuffer
-                    length: (NSUInteger)bufferSize
-              freeWhenDone: (BOOL)shouldFree
+- (id)initWithBytesNoCopy:(void*)aBuffer
+    length:(NSUInteger)bufferSize
+    freeWhenDone:(BOOL)shouldFree
 {
     if (aBuffer == 0)
     {
         if (bufferSize > 0)
         {
-            [NSException raise: NSInvalidArgumentException
-                        format: @"[%@-initWithBytesNoCopy:length:freeWhenDone:] called with "
-             @"length but null bytes", NSStringFromClass([self class])];
+            [NSException raise:NSInvalidArgumentException
+             format:@"[%@-initWithBytesNoCopy:length:freeWhenDone:] called with "
+                    @"length but null bytes", NSStringFromClass([self class])];
         }
-        self = [self initWithCapacity: bufferSize];
-        [self setLength: 0];
+        self = [self initWithCapacity:bufferSize];
+        [self setLength:0];
         return self;
     }
-#if GS_WITH_GC
-    if (shouldFree == YES && GSPrivateIsCollectable(aBuffer) == NO)
-    {
-        GSPrivateSwizzle(self, mutableDataFinalized);
-    }
-#endif
-    self = [self initWithCapacity: 0];
+    self = [self initWithCapacity:0];
     if (self)
     {
-#if GS_WITH_GC
-        owned = shouldFree; // Free memory on finalisation.
-#else
         if (shouldFree == NO)
         {
             zone = 0;   // Don't free this memory.
@@ -2783,7 +2874,6 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
         {
             zone = NSZoneFromPointer(aBuffer);
         }
-#endif
         bytes = aBuffer;
         length = bufferSize;
         capacity = bufferSize;
@@ -2801,16 +2891,12 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
  *  Initialize with buffer capable of holding size bytes.
  *  <init/>
  */
-- (id) initWithCapacity: (NSUInteger)size
+- (id)initWithCapacity:(NSUInteger)size
 {
     if (size)
     {
-#if GS_WITH_GC
-        bytes = NSAllocateCollectable(size, 0);
-#else
         zone = [self zone];
         bytes = NSZoneMalloc(zone, size);
-#endif
         if (bytes == 0)
         {
             NSLog(@"[NSMutableDataMalloc -initWithCapacity:] out of memory "
@@ -2826,7 +2912,7 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
         growth = 1;
     }
     length = 0;
-    
+
     return self;
 }
 
@@ -2834,9 +2920,9 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
  *  Initialize with buffer capable of holding size bytes.  Buffer is zeroed
  *  out.
  */
-- (id) initWithLength: (NSUInteger)size
+- (id)initWithLength:(NSUInteger)size
 {
-    self = [self initWithCapacity: size];
+    self = [self initWithCapacity:size];
     if (self)
     {
         memset(bytes, '\0', size);
@@ -2845,93 +2931,94 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
     return self;
 }
 
-- (id) initWithContentsOfMappedFile: (NSString *)path
+- (id)initWithContentsOfMappedFile:(NSString *)path
 {
-    return [self initWithContentsOfFile: path];
+    return [self initWithContentsOfFile:path];
 }
 
-- (void) appendBytes: (const void*)aBuffer
-              length: (NSUInteger)bufferSize
+- (void)appendBytes:(const void*)aBuffer
+    length:(NSUInteger)bufferSize
 {
     if (bufferSize > 0)
     {
-        unsigned  oldLength = length;
-        unsigned  minimum = length + bufferSize;
-        
+        unsigned oldLength = length;
+        unsigned minimum = length + bufferSize;
+
         if (aBuffer == 0)
         {
-            [NSException raise: NSInvalidArgumentException
-                        format: @"[%@-appendBytes:length:] called with "
-             @"length but null bytes", NSStringFromClass([self class])];
+            [NSException raise:NSInvalidArgumentException
+             format:@"[%@-appendBytes:length:] called with "
+                    @"length but null bytes", NSStringFromClass([self class])];
+            return;
         }
         if (minimum > capacity)
         {
-            [self _grow: minimum];
+            [self _grow:minimum];
         }
         memcpy(bytes + oldLength, aBuffer, bufferSize);
         length = minimum;
     }
 }
 
-- (NSUInteger) capacity
+- (NSUInteger)capacity
 {
     return capacity;
 }
 
-- (void) _grow: (NSUInteger)minimum
+- (void)_grow:(NSUInteger)minimum
 {
     if (minimum > capacity)
     {
-        unsigned  nextCapacity = capacity + growth;
-        unsigned  nextGrowth = capacity ? capacity : 1;
-        
+        unsigned nextCapacity = capacity + growth;
+        unsigned nextGrowth = capacity ? capacity : 1;
+
         while (nextCapacity < minimum)
         {
-            unsigned  tmp = nextCapacity + nextGrowth;
-            
+            unsigned tmp = nextCapacity + nextGrowth;
+
             nextGrowth = nextCapacity;
             nextCapacity = tmp;
         }
-        [self setCapacity: nextCapacity];
+        [self setCapacity:nextCapacity];
         growth = nextGrowth;
     }
 }
 
-- (void*) mutableBytes
+- (void*)mutableBytes
 {
     return bytes;
 }
 
-- (void) replaceBytesInRange: (NSRange)aRange
-                   withBytes: (const void*)moreBytes
+- (void)replaceBytesInRange:(NSRange)aRange
+    withBytes:(const void*)moreBytes
 {
-    unsigned  need = NSMaxRange(aRange);
-    
+    unsigned need = NSMaxRange(aRange);
+
     if (aRange.location > length)
     {
-        [NSException raise: NSRangeException
-                    format: @"location bad in replaceBytesInRange:withBytes:"];
+        [NSException raise:NSRangeException
+         format:@"location bad in replaceBytesInRange:withBytes:"];
     }
     if (aRange.length > 0)
     {
         if (moreBytes == 0)
         {
-            [NSException raise: NSInvalidArgumentException
-                        format: @"[%@-replaceBytesInRange:withBytes:] called with "
-             @"range but null bytes", NSStringFromClass([self class])];
+            [NSException raise:NSInvalidArgumentException
+             format:@"[%@-replaceBytesInRange:withBytes:] called with "
+                    @"range but null bytes", NSStringFromClass([self class])];
         }
         if (need > length)
         {
-            [self setCapacity: need];
+            [self setCapacity:need];
             length = need;
         }
         memcpy(bytes + aRange.location, moreBytes, aRange.length);
     }
 }
 
-- (void) serializeDataAt: (const void*)data
-              ofObjCType: (const char*)type
-                 context: (id <NSObjCTypeSerializationCallBack>)callback
+- (void)serializeDataAt:(const void*)data
+    ofObjCType:(const char*)type
+    context:(id <NSObjCTypeSerializationCallBack>)callback
 {
     if (data == 0 || type == 0)
     {
@@ -2947,233 +3034,235 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
     }
     switch (*type)
     {
-        case _C_ID:
-            [callback serializeObjectAt: (id*)data
-                             ofObjCType: type
-                               intoData: self];
-            return;
-            
-        case _C_CHARPTR:
+    case _C_ID:
+        [callback serializeObjectAt:(id*)data
+         ofObjCType:type
+         intoData:self];
+        return;
+
+    case _C_CHARPTR:
+    {
+        unsigned len;
+        int32_t ni;
+        uint32_t minimum;
+
+        if (!*(void**)data)
         {
-            unsigned  len;
-            int32_t ni;
-            uint32_t  minimum;
-            
-            if (!*(void**)data)
-            {
-                ni = -1;
-                ni = GSSwapHostI32ToBig(ni);
-                [self appendBytes: (void*)&len length: sizeof(len)];
-                return;
-            }
-            len = strlen(*(void**)data);
-            ni = GSSwapHostI32ToBig(len);
-            minimum = length + len + sizeof(ni);
-            if (minimum > capacity)
-            {
-                [self _grow: minimum];
-            }
-            memcpy(bytes+length, &ni, sizeof(ni));
-            length += sizeof(ni);
-            if (len)
-            {
-                memcpy(bytes+length, *(void**)data, len);
-                length += len;
-            }
+            ni = -1;
+            ni = GSSwapHostI32ToBig(ni);
+            [self appendBytes:(void*)&len length:sizeof(len)];
             return;
         }
-        case _C_ARY_B:
+        len = strlen(*(void**)data);
+        ni = GSSwapHostI32ToBig(len);
+        minimum = length + len + sizeof(ni);
+        if (minimum > capacity)
         {
-            unsigned  offset = 0;
-            unsigned  size;
-            unsigned  count = atoi(++type);
-            unsigned  i;
-            uint32_t  minimum;
-            
-            while (isdigit(*type))
-            {
-                type++;
-            }
-            size = objc_sizeof_type(type);
-            
-            /*
-             *  Serialized objects are going to take up at least as much
-             *  space as the originals, so we can calculate a minimum space
-             *  we are going to need and make sure our buffer is big enough.
-             */
-            minimum = length + size*count;
-            if (minimum > capacity)
-            {
-                [self _grow: minimum];
-            }
-            
-            for (i = 0; i < count; i++)
-            {
-                [self serializeDataAt: (char*)data + offset
-                           ofObjCType: type
-                              context: callback];
-                offset += size;
-            }
-            return;
+            [self _grow:minimum];
         }
-        case _C_STRUCT_B:
+        memcpy(bytes+length, &ni, sizeof(ni));
+        length += sizeof(ni);
+        if (len)
         {
-            struct objc_struct_layout layout;
-            
-            objc_layout_structure (type, &layout);
-            while (objc_layout_structure_next_member (&layout))
-            {
-                unsigned    offset;
-                unsigned    align;
-                const char  *ftype;
-                
-                objc_layout_structure_get_info (&layout, &offset, &align, &ftype);
-                
-                [self serializeDataAt: ((char*)data) + offset
-                           ofObjCType: ftype
-                              context: callback];
-            }
-            return;
+            memcpy(bytes+length, *(void**)data, len);
+            length += len;
         }
-        case _C_PTR:
-            [self serializeDataAt: *(char**)data
-                       ofObjCType: ++type
-                          context: callback];
-            return;
-        case _C_CHR:
-        case _C_UCHR:
-            (*appendImp)(self, appendSel, data, sizeof(unsigned char));
-            return;
-        case _C_SHT:
-        case _C_USHT:
+        return;
+    }
+    case _C_ARY_B:
+    {
+        unsigned offset = 0;
+        unsigned size;
+        unsigned count = atoi(++type);
+        unsigned i;
+        uint32_t minimum;
+
+        while (isdigit(*type))
         {
-            unsigned short ns = NSSwapHostShortToBig(*(unsigned short*)data);
-            (*appendImp)(self, appendSel, &ns, sizeof(unsigned short));
-            return;
+            type++;
         }
-        case _C_INT:
-        case _C_UINT:
+        size = objc_sizeof_type(type);
+
+        /*
+         *  Serialized objects are going to take up at least as much
+         *  space as the originals, so we can calculate a minimum space
+         *  we are going to need and make sure our buffer is big enough.
+         */
+        minimum = length + size*count;
+        if (minimum > capacity)
         {
-            unsigned ni = NSSwapHostIntToBig(*(unsigned int*)data);
-            (*appendImp)(self, appendSel, &ni, sizeof(unsigned));
-            return;
+            [self _grow:minimum];
         }
-        case _C_LNG:
-        case _C_ULNG:
+
+        for (i = 0; i < count; i++)
         {
-            unsigned long nl = NSSwapHostLongToBig(*(unsigned long*)data);
-            (*appendImp)(self, appendSel, &nl, sizeof(unsigned long));
-            return;
+            [self serializeDataAt:(char*)data + offset
+             ofObjCType:type
+             context:callback];
+            offset += size;
         }
-        case _C_LNG_LNG:
-        case _C_ULNG_LNG:
+        return;
+    }
+    case _C_STRUCT_B:
+    {
+        DEBUG_BREAK();
+        // struct objc_struct_layout layout;
+
+        // objc_layout_structure (type, &layout);
+        // while (objc_layout_structure_next_member (&layout))
+        // {
+        //     unsigned    offset;
+        //     unsigned    align;
+        //     const char  *ftype;
+
+        //     objc_layout_structure_get_info (&layout, &offset, &align,
+        // &ftype);
+
+        //     [self serializeDataAt: ((char*)data) + offset
+        //                ofObjCType: ftype
+        //                   context: callback];
+        // }
+        return;
+    }
+    case _C_PTR:
+        [self serializeDataAt:*(char**)data
+         ofObjCType:++type
+         context:callback];
+        return;
+    case _C_CHR:
+    case _C_UCHR:
+        (*appendImp)(self, appendSel, data, sizeof(unsigned char));
+        return;
+    case _C_SHT:
+    case _C_USHT:
+    {
+        unsigned short ns = NSSwapHostShortToBig(*(unsigned short*)data);
+        (*appendImp)(self, appendSel, &ns, sizeof(unsigned short));
+        return;
+    }
+    case _C_INT:
+    case _C_UINT:
+    {
+        unsigned ni = NSSwapHostIntToBig(*(unsigned int*)data);
+        (*appendImp)(self, appendSel, &ni, sizeof(unsigned));
+        return;
+    }
+    case _C_LNG:
+    case _C_ULNG:
+    {
+        unsigned long nl = NSSwapHostLongToBig(*(unsigned long*)data);
+        (*appendImp)(self, appendSel, &nl, sizeof(unsigned long));
+        return;
+    }
+    case _C_LNG_LNG:
+    case _C_ULNG_LNG:
+    {
+        unsigned long long nl;
+
+        nl = NSSwapHostLongLongToBig(*(unsigned long long*)data);
+        (*appendImp)(self, appendSel, &nl, sizeof(unsigned long long));
+        return;
+    }
+    case _C_FLT:
+    {
+        NSSwappedFloat nf = NSSwapHostFloatToBig(*(float*)data);
+        (*appendImp)(self, appendSel, &nf, sizeof(NSSwappedFloat));
+        return;
+    }
+    case _C_DBL:
+    {
+        NSSwappedDouble nd = NSSwapHostDoubleToBig(*(double*)data);
+        (*appendImp)(self, appendSel, &nd, sizeof(NSSwappedDouble));
+        return;
+    }
+    case _C_CLASS:
+    {
+        const char  *name = *(Class*)data ? class_getName(*(Class*)data) : "";
+        uint16_t ln = (uint16_t)strlen(name);
+        uint32_t minimum = length + ln + sizeof(uint16_t);
+        uint16_t ni;
+
+        if (minimum > capacity)
         {
-            unsigned long long nl;
-            
-            nl = NSSwapHostLongLongToBig(*(unsigned long long*)data);
-            (*appendImp)(self, appendSel, &nl, sizeof(unsigned long long));
-            return;
+            [self _grow:minimum];
         }
-        case _C_FLT:
+        ni = GSSwapHostI16ToBig(ln);
+        memcpy(bytes+length, &ni, sizeof(ni));
+        length += sizeof(ni);
+        if (ln)
         {
-            NSSwappedFloat nf = NSSwapHostFloatToBig(*(float*)data);
-            (*appendImp)(self, appendSel, &nf, sizeof(NSSwappedFloat));
-            return;
+            memcpy(bytes+length, name, ln);
+            length += ln;
         }
-        case _C_DBL:
+        return;
+    }
+    case _C_SEL:
+    {
+        const char  *name = *(SEL*)data ? sel_getName(*(SEL*)data) : "";
+        uint16_t ln = (name == 0) ? 0 : (uint16_t)strlen(name);
+        const char  *types = *(SEL*)data ? GSTypesFromSelector(*(SEL*)data) : "";
+        uint16_t lt = (types == 0) ? 0 : (uint16_t)strlen(types);
+        uint32_t minimum = length + ln + lt + 2*sizeof(uint16_t);
+        uint16_t ni;
+
+        if (minimum > capacity)
         {
-            NSSwappedDouble nd = NSSwapHostDoubleToBig(*(double*)data);
-            (*appendImp)(self, appendSel, &nd, sizeof(NSSwappedDouble));
-            return;
+            [self _grow:minimum];
         }
-        case _C_CLASS:
+        ni = GSSwapHostI16ToBig(ln);
+        memcpy(bytes+length, &ni, sizeof(ni));
+        length += sizeof(ni);
+        ni = GSSwapHostI16ToBig(lt);
+        memcpy(bytes+length, &ni, sizeof(ni));
+        length += sizeof(ni);
+        if (ln)
         {
-            const char  *name = *(Class*)data?class_getName(*(Class*)data):"";
-            uint16_t  ln = (uint16_t)strlen(name);
-            uint32_t  minimum = length + ln + sizeof(uint16_t);
-            uint16_t  ni;
-            
-            if (minimum > capacity)
-            {
-                [self _grow: minimum];
-            }
-            ni = GSSwapHostI16ToBig(ln);
-            memcpy(bytes+length, &ni, sizeof(ni));
-            length += sizeof(ni);
-            if (ln)
-            {
-                memcpy(bytes+length, name, ln);
-                length += ln;
-            }
-            return;
+            memcpy(bytes+length, name, ln);
+            length += ln;
         }
-        case _C_SEL:
+        if (lt)
         {
-            const char  *name = *(SEL*)data?sel_getName(*(SEL*)data):"";
-            uint16_t  ln = (name == 0) ? 0 : (uint16_t)strlen(name);
-            const char  *types = *(SEL*)data?GSTypesFromSelector(*(SEL*)data):"";
-            uint16_t  lt = (types == 0) ? 0 : (uint16_t)strlen(types);
-            uint32_t  minimum = length + ln + lt + 2*sizeof(uint16_t);
-            uint16_t  ni;
-            
-            if (minimum > capacity)
-            {
-                [self _grow: minimum];
-            }
-            ni = GSSwapHostI16ToBig(ln);
-            memcpy(bytes+length, &ni, sizeof(ni));
-            length += sizeof(ni);
-            ni = GSSwapHostI16ToBig(lt);
-            memcpy(bytes+length, &ni, sizeof(ni));
-            length += sizeof(ni);
-            if (ln)
-            {
-                memcpy(bytes+length, name, ln);
-                length += ln;
-            }
-            if (lt)
-            {
-                memcpy(bytes+length, types, lt);
-                length += lt;
-            }
-            return;
+            memcpy(bytes+length, types, lt);
+            length += lt;
         }
-        default:
-            [NSException raise: NSMallocException
-                        format: @"Unknown type to serialize - '%s'", type];
+        return;
+    }
+    default:
+        [NSException raise:NSMallocException
+         format:@"Unknown type to serialize - '%s'", type];
     }
 }
 
-- (void) serializeTypeTag: (unsigned char)tag
+- (void)serializeTypeTag:(unsigned char)tag
 {
     if (length == capacity)
     {
-        [self _grow: length + 1];
+        [self _grow:length + 1];
     }
     ((unsigned char*)bytes)[length++] = tag;
 }
 
-- (void) serializeTypeTag: (unsigned char)tag
-              andCrossRef: (unsigned int)xref
+- (void)serializeTypeTag:(unsigned char)tag
+    andCrossRef:(unsigned int)xref
 {
     if (xref <= 0xff)
     {
         tag = (tag & ~_GSC_SIZE) | _GSC_X_1;
         if (length + 2 >= capacity)
         {
-            [self _grow: length + 2];
+            [self _grow:length + 2];
         }
         *(uint8_t*)(bytes + length++) = tag;
         *(uint8_t*)(bytes + length++) = xref;
     }
     else if (xref <= 0xffff)
     {
-        uint16_t  x = (uint16_t)xref;
-        
+        uint16_t x = (uint16_t)xref;
+
         tag = (tag & ~_GSC_SIZE) | _GSC_X_2;
         if (length + 3 >= capacity)
         {
-            [self _grow: length + 3];
+            [self _grow:length + 3];
         }
         *(uint8_t*)(bytes + length++) = tag;
 #if NEED_WORD_ALIGNMENT
@@ -3184,17 +3273,17 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
         }
         else
 #endif
-            *(uint16_t*)(bytes + length) = GSSwapHostI16ToBig(x);
+        *(uint16_t*)(bytes + length) = GSSwapHostI16ToBig(x);
         length += 2;
     }
     else
     {
-        uint32_t  x = (uint32_t)xref;
-        
+        uint32_t x = (uint32_t)xref;
+
         tag = (tag & ~_GSC_SIZE) | _GSC_X_4;
         if (length + 5 >= capacity)
         {
-            [self _grow: length + 5];
+            [self _grow:length + 5];
         }
         *(uint8_t*)(bytes + length++) = tag;
 #if NEED_WORD_ALIGNMENT
@@ -3205,39 +3294,22 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
         }
         else
 #endif
-            *(uint32_t*)(bytes + length) = GSSwapHostI32ToBig(x);
+        *(uint32_t*)(bytes + length) = GSSwapHostI32ToBig(x);
         length += 4;
     }
 }
 
-- (id) setCapacity: (NSUInteger)size
+- (id)setCapacity:(NSUInteger)size
 {
     if (size != capacity)
     {
         void  *tmp;
-        
-#if GS_WITH_GC
-        tmp = NSAllocateCollectable(size, 0);
-        if (tmp == 0)
-        {
-            [NSException raise: NSMallocException
-                        format: @"Unable to set data capacity to '%d'", size];
-        }
-        if (bytes)
-        {
-            memcpy(tmp, bytes, capacity < size ? capacity : size);
-            if (owned == YES)
-            {
-                NSZoneFree(NSDefaultMallocZone(), bytes);
-                owned = NO;
-            }
-        }
-#else
+
         tmp = NSZoneMalloc(zone, size);
         if (tmp == 0)
         {
-            [NSException raise: NSMallocException
-                        format: @"Unable to set data capacity to '%d'", size];
+            [NSException raise:NSMallocException
+             format:@"Unable to set data capacity to '%d'", size];
         }
         if (bytes)
         {
@@ -3255,7 +3327,6 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
         {
             zone = NSDefaultMallocZone();
         }
-#endif
         bytes = tmp;
         capacity = size;
         growth = capacity/2;
@@ -3271,20 +3342,20 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
     return self;
 }
 
-- (void) setData: (NSData*)data
+- (void)setData:(NSData*)data
 {
-    unsigned  l = [data length];
-    
-    [self setCapacity: l];
+    unsigned l = [data length];
+
+    [self setCapacity:l];
     length = l;
     memcpy(bytes, [data bytes], length);
 }
 
-- (void) setLength: (NSUInteger)size
+- (void)setLength:(NSUInteger)size
 {
     if (size > capacity)
     {
-        [self setCapacity: size];
+        [self setCapacity:size];
     }
     if (size > length)
     {
@@ -3295,37 +3366,26 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 
 @end
 
-#if GS_WITH_GC
-@implementation NSMutableDataFinalized
-- (void) finalize
-{
-    if (owned == YES)
-        NSZoneFree(NSDefaultMallocZone(), bytes);
-    [super finalize];
-}
-@end
-#endif
-
 
 #ifdef  HAVE_SHMCTL
 @implementation NSMutableDataShared
-+ (id) allocWithZone: (NSZone*)z
++ (id)allocWithZone:(NSZone*)z
 {
     return (NSData*)NSAllocateObject([NSMutableDataShared class], 0, z);
 }
 
-- (void) dealloc
+- (void)dealloc
 {
     [self finalize];
     [super dealloc];
 }
 
-- (void) finalize
+- (void)finalize
 {
     if (bytes != 0)
     {
         struct shmid_ds buf;
-        
+
         if (shmctl(shmid, IPC_STAT, &buf) < 0)
         {
             NSLog(@"[NSMutableDataShared -dealloc] shared memory "
@@ -3352,7 +3412,7 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
     [super finalize];
 }
 
-- (id) initWithCapacity: (NSUInteger)bufferSize
+- (id)initWithCapacity:(NSUInteger)bufferSize
 {
     shmid = shmget(IPC_PRIVATE, bufferSize, IPC_CREAT|VM_ACCESS);
     if (shmid == -1)      /* Created memory? */
@@ -3360,10 +3420,10 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
         NSLog(@"[NSMutableDataShared -initWithCapacity:] shared memory "
               @"get failed for %u - %@", bufferSize, [NSError _last]);
         DESTROY(self);
-        self = [mutableDataMalloc allocWithZone: NSDefaultMallocZone()];
-        return [self initWithCapacity: bufferSize];
+        self = [mutableDataMalloc allocWithZone:NSDefaultMallocZone()];
+        return [self initWithCapacity:bufferSize];
     }
-    
+
     bytes = shmat(shmid, 0, 0);
     if (bytes == (void*)-1)
     {
@@ -3371,19 +3431,19 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
               @"attach failed for %u - %@", bufferSize, [NSError _last]);
         bytes = 0;
         DESTROY(self);
-        self = [mutableDataMalloc allocWithZone: NSDefaultMallocZone()];
-        return [self initWithCapacity: bufferSize];
+        self = [mutableDataMalloc allocWithZone:NSDefaultMallocZone()];
+        return [self initWithCapacity:bufferSize];
     }
     length = 0;
     capacity = bufferSize;
-    
+
     return self;
 }
 
-- (id) initWithShmID: (int)anId length: (NSUInteger)bufferSize
+- (id)initWithShmID:(int)anId length:(NSUInteger)bufferSize
 {
     struct shmid_ds buf;
-    
+
     shmid = anId;
     if (shmctl(shmid, IPC_STAT, &buf) < 0)
     {
@@ -3410,35 +3470,35 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
     }
     length = bufferSize;
     capacity = length;
-    
+
     return self;
 }
 
-- (id) setCapacity: (NSUInteger)size
+- (id)setCapacity:(NSUInteger)size
 {
     if (size != capacity)
     {
         void  *tmp;
         int newid;
-        
+
         newid = shmget(IPC_PRIVATE, size, IPC_CREAT|VM_ACCESS);
         if (newid == -1)      /* Created memory? */
         {
-            [NSException raise: NSMallocException
-                        format: @"Unable to create shared memory segment (size:%u) - %@.",
+            [NSException raise:NSMallocException
+             format:@"Unable to create shared memory segment (size:%u) - %@.",
              size, [NSError _last]];
         }
         tmp = shmat(newid, 0, 0);
         if ((intptr_t)tmp == -1)      /* Attached memory? */
         {
-            [NSException raise: NSMallocException
-                        format: @"Unable to attach to shared memory segment."];
+            [NSException raise:NSMallocException
+             format:@"Unable to attach to shared memory segment."];
         }
         memcpy(tmp, bytes, length);
         if (bytes)
         {
             struct shmid_ds buf;
-            
+
             if (shmctl(shmid, IPC_STAT, &buf) < 0)
             {
                 NSLog(@"[NSMutableDataShared -setCapacity:] shared memory "
@@ -3469,7 +3529,7 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
     return self;
 }
 
-- (int) shmID
+- (int)shmID
 {
     return shmid;
 }

@@ -255,7 +255,6 @@ ihandler(int sig)
 }
 @end
 
-
 
 /*
  *	Information about a notification observer.

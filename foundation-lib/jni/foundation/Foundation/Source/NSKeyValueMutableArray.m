@@ -21,7 +21,7 @@
    Boston, MA 02111 USA.
 
    $Date: 2007-06-08 04: 04: 14 -0400 (Fri, 08 Jun 2007) $ $Revision: 25230 $
-   */
+ */
 
 #import "common.h"
 #import "Foundation/NSInvocation.h"
@@ -30,269 +30,279 @@
 
 @interface NSKeyValueMutableArray : NSMutableArray
 {
-  @protected
-  id object;
-  NSString *key;
-  NSMutableArray *array;
-  BOOL otherChangeInProgress;
+    @protected
+    id object;
+    NSString *key;
+    NSMutableArray *array;
+    BOOL otherChangeInProgress;
 }
 
-+ (NSKeyValueMutableArray *) arrayForKey: (NSString *)aKey ofObject: (id)anObject;
-- (id) initWithKey: (NSString *)aKey ofObject: (id)anObject;
++ (NSKeyValueMutableArray *)arrayForKey:(NSString *)aKey ofObject:(id)anObject;
+- (id)initWithKey:(NSString *)aKey ofObject:(id)anObject;
 
 @end
 
-@interface NSKeyValueFastMutableArray : NSKeyValueMutableArray 
+@interface NSKeyValueFastMutableArray : NSKeyValueMutableArray
 {
-  @private
-  NSInvocation *insertObjectInvocation;
-  NSInvocation *removeObjectInvocation;
-  NSInvocation *replaceObjectInvocation;
+    @private
+    NSInvocation *insertObjectInvocation;
+    NSInvocation *removeObjectInvocation;
+    NSInvocation *replaceObjectInvocation;
 }
 
-+ (id) arrayForKey: (NSString *)aKey ofObject: (id)anObject
-  withCapitalizedKey: (const char *)capitalized;
++ (id)arrayForKey:(NSString *)aKey ofObject:(id)anObject
+    withCapitalizedKey:(const char *)capitalized;
 
-- (id) initWithKey: (NSString *)aKey ofObject: (id)anObject
-  withCapitalizedKey: (const char *)capitalized;
+- (id)initWithKey:(NSString *)aKey ofObject:(id)anObject
+    withCapitalizedKey:(const char *)capitalized;
 
 @end
 
 @interface NSKeyValueSlowMutableArray : NSKeyValueMutableArray
 {
-  @private
-  NSInvocation *setArrayInvocation;
+    @private
+    NSInvocation *setArrayInvocation;
 }
 
-+ (id) arrayForKey: (NSString *)aKey ofObject: (id)anObject
-  withCapitalizedKey: (const char *)capitalized;
++ (id)arrayForKey:(NSString *)aKey ofObject:(id)anObject
+    withCapitalizedKey:(const char *)capitalized;
 
-- (id) initWithKey: (NSString *)aKey ofObject: (id)anObject
-  withCapitalizedKey: (const char *)capitalized;
+- (id)initWithKey:(NSString *)aKey ofObject:(id)anObject
+    withCapitalizedKey:(const char *)capitalized;
 
 @end
 
 @interface NSKeyValueIvarMutableArray : NSKeyValueMutableArray
 {
-  @private
+    @private
 }
 
-+ (id) arrayForKey: (NSString *)aKey ofObject: (id)anObject;
++ (id)arrayForKey:(NSString *)aKey ofObject:(id)anObject;
 
-- (id) initWithKey: (NSString *)aKey ofObject: (id)anObject;
+- (id)initWithKey:(NSString *)aKey ofObject:(id)anObject;
 
 @end
 
 
 @implementation NSKeyValueMutableArray
 
-+ (NSKeyValueMutableArray *) arrayForKey: (NSString *)aKey
-                                ofObject: (id)anObject
++ (NSKeyValueMutableArray *)arrayForKey:(NSString *)aKey
+    ofObject:(id)anObject
 {
-  NSKeyValueMutableArray *proxy;
-  unsigned size = [aKey maximumLengthOfBytesUsingEncoding: 
-			  NSUTF8StringEncoding];
-  char keybuf[size + 1];
-  [aKey getCString: keybuf
-         maxLength: size + 1
-          encoding: NSUTF8StringEncoding];
-  if (islower(*keybuf))
+    NSKeyValueMutableArray *proxy;
+    unsigned size = [aKey maximumLengthOfBytesUsingEncoding:
+                     NSUTF8StringEncoding];
+    char keybuf[size + 1];
+    [aKey getCString:keybuf
+     maxLength:size + 1
+     encoding:NSUTF8StringEncoding];
+    if (islower(*keybuf))
     {
-      *keybuf = toupper(*keybuf);
+        *keybuf = toupper(*keybuf);
     }
 
-  proxy = [NSKeyValueFastMutableArray arrayForKey: aKey 
-				         ofObject: anObject
-			       withCapitalizedKey: keybuf];
-  if (proxy == nil)
+    proxy = [NSKeyValueFastMutableArray arrayForKey:aKey
+             ofObject:anObject
+             withCapitalizedKey:keybuf];
+    if (proxy == nil)
     {
-      proxy = [NSKeyValueSlowMutableArray arrayForKey: aKey 
-  					     ofObject: anObject
-				   withCapitalizedKey: keybuf];
+        proxy = [NSKeyValueSlowMutableArray arrayForKey:aKey
+                 ofObject:anObject
+                 withCapitalizedKey:keybuf];
 
-      if (proxy == nil)
-	{
-	  proxy = [NSKeyValueIvarMutableArray arrayForKey: aKey 
-					         ofObject: anObject];
-	}
+        if (proxy == nil)
+        {
+            proxy = [NSKeyValueIvarMutableArray arrayForKey:aKey
+                     ofObject:anObject];
+        }
     }
-  return proxy;
+    return proxy;
 }
 
-- (id) initWithKey: (NSString *)aKey ofObject: (id)anObject
+- (id)initWithKey:(NSString *)aKey ofObject:(id)anObject
 {
-  if ((self = [super init]) != nil)
+    if ((self = [super init]) != nil)
     {
-      object = anObject;
-      key = [aKey copy];
-      otherChangeInProgress = NO;
+        object = anObject;
+        key = [aKey copy];
+        otherChangeInProgress = NO;
     }
-  return self;
+    return self;
 }
 
-- (NSUInteger) count
+- (NSUInteger)count
 {
-  if (array == nil)
+    if (array == nil)
     {
-      array = [object valueForKey: key];
+        array = [object valueForKey:key];
     }
-  return [array count];
+    return [array count];
 }
 
-- (id) objectAtIndex: (NSUInteger)index
+- (id)objectAtIndex:(NSUInteger)index
 {
-  if (array == nil)
+    if (array == nil)
     {
-      array = [object valueForKey: key];
+        array = [object valueForKey:key];
     }
-  return [array objectAtIndex: index];
+    return [array objectAtIndex:index];
 }
 
-- (void) addObject: (id)anObject
+- (void)addObject:(id)anObject
 {
-  [self insertObject: anObject  atIndex: [self count]];
+    [self insertObject:anObject atIndex:[self count]];
 }
 
-- (void) removeLastObject
+- (void)removeLastObject
 {
-  [self removeObjectAtIndex: ([self count] - 1)];
+    [self removeObjectAtIndex:([self count] - 1)];
 }
 
+- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState*)state
+    objects:(id*)stackbuf
+    count:(NSUInteger)len
+{
+    if (array == nil)
+    {
+        array = [object valueForKey:key];
+    }
+    return [array countByEnumeratingWithState:state objects:stackbuf count:len];
+}
 @end
 
 @implementation NSKeyValueFastMutableArray
 
-+ (id) arrayForKey: (NSString *)aKey ofObject: (id)anObject
-       withCapitalizedKey: (const char *)capitalized
++ (id)arrayForKey:(NSString *)aKey ofObject:(id)anObject
+    withCapitalizedKey:(const char *)capitalized
 {
-  return [[[self alloc] initWithKey: aKey ofObject: anObject
-                 withCapitalizedKey: capitalized] autorelease];
+    return [[[self alloc] initWithKey:aKey ofObject:anObject
+             withCapitalizedKey:capitalized] autorelease];
 }
 
-- (id) initWithKey: (NSString *)aKey ofObject: (id)anObject
-       withCapitalizedKey: (const char *)capitalized
+- (id)initWithKey:(NSString *)aKey ofObject:(id)anObject
+    withCapitalizedKey:(const char *)capitalized
 {
-  SEL insert;
-  SEL remove;
-  SEL replace;
+    SEL insert;
+    SEL remove;
+    SEL replace;
 
-  insert = NSSelectorFromString
-    ([NSString stringWithFormat: @"insertObject:in%sAtIndex:", capitalized]);
-  remove = NSSelectorFromString
-    ([NSString stringWithFormat: @"removeObjectFrom%sAtIndex:", capitalized]);
-  if (!([anObject respondsToSelector: insert]
-    && [anObject respondsToSelector: remove]))
+    insert = NSSelectorFromString
+                 ([NSString stringWithFormat:@"insertObject:in%sAtIndex:", capitalized]);
+    remove = NSSelectorFromString
+                 ([NSString stringWithFormat:@"removeObjectFrom%sAtIndex:", capitalized]);
+    if (!([anObject respondsToSelector:insert]
+          && [anObject respondsToSelector:remove]))
     {
-      DESTROY(self);
-      return nil;
+        DESTROY(self);
+        return nil;
     }
-  replace = NSSelectorFromString
-    ([NSString stringWithFormat: @"replaceObjectIn%sAtIndex:withObject:",
-    capitalized]);
+    replace = NSSelectorFromString
+                  ([NSString stringWithFormat:@"replaceObjectIn%sAtIndex:withObject:",
+                    capitalized]);
 
-  if ((self = [super initWithKey: aKey ofObject: anObject]) != nil)
+    if ((self = [super initWithKey:aKey ofObject:anObject]) != nil)
     {
-      insertObjectInvocation = [[NSInvocation invocationWithMethodSignature: 
-        [anObject methodSignatureForSelector: insert]] retain];
-      [insertObjectInvocation setTarget: anObject];
-      [insertObjectInvocation setSelector: insert];
-      removeObjectInvocation = [[NSInvocation invocationWithMethodSignature: 
-        [anObject methodSignatureForSelector: remove]] retain];
-      [removeObjectInvocation setTarget: anObject];
-      [removeObjectInvocation setSelector: remove];
-      if ([anObject respondsToSelector: replace])
+        insertObjectInvocation = [[NSInvocation invocationWithMethodSignature:
+                                   [anObject methodSignatureForSelector:insert]] retain];
+        [insertObjectInvocation setTarget:anObject];
+        [insertObjectInvocation setSelector:insert];
+        removeObjectInvocation = [[NSInvocation invocationWithMethodSignature:
+                                   [anObject methodSignatureForSelector:remove]] retain];
+        [removeObjectInvocation setTarget:anObject];
+        [removeObjectInvocation setSelector:remove];
+        if ([anObject respondsToSelector:replace])
         {
-          replaceObjectInvocation
-            = [[NSInvocation invocationWithMethodSignature: 
-            [anObject methodSignatureForSelector: replace]] retain];
-          [replaceObjectInvocation setTarget: anObject];
-          [replaceObjectInvocation setSelector: replace];
+            replaceObjectInvocation
+                = [[NSInvocation invocationWithMethodSignature:
+                    [anObject methodSignatureForSelector:replace]] retain];
+            [replaceObjectInvocation setTarget:anObject];
+            [replaceObjectInvocation setSelector:replace];
         }
     }
-  return self;
+    return self;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-  [insertObjectInvocation release];
-  [removeObjectInvocation release];
-  [replaceObjectInvocation release];
-  [super dealloc];
+    [insertObjectInvocation release];
+    [removeObjectInvocation release];
+    [replaceObjectInvocation release];
+    [super dealloc];
 }
 
-- (void) removeObjectAtIndex: (NSUInteger)index
+- (void)removeObjectAtIndex:(NSUInteger)index
 {
-  NSIndexSet *indexes = nil;
+    NSIndexSet *indexes = nil;
 
-  if (!otherChangeInProgress)
+    if (!otherChangeInProgress)
     {
-      indexes = [NSIndexSet indexSetWithIndex: index];
-      [object willChange: NSKeyValueChangeRemoval
-        valuesAtIndexes: indexes
-                  forKey: key];
+        indexes = [NSIndexSet indexSetWithIndex:index];
+        [object willChange:NSKeyValueChangeRemoval
+         valuesAtIndexes:indexes
+         forKey:key];
     }
-  [removeObjectInvocation setArgument: &index atIndex: 2];
-  [removeObjectInvocation invoke];
-  if (!otherChangeInProgress)
+    [removeObjectInvocation setArgument:&index atIndex:2];
+    [removeObjectInvocation invoke];
+    if (!otherChangeInProgress)
     {
-      [object didChange: NSKeyValueChangeRemoval
-        valuesAtIndexes: indexes
-                  forKey: key];
-    }
-}
-
-- (void) insertObject: (id)anObject atIndex: (NSUInteger)index
-{
-  NSIndexSet *indexes = nil;
-
-  if (!otherChangeInProgress)
-    {
-      indexes = [NSIndexSet indexSetWithIndex: index];
-      [object willChange: NSKeyValueChangeInsertion
-      valuesAtIndexes: indexes
-                forKey: key];
-    }
-  [insertObjectInvocation setArgument: &anObject atIndex: 2];
-  [insertObjectInvocation setArgument: &index atIndex: 3];
-  [insertObjectInvocation invoke];
-  if (!otherChangeInProgress)
-    {
-      [object didChange: NSKeyValueChangeInsertion
-       valuesAtIndexes: indexes
-                 forKey: key];
+        [object didChange:NSKeyValueChangeRemoval
+         valuesAtIndexes:indexes
+         forKey:key];
     }
 }
 
-- (void) replaceObjectAtIndex: (NSUInteger)index withObject: (id)anObject
+- (void)insertObject:(id)anObject atIndex:(NSUInteger)index
 {
-  NSIndexSet *indexes = nil;
-  BOOL triggerNotifications = !otherChangeInProgress;
+    NSIndexSet *indexes = nil;
 
-  if (triggerNotifications)
+    if (!otherChangeInProgress)
     {
-      otherChangeInProgress = YES;
-      indexes = [NSIndexSet indexSetWithIndex: index];
-      [object willChange: NSKeyValueChangeReplacement
-        valuesAtIndexes: indexes
-                 forKey: key];
+        indexes = [NSIndexSet indexSetWithIndex:index];
+        [object willChange:NSKeyValueChangeInsertion
+         valuesAtIndexes:indexes
+         forKey:key];
     }
-  if (replaceObjectInvocation)
+    [insertObjectInvocation setArgument:&anObject atIndex:2];
+    [insertObjectInvocation setArgument:&index atIndex:3];
+    [insertObjectInvocation invoke];
+    if (!otherChangeInProgress)
     {
-      [replaceObjectInvocation setArgument: &index atIndex: 2];
-      [replaceObjectInvocation setArgument: &anObject atIndex: 3];
-      [replaceObjectInvocation invoke];
+        [object didChange:NSKeyValueChangeInsertion
+         valuesAtIndexes:indexes
+         forKey:key];
     }
-  else
+}
+
+- (void)replaceObjectAtIndex:(NSUInteger)index withObject:(id)anObject
+{
+    NSIndexSet *indexes = nil;
+    BOOL triggerNotifications = !otherChangeInProgress;
+
+    if (triggerNotifications)
     {
-      [self removeObjectAtIndex: index];
-      [self insertObject: anObject atIndex: index];
+        otherChangeInProgress = YES;
+        indexes = [NSIndexSet indexSetWithIndex:index];
+        [object willChange:NSKeyValueChangeReplacement
+         valuesAtIndexes:indexes
+         forKey:key];
     }
-  if (triggerNotifications)
+    if (replaceObjectInvocation)
     {
-      [object didChange: NSKeyValueChangeReplacement
-       valuesAtIndexes: indexes
-                 forKey: key];
-      otherChangeInProgress = NO;
+        [replaceObjectInvocation setArgument:&index atIndex:2];
+        [replaceObjectInvocation setArgument:&anObject atIndex:3];
+        [replaceObjectInvocation invoke];
+    }
+    else
+    {
+        [self removeObjectAtIndex:index];
+        [self insertObject:anObject atIndex:index];
+    }
+    if (triggerNotifications)
+    {
+        [object didChange:NSKeyValueChangeReplacement
+         valuesAtIndexes:indexes
+         forKey:key];
+        otherChangeInProgress = NO;
     }
 }
 
@@ -301,115 +311,158 @@
 
 @implementation NSKeyValueSlowMutableArray
 
-+ (id) arrayForKey: (NSString *)aKey ofObject: (id)anObject
-       withCapitalizedKey: (const char *)capitalized
++ (id)arrayForKey:(NSString *)aKey ofObject:(id)anObject
+    withCapitalizedKey:(const char *)capitalized
 {
-  return [[[self alloc] initWithKey: aKey ofObject: anObject
-                withCapitalizedKey: capitalized] autorelease];
+    return [[[self alloc] initWithKey:aKey ofObject:anObject
+             withCapitalizedKey:capitalized] autorelease];
 }
 
-- (id) initWithKey: (NSString *)aKey ofObject: (id)anObject
-       withCapitalizedKey: (const char *)capitalized;
+- (id)initWithKey:(NSString *)aKey ofObject:(id)anObject
+    withCapitalizedKey:(const char *)capitalized;
 
 {
-  SEL set = NSSelectorFromString([NSString stringWithFormat: 
-    @"set%s:", capitalized]);
+    SEL set = NSSelectorFromString([NSString stringWithFormat:
+                                    @"set%s:", capitalized]);
 
-  if (![anObject respondsToSelector: set])
+    if (![anObject respondsToSelector:set])
     {
-      DESTROY(self);
-      return nil;
+        DESTROY(self);
+        return nil;
     }
 
-  if ((self = [super initWithKey: aKey ofObject: anObject]) != nil)
+    if ((self = [super initWithKey:aKey ofObject:anObject]) != nil)
     {
-      setArrayInvocation = [[NSInvocation invocationWithMethodSignature: 
-        [anObject methodSignatureForSelector: set]] retain];
-      [setArrayInvocation setSelector: set];
-      [setArrayInvocation setTarget: anObject];
-   }
-  return self;
+        setArrayInvocation = [[NSInvocation invocationWithMethodSignature:
+                               [anObject methodSignatureForSelector:set]] retain];
+        [setArrayInvocation setSelector:set];
+        [setArrayInvocation setTarget:anObject];
+    }
+    return self;
 }
 
-- (void) removeObjectAtIndex: (NSUInteger)index
+- (NSUInteger)count
 {
-  NSIndexSet *indexes = nil;
-  NSMutableArray *temp;
-
-  if (!otherChangeInProgress)
-    {
-      indexes = [NSIndexSet indexSetWithIndex: index];
-      [object willChange: NSKeyValueChangeRemoval
-        valuesAtIndexes: indexes
-                  forKey: key];
-    }
-  
-  temp = [NSMutableArray arrayWithArray: [object valueForKey: key]];
-  [temp removeObjectAtIndex: index];
-
-  [setArrayInvocation setArgument: &temp atIndex: 2];
-  [setArrayInvocation invoke];
-
-  if (!otherChangeInProgress)
-    {
-      [object didChange: NSKeyValueChangeRemoval
-       valuesAtIndexes: indexes
-                 forKey: key];
-    }
+    return [[object valueForKey:key] count];
 }
 
-- (void) insertObject: (id)anObject atIndex: (NSUInteger)index
+- (id)objectAtIndex:(NSUInteger)index
 {
-  NSIndexSet *indexes = nil;
-  NSMutableArray *temp;
+    return [[object valueForKey:key] objectAtIndex:index];
+}
 
-  if (!otherChangeInProgress)
+- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState*)state
+    objects:(id*)stackbuf
+    count:(NSUInteger)len
+{
+    return [[object valueForKey:key] countByEnumeratingWithState:state objects:stackbuf count:len];
+}
+- (void)removeObject:(id)anObject
+{
+    NSMutableArray *temp = [NSMutableArray arrayWithArray:[object valueForKey:key]];
+    NSIndexSet *indexes = [temp indexesOfObjectsPassingTest:^(id obj, NSUInteger idx, BOOL *stop) {
+                               return [anObject isEqual:obj];
+                           }];
+
+    if (!otherChangeInProgress)
     {
-      indexes = [NSIndexSet indexSetWithIndex: index];
-      [object willChange: NSKeyValueChangeInsertion
-        valuesAtIndexes: indexes
-                  forKey: key];
+        [object willChange:NSKeyValueChangeRemoval
+         valuesAtIndexes:indexes
+         forKey:key];
     }
 
-  temp = [NSMutableArray arrayWithArray: [object valueForKey: key]];
-  [temp insertObject: anObject atIndex: index];
-  
-  [setArrayInvocation setArgument: &temp atIndex: 2];
-  [setArrayInvocation invoke];
+    [temp removeObjectsAtIndexes:indexes];
 
-  if (!otherChangeInProgress)
+    [setArrayInvocation setArgument:&temp atIndex:2];
+    [setArrayInvocation invoke];
+
+    if (!otherChangeInProgress)
     {
-      [object didChange: NSKeyValueChangeInsertion
-       valuesAtIndexes: indexes
-                 forKey: key];
+        [object didChange:NSKeyValueChangeRemoval
+         valuesAtIndexes:indexes
+         forKey:key];
     }
 }
 
-- (void) replaceObjectAtIndex: (NSUInteger)index withObject: (id)anObject
+- (void)removeObjectAtIndex:(NSUInteger)index
 {
-  NSIndexSet *indexes = nil;
-  NSMutableArray *temp;
+    NSIndexSet *indexes = nil;
+    NSMutableArray *temp;
 
-  if (!otherChangeInProgress)
+    if (!otherChangeInProgress)
     {
-      indexes = [NSIndexSet indexSetWithIndex: index];
-      [object willChange: NSKeyValueChangeReplacement
-        valuesAtIndexes: indexes
-                  forKey: key];
+        indexes = [NSIndexSet indexSetWithIndex:index];
+        [object willChange:NSKeyValueChangeRemoval
+         valuesAtIndexes:indexes
+         forKey:key];
     }
-  
-  temp = [NSMutableArray arrayWithArray: [object valueForKey: key]];
-  [temp removeObjectAtIndex: index];
-  [temp insertObject: anObject atIndex: index];
 
-  [setArrayInvocation setArgument: &temp atIndex: 2];
-  [setArrayInvocation invoke];
+    temp = [NSMutableArray arrayWithArray:[object valueForKey:key]];
+    [temp removeObjectAtIndex:index];
 
-  if (!otherChangeInProgress)
+    [setArrayInvocation setArgument:&temp atIndex:2];
+    [setArrayInvocation invoke];
+
+    if (!otherChangeInProgress)
     {
-      [object didChange: NSKeyValueChangeReplacement
-       valuesAtIndexes: indexes
-                 forKey: key];
+        [object didChange:NSKeyValueChangeRemoval
+         valuesAtIndexes:indexes
+         forKey:key];
+    }
+}
+
+- (void)insertObject:(id)anObject atIndex:(NSUInteger)index
+{
+    NSIndexSet *indexes = nil;
+    NSMutableArray *temp;
+
+    if (!otherChangeInProgress)
+    {
+        indexes = [NSIndexSet indexSetWithIndex:index];
+        [object willChange:NSKeyValueChangeInsertion
+         valuesAtIndexes:indexes
+         forKey:key];
+    }
+
+    temp = [NSMutableArray arrayWithArray:[object valueForKey:key]];
+    [temp insertObject:anObject atIndex:index];
+
+    [setArrayInvocation setArgument:&temp atIndex:2];
+    [setArrayInvocation invoke];
+
+    if (!otherChangeInProgress)
+    {
+        [object didChange:NSKeyValueChangeInsertion
+         valuesAtIndexes:indexes
+         forKey:key];
+    }
+}
+
+- (void)replaceObjectAtIndex:(NSUInteger)index withObject:(id)anObject
+{
+    NSIndexSet *indexes = nil;
+    NSMutableArray *temp;
+
+    if (!otherChangeInProgress)
+    {
+        indexes = [NSIndexSet indexSetWithIndex:index];
+        [object willChange:NSKeyValueChangeReplacement
+         valuesAtIndexes:indexes
+         forKey:key];
+    }
+
+    temp = [NSMutableArray arrayWithArray:[object valueForKey:key]];
+    [temp removeObjectAtIndex:index];
+    [temp insertObject:anObject atIndex:index];
+
+    [setArrayInvocation setArgument:&temp atIndex:2];
+    [setArrayInvocation invoke];
+
+    if (!otherChangeInProgress)
+    {
+        [object didChange:NSKeyValueChangeReplacement
+         valuesAtIndexes:indexes
+         forKey:key];
     }
 }
 
@@ -419,106 +472,107 @@
 
 @implementation NSKeyValueIvarMutableArray
 
-+ (id) arrayForKey: (NSString *)aKey ofObject: (id)anObject
++ (id)arrayForKey:(NSString *)aKey ofObject:(id)anObject
 {
-  return [[[self alloc] initWithKey: aKey ofObject: anObject] autorelease];
+    return [[[self alloc] initWithKey:aKey ofObject:anObject] autorelease];
 }
 
-- (id) initWithKey: (NSString *)aKey ofObject: (id)anObject
+- (id)initWithKey:(NSString *)aKey ofObject:(id)anObject
 {
-  if ((self = [super initWithKey: aKey  ofObject: anObject]) != nil)
+    if ((self = [super initWithKey:aKey ofObject:anObject]) != nil)
     {
-      unsigned size = [aKey maximumLengthOfBytesUsingEncoding:
-        NSUTF8StringEncoding];
-      char cKey[size + 2];
-      char *cKeyPtr = &cKey[0];
-      const char *type = 0;
-      BOOL found = NO;
-      int offset;
-      
-      cKey[0] = '_';
-      [aKey getCString: cKeyPtr + 1
-             maxLength: size + 1
-              encoding: NSUTF8StringEncoding];
-      
-      if (!GSObjCFindVariable (anObject, cKeyPtr, &type, &size, &offset))
-        found = GSObjCFindVariable (anObject, ++cKeyPtr, &type, &size, &offset);
-      if (found)
-        {
-          array = GSObjCGetVal (anObject, cKeyPtr, NULL, type, size, offset);
+        unsigned size = [aKey maximumLengthOfBytesUsingEncoding:
+                         NSUTF8StringEncoding];
+        char cKey[size + 2];
+        char *cKeyPtr = &cKey[0];
+        const char *type = 0;
+        BOOL found = NO;
+        int offset;
+
+        cKey[0] = '_';
+        [aKey getCString:cKeyPtr + 1
+         maxLength:size + 1
+         encoding:NSUTF8StringEncoding];
+
+        if (!GSObjCFindVariable (anObject, cKeyPtr, &type, &size, &offset)) {
+            found = GSObjCFindVariable (anObject, ++cKeyPtr, &type, &size, &offset);
         }
-      else
+        if (found)
         {
-          array = [object valueForKey: key];
+            array = GSObjCGetVal (anObject, cKeyPtr, NULL, type, size, offset);
+        }
+        else
+        {
+            array = [object valueForKey:key];
         }
     }
 
-  return self;
+    return self;
 }
 
-- (void) addObject: (id)anObject
+- (void)addObject:(id)anObject
 {
-  NSIndexSet *indexes = [NSIndexSet indexSetWithIndex: [array count]];
+    NSIndexSet *indexes = [NSIndexSet indexSetWithIndex:[array count]];
 
-  [object willChange: NSKeyValueChangeInsertion
-     valuesAtIndexes: indexes
-              forKey: key];
-  [array addObject: anObject];
-  [object didChange: NSKeyValueChangeInsertion
-    valuesAtIndexes: indexes
-             forKey: key];
+    [object willChange:NSKeyValueChangeInsertion
+     valuesAtIndexes:indexes
+     forKey:key];
+    [array addObject:anObject];
+    [object didChange:NSKeyValueChangeInsertion
+     valuesAtIndexes:indexes
+     forKey:key];
 }
 
-- (void) removeObjectAtIndex: (NSUInteger)index
+- (void)removeObjectAtIndex:(NSUInteger)index
 {
-  NSIndexSet *indexes = [NSIndexSet indexSetWithIndex: index];
+    NSIndexSet *indexes = [NSIndexSet indexSetWithIndex:index];
 
-  [object willChange: NSKeyValueChangeRemoval
-     valuesAtIndexes: indexes
-              forKey: key];
-  [array removeObjectAtIndex: index];
-  [object didChange: NSKeyValueChangeRemoval
-    valuesAtIndexes: indexes
-             forKey: key];
+    [object willChange:NSKeyValueChangeRemoval
+     valuesAtIndexes:indexes
+     forKey:key];
+    [array removeObjectAtIndex:index];
+    [object didChange:NSKeyValueChangeRemoval
+     valuesAtIndexes:indexes
+     forKey:key];
 }
 
-- (void) insertObject: (id)anObject atIndex: (NSUInteger)index
+- (void)insertObject:(id)anObject atIndex:(NSUInteger)index
 {
-  NSIndexSet *indexes = [NSIndexSet indexSetWithIndex: index];
+    NSIndexSet *indexes = [NSIndexSet indexSetWithIndex:index];
 
-  [object willChange: NSKeyValueChangeInsertion
-     valuesAtIndexes: indexes
-              forKey: key];
-  [array insertObject: anObject atIndex: index];
-  [object didChange: NSKeyValueChangeInsertion
-    valuesAtIndexes: indexes
-             forKey: key];
+    [object willChange:NSKeyValueChangeInsertion
+     valuesAtIndexes:indexes
+     forKey:key];
+    [array insertObject:anObject atIndex:index];
+    [object didChange:NSKeyValueChangeInsertion
+     valuesAtIndexes:indexes
+     forKey:key];
 }
 
-- (void) removeLastObject
+- (void)removeLastObject
 {
-  NSIndexSet *indexes = [NSIndexSet indexSetWithIndex: [array count] - 1];
+    NSIndexSet *indexes = [NSIndexSet indexSetWithIndex:[array count] - 1];
 
-  [object willChange: NSKeyValueChangeRemoval
-     valuesAtIndexes: indexes
-              forKey: key];
-  [array removeObjectAtIndex: [indexes firstIndex]];
-  [object didChange: NSKeyValueChangeRemoval
-    valuesAtIndexes: indexes
-             forKey: key];
+    [object willChange:NSKeyValueChangeRemoval
+     valuesAtIndexes:indexes
+     forKey:key];
+    [array removeObjectAtIndex:[indexes firstIndex]];
+    [object didChange:NSKeyValueChangeRemoval
+     valuesAtIndexes:indexes
+     forKey:key];
 }
 
-- (void) replaceObjectAtIndex: (NSUInteger)index withObject: (id)anObject
+- (void)replaceObjectAtIndex:(NSUInteger)index withObject:(id)anObject
 {
-  NSIndexSet *indexes = [NSIndexSet indexSetWithIndex: index];
+    NSIndexSet *indexes = [NSIndexSet indexSetWithIndex:index];
 
-  [object willChange: NSKeyValueChangeReplacement
-     valuesAtIndexes: indexes
-              forKey: key];
-  [array replaceObjectAtIndex: index withObject: anObject];
-  [object didChange: NSKeyValueChangeReplacement
-    valuesAtIndexes: indexes
-             forKey: key];
+    [object willChange:NSKeyValueChangeReplacement
+     valuesAtIndexes:indexes
+     forKey:key];
+    [array replaceObjectAtIndex:index withObject:anObject];
+    [object didChange:NSKeyValueChangeReplacement
+     valuesAtIndexes:indexes
+     forKey:key];
 }
 
 
