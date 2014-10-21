@@ -15,7 +15,7 @@ Thanks to the Apportable Foundation Committers!
 * Jeff DeCew 
 * Mike Haney 
 * Michael Chinen 
-* Elliot Brodski
+* Elliot Brodzki
 * Aaron Culliney
 * Nick Richards 
 * Glenna Buford
