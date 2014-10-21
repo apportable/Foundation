@@ -98,7 +98,7 @@
             <dict/>
         </dict>
         <key>SDK</key>
-        <string>apportablesdk1.0</string>
+        <string>sbandroid</string>
         <key>SharedSettings</key>
         <dict>
             <key>MACOSX_DEPLOYMENT_TARGET</key>

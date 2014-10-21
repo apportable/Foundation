@@ -14,6 +14,9 @@ Steps
 ![My text](images/hello/new-jni-project.png)
 
 * Name project
+* Choose "com.apportable" for Organization Identifier
+	* Optionally choose another identifier
+	* If you do, after project creation, edit HelloAndroidActivity.m to match
 
 ![My text](images/hello/name-project.png)
 
