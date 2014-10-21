@@ -1,0 +1,7 @@
+{
+    "hello": 0,
+    "key" : ["a value", "another value"],
+    "decimals" : 1.34,
+    "number" : 2384,
+    "dictionary" : {"oneKey": -1.2}
+}

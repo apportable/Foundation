@@ -1,9 +1,0 @@
-Jan 23, 2012
-  * Initial release
-
-June 2, 2012
-  * NSURLConnection
-  * NSMachPort
-  * Key-Value Observing
-  * Thread safe memory management
-  * Various bug fixes

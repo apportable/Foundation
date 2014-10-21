@@ -1,0 +1,13 @@
+//
+//  ApportableSystem.xcconfig
+//
+//  Created by Paul Beusterien on 5/7/14.
+//  Copyright (c) 2014 Apportable. All rights reserved.
+//
+
+SDKROOT = apportablesdk1.0
+
+#include "ApportableSDKOverrides.xcconfig"
+
+INSTALL_PATH = /System/Library/Frameworks
+

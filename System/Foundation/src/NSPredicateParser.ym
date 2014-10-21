@@ -1,0 +1,462 @@
+%{
+    #import <Foundation/NSPredicate.h>
+    #import <Foundation/NSCompoundPredicate.h>
+    #import <Foundation/NSComparisonPredicate.h>
+    #import <Foundation/NSExpression.h>
+    #import <Foundation/NSNull.h>
+    #import "NSPredicateInternal.h"
+    #import "NSExpressionInternal.h"
+
+    #import "NSPredicateParser.tab.h"
+    #import "NSPredicateLexer.h"
+
+    typedef NSExpression *(^argBlock)(NSString *formatType);
+
+    CF_PRIVATE int predicate_parse(yyscan_t lexer, argBlock args, NSPredicate **predicate);
+
+    extern void _predicate_lexer_create(const char *string, yyscan_t *lexer, YY_BUFFER_STATE *state);
+    extern void _predicate_lexer_destroy(yyscan_t lexer, YY_BUFFER_STATE state);
+
+    static void predicate_error(yyscan_t scanner, argBlock args, NSPredicate **predicate, const char *error);
+
+    static NSTruePredicate *truePredicate;
+    static NSFalsePredicate *falsePredicate;
+
+    static NSConstantValueExpression *zeroExpression;
+    static NSConstantValueExpression *nullExpression;
+    static NSConstantValueExpression *yesExpression;
+    static NSConstantValueExpression *noExpression;
+
+    static NSSymbolicExpression *firstExpression;
+    static NSSymbolicExpression *lastExpression;
+    static NSSymbolicExpression *sizeExpression;
+
+    static NSSelfExpression *selfExpression;
+
+    static SEL add_to_;
+    static SEL from_subtract_;
+    static SEL multiply_by_;
+    static SEL divide_by_;
+    static SEL raise_toPower_;
+    static SEL objectFrom_withIndex_;
+
+    static NSFunctionExpression *binaryFunc(SEL selector, NSExpression *lhs, NSExpression *rhs);
+    static NSExpression *concatKeypathExpressions(NSExpression *lhs, NSExpression *rhs);
+    static SEL selectorFromIdentifier(NSString *name);
+    static NSExpression *coerceObjectToExpression(argBlock args, NSString *formatType);
+    static NSComparisonPredicateOptions parseComparisonOptions(NSString *optionString);
+
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wunreachable-code"
+%}
+
+%name-prefix="predicate_"
+%defines
+%file-prefix="NSPredicateParser"
+
+%expect 0
+
+%pure-parser
+%lex-param { yyscan_t scanner }
+%parse-param { yyscan_t scanner }
+%parse-param { argBlock args }
+%parse-param { NSPredicate **predicate }
+
+
+%union {
+    NSPredicate *predicate;
+    NSExpression *expression;
+    NSMutableArray *mutableArray;
+    NSString *string;
+    NSNumber *number;
+    struct {
+        NSExpression *lhs;
+        NSExpression *rhs;
+        NSPredicateOperatorType type;
+        NSComparisonPredicateOptions options;
+    } comparison;
+    struct {
+        NSPredicateOperatorType type;
+        NSComparisonPredicateOptions options;
+    } operator;
+    NSMutableString *stringLiteral;
+    NSPredicateOperatorType operatorType;
+}
+
+%type <predicate> Predicate
+%type <predicate> CompoundPredicate
+%type <predicate> ComparisonPredicate
+
+%type <comparison> UnqualifiedComparisonPredicate
+
+%type <expression> Expression
+%type <expression> ValueExpression
+%type <expression> KeypathExpression
+%type <expression> BinaryExpression
+%type <expression> Format
+%type <expression> Index
+
+%type <operator> Operator
+%type <operator> OperatorWithOptions
+
+%type <operatorType> OperatorType
+
+%type <string> Variable
+
+%type <mutableArray> ExpressionList
+
+
+%token LPAREN
+%token RPAREN
+%token LCURLY
+%token RCURLY
+
+%left LSQUARE
+%token RSQUARE
+
+%nonassoc EQUAL
+%nonassoc NOT_EQUAL
+%nonassoc LESS_THAN
+%nonassoc GREATER_THAN
+%nonassoc LESS_THAN_OR_EQUAL
+%nonassoc GREATER_THAN_OR_EQUAL
+
+%left AND
+%left OR
+%left NOT
+
+%left PERIOD
+
+%left PLUS MINUS
+%left TIMES DIVIDE
+%left POWER
+%right ASSIGN
+
+%token COMMA
+%token DOLLAR
+%token PERCENT
+
+%token BETWEEN
+
+%token CONTAINS
+%token IN
+
+%token BEGINS_WITH
+%token ENDS_WITH
+%token LIKE
+%token MATCHES
+
+%token ANY
+%token ALL
+%token NONE
+%token SOME
+
+%token TRUE_PREDICATE
+%token FALSE_PREDICATE
+
+%token NULL_TOK
+%token TRUE_TOK
+%token FALSE_TOK
+%token SELF
+
+%token FIRST
+%token LAST
+%token SIZE
+
+%token <string> AT
+
+%token <number> NUMBER
+
+%token <string> STRING
+
+%token <string> IDENTIFIER
+
+%%
+
+Start:
+  Predicate { *predicate = $1; };
+
+Predicate:
+  ComparisonPredicate     { $$ = $1; }
+| CompoundPredicate       { $$ = $1; }
+| TRUE_PREDICATE          { $$ = truePredicate; }
+| FALSE_PREDICATE         { $$ = falsePredicate; }
+| LPAREN Predicate RPAREN { $$ = $2; }
+
+CompoundPredicate:
+  Predicate AND Predicate { $$ = [NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObjects:$1, $3, nil]]; }
+| Predicate OR Predicate  { $$ = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray arrayWithObjects:$1, $3, nil]]; }
+| NOT Predicate           { $$ = [NSCompoundPredicate notPredicateWithSubpredicate:$2]; }
+
+ComparisonPredicate:
+  UnqualifiedComparisonPredicate      { $$ = [NSComparisonPredicate predicateWithLeftExpression:$1.lhs rightExpression:$1.rhs modifier:NSDirectPredicateModifier type:$1.type options:$1.options]; }
+| ANY UnqualifiedComparisonPredicate  { $$ = [NSComparisonPredicate predicateWithLeftExpression:$2.lhs rightExpression:$2.rhs modifier:NSAnyPredicateModifier type:$2.type options:$2.options]; }
+| SOME UnqualifiedComparisonPredicate { $$ = [NSComparisonPredicate predicateWithLeftExpression:$2.lhs rightExpression:$2.rhs modifier:NSAnyPredicateModifier type:$2.type options:$2.options]; }
+| ALL UnqualifiedComparisonPredicate  { $$ = [NSComparisonPredicate predicateWithLeftExpression:$2.lhs rightExpression:$2.rhs modifier:NSAllPredicateModifier type:$2.type options:$2.options]; }
+| NONE UnqualifiedComparisonPredicate { $$ = [NSCompoundPredicate notPredicateWithSubpredicate:[NSComparisonPredicate predicateWithLeftExpression:$2.lhs rightExpression:$2.rhs modifier:NSAnyPredicateModifier type:$2.type options:$2.options]]; }
+
+UnqualifiedComparisonPredicate:
+  Expression Operator Expression { $$.lhs = $1; $$.rhs = $3; $$.type = $2.type; $$.options = $2.options; }
+
+Operator:
+  BETWEEN             { $$.type = NSBetweenPredicateOperatorType; $$.options = 0; }
+| OperatorWithOptions { $$ = $1; }
+
+OperatorWithOptions:
+  OperatorType                            { $$.type = $1; $$.options = 0; }
+| OperatorType LSQUARE IDENTIFIER RSQUARE { $$.type = $1; $$.options = parseComparisonOptions($3); }
+
+OperatorType:
+  EQUAL                 { $$ = NSEqualToPredicateOperatorType; }
+| NOT_EQUAL             { $$ = NSNotEqualToPredicateOperatorType; }
+| LESS_THAN             { $$ = NSLessThanPredicateOperatorType; }
+| GREATER_THAN          { $$ = NSGreaterThanPredicateOperatorType; }
+| LESS_THAN_OR_EQUAL    { $$ = NSLessThanOrEqualToPredicateOperatorType; }
+| GREATER_THAN_OR_EQUAL { $$ = NSGreaterThanOrEqualToPredicateOperatorType; }
+| CONTAINS              { $$ = NSContainsPredicateOperatorType; }
+| IN                    { $$ = NSInPredicateOperatorType; }
+| BEGINS_WITH           { $$ = NSBeginsWithPredicateOperatorType; }
+| ENDS_WITH             { $$ = NSEndsWithPredicateOperatorType; }
+| LIKE                  { $$ = NSLikePredicateOperatorType; }
+| MATCHES               { $$ = NSMatchesPredicateOperatorType; }
+
+Expression:
+  BinaryExpression                        { $$ = $1; }
+| IDENTIFIER LPAREN RPAREN                { $$ = [[[NSFunctionExpression alloc] initWithSelector:selectorFromIdentifier($1) argumentArray:[NSArray array]] autorelease]; }
+| IDENTIFIER LPAREN ExpressionList RPAREN { $$ = [[[NSFunctionExpression alloc] initWithSelector:selectorFromIdentifier($1) argumentArray:$3] autorelease]; }
+| Variable ASSIGN Expression              { $$ = [[[NSVariableAssignmentExpression alloc] initWithAssignmentVariable:$1 expression:$3] autorelease]; }
+| KeypathExpression                       { $$ = $1; }
+| ValueExpression                         { $$ = $1; }
+| LPAREN Expression RPAREN                { $$ = $2; }
+
+BinaryExpression:
+  Expression POWER Expression      { $$ = binaryFunc(raise_toPower_, $1, $3); }
+| Expression TIMES Expression      { $$ = binaryFunc(multiply_by_, $1, $3); }
+| Expression DIVIDE Expression     { $$ = binaryFunc(divide_by_, $1, $3); }
+| Expression PLUS Expression       { $$ = binaryFunc(add_to_, $1, $3); }
+| Expression MINUS Expression      { $$ = binaryFunc(from_subtract_, $1, $3); }
+| MINUS Expression                 { $$ = binaryFunc(from_subtract_, zeroExpression, $2); }
+| Expression LSQUARE Index RSQUARE { $$ = binaryFunc(objectFrom_withIndex_, $1, $3); }
+
+Index:
+  Expression { $$ = $1; }
+| FIRST      { $$ = firstExpression; }
+| LAST       { $$ = lastExpression; }
+| SIZE       { $$ = sizeExpression; }
+
+KeypathExpression:
+  IDENTIFIER                   { $$ = [NSExpression expressionForKeyPath:$1]; }
+| AT IDENTIFIER                { $$ = [NSExpression expressionForKeyPath:[$1 stringByAppendingString:$2]]; }
+| Expression PERIOD Expression { $$ = concatKeypathExpressions($1, $3); }
+
+ValueExpression:
+  STRING                       { $$ = [[[NSConstantValueExpression alloc] initWithObject:$1] autorelease]; }
+| NUMBER                       { $$ = [[[NSConstantValueExpression alloc] initWithObject:$1] autorelease]; }
+| PERCENT Format               { $$ = $2; }
+| Variable                     { $$ = [[[NSVariableExpression alloc] initWithObject:$1] autorelease]; }
+| NULL_TOK                     { $$ = nullExpression; }
+| TRUE_TOK                     { $$ = yesExpression; }
+| FALSE_TOK                    { $$ = noExpression; }
+| SELF                         { $$ = selfExpression; }
+| LCURLY RCURLY                { $$ = [[[NSAggregateExpression alloc] initWithCollection:[NSArray array]] autorelease]; }
+| LCURLY ExpressionList RCURLY { $$ = [[[NSAggregateExpression alloc] initWithCollection:$2] autorelease]; }
+
+ExpressionList:
+  Expression                      { $$ = [NSMutableArray arrayWithObject:$1]; }
+| ExpressionList COMMA Expression { [$1 addObject:$3]; $$ = $1; }
+
+Format:
+  AT         { $$ = coerceObjectToExpression(args, $1); }
+| IDENTIFIER { $$ = coerceObjectToExpression(args, $1); }
+
+Variable:
+  DOLLAR IDENTIFIER { $$ = $2; }
+
+%%
+
+#pragma clang diagnostic pop
+
+static NSFunctionExpression *binaryFunc(SEL selector, NSExpression *lhs, NSExpression *rhs)
+{
+    return [[[NSFunctionExpression alloc] initWithSelector:selector argumentArray:[NSArray arrayWithObjects:lhs, rhs, nil]] autorelease];
+}
+
+static NSExpression *concatKeypathExpressions(NSExpression *lhs, NSExpression *rhs)
+{
+    NSString *keyPath;
+
+    if ([lhs isKindOfClass:[NSSelfExpression class]])
+    {
+        keyPath = [rhs keyPath];
+    }
+    else
+    {
+        keyPath = [NSString stringWithFormat:@"%@.%@", [lhs keyPath], [rhs keyPath]];
+    }
+
+    return [NSExpression expressionForKeyPath:keyPath];
+}
+
+static SEL selectorFromIdentifier(NSString *name)
+{
+    static NSSet *legalNames;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        legalNames = [[NSSet alloc] initWithObjects: @"abs:", @"average:", @"ceiling:", @"count:",
+                      @"exp:", @"floor:", @"ln:", @"log:", @"max:", @"median:", @"min:", @"mode:",
+                      @"now:", @"random:", @"randomn:", @"sqrt:", @"stddev:", @"sum:", @"trunc:", nil];
+    });
+
+    if (![name hasSuffix:@":"])
+    {
+        name = [name stringByAppendingString:@":"];
+    }
+
+    if (![legalNames member:name])
+    {
+        [NSException raise:NSInvalidArgumentException format:@"Illegal function name '%@' when parsing expression", name];
+    }
+
+    return NSSelectorFromString(name);
+}
+
+void predicate_error(yyscan_t scanner, argBlock args, NSPredicate **predicate, const char *error)
+{
+    _parsePredicateError(error);
+}
+
+void _parsePredicateError(const char *error)
+{
+    [NSException raise:NSInvalidArgumentException format:@"Error parsing predicate format: %s", error];
+}
+
+static NSPredicate *parsePredicate(NSString *format, argBlock args)
+{
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        truePredicate = [NSTruePredicate defaultInstance];
+        falsePredicate = [NSFalsePredicate defaultInstance];
+
+        zeroExpression = [[NSConstantValueExpression alloc] initWithObject:@0];
+        nullExpression = [[NSConstantValueExpression alloc] initWithObject:[NSNull null]];
+        yesExpression = [[NSConstantValueExpression alloc] initWithObject:@YES];
+        noExpression = [[NSConstantValueExpression alloc] initWithObject:@NO];
+
+        firstExpression = [[NSSymbolicExpression alloc] initWithString:@"FIRST"];
+        lastExpression = [[NSSymbolicExpression alloc] initWithString:@"LAST"];
+        sizeExpression = [[NSSymbolicExpression alloc] initWithString:@"SIZE"];
+
+        selfExpression = [NSSelfExpression defaultInstance];
+
+        add_to_ = sel_registerName("add:to:");
+        from_subtract_ = sel_registerName("from:subtract:");
+        multiply_by_ = sel_registerName("multiply:by:");
+        divide_by_ = sel_registerName("divide:by:");
+        raise_toPower_ = sel_registerName("raise:toPower:");
+        objectFrom_withIndex_ = sel_registerName("objectFrom:withIndex:");
+    });
+
+    const char *formatBytes = [format UTF8String];
+
+    yyscan_t lexer;
+    YY_BUFFER_STATE state;
+    _predicate_lexer_create(formatBytes, &lexer, &state);
+
+    NSPredicate *predicate = nil;
+    predicate_parse(lexer, args, &predicate);
+
+    _predicate_lexer_destroy(lexer, state);
+
+    return predicate;
+}
+
+static NSComparisonPredicateOptions parseComparisonOptions(NSString *optionString)
+{
+    optionString = [optionString lowercaseString];
+
+    NSComparisonPredicateOptions options = 0;
+
+    if ([optionString rangeOfString:@"c"].location != NSNotFound)
+    {
+        options |= NSCaseInsensitivePredicateOption;
+    }
+    if ([optionString rangeOfString:@"d"].location != NSNotFound)
+    {
+        options |= NSDiacriticInsensitivePredicateOption;
+    }
+    if ([optionString rangeOfString:@"n"].location != NSNotFound)
+    {
+        options |= NSNormalizedPredicateOption;
+    }
+    if ([optionString rangeOfString:@"l"].location != NSNotFound)
+    {
+        options |= NSLocaleSensitivePredicateOption;
+    }
+
+    return options;
+}
+
+static NSExpression *coerceObjectToExpression(argBlock args, NSString *formatType)
+{
+    id object = args(formatType);
+
+    if ([formatType isEqualToString:@"@"] ||
+        [formatType isEqualToString:@"d"] ||
+        [formatType isEqualToString:@"f"])
+    {
+        return [[[NSConstantValueExpression alloc] initWithObject:object] autorelease];
+    }
+    if ([formatType isEqualToString:@"K"])
+    {
+        if (![object isNSString__])
+        {
+            [NSException raise:NSInvalidArgumentException format:@"Tried to substitute non-string %@ into predicate format", object];
+            return nil;
+        }
+        return [NSExpression expressionForKeyPath:object];
+    }
+
+    [NSException raise:NSInvalidArgumentException format:@"Invalid predicate format type %@", formatType];
+    return nil;
+}
+
+NSPredicate *_parsePredicateArray(NSString *format, NSArray *args)
+{
+    NSEnumerator *argEnumerator = [args objectEnumerator];
+
+    return parsePredicate(format, ^NSExpression *(NSString *formatType) {
+        return [argEnumerator nextObject];
+    });
+}
+
+NSPredicate *_parsePredicateVarArgs(NSString *format, va_list originalArgs)
+{
+    __block va_list args = originalArgs;
+    __block BOOL done = NO;
+
+    return parsePredicate(format, ^NSExpression *(NSString *formatType) {
+        if (done)
+        {
+            return nil;
+        }
+        id object = nil;
+        if ([formatType isEqualToString:@"@"] ||
+            [formatType isEqualToString:@"K"])
+        {
+            object = va_arg(args, id);
+        }
+        else if ([formatType isEqualToString:@"d"])
+        {
+            object = [NSNumber numberWithInt:va_arg(args, int)];
+        }
+        else if ([formatType isEqualToString:@"f"])
+        {
+            object = [NSNumber numberWithDouble:va_arg(args, double)];
+        }
+        if (object == nil)
+        {
+            done = YES;
+        }
+        return object;
+    });
+}

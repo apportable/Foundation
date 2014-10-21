@@ -1,0 +1,105 @@
+header_paths = [
+    '../CoreFoundation/src/',
+    '../Foundation/include',
+    '../Foundation/include/Foundation',
+    '../Foundation/src',
+    '../Security/include',
+    '../System/src/lookup',
+    '../Security/src',
+    'src',
+    'src/FTP',
+    'src/Headers',
+    'src/Host',
+    'src/HTTP',
+    'src/HTTP/NTLM',
+    'src/HTTP/SPNEGO',
+    'src/NetDiagnostics',
+    'src/NetServices',
+    'src/Proxies',
+    'src/SharedCode',
+    'src/Stream',
+    'src/URL',
+    'src/Utils',
+    'private_include',
+    'private_include/CFNetwork',
+]
+
+defines = {
+    'DNS_SD_SUPPORT': 1,
+}
+
+flags = [
+    '-Werror',
+]
+
+libs = [
+    'v',
+    'System',
+    'icu',
+    'CoreFoundation',
+    'CommonCrypto',
+    'Security',
+    'SystemConfiguration',
+]
+
+deps = [
+    'v',
+    'System',
+    'icu',
+    'CoreFoundation',
+    'CommonCrypto',
+    'Security',
+    'SystemConfiguration',
+    'zlib'
+]
+
+sources = [
+    'src/CFNetwork.c',
+    'src/FTP/CFFTPStream.c',
+    'src/Host/CFHost.c',
+    'src/HTTP/CFHTTPAuthentication.c',
+    'src/HTTP/CFHTTPConnection.c',
+    'src/HTTP/CFHTTPFilter.c',
+    'src/HTTP/CFHTTPMessage.c',
+    'src/HTTP/CFHTTPServer.c',
+    'src/HTTP/CFHTTPStream.c',
+    # 'src/HTTP/NTLM/ntlmBlobPriv.cpp',
+    # 'src/HTTP/NTLM/NtlmGenerator.cpp',
+    # 'src/HTTP/SPNEGO/spnegoBlob.cpp',
+    # 'src/HTTP/SPNEGO/spnegoDER.cpp',
+    # 'src/HTTP/SPNEGO/spnegoKrb.cpp',
+    # 'src/JavaScriptGlue.c',
+    # 'src/libresolv.c',
+    'src/NetDiagnostics/CFNetDiagnosticPing.c',
+    # 'src/NetDiagnostics/CFNetDiagnostics.c',
+    # 'src/NetDiagnostics/CFNetDiagnosticsProtocolUser.c',
+    # 'src/NetServices/CFNetServiceBrowser.c',
+    # 'src/NetServices/CFNetServiceMonitor.c',
+    # 'src/NetServices/DeprecatedDNSServiceDiscovery.c',
+    'src/Proxies/ProxySupport.c',
+    # 'src/security_cdsa_utils.c',
+    'src/SharedCode/CFNetConnection.c',
+    'src/SharedCode/CFNetworkSchedule.c',
+    'src/SharedCode/CFNetworkThreadSupport.c',
+    'src/SharedCode/CFServer.c',
+    'src/SharedCode/CFError.c',
+    'src/Stream/CFSocketStream.c',
+    'src/URL/CFURLAuthChallenge.c',
+    'src/URL/CFURLConnection.c',
+    'src/URL/CFURLProtectionSpace.c',
+    'src/URL/CFURLRequest.c',
+    'src/URL/CFURLResponse.c',
+    'src/URL/_CFURLAccess.c',
+    'src/URL/CFURLCache.c',
+    'src/URL/CFCachedURLResponse.c',
+    'src/CFProxySupport.c',
+    'src/CFNetServices.c',
+    'src/Cookies/CFHTTPCookie.c',
+    'src/Cookies/CFHTTPCookieStorage.c',
+    'src/Utils/CFFSUtils.c',
+    'src/Utils/CFRuntimeUtils.c',
+    'src/Utils/CFHTTPUtils.c',
+]
+
+Import('env')
+env.BuildFramework('CFNetwork', sources, header_paths=header_paths, static=False, flags = flags, defines = defines, deps = deps, libs=libs)

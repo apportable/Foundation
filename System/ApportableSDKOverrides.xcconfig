@@ -1,0 +1,9 @@
+//
+//  ApportableSDKOverrides.xcconfig
+//
+//  Created by Paul Beusterien on 7/30/14.
+//  Copyright (c) 2014 Apportable. All rights reserved.
+// 
+
+SDKROOT = sbandroid0.9
+SDK_INSTALL_PATH = /Application Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/

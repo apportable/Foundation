@@ -1,0 +1,56 @@
+// WARNING: Using these functions will result in a poor experience for users,
+// unexpected results when debugging, and overall sadness when trying to get
+// stuff to work. It has been found by studies in the state of California that
+// unimplemented functins have been known to cause twitching and foaming at the
+// mouth for some developers. Any function that has been implemented via this
+// macro or any derivative, should at some point in time be implemented, atleast
+// with a base implementation that is halfway sane.
+//
+// See one? Don't have a deadline to ship an app or feature in the next few hours? 
+// Know half of what the function really needs to do? Think you can write it in 
+// less than 15 min for something that is better than returning nil? Please take
+// the time to write it. Or atleast scope out what it needs to do in comments.
+// --Many thanks from the foaming at the mouth devs
+
+/* Use CF_UNIMPLEMENT_FN macros to provide dummy implementation that
+ * logs "unimplemented" message and returns null. Works with objc methods too.
+ * Examples:
+ *   CF_UNIMPLEMENT_FN(int DoThisAndThat(int argc, const char** argv));
+ *   CF_UNIMPLEMENT_FN(- (int)doThisAndThatWithArgc:(int)argc argv:(const char**)argv);
+ */
+#if !__ASSEMBLER__
+#define CF_UNIMPLEMENT_FN(...) \
+    __VA_ARGS__ { \
+        DEBUG_LOG("%s is NOT implemented!", __FUNCTION__); \
+        return 0; \
+    }
+
+#define CF_UNIMPLEMENT_VOID_FN(...) \
+    __VA_ARGS__ { \
+        DEBUG_LOG("%s is NOT implemented!", __FUNCTION__); \
+    }
+
+#define CF_UNIMPLEMENT_STRUCT_FN(StructType, ...) \
+    __VA_ARGS__ { \
+        DEBUG_LOG("%s is NOT implemented!", __FUNCTION__); \
+        StructType result = {0}; \
+        return result; \
+    }
+
+#define NSUnimplementedMethod() \
+    DEBUG_LOG("Method %s is not implemented!", __FUNCTION__)
+
+#define NSUnimplementedFunction() \
+    DEBUG_LOG("Function %s is not implemented!", __FUNCTION__)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+extern void __real_abort(void) __attribute__ ((noreturn));
+#ifdef __cplusplus
+}
+#endif
+
+#define abort __real_abort
+
+#endif // !__ASSEMBLER__

@@ -1,0 +1,75 @@
+#if !__ASSEMBLER__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#if defined(__i386__)
+#define pthread_create(...) __ap_wrap_pthread_create(__VA_ARGS__)
+#endif
+
+#define VERDE_EXPORT_API extern __attribute__((visibility("default")))
+#define VERDE_ASSERT(assertion) if((assertion) == 0) DEBUG_LOG("Assertion Failed"); exit(-1);
+
+/* VERDE_UNIMPLEMENTED macros allow you to mark unimplemented
+ *  properties, methods and functions.
+ *
+ * If VERDE_HIDE_UNIMPLEMENTED is defined, unimplemented entries
+ *  are not included to the compilation at all. By default that
+ *  macro not defined, so all unimplemented entries are compiled,
+ *  and methods / functions defined with VERDE_UNIMPLEMENTED_FN
+ *  log warnings.
+ */
+#ifndef VERDE_HIDE_UNIMPLEMENTED
+
+#define VERDE_UNIMPLEMENTED(...) __VA_ARGS__
+
+#ifndef NDEBUG
+#define VERDE_UNIMPLEMENTED_LOG_FN DEBUG_LOG
+#else
+#define VERDE_UNIMPLEMENTED_LOG_FN RELEASE_LOG
+#endif
+
+#define VERDE_UNIMPLEMENTED_FN(...) \
+  __VA_ARGS__ { \
+    VERDE_UNIMPLEMENTED_LOG_FN("%s is NOT implemented!", __FUNCTION__); \
+    return 0; \
+  }
+
+#define VERDE_UNIMPLEMENTED_VOID_FN(...) \
+  __VA_ARGS__ { \
+    VERDE_UNIMPLEMENTED_LOG_FN("%s is NOT implemented!", __FUNCTION__); \
+  }
+
+#define VERDE_UNIMPLEMENTED_STRUCT_FN(StructType, ...) \
+  __VA_ARGS__ { \
+    VERDE_UNIMPLEMENTED_LOG_FN("%s is NOT implemented!", __FUNCTION__); \
+    StructType result = {0}; \
+    return result; \
+  }
+
+#else // VERDE_HIDE_UNIMPLEMENTED
+
+#define VERDE_UNIMPLEMENTED(...)
+#define VERDE_UNIMPLEMENTED_FN(...)
+#define VERDE_UNIMPLEMENTED_VOID_FN(...)
+#define VERDE_UNIMPLEMENTED_STRUCT_FN(StructType, ...)
+
+#endif // !VERDE_HIDE_UNIMPLEMENTED
+
+#if !defined(NDEBUG)
+#define VERDE_NOT_IMPLEMENTED() { DEBUG_LOG("called unimplemented method %s", __FUNCTION__); }
+#else
+#define VERDE_NOT_IMPLEMENTED() do {} while(0)
+#endif
+
+#ifdef LOG_FN_CALLS
+void __cyg_log_func_enter(const char *func);
+void __cyg_log_func_exit (const char *func);
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // !__ASSEMBLER__

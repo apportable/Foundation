@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Kind</key>
+    <string>Xcode.Xcode3.ProjectTemplateUnitKind</string>
+    <key>Identifier</key>
+    <string>com.apportable.android.jniApplication</string>
+    <key>Concrete</key>
+    <true/>
+    <key>Description</key>
+    <string>JNI hello world application.</string>
+    <key>Platforms</key>
+    <array>
+        <string>com.apportable.platform.android</string>
+    </array>
+    <key>Ancestors</key>
+    <array>
+        <string>com.apple.dt.unit.bundleBase</string>
+    </array>
+    <key>Targets</key>
+    <array>
+        <dict>
+            <key>ProductType</key>
+            <string>com.apple.product-type.application</string>
+            <key>SharedSettings</key>
+            <dict>
+                <key>GCC_PREFIX_HEADER</key>
+                <string></string>
+                <key>WRAPPER_EXTENSION</key>
+                <string>app</string>
+            </dict>
+            <key>Dependencies</key>
+            <array>
+                <string>mylib</string>
+            </array>
+            <key>BuildPhases</key>
+            <array>
+                <dict>
+                    <key>Class</key>
+                    <string>Headers</string>
+                </dict>
+                <dict>
+                    <key>Class</key>
+                    <string>Sources</string>
+                </dict>
+                <dict>
+                    <key>Class</key>
+                    <string>Resources</string>
+                </dict>
+                <dict>
+                    <key>Class</key>
+                    <string>Frameworks</string>
+                </dict>
+            </array>
+            <key>Frameworks</key>
+            <array>
+                <string>Foundation</string>
+                <string>CoreJava</string>
+            </array>
+        </dict>
+        <dict>
+            <key>ProductType</key>
+            <string>com.apportable.java.product-type.library</string>
+            <key>Name</key>
+            <string>___PACKAGENAME___ Java</string>
+            <key>TargetIdentifier</key>
+            <string>mylib</string>
+            <key>SharedSettings</key>
+            <dict>
+                <key>PRODUCT_NAME</key>
+                <string>___PACKAGENAME___ Java</string>
+            </dict>
+            <key>BuildPhases</key>
+            <array>
+                <dict>
+                    <key>Class</key>
+                    <string>Sources</string>
+                </dict>
+                <dict>
+                    <key>Class</key>
+                    <string>Frameworks</string>
+                </dict>
+            </array>
+            <key>Frameworks</key>
+            <array>
+                <string>CoreJava</string>
+            </array>
+        </dict>
+    </array>
+    <key>Project</key>
+    <dict>
+        <key>Configurations</key>
+        <dict>
+            <key>Debug</key>
+            <dict/>
+            <key>Release</key>
+            <dict/>
+        </dict>
+        <key>SDK</key>
+        <string>apportablesdk1.0</string>
+        <key>SharedSettings</key>
+        <dict>
+            <key>MACOSX_DEPLOYMENT_TARGET</key>
+            <string>$(inherited)</string>
+            <key>ANDROID_MANIFEST</key>
+            <string>$(SRCROOT)/___PACKAGENAME___/AndroidManifest.xml</string>
+
+        </dict>
+    </dict>
+    <key>Definitions</key>
+    <dict>
+        <key>___PACKAGENAMEASIDENTIFIER___Activity.m</key>
+        <dict>
+            <key>Path</key>
+            <string>___PACKAGENAMEASIDENTIFIER___Activity.m</string>
+            <key>TargetIndices</key>
+            <array>
+                <integer>0</integer>
+            </array>
+        </dict>
+        <key>___PACKAGENAMEASIDENTIFIER___Activity.java</key>
+        <dict>
+            <key>Path</key>
+            <string>___PACKAGENAMEASIDENTIFIER___Activity.java</string>
+            <key>TargetIndices</key>
+            <array>
+                <integer>1</integer>
+            </array>
+        </dict>
+        <key>AndroidManifest.xml</key>
+        <dict>
+            <key>Path</key>
+            <string>AndroidManifest.xml</string>
+            <key>TargetIndices</key>
+            <array/>
+        </dict>
+
+        <key>___PACKAGENAME___-Info.plist:Bundle</key>
+        <string>&lt;key&gt;CFBundleDisplayName&lt;/key&gt;
+&lt;string&gt;${PRODUCT_NAME}&lt;/string&gt;
+&lt;key&gt;CFBundleVersion&lt;/key&gt;
+&lt;string&gt;1.0&lt;/string&gt;
+&lt;key&gt;CFBundleShortVersionString&lt;/key&gt;
+&lt;string&gt;1.0&lt;/string&gt;
+&lt;key&gt;CFBundleExecutable&lt;/key&gt;
+&lt;string&gt;${EXECUTABLE_NAME}&lt;/string&gt;</string>
+    </dict>
+    <key>Nodes</key>
+    <array>
+        <string>___PACKAGENAME___-Info.plist:Bundle</string>
+        <string>___PACKAGENAMEASIDENTIFIER___Activity.m</string>
+        <string>___PACKAGENAMEASIDENTIFIER___Activity.java</string>
+        <string>AndroidManifest.xml</string>
+    </array>
+</dict>
+</plist>

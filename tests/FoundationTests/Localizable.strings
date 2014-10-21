@@ -1,0 +1,10 @@
+/* 
+  Localizable.strings
+  FoundationTests
+
+  Created by Glenna Buford on 12/4/13.
+  Copyright (c) 2013 Apportable. All rights reserved.
+*/
+
+
+"Hello,\n“foo bar.”\n" = "Hello,\n“foo bar.”\n";

@@ -1,0 +1,103 @@
+//
+//  CFCalendarConstants.c
+//  CoreFoundation
+//
+//  Copyright (c) 2014 Apportable. All rights reserved.
+//
+
+#include <CoreFoundation/CFString.h>
+
+CFStringRef const kCFBuddhistCalendar = CFSTR("kCFBuddhistCalendar");
+CFStringRef const kCFChineseCalendar = CFSTR("kCFChineseCalendar");
+CFStringRef const kCFGregorianCalendar = CFSTR("kCFGregorianCalendar");
+CFStringRef const kCFHebrewCalendar = CFSTR("kCFHebrewCalendar");
+CFStringRef const kCFISO8601Calendar = CFSTR("kCFISO8601Calendar");
+CFStringRef const kCFIndianCalendar = CFSTR("kCFIndianCalendar");
+CFStringRef const kCFIslamicCalendar = CFSTR("kCFIslamicCalendar");
+CFStringRef const kCFIslamicCivilCalendar = CFSTR("kCFIslamicCivilCalendar");
+CFStringRef const kCFJapaneseCalendar = CFSTR("kCFJapaneseCalendar");
+CFStringRef const kCFPersianCalendar = CFSTR("kCFPersianCalendar");
+CFStringRef const kCFRepublicOfChinaCalendar = CFSTR("kCFRepublicOfChinaCalendar");
+CFStringRef const kCFLocaleCalendarIdentifier = CFSTR("kCFLocaleCalendarIdentifier");
+CFStringRef const kCFLocaleCalendar = CFSTR("kCFLocaleCalendar");
+CFStringRef const kCFLocaleCollationIdentifier = CFSTR("kCFLocaleCollationIdentifier");
+CFStringRef const kCFLocaleCollatorIdentifier = CFSTR("kCFLocaleCollatorIdentifier");
+CFStringRef const kCFLocaleCountryCode = CFSTR("kCFLocaleCountryCode");
+CFStringRef const kCFLocaleCurrencyCode = CFSTR("kCFLocaleCurrencyCode");
+CFStringRef const kCFLocaleCurrencySymbol = CFSTR("kCFLocaleCurrencySymbol");
+CFStringRef const kCFLocaleDecimalSeparator = CFSTR("kCFLocaleDecimalSeparator");
+CFStringRef const kCFLocaleExemplarCharacterSet = CFSTR("kCFLocaleExemplarCharacterSet");
+CFStringRef const kCFLocaleGroupingSeparator = CFSTR("kCFLocaleGroupingSeparator");
+CFStringRef const kCFLocaleIdentifier = CFSTR("kCFLocaleIdentifier");
+CFStringRef const kCFLocaleLanguageCode = CFSTR("kCFLocaleLanguageCode");
+CFStringRef const kCFLocaleMeasurementSystem = CFSTR("kCFLocaleMeasurementSystem");
+CFStringRef const kCFLocaleScriptCode = CFSTR("kCFLocaleScriptCode");
+CFStringRef const kCFLocaleUsesMetricSystem = CFSTR("kCFLocaleUsesMetricSystem");
+CFStringRef const kCFLocaleVariantCode = CFSTR("kCFLocaleVariantCode");
+CFStringRef const kCFDateFormatterAMSymbol = CFSTR("kCFDateFormatterAMSymbol");
+CFStringRef const kCFDateFormatterCalendar = CFSTR("kCFDateFormatterCalendar");
+CFStringRef const kCFDateFormatterCalendarIdentifier = CFSTR("kCFDateFormatterCalendarIdentifier");
+CFStringRef const kCFDateFormatterDefaultDate = CFSTR("kCFDateFormatterDefaultDate");
+CFStringRef const kCFDateFormatterDefaultFormat = CFSTR("kCFDateFormatterDefaultFormat");
+CFStringRef const kCFDateFormatterEraSymbols = CFSTR("kCFDateFormatterEraSymbols");
+CFStringRef const kCFDateFormatterGregorianStartDate = CFSTR("kCFDateFormatterGregorianStartDate");
+CFStringRef const kCFDateFormatterIsLenient = CFSTR("kCFDateFormatterIsLenient");
+CFStringRef const kCFDateFormatterLongEraSymbols = CFSTR("kCFDateFormatterLongEraSymbols");
+CFStringRef const kCFDateFormatterMonthSymbols = CFSTR("kCFDateFormatterMonthSymbols");
+CFStringRef const kCFDateFormatterPMSymbol = CFSTR("kCFDateFormatterPMSymbol");
+CFStringRef const kCFDateFormatterQuarterSymbols = CFSTR("kCFDateFormatterQuarterSymbols");
+CFStringRef const kCFDateFormatterShortMonthSymbols = CFSTR("kCFDateFormatterShortMonthSymbols");
+CFStringRef const kCFDateFormatterShortQuarterSymbols = CFSTR("kCFDateFormatterShortQuarterSymbols");
+CFStringRef const kCFDateFormatterShortStandaloneMonthSymbols = CFSTR("kCFDateFormatterShortStandaloneMonthSymbols");
+CFStringRef const kCFDateFormatterShortStandaloneQuarterSymbols = CFSTR("kCFDateFormatterShortStandaloneQuarterSymbols");
+CFStringRef const kCFDateFormatterShortStandaloneWeekdaySymbols = CFSTR("kCFDateFormatterShortStandaloneWeekdaySymbols");
+CFStringRef const kCFDateFormatterShortWeekdaySymbols = CFSTR("kCFDateFormatterShortWeekdaySymbols");
+CFStringRef const kCFDateFormatterStandaloneMonthSymbols = CFSTR("kCFDateFormatterStandaloneMonthSymbols");
+CFStringRef const kCFDateFormatterStandaloneQuarterSymbols = CFSTR("kCFDateFormatterStandaloneQuarterSymbols");
+CFStringRef const kCFDateFormatterStandaloneWeekdaySymbols = CFSTR("kCFDateFormatterStandaloneWeekdaySymbols");
+CFStringRef const kCFDateFormatterTimeZone = CFSTR("kCFDateFormatterTimeZone");
+CFStringRef const kCFDateFormatterTwoDigitStartDate = CFSTR("kCFDateFormatterTwoDigitStartDate");
+CFStringRef const kCFDateFormatterVeryShortMonthSymbols = CFSTR("kCFDateFormatterVeryShortMonthSymbols");
+CFStringRef const kCFDateFormatterVeryShortStandaloneMonthSymbols = CFSTR("kCFDateFormatterVeryShortStandaloneMonthSymbols");
+CFStringRef const kCFDateFormatterVeryShortStandaloneWeekdaySymbols = CFSTR("kCFDateFormatterVeryShortStandaloneWeekdaySymbols");
+CFStringRef const kCFDateFormatterVeryShortWeekdaySymbols = CFSTR("kCFDateFormatterVeryShortWeekdaySymbols");
+CFStringRef const kCFDateFormatterWeekdaySymbols = CFSTR("kCFDateFormatterWeekdaySymbols");
+CFStringRef const kCFNumberFormatterAlwaysShowDecimalSeparator = CFSTR("kCFNumberFormatterAlwaysShowDecimalSeparator");
+CFStringRef const kCFNumberFormatterCurrencyCode = CFSTR("kCFNumberFormatterCurrencyCode");
+CFStringRef const kCFNumberFormatterCurrencyDecimalSeparator = CFSTR("kCFNumberFormatterCurrencyDecimalSeparator");
+CFStringRef const kCFNumberFormatterCurrencyGroupingSeparator = CFSTR("kCFNumberFormatterCurrencyGroupingSeparator");
+CFStringRef const kCFNumberFormatterCurrencySymbol = CFSTR("kCFNumberFormatterCurrencySymbol");
+CFStringRef const kCFNumberFormatterDecimalSeparator = CFSTR("kCFNumberFormatterDecimalSeparator");
+CFStringRef const kCFNumberFormatterDefaultFormat = CFSTR("kCFNumberFormatterDefaultFormat");
+CFStringRef const kCFNumberFormatterExponentSymbol = CFSTR("kCFNumberFormatterExponentSymbol");
+CFStringRef const kCFNumberFormatterFormatWidth = CFSTR("kCFNumberFormatterFormatWidth");
+CFStringRef const kCFNumberFormatterGroupingSeparator = CFSTR("kCFNumberFormatterGroupingSeparator");
+CFStringRef const kCFNumberFormatterGroupingSize = CFSTR("kCFNumberFormatterGroupingSize");
+CFStringRef const kCFNumberFormatterInfinitySymbol = CFSTR("kCFNumberFormatterInfinitySymbol");
+CFStringRef const kCFNumberFormatterInternationalCurrencySymbol = CFSTR("kCFNumberFormatterInternationalCurrencySymbol");
+CFStringRef const kCFNumberFormatterIsLenient = CFSTR("kCFNumberFormatterIsLenient");
+CFStringRef const kCFNumberFormatterMaxFractionDigits = CFSTR("kCFNumberFormatterMaxFractionDigits");
+CFStringRef const kCFNumberFormatterMaxIntegerDigits = CFSTR("kCFNumberFormatterMaxIntegerDigits");
+CFStringRef const kCFNumberFormatterMaxSignificantDigits = CFSTR("kCFNumberFormatterMaxSignificantDigits");
+CFStringRef const kCFNumberFormatterMinFractionDigits = CFSTR("kCFNumberFormatterMinFractionDigits");
+CFStringRef const kCFNumberFormatterMinIntegerDigits = CFSTR("kCFNumberFormatterMinIntegerDigits");
+CFStringRef const kCFNumberFormatterMinSignificantDigits = CFSTR("kCFNumberFormatterMinSignificantDigits");
+CFStringRef const kCFNumberFormatterMinusSign = CFSTR("kCFNumberFormatterMinusSign");
+CFStringRef const kCFNumberFormatterMultiplier = CFSTR("kCFNumberFormatterMultiplier");
+CFStringRef const kCFNumberFormatterNaNSymbol = CFSTR("kCFNumberFormatterNaNSymbol");
+CFStringRef const kCFNumberFormatterNegativePrefix = CFSTR("kCFNumberFormatterNegativePrefix");
+CFStringRef const kCFNumberFormatterNegativeSuffix = CFSTR("kCFNumberFormatterNegativeSuffix");
+CFStringRef const kCFNumberFormatterPaddingCharacter = CFSTR("kCFNumberFormatterPaddingCharacter");
+CFStringRef const kCFNumberFormatterPaddingPosition = CFSTR("kCFNumberFormatterPaddingPosition");
+CFStringRef const kCFNumberFormatterPerMillSymbol = CFSTR("kCFNumberFormatterPerMillSymbol");
+CFStringRef const kCFNumberFormatterPercentSymbol = CFSTR("kCFNumberFormatterPercentSymbol");
+CFStringRef const kCFNumberFormatterPlusSign = CFSTR("kCFNumberFormatterPlusSign");
+CFStringRef const kCFNumberFormatterPositivePrefix = CFSTR("kCFNumberFormatterPositivePrefix");
+CFStringRef const kCFNumberFormatterPositiveSuffix = CFSTR("kCFNumberFormatterPositiveSuffix");
+CFStringRef const kCFNumberFormatterRoundingIncrement = CFSTR("kCFNumberFormatterRoundingIncrement");
+CFStringRef const kCFNumberFormatterRoundingMode = CFSTR("kCFNumberFormatterRoundingMode");
+CFStringRef const kCFNumberFormatterSecondaryGroupingSize = CFSTR("kCFNumberFormatterSecondaryGroupingSize");
+CFStringRef const kCFNumberFormatterUseGroupingSeparator = CFSTR("kCFNumberFormatterUseGroupingSeparator");
+CFStringRef const kCFNumberFormatterUseSignificantDigits = CFSTR("kCFNumberFormatterUseSignificantDigits");
+CFStringRef const kCFNumberFormatterZeroSymbol = CFSTR("kCFNumberFormatterZeroSymbol");
+CFStringRef const kCFDateFormatterCalendarName = CFSTR("kCFDateFormatterCalendarName");

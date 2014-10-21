@@ -1,0 +1,166 @@
+%option header-file="NSPredicateLexer.h"
+%option outfile="NSPredicateLexer.m"
+%option prefix="predicate_"
+%option noyywrap
+%option reentrant
+%option bison-bridge
+%option case-insensitive
+
+%{
+    #import <Foundation/NSPredicate.h>
+    #import <Foundation/NSCompoundPredicate.h>
+    #import <Foundation/NSComparisonPredicate.h>
+    #import <Foundation/NSExpression.h>
+    #import <Foundation/NSNull.h>
+    #import "NSPredicateInternal.h"
+    #import "NSExpressionInternal.h"
+
+    #import "NSPredicateParser.tab.h"
+
+    CF_PRIVATE void _predicate_lexer_create(const char *string, yyscan_t *lexer, YY_BUFFER_STATE *state);
+    CF_PRIVATE void _predicate_lexer_destroy(yyscan_t lexer, YY_BUFFER_STATE state);
+
+    static int predicate_get_column(yyscan_t scanner);
+    static void predicate_set_column(int column_no, yyscan_t scanner);
+
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wunreachable-code"
+    #pragma clang diagnostic ignored "-Wunused-function"
+%}
+
+%x SINGLE_STRING
+%x DOUBLE_STRING
+%x ESCAPED_IDENT
+
+%%
+
+"("                { return LPAREN; }
+")"                { return RPAREN; }
+"["                { return LSQUARE; }
+"]"                { return RSQUARE; }
+"{"                { return LCURLY; }
+"}"                { return RCURLY; }
+
+","                { return COMMA; }
+"$"                { return DOLLAR; }
+"%"                { return PERCENT; }
+"."                { return PERIOD; }
+
+TRUEPREDICATE      { return TRUE_PREDICATE; }
+FALSEPREDICATE     { return FALSE_PREDICATE; }
+
+AND                |
+"&&"               { return AND; }
+OR                 |
+"||"               { return OR; }
+NOT                |
+"!"                { return NOT; }
+
+"="                |
+"=="               { return EQUAL; }
+"!="               |
+"<>"               { return NOT_EQUAL; }
+"<"                { return LESS_THAN; }
+">"                { return GREATER_THAN; }
+"=<"               |
+"<="               { return LESS_THAN_OR_EQUAL; }
+"=>"               |
+">="               { return GREATER_THAN_OR_EQUAL; }
+
+BETWEEN            { return BETWEEN; }
+
+CONTAINS           { return CONTAINS; }
+IN                 { return IN; }
+
+BEGINSWITH         { return BEGINS_WITH; }
+ENDSWITH           { return ENDS_WITH; }
+LIKE               { return LIKE; }
+MATCHES            { return MATCHES; }
+
+ANY                { return ANY; }
+ALL                { return ALL; }
+NONE               { return NONE; }
+SOME               { return SOME; }
+
+NULL               |
+NIL                { return NULL_TOK; }
+TRUE               |
+YES                { return TRUE_TOK; }
+FALSE              |
+NO                 { return FALSE_TOK; }
+SELF               { return SELF; }
+
+FIRST              { return FIRST; }
+LAST               { return LAST; }
+SIZE               { return SIZE; }
+
+":="               { return ASSIGN; }
+
+"+"                { return PLUS; }
+"-"                { return MINUS; }
+"*"                { return TIMES; }
+"/"                { return DIVIDE; }
+"**"               { return POWER; }
+
+"@"                { yylval->string = @"@"; return AT; }
+
+[[:digit:]]+               { unsigned int n; sscanf(yytext, "%d", &n); yylval->number = [NSNumber numberWithUnsignedInt:n]; return NUMBER; }
+0[xX][[:xdigit:]]+         { unsigned int n; sscanf(yytext, "%x", &n); yylval->number = [NSNumber numberWithUnsignedInt:n]; return NUMBER; }
+[[:digit:]]+\.[[:digit:]]* { double n; sscanf(yytext, "%lf", &n); yylval->number = [NSNumber numberWithDouble:n]; return NUMBER; }
+
+"#"                { BEGIN(ESCAPED_IDENT); }
+
+<INITIAL,ESCAPED_IDENT>{
+    [[:alpha:]_][[:alnum:]_]* { yylval->string = [NSString stringWithUTF8String:yytext]; BEGIN(INITIAL); return IDENTIFIER; }
+}
+
+[[:space:]]+             { }
+
+'                        { yylval->stringLiteral = [NSMutableString string]; BEGIN(SINGLE_STRING); };
+\"                       { yylval->stringLiteral = [NSMutableString string]; BEGIN(DOUBLE_STRING); };
+
+<SINGLE_STRING>'         |
+<DOUBLE_STRING>\"        { yylval->string = yylval->stringLiteral; BEGIN(INITIAL); return STRING; }
+
+<SINGLE_STRING>\"       { [yylval->stringLiteral appendString:@"\""]; }
+<DOUBLE_STRING>'         { [yylval->stringLiteral appendString:@"'"]; }
+
+<SINGLE_STRING,DOUBLE_STRING>{
+    <<EOF>>              { _parsePredicateError("unterminated string literal"); }
+
+    \\([0-7]{1,3})       { int c; sscanf(yytext + 1, "%o", &c); [yylval->stringLiteral appendFormat:@"%c", c]; }
+    \\x([[:xdigit:]]{2}) |
+    \\u([[:xdigit:]]{4}) { int c; sscanf(yytext + 2, "%x", &c); [yylval->stringLiteral appendFormat:@"%C", (unichar)c]; }
+
+    \\a                  { [yylval->stringLiteral appendString:@"\a"]; }
+    \\b                  { [yylval->stringLiteral appendString:@"\b"]; }
+    \\f                  { [yylval->stringLiteral appendString:@"\f"]; }
+    \\n                  { [yylval->stringLiteral appendString:@"\n"]; }
+    \\r                  { [yylval->stringLiteral appendString:@"\r"]; }
+    \\t                  { [yylval->stringLiteral appendString:@"\t"]; }
+    \\v                  { [yylval->stringLiteral appendString:@"\v"]; }
+
+    \\.                  { [yylval->stringLiteral appendFormat:@"%c", yytext[1]]; }
+
+    [^\\\"']+            { [yylval->stringLiteral appendFormat:@"%s", yytext]; }
+}
+
+%%
+
+#pragma clang diagnostic pop
+
+void _predicate_lexer_create(const char *string, yyscan_t *lexer, YY_BUFFER_STATE *state)
+{
+    if (yylex_init(lexer))
+    {
+        [NSException raise:NSInternalInconsistencyException format:@"Unable to create NSPredicate lexer"];
+        return;
+    }
+    *state = yy_scan_string(string, *lexer);
+}
+
+void _predicate_lexer_destroy(yyscan_t lexer, YY_BUFFER_STATE state)
+{
+    yy_delete_buffer(state, lexer);
+    predicate_lex_destroy(lexer);
+}

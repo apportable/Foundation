@@ -1,0 +1,11 @@
+//
+//  ApportableSystem.xcconfig
+//
+//  Created by Paul Beusterien on 7/15/14.
+//  Copyright (c) 2014 Apportable. All rights reserved.
+//
+
+#include "ApportableSystem.xcconfig"
+
+DEPLOYMENT_POSTPROCESSING = YES # Run strip on release builds
+ONLY_ACTIVE_ARCH = YES # Fat binaries not supported yet

@@ -1,0 +1,35 @@
+//
+//  ApportableSystem.xcconfig
+//
+//  Created by Paul Beusterien on 1/14/14.
+//  Copyright (c) 2014 Apportable. All rights reserved.
+//
+
+SDKROOT = apportablesdk1.0
+
+DSTROOT = $HOME/Library/
+
+SDK_INSTALL_PATH = /Application Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/ApportableSDK1.0.sdk/
+INSTALL_PATH = $(SDK_INSTALL_PATH)/$(inherited)
+
+#include "ApportableSDKOverrides.xcconfig"
+
+GCC_PREPROCESSOR_DEFINITIONS = // Want to override -DDEBUG=1
+
+PRODUCT_NAME = $(TARGET_NAME)
+
+PRIVATE_HEADERS_FOLDER_PATH =
+
+// TODO consolidate debug.pch into globals.pch and eliminate Fixme.pch
+OTHER_CFLAGS = $(inherited) -include $(SRCROOT)/../global.pch -include $(SRCROOT)/../debug.pch -include $(SRCROOT)/../Fixme.pch -D__PROJECT__=\"$(TARGET_NAME)\"
+OTHER_CPLUSPLUSFLAGS = -include $(SRCROOT)/../global.pch -include $(SRCROOT)/../debug.pch -include $(SRCROOT)/../Fixme.pch -D__PROJECT__=\"$(TARGET_NAME)\"
+
+DEPLOYMENT_LOCATION = YES
+
+GCC_PRECOMPILE_PREFIX_HEADER = YES
+
+GCC_PREFIX_HEADER =
+
+CLANG_ENABLE_OBJC_ARC = NO
+
+

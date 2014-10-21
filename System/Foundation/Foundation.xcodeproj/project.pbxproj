@@ -1,0 +1,1557 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin ExternalPBXTargetDependency section */
+		5B04E2D219212F76002CDC61 /* ExternalPBXTargetDependency */ = {
+			isa = ExternalPBXTargetDependency;
+			fallbackIsa = PBXTargetDependency;
+			project = xml2;
+			target = xml2;
+		};
+		5B04E2D419212F76002CDC61 /* ExternalPBXTargetDependency */ = {
+			isa = ExternalPBXTargetDependency;
+			fallbackIsa = PBXTargetDependency;
+			project = CFNetwork;
+			target = CFNetwork;
+		};
+		5B04E2D619212F76002CDC61 /* ExternalPBXTargetDependency */ = {
+			isa = ExternalPBXTargetDependency;
+			fallbackIsa = PBXTargetDependency;
+			project = CoreFoundation;
+			target = CoreFoundation;
+		};
+		5B04E2D819212F76002CDC61 /* ExternalPBXTargetDependency */ = {
+			isa = ExternalPBXTargetDependency;
+			fallbackIsa = PBXTargetDependency;
+			project = Security;
+			target = Security;
+		};
+/* End ExternalPBXTargetDependency section */
+
+/* Begin PBXBuildFile section */
+		472583AE19074C0500BF7919 /* NSPredicateLexer.m in Sources */ = {isa = PBXBuildFile; fileRef = 472583AC19074C0500BF7919 /* NSPredicateLexer.m */; };
+		472583AF19074C0500BF7919 /* NSPredicateParser.tab.c in Sources */ = {isa = PBXBuildFile; fileRef = 472583AD19074C0500BF7919 /* NSPredicateParser.tab.c */; };
+		4787B2A019C11E9E00156B18 /* _NSFileIO.h in Headers */ = {isa = PBXBuildFile; fileRef = 4787B29E19C11E9E00156B18 /* _NSFileIO.h */; };
+		4787B2A119C11E9E00156B18 /* _NSFileIO.m in Sources */ = {isa = PBXBuildFile; fileRef = 4787B29F19C11E9E00156B18 /* _NSFileIO.m */; };
+		5BEE515018FCCB0D004CD7FD /* NSLocalizableString.h in Headers */ = {isa = PBXBuildFile; fileRef = 5BEE514E18FCCB0D004CD7FD /* NSLocalizableString.h */; };
+		5BEE515118FCCB0D004CD7FD /* NSLocalizableString.m in Sources */ = {isa = PBXBuildFile; fileRef = 5BEE514F18FCCB0D004CD7FD /* NSLocalizableString.m */; };
+		CA4DEE41198172BA00B5A9EC /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA4DEE3E198172BA00B5A9EC /* Security.framework */; };
+		CA4DEE44198172D300B5A9EC /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA4DEE42198172D300B5A9EC /* CFNetwork.framework */; };
+		CA4DEE45198172D300B5A9EC /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA4DEE43198172D300B5A9EC /* CoreFoundation.framework */; };
+		CA7DD030191AFCF400F111A8 /* libxml2.so in Frameworks */ = {isa = PBXBuildFile; fileRef = CA7DD02F191AFCF400F111A8 /* libxml2.so */; };
+		CA9CFB1E196B01760052AB98 /* NSTimeZone.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69A9188DBFE40053DD9B /* NSTimeZone.m */; };
+		F82F8DF118983BC400AB6992 /* Foundation.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9018983BC400AB6992 /* Foundation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8DF218983BC400AB6992 /* FoundationErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9118983BC400AB6992 /* FoundationErrors.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8DF318983BC400AB6992 /* NSArray.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9218983BC400AB6992 /* NSArray.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8DF418983BC400AB6992 /* NSAttributedString.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9318983BC400AB6992 /* NSAttributedString.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8DF518983BC400AB6992 /* NSAutoreleasePool.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9418983BC400AB6992 /* NSAutoreleasePool.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8DF618983BC400AB6992 /* NSBundle.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9518983BC400AB6992 /* NSBundle.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8DF718983BC400AB6992 /* NSByteCountFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9618983BC400AB6992 /* NSByteCountFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8DF818983BC400AB6992 /* NSByteOrder.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9718983BC400AB6992 /* NSByteOrder.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8DF918983BC400AB6992 /* NSCache.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9818983BC400AB6992 /* NSCache.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8DFA18983BC400AB6992 /* NSCalendar.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9918983BC400AB6992 /* NSCalendar.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8DFB18983BC400AB6992 /* NSCharacterSet.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9A18983BC400AB6992 /* NSCharacterSet.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8DFC18983BC400AB6992 /* NSCoder.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9B18983BC400AB6992 /* NSCoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8DFD18983BC400AB6992 /* NSComparisonPredicate.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9C18983BC400AB6992 /* NSComparisonPredicate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8DFE18983BC400AB6992 /* NSCompoundPredicate.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9D18983BC400AB6992 /* NSCompoundPredicate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8DFF18983BC400AB6992 /* NSData.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9E18983BC400AB6992 /* NSData.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0018983BC400AB6992 /* NSDate.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8D9F18983BC400AB6992 /* NSDate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0118983BC400AB6992 /* NSDateFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DA018983BC400AB6992 /* NSDateFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0218983BC400AB6992 /* NSDecimal.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DA118983BC400AB6992 /* NSDecimal.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0318983BC400AB6992 /* NSDecimalNumber.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DA218983BC400AB6992 /* NSDecimalNumber.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0418983BC400AB6992 /* NSDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DA318983BC400AB6992 /* NSDictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0518983BC400AB6992 /* NSEnumerator.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DA418983BC400AB6992 /* NSEnumerator.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0618983BC400AB6992 /* NSError.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DA518983BC400AB6992 /* NSError.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0718983BC400AB6992 /* NSException.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DA618983BC400AB6992 /* NSException.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0818983BC400AB6992 /* NSExpression.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DA718983BC400AB6992 /* NSExpression.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0918983BC400AB6992 /* NSFileCoordinator.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DA818983BC400AB6992 /* NSFileCoordinator.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0A18983BC400AB6992 /* NSFileHandle.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DA918983BC400AB6992 /* NSFileHandle.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0B18983BC400AB6992 /* NSFileManager.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DAA18983BC400AB6992 /* NSFileManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0C18983BC400AB6992 /* NSFilePresenter.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DAB18983BC400AB6992 /* NSFilePresenter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0D18983BC400AB6992 /* NSFileVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DAC18983BC400AB6992 /* NSFileVersion.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0E18983BC400AB6992 /* NSFileWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DAD18983BC400AB6992 /* NSFileWrapper.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E0F18983BC400AB6992 /* NSFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DAE18983BC400AB6992 /* NSFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1018983BC400AB6992 /* NSHashTable.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DAF18983BC400AB6992 /* NSHashTable.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1118983BC400AB6992 /* NSHTTPCookie.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DB018983BC400AB6992 /* NSHTTPCookie.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1218983BC400AB6992 /* NSHTTPCookieStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DB118983BC400AB6992 /* NSHTTPCookieStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1318983BC400AB6992 /* NSIndexPath.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DB218983BC400AB6992 /* NSIndexPath.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1418983BC400AB6992 /* NSIndexSet.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DB318983BC400AB6992 /* NSIndexSet.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1518983BC400AB6992 /* NSInvocation.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DB418983BC400AB6992 /* NSInvocation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1618983BC400AB6992 /* NSJSONSerialization.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DB518983BC400AB6992 /* NSJSONSerialization.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1718983BC400AB6992 /* NSKeyedArchiver.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DB618983BC400AB6992 /* NSKeyedArchiver.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1818983BC400AB6992 /* NSKeyValueCoding.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DB718983BC400AB6992 /* NSKeyValueCoding.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1918983BC400AB6992 /* NSKeyValueObserving.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DB818983BC400AB6992 /* NSKeyValueObserving.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1A18983BC400AB6992 /* NSLinguisticTagger.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DB918983BC400AB6992 /* NSLinguisticTagger.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1B18983BC400AB6992 /* NSLocale.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DBA18983BC400AB6992 /* NSLocale.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1C18983BC400AB6992 /* NSLock.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DBB18983BC400AB6992 /* NSLock.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1D18983BC400AB6992 /* NSMapTable.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DBC18983BC400AB6992 /* NSMapTable.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1E18983BC400AB6992 /* NSMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DBD18983BC400AB6992 /* NSMetadata.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E1F18983BC400AB6992 /* NSMethodSignature.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DBE18983BC400AB6992 /* NSMethodSignature.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2018983BC400AB6992 /* NSNetServices.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DBF18983BC400AB6992 /* NSNetServices.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2118983BC400AB6992 /* NSNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DC018983BC400AB6992 /* NSNotification.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2218983BC400AB6992 /* NSNotificationQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DC118983BC400AB6992 /* NSNotificationQueue.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2318983BC400AB6992 /* NSNull.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DC218983BC400AB6992 /* NSNull.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2418983BC400AB6992 /* NSNumberFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DC318983BC400AB6992 /* NSNumberFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2518983BC400AB6992 /* NSObjCRuntime.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DC418983BC400AB6992 /* NSObjCRuntime.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2618983BC400AB6992 /* NSObject.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DC518983BC400AB6992 /* NSObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2718983BC400AB6992 /* NSOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DC618983BC400AB6992 /* NSOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2818983BC400AB6992 /* NSOrderedSet.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DC718983BC400AB6992 /* NSOrderedSet.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2918983BC400AB6992 /* NSOrthography.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DC818983BC400AB6992 /* NSOrthography.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2A18983BC400AB6992 /* NSPathUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DC918983BC400AB6992 /* NSPathUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2B18983BC400AB6992 /* NSPointerArray.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DCA18983BC400AB6992 /* NSPointerArray.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2C18983BC400AB6992 /* NSPointerFunctions.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DCB18983BC400AB6992 /* NSPointerFunctions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2D18983BC400AB6992 /* NSPort.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DCC18983BC400AB6992 /* NSPort.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2E18983BC400AB6992 /* NSPredicate.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DCD18983BC400AB6992 /* NSPredicate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E2F18983BC400AB6992 /* NSProcessInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DCE18983BC400AB6992 /* NSProcessInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3018983BC400AB6992 /* NSPropertyList.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DCF18983BC400AB6992 /* NSPropertyList.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3118983BC400AB6992 /* NSProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DD018983BC400AB6992 /* NSProxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3218983BC400AB6992 /* NSRange.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DD118983BC400AB6992 /* NSRange.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3318983BC400AB6992 /* NSRegularExpression.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DD218983BC400AB6992 /* NSRegularExpression.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3418983BC400AB6992 /* NSRunLoop.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DD318983BC400AB6992 /* NSRunLoop.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3518983BC400AB6992 /* NSScanner.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DD418983BC400AB6992 /* NSScanner.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3618983BC400AB6992 /* NSSet.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DD518983BC400AB6992 /* NSSet.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3718983BC400AB6992 /* NSSortDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DD618983BC400AB6992 /* NSSortDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3818983BC400AB6992 /* NSStream.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DD718983BC400AB6992 /* NSStream.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3918983BC400AB6992 /* NSString.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DD818983BC400AB6992 /* NSString.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3A18983BC400AB6992 /* NSTextCheckingResult.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DD918983BC400AB6992 /* NSTextCheckingResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3B18983BC400AB6992 /* NSThread.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DDA18983BC400AB6992 /* NSThread.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3C18983BC400AB6992 /* NSTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DDB18983BC400AB6992 /* NSTimer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3D18983BC400AB6992 /* NSTimeZone.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DDC18983BC400AB6992 /* NSTimeZone.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3E18983BC400AB6992 /* NSUbiquitousKeyValueStore.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DDD18983BC400AB6992 /* NSUbiquitousKeyValueStore.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E3F18983BC400AB6992 /* NSUndoManager.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DDE18983BC400AB6992 /* NSUndoManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4018983BC400AB6992 /* NSURL.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DDF18983BC400AB6992 /* NSURL.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4118983BC400AB6992 /* NSURLAuthenticationChallenge.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DE018983BC400AB6992 /* NSURLAuthenticationChallenge.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4218983BC400AB6992 /* NSURLCache.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DE118983BC400AB6992 /* NSURLCache.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4318983BC400AB6992 /* NSURLConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DE218983BC400AB6992 /* NSURLConnection.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4418983BC400AB6992 /* NSURLCredential.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DE318983BC400AB6992 /* NSURLCredential.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4518983BC400AB6992 /* NSURLCredentialStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DE418983BC400AB6992 /* NSURLCredentialStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4618983BC400AB6992 /* NSURLError.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DE518983BC400AB6992 /* NSURLError.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4718983BC400AB6992 /* NSURLProtectionSpace.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DE618983BC400AB6992 /* NSURLProtectionSpace.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4818983BC400AB6992 /* NSURLProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DE718983BC400AB6992 /* NSURLProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4918983BC400AB6992 /* NSURLRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DE818983BC400AB6992 /* NSURLRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4A18983BC400AB6992 /* NSURLResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DE918983BC400AB6992 /* NSURLResponse.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4B18983BC400AB6992 /* NSURLSession.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DEA18983BC400AB6992 /* NSURLSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4C18983BC400AB6992 /* NSUserDefaults.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DEB18983BC400AB6992 /* NSUserDefaults.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4D18983BC400AB6992 /* NSUUID.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DEC18983BC400AB6992 /* NSUUID.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4E18983BC400AB6992 /* NSValue.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DED18983BC400AB6992 /* NSValue.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E4F18983BC400AB6992 /* NSValueTransformer.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DEE18983BC400AB6992 /* NSValueTransformer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E5018983BC400AB6992 /* NSXMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DEF18983BC400AB6992 /* NSXMLParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E5118983BC400AB6992 /* NSZone.h in Headers */ = {isa = PBXBuildFile; fileRef = F82F8DF018983BC400AB6992 /* NSZone.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F82F8E5218983CBA00AB6992 /* NSDecimal.m in Sources */ = {isa = PBXBuildFile; fileRef = DED1DD17189082C800E01605 /* NSDecimal.m */; };
+		F82F8E5318983CBA00AB6992 /* NSKeyValueAccessor.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F68EC188DBFE30053DD9B /* NSKeyValueAccessor.m */; };
+		F82F8E5418983CBA00AB6992 /* NSKeyValueChangeDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F68EE188DBFE30053DD9B /* NSKeyValueChangeDictionary.m */; };
+		F82F8E5518983CBA00AB6992 /* NSKeyValueCoding.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F68EF188DBFE30053DD9B /* NSKeyValueCoding.m */; };
+		F82F8E5618983CBA00AB6992 /* NSKeyValueCodingInternal.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F68F1188DBFE30053DD9B /* NSKeyValueCodingInternal.m */; };
+		F82F8E5718983CBA00AB6992 /* NSKeyValueCollectionProxies.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F68F3188DBFE30053DD9B /* NSKeyValueCollectionProxies.m */; };
+		F82F8E5818983CBA00AB6992 /* NSKeyValueComputedProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F68F5188DBFE30053DD9B /* NSKeyValueComputedProperty.m */; };
+		F82F8E5918983CBA00AB6992 /* NSKeyValueContainerClass.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F68F7188DBFE30053DD9B /* NSKeyValueContainerClass.m */; };
+		F82F8E5A18983CBA00AB6992 /* NSKeyValueNestedProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F68F9188DBFE30053DD9B /* NSKeyValueNestedProperty.m */; };
+		F82F8E5B18983CBA00AB6992 /* NSKeyValueObservance.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F68FB188DBFE30053DD9B /* NSKeyValueObservance.m */; };
+		F82F8E5C18983CBA00AB6992 /* NSKeyValueObservationInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F68FD188DBFE30053DD9B /* NSKeyValueObservationInfo.m */; };
+		F82F8E5D18983CBA00AB6992 /* NSKeyValueObserving.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F68FE188DBFE30053DD9B /* NSKeyValueObserving.m */; };
+		F82F8E5E18983CBA00AB6992 /* NSKeyValueProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6901188DBFE30053DD9B /* NSKeyValueProperty.m */; };
+		F82F8E5F18983CBA00AB6992 /* NSKeyValueUnnestedProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6903188DBFE30053DD9B /* NSKeyValueUnnestedProperty.m */; };
+		F82F8E6018983CBA00AB6992 /* NSAddressCheckingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6905188DBFE30053DD9B /* NSAddressCheckingResult.m */; };
+		F82F8E6118983CBA00AB6992 /* NSAggregateExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6906188DBFE30053DD9B /* NSAggregateExpression.m */; };
+		F82F8E6218983CBA00AB6992 /* NSAnyKeyExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6907188DBFE30053DD9B /* NSAnyKeyExpression.m */; };
+		F82F8E6318983CBA00AB6992 /* NSArchiver.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6909188DBFE30053DD9B /* NSArchiver.m */; };
+		F82F8E6418983CBA00AB6992 /* NSArray.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F690A188DBFE30053DD9B /* NSArray.m */; };
+		F82F8E6518983CBA00AB6992 /* NSAttributedString.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F690C188DBFE30053DD9B /* NSAttributedString.m */; };
+		F82F8E6618983CBA00AB6992 /* NSAutoreleasePool.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F690E188DBFE30053DD9B /* NSAutoreleasePool.m */; };
+		F82F8E6718983CBA00AB6992 /* NSBetweenPredicateOperator.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6910188DBFE30053DD9B /* NSBetweenPredicateOperator.m */; };
+		F82F8E6818983CBA00AB6992 /* NSBlockExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6911188DBFE30053DD9B /* NSBlockExpression.m */; };
+		F82F8E6918983CBA00AB6992 /* NSBlockPredicate.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6912188DBFE30053DD9B /* NSBlockPredicate.m */; };
+		F82F8E6A18983CBA00AB6992 /* NSBOMEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6914188DBFE30053DD9B /* NSBOMEncoding.m */; };
+		F82F8E6B18983CBA00AB6992 /* NSBundle.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6915188DBFE30053DD9B /* NSBundle.m */; };
+		F82F8E6C18983CBA00AB6992 /* NSByteCountFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6916188DBFE30053DD9B /* NSByteCountFormatter.m */; };
+		F82F8E6D18983CBA00AB6992 /* NSCalendar.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6917188DBFE30053DD9B /* NSCalendar.m */; };
+		F82F8E6E18983CBA00AB6992 /* NSCoder.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F691D188DBFE30053DD9B /* NSCoder.m */; };
+		F82F8E6F18983CBA00AB6992 /* NSComparisonPredicate.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F691F188DBFE30053DD9B /* NSComparisonPredicate.m */; };
+		F82F8E7018983CBA00AB6992 /* NSComparisonPredicateOperator.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6921188DBFE30053DD9B /* NSComparisonPredicateOperator.m */; };
+		F82F8E7118983CBA00AB6992 /* NSCompoundPredicate.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6922188DBFE30053DD9B /* NSCompoundPredicate.m */; };
+		F82F8E7218983CBA00AB6992 /* NSCompoundPredicateOperator.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6924188DBFE30053DD9B /* NSCompoundPredicateOperator.m */; };
+		F82F8E7318983CBA00AB6992 /* NSConstantValueExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6926188DBFE30053DD9B /* NSConstantValueExpression.m */; };
+		F82F8E7418983CBA00AB6992 /* NSCustomPredicateOperator.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6928188DBFE30053DD9B /* NSCustomPredicateOperator.m */; };
+		F82F8E7518983CBA00AB6992 /* NSData.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6929188DBFE30053DD9B /* NSData.m */; };
+		F82F8E7618983CBA00AB6992 /* NSDate.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F692B188DBFE30053DD9B /* NSDate.m */; };
+		F82F8E7718983CBA00AB6992 /* NSDateCheckingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F692D188DBFE30053DD9B /* NSDateCheckingResult.m */; };
+		F82F8E7818983CBA00AB6992 /* NSDateFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F692E188DBFE30053DD9B /* NSDateFormatter.m */; };
+		F82F8E7918983CBA00AB6992 /* NSDecimalNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6930188DBFE30053DD9B /* NSDecimalNumber.m */; };
+		F82F8E7A18983CBA00AB6992 /* NSDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6931188DBFE30053DD9B /* NSDictionary.m */; };
+		F82F8E7B18983CBA00AB6992 /* NSDirectoryEnumerator.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6934188DBFE30053DD9B /* NSDirectoryEnumerator.m */; };
+		F82F8E7C18983CBA00AB6992 /* NSEqualityPredicateOperator.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6936188DBFE30053DD9B /* NSEqualityPredicateOperator.m */; };
+		F82F8E7D18983CBA00AB6992 /* NSException.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6938188DBFE30053DD9B /* NSException.m */; };
+		F82F8E7E18983CBA00AB6992 /* NSExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F693A188DBFE30053DD9B /* NSExpression.m */; };
+		F82F8E7F18983CBA00AB6992 /* NSExternals.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F693C188DBFE30053DD9B /* NSExternals.m */; };
+		F82F8E8018983CBA00AB6992 /* NSFalsePredicate.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F693D188DBFE30053DD9B /* NSFalsePredicate.m */; };
+		F82F8E8118983CBA00AB6992 /* NSFileAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6940188DBFE30053DD9B /* NSFileAttributes.m */; };
+		F82F8E8218983CBA00AB6992 /* NSFileCoordinator.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6941188DBFE30053DD9B /* NSFileCoordinator.m */; };
+		F82F8E8318983CBA00AB6992 /* NSFileHandle.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6942188DBFE30053DD9B /* NSFileHandle.m */; };
+		F82F8E8418983CBA00AB6992 /* NSFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6943188DBFE30053DD9B /* NSFileManager.m */; };
+		F82F8E8518983CBA00AB6992 /* NSFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6947188DBFE30053DD9B /* NSFormatter.m */; };
+		F82F8E8618983CBA00AB6992 /* NSFunctionExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6948188DBFE30053DD9B /* NSFunctionExpression.m */; };
+		F82F8E8718983CBA00AB6992 /* NSGrammarCheckingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F694A188DBFE30053DD9B /* NSGrammarCheckingResult.m */; };
+		F82F8E8818983CBA00AB6992 /* NSHashTable.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F694B188DBFE30053DD9B /* NSHashTable.m */; };
+		F82F8E8918983CBA00AB6992 /* NSHTTPCookie.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F694C188DBFE30053DD9B /* NSHTTPCookie.m */; };
+		F82F8E8A18983CBA00AB6992 /* NSHTTPCookieStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F694D188DBFE30053DD9B /* NSHTTPCookieStorage.m */; };
+		F82F8E8B18983CBA00AB6992 /* NSIndexPath.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F694E188DBFE30053DD9B /* NSIndexPath.m */; };
+		F82F8E8C18983CBA00AB6992 /* NSIndexSet.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F694F188DBFE30053DD9B /* NSIndexSet.m */; };
+		F82F8E8D18983CBA00AB6992 /* NSInPredicateOperator.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6951188DBFE30053DD9B /* NSInPredicateOperator.m */; };
+		F82F8E8E18983CBA00AB6992 /* NSJSONSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6952188DBFE30053DD9B /* NSJSONSerialization.m */; };
+		F82F8E8F18983CBA00AB6992 /* NSKeyedArchiver.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6954188DBFE30053DD9B /* NSKeyedArchiver.m */; };
+		F82F8E9018983CBA00AB6992 /* NSKeyedUnarchiver.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6955188DBFE30053DD9B /* NSKeyedUnarchiver.m */; };
+		F82F8E9118983CBA00AB6992 /* NSKeyPathExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6956188DBFE30053DD9B /* NSKeyPathExpression.m */; };
+		F82F8E9218983CBA00AB6992 /* NSKeyPathSpecifierExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6957188DBFE30053DD9B /* NSKeyPathSpecifierExpression.m */; };
+		F82F8E9318983DB100AB6992 /* _NSKeyedCoderOldStyleArray.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F68E1188DBFE30053DD9B /* _NSKeyedCoderOldStyleArray.m */; };
+		F82F8E9418983DB100AB6992 /* _NSPredicateOperatorUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F68E3188DBFE30053DD9B /* _NSPredicateOperatorUtilities.m */; };
+		F82F8E9518983DB100AB6992 /* _NSPredicateUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F68E5188DBFE30053DD9B /* _NSPredicateUtilities.m */; };
+		F82F8E9718983DB100AB6992 /* NSLikePredicateOperator.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6959188DBFE40053DD9B /* NSLikePredicateOperator.m */; };
+		F82F8E9818983DB100AB6992 /* NSLinkCheckingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F695B188DBFE40053DD9B /* NSLinkCheckingResult.m */; };
+		F82F8E9918983DB100AB6992 /* NSLocale.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F695C188DBFE40053DD9B /* NSLocale.m */; };
+		F82F8E9A18983DB100AB6992 /* NSLock.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F695E188DBFE40053DD9B /* NSLock.m */; };
+		F82F8E9B18983DB100AB6992 /* NSLog.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F695F188DBFE40053DD9B /* NSLog.m */; };
+		F82F8E9C18983DB100AB6992 /* NSMapTable.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6960188DBFE40053DD9B /* NSMapTable.m */; };
+		F82F8E9D18983DB100AB6992 /* NSMatchingPredicateOperator.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6963188DBFE40053DD9B /* NSMatchingPredicateOperator.m */; };
+		F82F8E9E18983DB100AB6992 /* NSNestedDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6966188DBFE40053DD9B /* NSNestedDictionary.m */; };
+		F82F8E9F18983DB100AB6992 /* NSNetServices.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6967188DBFE40053DD9B /* NSNetServices.m */; };
+		F82F8EA018983DB100AB6992 /* NSNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6968188DBFE40053DD9B /* NSNotification.m */; };
+		F82F8EA118983DB100AB6992 /* NSNotificationCenter.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6969188DBFE40053DD9B /* NSNotificationCenter.m */; };
+		F82F8EA218983DB100AB6992 /* NSNotificationQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F696B188DBFE40053DD9B /* NSNotificationQueue.m */; };
+		F82F8EA318983DB100AB6992 /* NSNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F696C188DBFE40053DD9B /* NSNumber.m */; };
+		F82F8EA418983DB100AB6992 /* NSNumberFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F696D188DBFE40053DD9B /* NSNumberFormatter.m */; };
+		F82F8EA518983DB100AB6992 /* NSObjCRuntime.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F696E188DBFE40053DD9B /* NSObjCRuntime.m */; };
+		F82F8EA618983DB100AB6992 /* NSOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6970188DBFE40053DD9B /* NSOperation.m */; };
+		F82F8EA718983DB100AB6992 /* NSOrthographyCheckingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6974188DBFE40053DD9B /* NSOrthographyCheckingResult.m */; };
+		F82F8EA818983DB100AB6992 /* NSPathStore.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6976188DBFE40053DD9B /* NSPathStore.m */; };
+		F82F8EA918983DB100AB6992 /* NSPathUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6977188DBFE40053DD9B /* NSPathUtilities.m */; };
+		F82F8EAA18983DB100AB6992 /* NSPhoneNumberCheckingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6979188DBFE40053DD9B /* NSPhoneNumberCheckingResult.m */; };
+		F82F8EAB18983DB100AB6992 /* NSPlatform.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F697A188DBFE40053DD9B /* NSPlatform.m */; };
+		F82F8EAC18983DB100AB6992 /* NSPointerArray.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F697B188DBFE40053DD9B /* NSPointerArray.m */; };
+		F82F8EAD18983DB100AB6992 /* NSPointerFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F697D188DBFE40053DD9B /* NSPointerFunctions.m */; };
+		F82F8EAE18983DB100AB6992 /* NSPort.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F697F188DBFE40053DD9B /* NSPort.m */; };
+		F82F8EAF18983DB100AB6992 /* NSPredicate.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6981188DBFE40053DD9B /* NSPredicate.m */; };
+		F82F8EB018983DB100AB6992 /* NSPredicateOperator.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6983188DBFE40053DD9B /* NSPredicateOperator.m */; };
+		F82F8EB118983DB100AB6992 /* NSProcessInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6984188DBFE40053DD9B /* NSProcessInfo.m */; };
+		F82F8EB218983DB100AB6992 /* NSProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6985188DBFE40053DD9B /* NSProxy.m */; };
+		F82F8EB318983DB100AB6992 /* NSRange.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6986188DBFE40053DD9B /* NSRange.m */; };
+		F82F8EB418983DB100AB6992 /* NSRegularExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6988188DBFE40053DD9B /* NSRegularExpression.m */; };
+		F82F8EB518983DB100AB6992 /* NSRegularExpressionCheckingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F698A188DBFE40053DD9B /* NSRegularExpressionCheckingResult.m */; };
+		F82F8EB718983DB100AB6992 /* NSRunLoop.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F698D188DBFE40053DD9B /* NSRunLoop.m */; };
+		F82F8EB818983DB100AB6992 /* NSRunLoopModes.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F698E188DBFE40053DD9B /* NSRunLoopModes.m */; };
+		F82F8EB918983DB100AB6992 /* NSScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F698F188DBFE40053DD9B /* NSScanner.m */; };
+		F82F8EBA18983DB100AB6992 /* NSSelfExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6990188DBFE40053DD9B /* NSSelfExpression.m */; };
+		F82F8EBB18983DB100AB6992 /* NSSet.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6991188DBFE40053DD9B /* NSSet.m */; };
+		F82F8EBC18983DB100AB6992 /* NSSetExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6992188DBFE40053DD9B /* NSSetExpression.m */; };
+		F82F8EBD18983DB100AB6992 /* NSSortDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6994188DBFE40053DD9B /* NSSortDescriptor.m */; };
+		F82F8EBE18983DB100AB6992 /* NSSpellCheckingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6996188DBFE40053DD9B /* NSSpellCheckingResult.m */; };
+		F82F8EBF18983DB100AB6992 /* NSString.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6998188DBFE40053DD9B /* NSString.m */; };
+		F82F8EC018983DB100AB6992 /* NSStringPredicateOperator.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F699B188DBFE40053DD9B /* NSStringPredicateOperator.m */; };
+		F82F8EC118983DB100AB6992 /* NSSubqueryExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F699C188DBFE40053DD9B /* NSSubqueryExpression.m */; };
+		F82F8EC218983DB100AB6992 /* NSSubstitutionCheckingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F699E188DBFE40053DD9B /* NSSubstitutionCheckingResult.m */; };
+		F82F8EC318983DB100AB6992 /* NSSubstringPredicateOperator.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69A0188DBFE40053DD9B /* NSSubstringPredicateOperator.m */; };
+		F82F8EC418983DB100AB6992 /* NSSymbolicExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69A1188DBFE40053DD9B /* NSSymbolicExpression.m */; };
+		F82F8EC518983DB100AB6992 /* NSTernaryExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69A3188DBFE40053DD9B /* NSTernaryExpression.m */; };
+		F82F8EC618983DB100AB6992 /* NSTextCheckingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69A4188DBFE40053DD9B /* NSTextCheckingResult.m */; };
+		F82F8EC718983DB100AB6992 /* NSThread.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69A5188DBFE40053DD9B /* NSThread.m */; };
+		F82F8EC818983DB100AB6992 /* NSTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69A7188DBFE40053DD9B /* NSTimer.m */; };
+		F82F8EC918983DB100AB6992 /* NSTokenMatchingPredicateOperator.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69AC188DBFE40053DD9B /* NSTokenMatchingPredicateOperator.m */; };
+		F82F8ECA18983DB100AB6992 /* NSTransitInformationCheckingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69AE188DBFE40053DD9B /* NSTransitInformationCheckingResult.m */; };
+		F82F8ECB18983DB100AB6992 /* NSTruePredicate.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69AF188DBFE40053DD9B /* NSTruePredicate.m */; };
+		F82F8ECC18983DB100AB6992 /* NSUbiquitousKeyValueStore.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69B0188DBFE40053DD9B /* NSUbiquitousKeyValueStore.m */; };
+		F82F8ECD18983DB100AB6992 /* NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69B2188DBFE40053DD9B /* NSURL.m */; };
+		F82F8ECE18983DB100AB6992 /* NSURLAuthenticationChallenge.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69B3188DBFE40053DD9B /* NSURLAuthenticationChallenge.m */; };
+		F82F8ECF18983DB100AB6992 /* NSURLCache.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69B5188DBFE40053DD9B /* NSURLCache.m */; };
+		F82F8ED018983DB100AB6992 /* NSURLConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69B7188DBFE40053DD9B /* NSURLConnection.m */; };
+		F82F8ED118983DB100AB6992 /* NSURLCredential.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69B9188DBFE40053DD9B /* NSURLCredential.m */; };
+		F82F8ED218983DB100AB6992 /* NSURLCredentialStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69BB188DBFE40053DD9B /* NSURLCredentialStorage.m */; };
+		F82F8ED318983DB100AB6992 /* NSURLError.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69BC188DBFE40053DD9B /* NSURLError.m */; };
+		F82F8ED418983DB100AB6992 /* NSURLProtectionSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69BE188DBFE40053DD9B /* NSURLProtectionSpace.m */; };
+		F82F8ED518983DB100AB6992 /* NSURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69C0188DBFE40053DD9B /* NSURLProtocol.m */; };
+		F82F8ED618983DB100AB6992 /* NSURLRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69C2188DBFE40053DD9B /* NSURLRequest.m */; };
+		F82F8ED718983DB100AB6992 /* NSURLResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69C4188DBFE40053DD9B /* NSURLResponse.m */; };
+		F82F8ED818983DB100AB6992 /* NSUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69C7188DBFE40053DD9B /* NSUserDefaults.m */; };
+		F82F8ED918983DB100AB6992 /* NSUUID.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69C8188DBFE40053DD9B /* NSUUID.m */; };
+		F82F8EDA18983DB100AB6992 /* NSValue.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69CA188DBFE40053DD9B /* NSValue.m */; };
+		F82F8EDB18983DB100AB6992 /* NSValueTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69CC188DBFE40053DD9B /* NSValueTransformer.m */; };
+		F82F8EDC18983DB100AB6992 /* NSVariableAssignmentExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69CE188DBFE40053DD9B /* NSVariableAssignmentExpression.m */; };
+		F82F8EDD18983DB100AB6992 /* NSVariableExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69CF188DBFE40053DD9B /* NSVariableExpression.m */; };
+		F82F8EDE18983DB100AB6992 /* NSXMLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69D0188DBFE40053DD9B /* NSXMLParser.m */; };
+		F82F8EDF18983DB100AB6992 /* NSXPCCoder.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69D1188DBFE40053DD9B /* NSXPCCoder.m */; };
+		F82F8EE018983DB100AB6992 /* NSZone.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F69D2188DBFE40053DD9B /* NSZone.m */; };
+		F8333D3D18C523E20018CFF4 /* NSFilesystemItemRemoveOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = DE6F6946188DBFE30053DD9B /* NSFilesystemItemRemoveOperation.m */; };
+		F8E9E73918B53D2D0019643D /* NSProgress.m in Sources */ = {isa = PBXBuildFile; fileRef = F8E9E73818B53D2D0019643D /* NSProgress.m */; };
+		F8E9E73B18B53D3A0019643D /* NSProgress.h in Headers */ = {isa = PBXBuildFile; fileRef = F8E9E73A18B53D3A0019643D /* NSProgress.h */; settings = {ATTRIBUTES = (Public, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		472583AC19074C0500BF7919 /* NSPredicateLexer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPredicateLexer.m; sourceTree = "<group>"; };
+		472583AD19074C0500BF7919 /* NSPredicateParser.tab.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; fileEncoding = 4; path = NSPredicateParser.tab.c; sourceTree = "<group>"; };
+		4787B29E19C11E9E00156B18 /* _NSFileIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = _NSFileIO.h; sourceTree = "<group>"; };
+		4787B29F19C11E9E00156B18 /* _NSFileIO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = _NSFileIO.m; sourceTree = "<group>"; };
+		5BEE514E18FCCB0D004CD7FD /* NSLocalizableString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSLocalizableString.h; sourceTree = "<group>"; };
+		5BEE514F18FCCB0D004CD7FD /* NSLocalizableString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSLocalizableString.m; sourceTree = "<group>"; };
+		CA244632191ADB75007250E2 /* ApportableSystemFramework.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = ApportableSystemFramework.xcconfig; path = ../ApportableSystemFramework.xcconfig; sourceTree = "<group>"; };
+		CA4DEE3E198172BA00B5A9EC /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		CA4DEE42198172D300B5A9EC /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
+		CA4DEE43198172D300B5A9EC /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		CA7DD02F191AFCF400F111A8 /* libxml2.so */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.so; path = "usr/local/lib/armv7a-neon/libxml2.so"; sourceTree = SDKROOT; };
+		CAA988DF1975BC2600E0CBA2 /* ApportableSystemRelease.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = ApportableSystemRelease.xcconfig; path = ../ApportableSystemRelease.xcconfig; sourceTree = "<group>"; };
+		DE6F68E1188DBFE30053DD9B /* _NSKeyedCoderOldStyleArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = _NSKeyedCoderOldStyleArray.m; sourceTree = "<group>"; };
+		DE6F68E2188DBFE30053DD9B /* _NSPredicateOperatorUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = _NSPredicateOperatorUtilities.h; sourceTree = "<group>"; };
+		DE6F68E3188DBFE30053DD9B /* _NSPredicateOperatorUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = _NSPredicateOperatorUtilities.m; sourceTree = "<group>"; };
+		DE6F68E4188DBFE30053DD9B /* _NSPredicateUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = _NSPredicateUtilities.h; sourceTree = "<group>"; };
+		DE6F68E5188DBFE30053DD9B /* _NSPredicateUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = _NSPredicateUtilities.m; sourceTree = "<group>"; };
+		DE6F68E8188DBFE30053DD9B /* CFInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CFInternal.h; sourceTree = "<group>"; };
+		DE6F68EB188DBFE30053DD9B /* NSKeyValueAccessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueAccessor.h; sourceTree = "<group>"; };
+		DE6F68EC188DBFE30053DD9B /* NSKeyValueAccessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueAccessor.m; sourceTree = "<group>"; };
+		DE6F68ED188DBFE30053DD9B /* NSKeyValueChangeDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueChangeDictionary.h; sourceTree = "<group>"; };
+		DE6F68EE188DBFE30053DD9B /* NSKeyValueChangeDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueChangeDictionary.m; sourceTree = "<group>"; };
+		DE6F68EF188DBFE30053DD9B /* NSKeyValueCoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueCoding.m; sourceTree = "<group>"; };
+		DE6F68F0188DBFE30053DD9B /* NSKeyValueCodingInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueCodingInternal.h; sourceTree = "<group>"; };
+		DE6F68F1188DBFE30053DD9B /* NSKeyValueCodingInternal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueCodingInternal.m; sourceTree = "<group>"; };
+		DE6F68F2188DBFE30053DD9B /* NSKeyValueCollectionProxies.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueCollectionProxies.h; sourceTree = "<group>"; };
+		DE6F68F3188DBFE30053DD9B /* NSKeyValueCollectionProxies.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueCollectionProxies.m; sourceTree = "<group>"; };
+		DE6F68F4188DBFE30053DD9B /* NSKeyValueComputedProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueComputedProperty.h; sourceTree = "<group>"; };
+		DE6F68F5188DBFE30053DD9B /* NSKeyValueComputedProperty.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueComputedProperty.m; sourceTree = "<group>"; };
+		DE6F68F6188DBFE30053DD9B /* NSKeyValueContainerClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueContainerClass.h; sourceTree = "<group>"; };
+		DE6F68F7188DBFE30053DD9B /* NSKeyValueContainerClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueContainerClass.m; sourceTree = "<group>"; };
+		DE6F68F8188DBFE30053DD9B /* NSKeyValueNestedProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueNestedProperty.h; sourceTree = "<group>"; };
+		DE6F68F9188DBFE30053DD9B /* NSKeyValueNestedProperty.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueNestedProperty.m; sourceTree = "<group>"; };
+		DE6F68FA188DBFE30053DD9B /* NSKeyValueObservance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueObservance.h; sourceTree = "<group>"; };
+		DE6F68FB188DBFE30053DD9B /* NSKeyValueObservance.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueObservance.m; sourceTree = "<group>"; };
+		DE6F68FC188DBFE30053DD9B /* NSKeyValueObservationInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueObservationInfo.h; sourceTree = "<group>"; };
+		DE6F68FD188DBFE30053DD9B /* NSKeyValueObservationInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueObservationInfo.m; sourceTree = "<group>"; };
+		DE6F68FE188DBFE30053DD9B /* NSKeyValueObserving.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueObserving.m; sourceTree = "<group>"; };
+		DE6F68FF188DBFE30053DD9B /* NSKeyValueObservingInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueObservingInternal.h; sourceTree = "<group>"; };
+		DE6F6900188DBFE30053DD9B /* NSKeyValueProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueProperty.h; sourceTree = "<group>"; };
+		DE6F6901188DBFE30053DD9B /* NSKeyValueProperty.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueProperty.m; sourceTree = "<group>"; };
+		DE6F6902188DBFE30053DD9B /* NSKeyValueUnnestedProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueUnnestedProperty.h; sourceTree = "<group>"; };
+		DE6F6903188DBFE30053DD9B /* NSKeyValueUnnestedProperty.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyValueUnnestedProperty.m; sourceTree = "<group>"; };
+		DE6F6904188DBFE30053DD9B /* NSAddressCheckingResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSAddressCheckingResult.h; sourceTree = "<group>"; };
+		DE6F6905188DBFE30053DD9B /* NSAddressCheckingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSAddressCheckingResult.m; sourceTree = "<group>"; };
+		DE6F6906188DBFE30053DD9B /* NSAggregateExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSAggregateExpression.m; sourceTree = "<group>"; };
+		DE6F6907188DBFE30053DD9B /* NSAnyKeyExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSAnyKeyExpression.m; sourceTree = "<group>"; };
+		DE6F6908188DBFE30053DD9B /* NSArchiver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSArchiver.h; sourceTree = "<group>"; };
+		DE6F6909188DBFE30053DD9B /* NSArchiver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSArchiver.m; sourceTree = "<group>"; };
+		DE6F690A188DBFE30053DD9B /* NSArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSArray.m; sourceTree = "<group>"; };
+		DE6F690C188DBFE30053DD9B /* NSAttributedString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSAttributedString.m; sourceTree = "<group>"; };
+		DE6F690D188DBFE30053DD9B /* NSAttributedStringInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSAttributedStringInternal.h; sourceTree = "<group>"; };
+		DE6F690E188DBFE30053DD9B /* NSAutoreleasePool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSAutoreleasePool.m; sourceTree = "<group>"; };
+		DE6F690F188DBFE30053DD9B /* NSBetweenPredicateOperator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSBetweenPredicateOperator.h; sourceTree = "<group>"; };
+		DE6F6910188DBFE30053DD9B /* NSBetweenPredicateOperator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSBetweenPredicateOperator.m; sourceTree = "<group>"; };
+		DE6F6911188DBFE30053DD9B /* NSBlockExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSBlockExpression.m; sourceTree = "<group>"; };
+		DE6F6912188DBFE30053DD9B /* NSBlockPredicate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSBlockPredicate.m; sourceTree = "<group>"; };
+		DE6F6913188DBFE30053DD9B /* NSBOMEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSBOMEncoding.h; sourceTree = "<group>"; };
+		DE6F6914188DBFE30053DD9B /* NSBOMEncoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSBOMEncoding.m; sourceTree = "<group>"; };
+		DE6F6915188DBFE30053DD9B /* NSBundle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSBundle.m; sourceTree = "<group>"; };
+		DE6F6916188DBFE30053DD9B /* NSByteCountFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSByteCountFormatter.m; sourceTree = "<group>"; };
+		DE6F6917188DBFE30053DD9B /* NSCalendar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSCalendar.m; sourceTree = "<group>"; };
+		DE6F6918188DBFE30053DD9B /* NSCalendarInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSCalendarInternal.h; sourceTree = "<group>"; };
+		DE6F6919188DBFE30053DD9B /* NSCFType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSCFType.h; sourceTree = "<group>"; };
+		DE6F691D188DBFE30053DD9B /* NSCoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSCoder.m; sourceTree = "<group>"; };
+		DE6F691E188DBFE30053DD9B /* NSCoderInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSCoderInternal.h; sourceTree = "<group>"; };
+		DE6F691F188DBFE30053DD9B /* NSComparisonPredicate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSComparisonPredicate.m; sourceTree = "<group>"; };
+		DE6F6920188DBFE30053DD9B /* NSComparisonPredicateOperator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSComparisonPredicateOperator.h; sourceTree = "<group>"; };
+		DE6F6921188DBFE30053DD9B /* NSComparisonPredicateOperator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSComparisonPredicateOperator.m; sourceTree = "<group>"; };
+		DE6F6922188DBFE30053DD9B /* NSCompoundPredicate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSCompoundPredicate.m; sourceTree = "<group>"; };
+		DE6F6923188DBFE30053DD9B /* NSCompoundPredicateOperator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSCompoundPredicateOperator.h; sourceTree = "<group>"; };
+		DE6F6924188DBFE30053DD9B /* NSCompoundPredicateOperator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSCompoundPredicateOperator.m; sourceTree = "<group>"; };
+		DE6F6925188DBFE30053DD9B /* NSConcreteScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSConcreteScanner.h; sourceTree = "<group>"; };
+		DE6F6926188DBFE30053DD9B /* NSConstantValueExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSConstantValueExpression.m; sourceTree = "<group>"; };
+		DE6F6927188DBFE30053DD9B /* NSCustomPredicateOperator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSCustomPredicateOperator.h; sourceTree = "<group>"; };
+		DE6F6928188DBFE30053DD9B /* NSCustomPredicateOperator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSCustomPredicateOperator.m; sourceTree = "<group>"; };
+		DE6F6929188DBFE30053DD9B /* NSData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSData.m; sourceTree = "<group>"; };
+		DE6F692B188DBFE30053DD9B /* NSDate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSDate.m; sourceTree = "<group>"; };
+		DE6F692C188DBFE30053DD9B /* NSDateCheckingResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSDateCheckingResult.h; sourceTree = "<group>"; };
+		DE6F692D188DBFE30053DD9B /* NSDateCheckingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSDateCheckingResult.m; sourceTree = "<group>"; };
+		DE6F692E188DBFE30053DD9B /* NSDateFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSDateFormatter.m; sourceTree = "<group>"; };
+		DE6F6930188DBFE30053DD9B /* NSDecimalNumber.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSDecimalNumber.m; sourceTree = "<group>"; };
+		DE6F6931188DBFE30053DD9B /* NSDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSDictionary.m; sourceTree = "<group>"; };
+		DE6F6933188DBFE30053DD9B /* NSDirectoryEnumerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSDirectoryEnumerator.h; sourceTree = "<group>"; };
+		DE6F6934188DBFE30053DD9B /* NSDirectoryEnumerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSDirectoryEnumerator.m; sourceTree = "<group>"; };
+		DE6F6935188DBFE30053DD9B /* NSEqualityPredicateOperator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSEqualityPredicateOperator.h; sourceTree = "<group>"; };
+		DE6F6936188DBFE30053DD9B /* NSEqualityPredicateOperator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSEqualityPredicateOperator.m; sourceTree = "<group>"; };
+		DE6F6937188DBFE30053DD9B /* NSErrorInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSErrorInternal.h; sourceTree = "<group>"; };
+		DE6F6938188DBFE30053DD9B /* NSException.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSException.m; sourceTree = "<group>"; };
+		DE6F6939188DBFE30053DD9B /* NSExpressionInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSExpressionInternal.h; sourceTree = "<group>"; };
+		DE6F693A188DBFE30053DD9B /* NSExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSExpression.m; sourceTree = "<group>"; };
+		DE6F693B188DBFE30053DD9B /* NSExternals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSExternals.h; sourceTree = "<group>"; };
+		DE6F693C188DBFE30053DD9B /* NSExternals.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSExternals.m; sourceTree = "<group>"; };
+		DE6F693D188DBFE30053DD9B /* NSFalsePredicate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSFalsePredicate.m; sourceTree = "<group>"; };
+		DE6F693E188DBFE30053DD9B /* NSFastEnumerationEnumerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSFastEnumerationEnumerator.h; sourceTree = "<group>"; };
+		DE6F693F188DBFE30053DD9B /* NSFileAttributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSFileAttributes.h; sourceTree = "<group>"; };
+		DE6F6940188DBFE30053DD9B /* NSFileAttributes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSFileAttributes.m; sourceTree = "<group>"; };
+		DE6F6941188DBFE30053DD9B /* NSFileCoordinator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSFileCoordinator.m; sourceTree = "<group>"; };
+		DE6F6942188DBFE30053DD9B /* NSFileHandle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSFileHandle.m; sourceTree = "<group>"; };
+		DE6F6943188DBFE30053DD9B /* NSFileManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSFileManager.m; sourceTree = "<group>"; };
+		DE6F6944188DBFE30053DD9B /* NSFileManagerInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSFileManagerInternal.h; sourceTree = "<group>"; };
+		DE6F6945188DBFE30053DD9B /* NSFilesystemItemRemoveOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSFilesystemItemRemoveOperation.h; sourceTree = "<group>"; };
+		DE6F6946188DBFE30053DD9B /* NSFilesystemItemRemoveOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSFilesystemItemRemoveOperation.m; sourceTree = "<group>"; };
+		DE6F6947188DBFE30053DD9B /* NSFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSFormatter.m; sourceTree = "<group>"; };
+		DE6F6948188DBFE30053DD9B /* NSFunctionExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSFunctionExpression.m; sourceTree = "<group>"; };
+		DE6F6949188DBFE30053DD9B /* NSGrammarCheckingResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSGrammarCheckingResult.h; sourceTree = "<group>"; };
+		DE6F694A188DBFE30053DD9B /* NSGrammarCheckingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSGrammarCheckingResult.m; sourceTree = "<group>"; };
+		DE6F694B188DBFE30053DD9B /* NSHashTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSHashTable.m; sourceTree = "<group>"; };
+		DE6F694C188DBFE30053DD9B /* NSHTTPCookie.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSHTTPCookie.m; sourceTree = "<group>"; };
+		DE6F694D188DBFE30053DD9B /* NSHTTPCookieStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSHTTPCookieStorage.m; sourceTree = "<group>"; };
+		DE6F694E188DBFE30053DD9B /* NSIndexPath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSIndexPath.m; sourceTree = "<group>"; };
+		DE6F694F188DBFE30053DD9B /* NSIndexSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSIndexSet.m; sourceTree = "<group>"; };
+		DE6F6950188DBFE30053DD9B /* NSInPredicateOperator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSInPredicateOperator.h; sourceTree = "<group>"; };
+		DE6F6951188DBFE30053DD9B /* NSInPredicateOperator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSInPredicateOperator.m; sourceTree = "<group>"; };
+		DE6F6952188DBFE30053DD9B /* NSJSONSerialization.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSJSONSerialization.m; sourceTree = "<group>"; };
+		DE6F6954188DBFE30053DD9B /* NSKeyedArchiver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyedArchiver.m; sourceTree = "<group>"; };
+		DE6F6955188DBFE30053DD9B /* NSKeyedUnarchiver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyedUnarchiver.m; sourceTree = "<group>"; };
+		DE6F6956188DBFE30053DD9B /* NSKeyPathExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyPathExpression.m; sourceTree = "<group>"; };
+		DE6F6957188DBFE30053DD9B /* NSKeyPathSpecifierExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSKeyPathSpecifierExpression.m; sourceTree = "<group>"; };
+		DE6F6958188DBFE30053DD9B /* NSLikePredicateOperator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSLikePredicateOperator.h; sourceTree = "<group>"; };
+		DE6F6959188DBFE40053DD9B /* NSLikePredicateOperator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSLikePredicateOperator.m; sourceTree = "<group>"; };
+		DE6F695A188DBFE40053DD9B /* NSLinkCheckingResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSLinkCheckingResult.h; sourceTree = "<group>"; };
+		DE6F695B188DBFE40053DD9B /* NSLinkCheckingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSLinkCheckingResult.m; sourceTree = "<group>"; };
+		DE6F695C188DBFE40053DD9B /* NSLocale.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSLocale.m; sourceTree = "<group>"; };
+		DE6F695E188DBFE40053DD9B /* NSLock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSLock.m; sourceTree = "<group>"; };
+		DE6F695F188DBFE40053DD9B /* NSLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSLog.m; sourceTree = "<group>"; };
+		DE6F6960188DBFE40053DD9B /* NSMapTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSMapTable.m; sourceTree = "<group>"; };
+		DE6F6962188DBFE40053DD9B /* NSMatchingPredicateOperator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSMatchingPredicateOperator.h; sourceTree = "<group>"; };
+		DE6F6963188DBFE40053DD9B /* NSMatchingPredicateOperator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSMatchingPredicateOperator.m; sourceTree = "<group>"; };
+		DE6F6965188DBFE40053DD9B /* NSNestedDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSNestedDictionary.h; sourceTree = "<group>"; };
+		DE6F6966188DBFE40053DD9B /* NSNestedDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSNestedDictionary.m; sourceTree = "<group>"; };
+		DE6F6967188DBFE40053DD9B /* NSNetServices.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSNetServices.m; sourceTree = "<group>"; };
+		DE6F6968188DBFE40053DD9B /* NSNotification.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSNotification.m; sourceTree = "<group>"; };
+		DE6F6969188DBFE40053DD9B /* NSNotificationCenter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSNotificationCenter.m; sourceTree = "<group>"; };
+		DE6F696A188DBFE40053DD9B /* NSNotificationInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSNotificationInternal.h; sourceTree = "<group>"; };
+		DE6F696B188DBFE40053DD9B /* NSNotificationQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSNotificationQueue.m; sourceTree = "<group>"; };
+		DE6F696C188DBFE40053DD9B /* NSNumber.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSNumber.m; sourceTree = "<group>"; };
+		DE6F696D188DBFE40053DD9B /* NSNumberFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSNumberFormatter.m; sourceTree = "<group>"; };
+		DE6F696E188DBFE40053DD9B /* NSObjCRuntime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSObjCRuntime.m; sourceTree = "<group>"; };
+		DE6F696F188DBFE40053DD9B /* NSObjectInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSObjectInternal.h; sourceTree = "<group>"; };
+		DE6F6970188DBFE40053DD9B /* NSOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSOperation.m; sourceTree = "<group>"; };
+		DE6F6972188DBFE40053DD9B /* NSOrthography.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSOrthography.m; sourceTree = "<group>"; };
+		DE6F6973188DBFE40053DD9B /* NSOrthographyCheckingResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSOrthographyCheckingResult.h; sourceTree = "<group>"; };
+		DE6F6974188DBFE40053DD9B /* NSOrthographyCheckingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSOrthographyCheckingResult.m; sourceTree = "<group>"; };
+		DE6F6975188DBFE40053DD9B /* NSPathStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPathStore.h; sourceTree = "<group>"; };
+		DE6F6976188DBFE40053DD9B /* NSPathStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPathStore.m; sourceTree = "<group>"; };
+		DE6F6977188DBFE40053DD9B /* NSPathUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPathUtilities.m; sourceTree = "<group>"; };
+		DE6F6978188DBFE40053DD9B /* NSPhoneNumberCheckingResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPhoneNumberCheckingResult.h; sourceTree = "<group>"; };
+		DE6F6979188DBFE40053DD9B /* NSPhoneNumberCheckingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPhoneNumberCheckingResult.m; sourceTree = "<group>"; };
+		DE6F697A188DBFE40053DD9B /* NSPlatform.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPlatform.m; sourceTree = "<group>"; };
+		DE6F697B188DBFE40053DD9B /* NSPointerArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPointerArray.m; sourceTree = "<group>"; };
+		DE6F697D188DBFE40053DD9B /* NSPointerFunctions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPointerFunctions.m; sourceTree = "<group>"; };
+		DE6F697E188DBFE40053DD9B /* NSPointerFunctionsInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPointerFunctionsInternal.h; sourceTree = "<group>"; };
+		DE6F697F188DBFE40053DD9B /* NSPort.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPort.m; sourceTree = "<group>"; };
+		DE6F6980188DBFE40053DD9B /* NSPredicateInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPredicateInternal.h; sourceTree = "<group>"; };
+		DE6F6981188DBFE40053DD9B /* NSPredicate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPredicate.m; sourceTree = "<group>"; };
+		DE6F6982188DBFE40053DD9B /* NSPredicateOperator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPredicateOperator.h; sourceTree = "<group>"; };
+		DE6F6983188DBFE40053DD9B /* NSPredicateOperator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPredicateOperator.m; sourceTree = "<group>"; };
+		DE6F6984188DBFE40053DD9B /* NSProcessInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSProcessInfo.m; sourceTree = "<group>"; };
+		DE6F6985188DBFE40053DD9B /* NSProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSProxy.m; sourceTree = "<group>"; };
+		DE6F6986188DBFE40053DD9B /* NSRange.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSRange.m; sourceTree = "<group>"; };
+		DE6F6987188DBFE40053DD9B /* NSRangeCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSRangeCheck.h; sourceTree = "<group>"; };
+		DE6F6988188DBFE40053DD9B /* NSRegularExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSRegularExpression.m; sourceTree = "<group>"; };
+		DE6F6989188DBFE40053DD9B /* NSRegularExpressionCheckingResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSRegularExpressionCheckingResult.h; sourceTree = "<group>"; };
+		DE6F698A188DBFE40053DD9B /* NSRegularExpressionCheckingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSRegularExpressionCheckingResult.m; sourceTree = "<group>"; };
+		DE6F698D188DBFE40053DD9B /* NSRunLoop.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSRunLoop.m; sourceTree = "<group>"; };
+		DE6F698E188DBFE40053DD9B /* NSRunLoopModes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSRunLoopModes.m; sourceTree = "<group>"; };
+		DE6F698F188DBFE40053DD9B /* NSScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSScanner.m; sourceTree = "<group>"; };
+		DE6F6990188DBFE40053DD9B /* NSSelfExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSelfExpression.m; sourceTree = "<group>"; };
+		DE6F6991188DBFE40053DD9B /* NSSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSet.m; sourceTree = "<group>"; };
+		DE6F6992188DBFE40053DD9B /* NSSetExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSetExpression.m; sourceTree = "<group>"; };
+		DE6F6994188DBFE40053DD9B /* NSSortDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSortDescriptor.m; sourceTree = "<group>"; };
+		DE6F6995188DBFE40053DD9B /* NSSpellCheckingResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSSpellCheckingResult.h; sourceTree = "<group>"; };
+		DE6F6996188DBFE40053DD9B /* NSSpellCheckingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSpellCheckingResult.m; sourceTree = "<group>"; };
+		DE6F6997188DBFE40053DD9B /* NSStreamInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSStreamInternal.h; sourceTree = "<group>"; };
+		DE6F6998188DBFE40053DD9B /* NSString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSString.m; sourceTree = "<group>"; };
+		DE6F6999188DBFE40053DD9B /* NSStringInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSStringInternal.h; sourceTree = "<group>"; };
+		DE6F699A188DBFE40053DD9B /* NSStringPredicateOperator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSStringPredicateOperator.h; sourceTree = "<group>"; };
+		DE6F699B188DBFE40053DD9B /* NSStringPredicateOperator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSStringPredicateOperator.m; sourceTree = "<group>"; };
+		DE6F699C188DBFE40053DD9B /* NSSubqueryExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSubqueryExpression.m; sourceTree = "<group>"; };
+		DE6F699D188DBFE40053DD9B /* NSSubstitutionCheckingResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSSubstitutionCheckingResult.h; sourceTree = "<group>"; };
+		DE6F699E188DBFE40053DD9B /* NSSubstitutionCheckingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSubstitutionCheckingResult.m; sourceTree = "<group>"; };
+		DE6F699F188DBFE40053DD9B /* NSSubstringPredicateOperator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSSubstringPredicateOperator.h; sourceTree = "<group>"; };
+		DE6F69A0188DBFE40053DD9B /* NSSubstringPredicateOperator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSubstringPredicateOperator.m; sourceTree = "<group>"; };
+		DE6F69A1188DBFE40053DD9B /* NSSymbolicExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSymbolicExpression.m; sourceTree = "<group>"; };
+		DE6F69A2188DBFE40053DD9B /* NSTemporaryDirectory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSTemporaryDirectory.h; sourceTree = "<group>"; };
+		DE6F69A3188DBFE40053DD9B /* NSTernaryExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSTernaryExpression.m; sourceTree = "<group>"; };
+		DE6F69A4188DBFE40053DD9B /* NSTextCheckingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSTextCheckingResult.m; sourceTree = "<group>"; };
+		DE6F69A5188DBFE40053DD9B /* NSThread.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSThread.m; sourceTree = "<group>"; };
+		DE6F69A7188DBFE40053DD9B /* NSTimer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSTimer.m; sourceTree = "<group>"; };
+		DE6F69A9188DBFE40053DD9B /* NSTimeZone.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSTimeZone.m; sourceTree = "<group>"; };
+		DE6F69AA188DBFE40053DD9B /* NSTimeZoneInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSTimeZoneInternal.h; sourceTree = "<group>"; };
+		DE6F69AB188DBFE40053DD9B /* NSTokenMatchingPredicateOperator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSTokenMatchingPredicateOperator.h; sourceTree = "<group>"; };
+		DE6F69AC188DBFE40053DD9B /* NSTokenMatchingPredicateOperator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSTokenMatchingPredicateOperator.m; sourceTree = "<group>"; };
+		DE6F69AD188DBFE40053DD9B /* NSTransitInformationCheckingResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSTransitInformationCheckingResult.h; sourceTree = "<group>"; };
+		DE6F69AE188DBFE40053DD9B /* NSTransitInformationCheckingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSTransitInformationCheckingResult.m; sourceTree = "<group>"; };
+		DE6F69AF188DBFE40053DD9B /* NSTruePredicate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSTruePredicate.m; sourceTree = "<group>"; };
+		DE6F69B0188DBFE40053DD9B /* NSUbiquitousKeyValueStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSUbiquitousKeyValueStore.m; sourceTree = "<group>"; };
+		DE6F69B1188DBFE40053DD9B /* NSUbiquitousKeyValueStoreInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSUbiquitousKeyValueStoreInternal.h; sourceTree = "<group>"; };
+		DE6F69B2188DBFE40053DD9B /* NSURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSURL.m; sourceTree = "<group>"; };
+		DE6F69B3188DBFE40053DD9B /* NSURLAuthenticationChallenge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSURLAuthenticationChallenge.m; sourceTree = "<group>"; };
+		DE6F69B4188DBFE40053DD9B /* NSURLAuthenticationChallengeInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLAuthenticationChallengeInternal.h; sourceTree = "<group>"; };
+		DE6F69B5188DBFE40053DD9B /* NSURLCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSURLCache.m; sourceTree = "<group>"; };
+		DE6F69B6188DBFE40053DD9B /* NSURLCacheInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLCacheInternal.h; sourceTree = "<group>"; };
+		DE6F69B7188DBFE40053DD9B /* NSURLConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSURLConnection.m; sourceTree = "<group>"; };
+		DE6F69B8188DBFE40053DD9B /* NSURLConnectionInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLConnectionInternal.h; sourceTree = "<group>"; };
+		DE6F69B9188DBFE40053DD9B /* NSURLCredential.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSURLCredential.m; sourceTree = "<group>"; };
+		DE6F69BA188DBFE40053DD9B /* NSURLCredentialInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLCredentialInternal.h; sourceTree = "<group>"; };
+		DE6F69BB188DBFE40053DD9B /* NSURLCredentialStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSURLCredentialStorage.m; sourceTree = "<group>"; };
+		DE6F69BC188DBFE40053DD9B /* NSURLError.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSURLError.m; sourceTree = "<group>"; };
+		DE6F69BD188DBFE40053DD9B /* NSURLInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLInternal.h; sourceTree = "<group>"; };
+		DE6F69BE188DBFE40053DD9B /* NSURLProtectionSpace.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSURLProtectionSpace.m; sourceTree = "<group>"; };
+		DE6F69BF188DBFE40053DD9B /* NSURLProtectionSpaceInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLProtectionSpaceInternal.h; sourceTree = "<group>"; };
+		DE6F69C0188DBFE40053DD9B /* NSURLProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSURLProtocol.m; sourceTree = "<group>"; };
+		DE6F69C1188DBFE40053DD9B /* NSURLProtocolInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLProtocolInternal.h; sourceTree = "<group>"; };
+		DE6F69C2188DBFE40053DD9B /* NSURLRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSURLRequest.m; sourceTree = "<group>"; };
+		DE6F69C3188DBFE40053DD9B /* NSURLRequestInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLRequestInternal.h; sourceTree = "<group>"; };
+		DE6F69C4188DBFE40053DD9B /* NSURLResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSURLResponse.m; sourceTree = "<group>"; };
+		DE6F69C5188DBFE40053DD9B /* NSURLResponseInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLResponseInternal.h; sourceTree = "<group>"; };
+		DE6F69C6188DBFE40053DD9B /* NSURLSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSURLSession.m; sourceTree = "<group>"; };
+		DE6F69C7188DBFE40053DD9B /* NSUserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSUserDefaults.m; sourceTree = "<group>"; };
+		DE6F69C8188DBFE40053DD9B /* NSUUID.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSUUID.m; sourceTree = "<group>"; };
+		DE6F69CA188DBFE40053DD9B /* NSValue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSValue.m; sourceTree = "<group>"; };
+		DE6F69CB188DBFE40053DD9B /* NSValueInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSValueInternal.h; sourceTree = "<group>"; };
+		DE6F69CC188DBFE40053DD9B /* NSValueTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSValueTransformer.m; sourceTree = "<group>"; };
+		DE6F69CE188DBFE40053DD9B /* NSVariableAssignmentExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSVariableAssignmentExpression.m; sourceTree = "<group>"; };
+		DE6F69CF188DBFE40053DD9B /* NSVariableExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSVariableExpression.m; sourceTree = "<group>"; };
+		DE6F69D0188DBFE40053DD9B /* NSXMLParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSXMLParser.m; sourceTree = "<group>"; };
+		DE6F69D1188DBFE40053DD9B /* NSXPCCoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSXPCCoder.m; sourceTree = "<group>"; };
+		DE6F69D2188DBFE40053DD9B /* NSZone.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSZone.m; sourceTree = "<group>"; };
+		DE6F6A68188DBFF30053DD9B /* ApportableSystem.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = ApportableSystem.xcconfig; path = ../ApportableSystem.xcconfig; sourceTree = "<group>"; };
+		DED1DD17189082C800E01605 /* NSDecimal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSDecimal.m; sourceTree = "<group>"; };
+		F82F8D811898396500AB6992 /* Foundation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Foundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F82F8D851898396500AB6992 /* Foundation-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Foundation-Info.plist"; sourceTree = "<group>"; };
+		F82F8D871898396500AB6992 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		F82F8D9018983BC400AB6992 /* Foundation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Foundation.h; sourceTree = "<group>"; };
+		F82F8D9118983BC400AB6992 /* FoundationErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FoundationErrors.h; sourceTree = "<group>"; };
+		F82F8D9218983BC400AB6992 /* NSArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSArray.h; sourceTree = "<group>"; };
+		F82F8D9318983BC400AB6992 /* NSAttributedString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSAttributedString.h; sourceTree = "<group>"; };
+		F82F8D9418983BC400AB6992 /* NSAutoreleasePool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSAutoreleasePool.h; sourceTree = "<group>"; };
+		F82F8D9518983BC400AB6992 /* NSBundle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSBundle.h; sourceTree = "<group>"; };
+		F82F8D9618983BC400AB6992 /* NSByteCountFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSByteCountFormatter.h; sourceTree = "<group>"; };
+		F82F8D9718983BC400AB6992 /* NSByteOrder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSByteOrder.h; sourceTree = "<group>"; };
+		F82F8D9818983BC400AB6992 /* NSCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSCache.h; sourceTree = "<group>"; };
+		F82F8D9918983BC400AB6992 /* NSCalendar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSCalendar.h; sourceTree = "<group>"; };
+		F82F8D9A18983BC400AB6992 /* NSCharacterSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSCharacterSet.h; sourceTree = "<group>"; };
+		F82F8D9B18983BC400AB6992 /* NSCoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSCoder.h; sourceTree = "<group>"; };
+		F82F8D9C18983BC400AB6992 /* NSComparisonPredicate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSComparisonPredicate.h; sourceTree = "<group>"; };
+		F82F8D9D18983BC400AB6992 /* NSCompoundPredicate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSCompoundPredicate.h; sourceTree = "<group>"; };
+		F82F8D9E18983BC400AB6992 /* NSData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSData.h; sourceTree = "<group>"; };
+		F82F8D9F18983BC400AB6992 /* NSDate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSDate.h; sourceTree = "<group>"; };
+		F82F8DA018983BC400AB6992 /* NSDateFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSDateFormatter.h; sourceTree = "<group>"; };
+		F82F8DA118983BC400AB6992 /* NSDecimal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSDecimal.h; sourceTree = "<group>"; };
+		F82F8DA218983BC400AB6992 /* NSDecimalNumber.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSDecimalNumber.h; sourceTree = "<group>"; };
+		F82F8DA318983BC400AB6992 /* NSDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSDictionary.h; sourceTree = "<group>"; };
+		F82F8DA418983BC400AB6992 /* NSEnumerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSEnumerator.h; sourceTree = "<group>"; };
+		F82F8DA518983BC400AB6992 /* NSError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSError.h; sourceTree = "<group>"; };
+		F82F8DA618983BC400AB6992 /* NSException.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSException.h; sourceTree = "<group>"; };
+		F82F8DA718983BC400AB6992 /* NSExpression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSExpression.h; sourceTree = "<group>"; };
+		F82F8DA818983BC400AB6992 /* NSFileCoordinator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSFileCoordinator.h; sourceTree = "<group>"; };
+		F82F8DA918983BC400AB6992 /* NSFileHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSFileHandle.h; sourceTree = "<group>"; };
+		F82F8DAA18983BC400AB6992 /* NSFileManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSFileManager.h; sourceTree = "<group>"; };
+		F82F8DAB18983BC400AB6992 /* NSFilePresenter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSFilePresenter.h; sourceTree = "<group>"; };
+		F82F8DAC18983BC400AB6992 /* NSFileVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSFileVersion.h; sourceTree = "<group>"; };
+		F82F8DAD18983BC400AB6992 /* NSFileWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSFileWrapper.h; sourceTree = "<group>"; };
+		F82F8DAE18983BC400AB6992 /* NSFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSFormatter.h; sourceTree = "<group>"; };
+		F82F8DAF18983BC400AB6992 /* NSHashTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSHashTable.h; sourceTree = "<group>"; };
+		F82F8DB018983BC400AB6992 /* NSHTTPCookie.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSHTTPCookie.h; sourceTree = "<group>"; };
+		F82F8DB118983BC400AB6992 /* NSHTTPCookieStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSHTTPCookieStorage.h; sourceTree = "<group>"; };
+		F82F8DB218983BC400AB6992 /* NSIndexPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSIndexPath.h; sourceTree = "<group>"; };
+		F82F8DB318983BC400AB6992 /* NSIndexSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSIndexSet.h; sourceTree = "<group>"; };
+		F82F8DB418983BC400AB6992 /* NSInvocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSInvocation.h; sourceTree = "<group>"; };
+		F82F8DB518983BC400AB6992 /* NSJSONSerialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSJSONSerialization.h; sourceTree = "<group>"; };
+		F82F8DB618983BC400AB6992 /* NSKeyedArchiver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyedArchiver.h; sourceTree = "<group>"; };
+		F82F8DB718983BC400AB6992 /* NSKeyValueCoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueCoding.h; sourceTree = "<group>"; };
+		F82F8DB818983BC400AB6992 /* NSKeyValueObserving.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSKeyValueObserving.h; sourceTree = "<group>"; };
+		F82F8DB918983BC400AB6992 /* NSLinguisticTagger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSLinguisticTagger.h; sourceTree = "<group>"; };
+		F82F8DBA18983BC400AB6992 /* NSLocale.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSLocale.h; sourceTree = "<group>"; };
+		F82F8DBB18983BC400AB6992 /* NSLock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSLock.h; sourceTree = "<group>"; };
+		F82F8DBC18983BC400AB6992 /* NSMapTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSMapTable.h; sourceTree = "<group>"; };
+		F82F8DBD18983BC400AB6992 /* NSMetadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSMetadata.h; sourceTree = "<group>"; };
+		F82F8DBE18983BC400AB6992 /* NSMethodSignature.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSMethodSignature.h; sourceTree = "<group>"; };
+		F82F8DBF18983BC400AB6992 /* NSNetServices.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSNetServices.h; sourceTree = "<group>"; };
+		F82F8DC018983BC400AB6992 /* NSNotification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSNotification.h; sourceTree = "<group>"; };
+		F82F8DC118983BC400AB6992 /* NSNotificationQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSNotificationQueue.h; sourceTree = "<group>"; };
+		F82F8DC218983BC400AB6992 /* NSNull.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSNull.h; sourceTree = "<group>"; };
+		F82F8DC318983BC400AB6992 /* NSNumberFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSNumberFormatter.h; sourceTree = "<group>"; };
+		F82F8DC418983BC400AB6992 /* NSObjCRuntime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSObjCRuntime.h; sourceTree = "<group>"; };
+		F82F8DC518983BC400AB6992 /* NSObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSObject.h; sourceTree = "<group>"; };
+		F82F8DC618983BC400AB6992 /* NSOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSOperation.h; sourceTree = "<group>"; };
+		F82F8DC718983BC400AB6992 /* NSOrderedSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSOrderedSet.h; sourceTree = "<group>"; };
+		F82F8DC818983BC400AB6992 /* NSOrthography.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSOrthography.h; sourceTree = "<group>"; };
+		F82F8DC918983BC400AB6992 /* NSPathUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPathUtilities.h; sourceTree = "<group>"; };
+		F82F8DCA18983BC400AB6992 /* NSPointerArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPointerArray.h; sourceTree = "<group>"; };
+		F82F8DCB18983BC400AB6992 /* NSPointerFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPointerFunctions.h; sourceTree = "<group>"; };
+		F82F8DCC18983BC400AB6992 /* NSPort.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPort.h; sourceTree = "<group>"; };
+		F82F8DCD18983BC400AB6992 /* NSPredicate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPredicate.h; sourceTree = "<group>"; };
+		F82F8DCE18983BC400AB6992 /* NSProcessInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSProcessInfo.h; sourceTree = "<group>"; };
+		F82F8DCF18983BC400AB6992 /* NSPropertyList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPropertyList.h; sourceTree = "<group>"; };
+		F82F8DD018983BC400AB6992 /* NSProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSProxy.h; sourceTree = "<group>"; };
+		F82F8DD118983BC400AB6992 /* NSRange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSRange.h; sourceTree = "<group>"; };
+		F82F8DD218983BC400AB6992 /* NSRegularExpression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSRegularExpression.h; sourceTree = "<group>"; };
+		F82F8DD318983BC400AB6992 /* NSRunLoop.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSRunLoop.h; sourceTree = "<group>"; };
+		F82F8DD418983BC400AB6992 /* NSScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSScanner.h; sourceTree = "<group>"; };
+		F82F8DD518983BC400AB6992 /* NSSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSSet.h; sourceTree = "<group>"; };
+		F82F8DD618983BC400AB6992 /* NSSortDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSSortDescriptor.h; sourceTree = "<group>"; };
+		F82F8DD718983BC400AB6992 /* NSStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSStream.h; sourceTree = "<group>"; };
+		F82F8DD818983BC400AB6992 /* NSString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSString.h; sourceTree = "<group>"; };
+		F82F8DD918983BC400AB6992 /* NSTextCheckingResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSTextCheckingResult.h; sourceTree = "<group>"; };
+		F82F8DDA18983BC400AB6992 /* NSThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSThread.h; sourceTree = "<group>"; };
+		F82F8DDB18983BC400AB6992 /* NSTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSTimer.h; sourceTree = "<group>"; };
+		F82F8DDC18983BC400AB6992 /* NSTimeZone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSTimeZone.h; sourceTree = "<group>"; };
+		F82F8DDD18983BC400AB6992 /* NSUbiquitousKeyValueStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSUbiquitousKeyValueStore.h; sourceTree = "<group>"; };
+		F82F8DDE18983BC400AB6992 /* NSUndoManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSUndoManager.h; sourceTree = "<group>"; };
+		F82F8DDF18983BC400AB6992 /* NSURL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURL.h; sourceTree = "<group>"; };
+		F82F8DE018983BC400AB6992 /* NSURLAuthenticationChallenge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLAuthenticationChallenge.h; sourceTree = "<group>"; };
+		F82F8DE118983BC400AB6992 /* NSURLCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLCache.h; sourceTree = "<group>"; };
+		F82F8DE218983BC400AB6992 /* NSURLConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLConnection.h; sourceTree = "<group>"; };
+		F82F8DE318983BC400AB6992 /* NSURLCredential.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLCredential.h; sourceTree = "<group>"; };
+		F82F8DE418983BC400AB6992 /* NSURLCredentialStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLCredentialStorage.h; sourceTree = "<group>"; };
+		F82F8DE518983BC400AB6992 /* NSURLError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLError.h; sourceTree = "<group>"; };
+		F82F8DE618983BC400AB6992 /* NSURLProtectionSpace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLProtectionSpace.h; sourceTree = "<group>"; };
+		F82F8DE718983BC400AB6992 /* NSURLProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLProtocol.h; sourceTree = "<group>"; };
+		F82F8DE818983BC400AB6992 /* NSURLRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLRequest.h; sourceTree = "<group>"; };
+		F82F8DE918983BC400AB6992 /* NSURLResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLResponse.h; sourceTree = "<group>"; };
+		F82F8DEA18983BC400AB6992 /* NSURLSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLSession.h; sourceTree = "<group>"; };
+		F82F8DEB18983BC400AB6992 /* NSUserDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSUserDefaults.h; sourceTree = "<group>"; };
+		F82F8DEC18983BC400AB6992 /* NSUUID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSUUID.h; sourceTree = "<group>"; };
+		F82F8DED18983BC400AB6992 /* NSValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSValue.h; sourceTree = "<group>"; };
+		F82F8DEE18983BC400AB6992 /* NSValueTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSValueTransformer.h; sourceTree = "<group>"; };
+		F82F8DEF18983BC400AB6992 /* NSXMLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSXMLParser.h; sourceTree = "<group>"; };
+		F82F8DF018983BC400AB6992 /* NSZone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSZone.h; sourceTree = "<group>"; };
+		F8E9E73818B53D2D0019643D /* NSProgress.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSProgress.m; sourceTree = "<group>"; };
+		F8E9E73A18B53D3A0019643D /* NSProgress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSProgress.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F82F8D7E1898396500AB6992 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CA4DEE44198172D300B5A9EC /* CFNetwork.framework in Frameworks */,
+				CA4DEE45198172D300B5A9EC /* CoreFoundation.framework in Frameworks */,
+				CA4DEE41198172BA00B5A9EC /* Security.framework in Frameworks */,
+				CA7DD030191AFCF400F111A8 /* libxml2.so in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DE6F68E0188DBFE30053DD9B /* src */ = {
+			isa = PBXGroup;
+			children = (
+				4787B29E19C11E9E00156B18 /* _NSFileIO.h */,
+				4787B29F19C11E9E00156B18 /* _NSFileIO.m */,
+				F8E9E73818B53D2D0019643D /* NSProgress.m */,
+				DED1DD17189082C800E01605 /* NSDecimal.m */,
+				DE6F68E1188DBFE30053DD9B /* _NSKeyedCoderOldStyleArray.m */,
+				DE6F68E2188DBFE30053DD9B /* _NSPredicateOperatorUtilities.h */,
+				DE6F68E3188DBFE30053DD9B /* _NSPredicateOperatorUtilities.m */,
+				DE6F68E4188DBFE30053DD9B /* _NSPredicateUtilities.h */,
+				DE6F68E5188DBFE30053DD9B /* _NSPredicateUtilities.m */,
+				DE6F68E8188DBFE30053DD9B /* CFInternal.h */,
+				DE6F6904188DBFE30053DD9B /* NSAddressCheckingResult.h */,
+				DE6F6905188DBFE30053DD9B /* NSAddressCheckingResult.m */,
+				DE6F6906188DBFE30053DD9B /* NSAggregateExpression.m */,
+				DE6F6907188DBFE30053DD9B /* NSAnyKeyExpression.m */,
+				DE6F6908188DBFE30053DD9B /* NSArchiver.h */,
+				DE6F6909188DBFE30053DD9B /* NSArchiver.m */,
+				DE6F690A188DBFE30053DD9B /* NSArray.m */,
+				DE6F690C188DBFE30053DD9B /* NSAttributedString.m */,
+				DE6F690D188DBFE30053DD9B /* NSAttributedStringInternal.h */,
+				DE6F690E188DBFE30053DD9B /* NSAutoreleasePool.m */,
+				DE6F690F188DBFE30053DD9B /* NSBetweenPredicateOperator.h */,
+				DE6F6910188DBFE30053DD9B /* NSBetweenPredicateOperator.m */,
+				DE6F6911188DBFE30053DD9B /* NSBlockExpression.m */,
+				DE6F6912188DBFE30053DD9B /* NSBlockPredicate.m */,
+				DE6F6913188DBFE30053DD9B /* NSBOMEncoding.h */,
+				DE6F6914188DBFE30053DD9B /* NSBOMEncoding.m */,
+				DE6F6915188DBFE30053DD9B /* NSBundle.m */,
+				DE6F6916188DBFE30053DD9B /* NSByteCountFormatter.m */,
+				DE6F6917188DBFE30053DD9B /* NSCalendar.m */,
+				DE6F6918188DBFE30053DD9B /* NSCalendarInternal.h */,
+				DE6F6919188DBFE30053DD9B /* NSCFType.h */,
+				DE6F691D188DBFE30053DD9B /* NSCoder.m */,
+				DE6F691E188DBFE30053DD9B /* NSCoderInternal.h */,
+				DE6F691F188DBFE30053DD9B /* NSComparisonPredicate.m */,
+				DE6F6920188DBFE30053DD9B /* NSComparisonPredicateOperator.h */,
+				DE6F6921188DBFE30053DD9B /* NSComparisonPredicateOperator.m */,
+				DE6F6922188DBFE30053DD9B /* NSCompoundPredicate.m */,
+				DE6F6923188DBFE30053DD9B /* NSCompoundPredicateOperator.h */,
+				DE6F6924188DBFE30053DD9B /* NSCompoundPredicateOperator.m */,
+				DE6F6925188DBFE30053DD9B /* NSConcreteScanner.h */,
+				DE6F6926188DBFE30053DD9B /* NSConstantValueExpression.m */,
+				DE6F6927188DBFE30053DD9B /* NSCustomPredicateOperator.h */,
+				DE6F6928188DBFE30053DD9B /* NSCustomPredicateOperator.m */,
+				DE6F6929188DBFE30053DD9B /* NSData.m */,
+				DE6F692B188DBFE30053DD9B /* NSDate.m */,
+				DE6F692C188DBFE30053DD9B /* NSDateCheckingResult.h */,
+				DE6F692D188DBFE30053DD9B /* NSDateCheckingResult.m */,
+				DE6F692E188DBFE30053DD9B /* NSDateFormatter.m */,
+				DE6F6930188DBFE30053DD9B /* NSDecimalNumber.m */,
+				DE6F6931188DBFE30053DD9B /* NSDictionary.m */,
+				DE6F6933188DBFE30053DD9B /* NSDirectoryEnumerator.h */,
+				DE6F6934188DBFE30053DD9B /* NSDirectoryEnumerator.m */,
+				DE6F6935188DBFE30053DD9B /* NSEqualityPredicateOperator.h */,
+				DE6F6936188DBFE30053DD9B /* NSEqualityPredicateOperator.m */,
+				DE6F6937188DBFE30053DD9B /* NSErrorInternal.h */,
+				DE6F6938188DBFE30053DD9B /* NSException.m */,
+				DE6F6939188DBFE30053DD9B /* NSExpressionInternal.h */,
+				DE6F693A188DBFE30053DD9B /* NSExpression.m */,
+				DE6F693B188DBFE30053DD9B /* NSExternals.h */,
+				DE6F693C188DBFE30053DD9B /* NSExternals.m */,
+				DE6F693D188DBFE30053DD9B /* NSFalsePredicate.m */,
+				DE6F693E188DBFE30053DD9B /* NSFastEnumerationEnumerator.h */,
+				DE6F693F188DBFE30053DD9B /* NSFileAttributes.h */,
+				DE6F6940188DBFE30053DD9B /* NSFileAttributes.m */,
+				DE6F6941188DBFE30053DD9B /* NSFileCoordinator.m */,
+				DE6F6942188DBFE30053DD9B /* NSFileHandle.m */,
+				DE6F6943188DBFE30053DD9B /* NSFileManager.m */,
+				DE6F6944188DBFE30053DD9B /* NSFileManagerInternal.h */,
+				DE6F6945188DBFE30053DD9B /* NSFilesystemItemRemoveOperation.h */,
+				DE6F6946188DBFE30053DD9B /* NSFilesystemItemRemoveOperation.m */,
+				DE6F6947188DBFE30053DD9B /* NSFormatter.m */,
+				DE6F6948188DBFE30053DD9B /* NSFunctionExpression.m */,
+				DE6F6949188DBFE30053DD9B /* NSGrammarCheckingResult.h */,
+				DE6F694A188DBFE30053DD9B /* NSGrammarCheckingResult.m */,
+				DE6F694B188DBFE30053DD9B /* NSHashTable.m */,
+				DE6F694C188DBFE30053DD9B /* NSHTTPCookie.m */,
+				DE6F694D188DBFE30053DD9B /* NSHTTPCookieStorage.m */,
+				DE6F694E188DBFE30053DD9B /* NSIndexPath.m */,
+				DE6F694F188DBFE30053DD9B /* NSIndexSet.m */,
+				DE6F6950188DBFE30053DD9B /* NSInPredicateOperator.h */,
+				DE6F6951188DBFE30053DD9B /* NSInPredicateOperator.m */,
+				DE6F6952188DBFE30053DD9B /* NSJSONSerialization.m */,
+				DE6F6954188DBFE30053DD9B /* NSKeyedArchiver.m */,
+				DE6F6955188DBFE30053DD9B /* NSKeyedUnarchiver.m */,
+				DE6F6956188DBFE30053DD9B /* NSKeyPathExpression.m */,
+				DE6F6957188DBFE30053DD9B /* NSKeyPathSpecifierExpression.m */,
+				DE6F6958188DBFE30053DD9B /* NSLikePredicateOperator.h */,
+				DE6F6959188DBFE40053DD9B /* NSLikePredicateOperator.m */,
+				DE6F695A188DBFE40053DD9B /* NSLinkCheckingResult.h */,
+				DE6F695B188DBFE40053DD9B /* NSLinkCheckingResult.m */,
+				DE6F695C188DBFE40053DD9B /* NSLocale.m */,
+				5BEE514E18FCCB0D004CD7FD /* NSLocalizableString.h */,
+				5BEE514F18FCCB0D004CD7FD /* NSLocalizableString.m */,
+				DE6F695E188DBFE40053DD9B /* NSLock.m */,
+				DE6F695F188DBFE40053DD9B /* NSLog.m */,
+				DE6F6960188DBFE40053DD9B /* NSMapTable.m */,
+				DE6F6962188DBFE40053DD9B /* NSMatchingPredicateOperator.h */,
+				DE6F6963188DBFE40053DD9B /* NSMatchingPredicateOperator.m */,
+				DE6F6965188DBFE40053DD9B /* NSNestedDictionary.h */,
+				DE6F6966188DBFE40053DD9B /* NSNestedDictionary.m */,
+				DE6F6967188DBFE40053DD9B /* NSNetServices.m */,
+				DE6F6968188DBFE40053DD9B /* NSNotification.m */,
+				DE6F6969188DBFE40053DD9B /* NSNotificationCenter.m */,
+				DE6F696A188DBFE40053DD9B /* NSNotificationInternal.h */,
+				DE6F696B188DBFE40053DD9B /* NSNotificationQueue.m */,
+				DE6F696C188DBFE40053DD9B /* NSNumber.m */,
+				DE6F696D188DBFE40053DD9B /* NSNumberFormatter.m */,
+				DE6F696E188DBFE40053DD9B /* NSObjCRuntime.m */,
+				DE6F696F188DBFE40053DD9B /* NSObjectInternal.h */,
+				DE6F6970188DBFE40053DD9B /* NSOperation.m */,
+				DE6F6972188DBFE40053DD9B /* NSOrthography.m */,
+				DE6F6973188DBFE40053DD9B /* NSOrthographyCheckingResult.h */,
+				DE6F6974188DBFE40053DD9B /* NSOrthographyCheckingResult.m */,
+				DE6F6975188DBFE40053DD9B /* NSPathStore.h */,
+				DE6F6976188DBFE40053DD9B /* NSPathStore.m */,
+				DE6F6977188DBFE40053DD9B /* NSPathUtilities.m */,
+				DE6F6978188DBFE40053DD9B /* NSPhoneNumberCheckingResult.h */,
+				DE6F6979188DBFE40053DD9B /* NSPhoneNumberCheckingResult.m */,
+				DE6F697A188DBFE40053DD9B /* NSPlatform.m */,
+				DE6F697B188DBFE40053DD9B /* NSPointerArray.m */,
+				DE6F697D188DBFE40053DD9B /* NSPointerFunctions.m */,
+				DE6F697E188DBFE40053DD9B /* NSPointerFunctionsInternal.h */,
+				DE6F697F188DBFE40053DD9B /* NSPort.m */,
+				DE6F6980188DBFE40053DD9B /* NSPredicateInternal.h */,
+				DE6F6981188DBFE40053DD9B /* NSPredicate.m */,
+				472583AC19074C0500BF7919 /* NSPredicateLexer.m */,
+				472583AD19074C0500BF7919 /* NSPredicateParser.tab.c */,
+				DE6F6982188DBFE40053DD9B /* NSPredicateOperator.h */,
+				DE6F6983188DBFE40053DD9B /* NSPredicateOperator.m */,
+				DE6F6984188DBFE40053DD9B /* NSProcessInfo.m */,
+				DE6F6985188DBFE40053DD9B /* NSProxy.m */,
+				DE6F6986188DBFE40053DD9B /* NSRange.m */,
+				DE6F6987188DBFE40053DD9B /* NSRangeCheck.h */,
+				DE6F6988188DBFE40053DD9B /* NSRegularExpression.m */,
+				DE6F6989188DBFE40053DD9B /* NSRegularExpressionCheckingResult.h */,
+				DE6F698A188DBFE40053DD9B /* NSRegularExpressionCheckingResult.m */,
+				DE6F698D188DBFE40053DD9B /* NSRunLoop.m */,
+				DE6F698E188DBFE40053DD9B /* NSRunLoopModes.m */,
+				DE6F698F188DBFE40053DD9B /* NSScanner.m */,
+				DE6F6990188DBFE40053DD9B /* NSSelfExpression.m */,
+				DE6F6991188DBFE40053DD9B /* NSSet.m */,
+				DE6F6992188DBFE40053DD9B /* NSSetExpression.m */,
+				DE6F6994188DBFE40053DD9B /* NSSortDescriptor.m */,
+				DE6F6995188DBFE40053DD9B /* NSSpellCheckingResult.h */,
+				DE6F6996188DBFE40053DD9B /* NSSpellCheckingResult.m */,
+				DE6F6997188DBFE40053DD9B /* NSStreamInternal.h */,
+				DE6F6998188DBFE40053DD9B /* NSString.m */,
+				DE6F6999188DBFE40053DD9B /* NSStringInternal.h */,
+				DE6F699A188DBFE40053DD9B /* NSStringPredicateOperator.h */,
+				DE6F699B188DBFE40053DD9B /* NSStringPredicateOperator.m */,
+				DE6F699C188DBFE40053DD9B /* NSSubqueryExpression.m */,
+				DE6F699D188DBFE40053DD9B /* NSSubstitutionCheckingResult.h */,
+				DE6F699E188DBFE40053DD9B /* NSSubstitutionCheckingResult.m */,
+				DE6F699F188DBFE40053DD9B /* NSSubstringPredicateOperator.h */,
+				DE6F69A0188DBFE40053DD9B /* NSSubstringPredicateOperator.m */,
+				DE6F69A1188DBFE40053DD9B /* NSSymbolicExpression.m */,
+				DE6F69A2188DBFE40053DD9B /* NSTemporaryDirectory.h */,
+				DE6F69A3188DBFE40053DD9B /* NSTernaryExpression.m */,
+				DE6F69A4188DBFE40053DD9B /* NSTextCheckingResult.m */,
+				DE6F69A5188DBFE40053DD9B /* NSThread.m */,
+				DE6F69A7188DBFE40053DD9B /* NSTimer.m */,
+				DE6F69A9188DBFE40053DD9B /* NSTimeZone.m */,
+				DE6F69AA188DBFE40053DD9B /* NSTimeZoneInternal.h */,
+				DE6F69AB188DBFE40053DD9B /* NSTokenMatchingPredicateOperator.h */,
+				DE6F69AC188DBFE40053DD9B /* NSTokenMatchingPredicateOperator.m */,
+				DE6F69AD188DBFE40053DD9B /* NSTransitInformationCheckingResult.h */,
+				DE6F69AE188DBFE40053DD9B /* NSTransitInformationCheckingResult.m */,
+				DE6F69AF188DBFE40053DD9B /* NSTruePredicate.m */,
+				DE6F69B0188DBFE40053DD9B /* NSUbiquitousKeyValueStore.m */,
+				DE6F69B1188DBFE40053DD9B /* NSUbiquitousKeyValueStoreInternal.h */,
+				DE6F69B2188DBFE40053DD9B /* NSURL.m */,
+				DE6F69B3188DBFE40053DD9B /* NSURLAuthenticationChallenge.m */,
+				DE6F69B4188DBFE40053DD9B /* NSURLAuthenticationChallengeInternal.h */,
+				DE6F69B5188DBFE40053DD9B /* NSURLCache.m */,
+				DE6F69B6188DBFE40053DD9B /* NSURLCacheInternal.h */,
+				DE6F69B7188DBFE40053DD9B /* NSURLConnection.m */,
+				DE6F69B8188DBFE40053DD9B /* NSURLConnectionInternal.h */,
+				DE6F69B9188DBFE40053DD9B /* NSURLCredential.m */,
+				DE6F69BA188DBFE40053DD9B /* NSURLCredentialInternal.h */,
+				DE6F69BB188DBFE40053DD9B /* NSURLCredentialStorage.m */,
+				DE6F69BC188DBFE40053DD9B /* NSURLError.m */,
+				DE6F69BD188DBFE40053DD9B /* NSURLInternal.h */,
+				DE6F69BE188DBFE40053DD9B /* NSURLProtectionSpace.m */,
+				DE6F69BF188DBFE40053DD9B /* NSURLProtectionSpaceInternal.h */,
+				DE6F69C0188DBFE40053DD9B /* NSURLProtocol.m */,
+				DE6F69C1188DBFE40053DD9B /* NSURLProtocolInternal.h */,
+				DE6F69C2188DBFE40053DD9B /* NSURLRequest.m */,
+				DE6F69C3188DBFE40053DD9B /* NSURLRequestInternal.h */,
+				DE6F69C4188DBFE40053DD9B /* NSURLResponse.m */,
+				DE6F69C5188DBFE40053DD9B /* NSURLResponseInternal.h */,
+				DE6F69C6188DBFE40053DD9B /* NSURLSession.m */,
+				DE6F69C7188DBFE40053DD9B /* NSUserDefaults.m */,
+				DE6F69C8188DBFE40053DD9B /* NSUUID.m */,
+				DE6F69CA188DBFE40053DD9B /* NSValue.m */,
+				DE6F69CB188DBFE40053DD9B /* NSValueInternal.h */,
+				DE6F69CC188DBFE40053DD9B /* NSValueTransformer.m */,
+				DE6F69CE188DBFE40053DD9B /* NSVariableAssignmentExpression.m */,
+				DE6F69CF188DBFE40053DD9B /* NSVariableExpression.m */,
+				DE6F69D0188DBFE40053DD9B /* NSXMLParser.m */,
+				DE6F69D1188DBFE40053DD9B /* NSXPCCoder.m */,
+				DE6F69D2188DBFE40053DD9B /* NSZone.m */,
+				DE6F68EB188DBFE30053DD9B /* NSKeyValueAccessor.h */,
+				DE6F68EC188DBFE30053DD9B /* NSKeyValueAccessor.m */,
+				DE6F68ED188DBFE30053DD9B /* NSKeyValueChangeDictionary.h */,
+				DE6F68EE188DBFE30053DD9B /* NSKeyValueChangeDictionary.m */,
+				DE6F68EF188DBFE30053DD9B /* NSKeyValueCoding.m */,
+				DE6F68F0188DBFE30053DD9B /* NSKeyValueCodingInternal.h */,
+				DE6F68F1188DBFE30053DD9B /* NSKeyValueCodingInternal.m */,
+				DE6F68F2188DBFE30053DD9B /* NSKeyValueCollectionProxies.h */,
+				DE6F68F3188DBFE30053DD9B /* NSKeyValueCollectionProxies.m */,
+				DE6F68F4188DBFE30053DD9B /* NSKeyValueComputedProperty.h */,
+				DE6F68F5188DBFE30053DD9B /* NSKeyValueComputedProperty.m */,
+				DE6F68F6188DBFE30053DD9B /* NSKeyValueContainerClass.h */,
+				DE6F68F7188DBFE30053DD9B /* NSKeyValueContainerClass.m */,
+				DE6F68F8188DBFE30053DD9B /* NSKeyValueNestedProperty.h */,
+				DE6F68F9188DBFE30053DD9B /* NSKeyValueNestedProperty.m */,
+				DE6F68FA188DBFE30053DD9B /* NSKeyValueObservance.h */,
+				DE6F68FB188DBFE30053DD9B /* NSKeyValueObservance.m */,
+				DE6F68FC188DBFE30053DD9B /* NSKeyValueObservationInfo.h */,
+				DE6F68FD188DBFE30053DD9B /* NSKeyValueObservationInfo.m */,
+				DE6F68FE188DBFE30053DD9B /* NSKeyValueObserving.m */,
+				DE6F68FF188DBFE30053DD9B /* NSKeyValueObservingInternal.h */,
+				DE6F6900188DBFE30053DD9B /* NSKeyValueProperty.h */,
+				DE6F6901188DBFE30053DD9B /* NSKeyValueProperty.m */,
+				DE6F6902188DBFE30053DD9B /* NSKeyValueUnnestedProperty.h */,
+				DE6F6903188DBFE30053DD9B /* NSKeyValueUnnestedProperty.m */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		DE8320741885B24300EA34AE = {
+			isa = PBXGroup;
+			children = (
+				CAA988DF1975BC2600E0CBA2 /* ApportableSystemRelease.xcconfig */,
+				DE6F6A68188DBFF30053DD9B /* ApportableSystem.xcconfig */,
+				CA244632191ADB75007250E2 /* ApportableSystemFramework.xcconfig */,
+				F82F8D8E18983BC400AB6992 /* include */,
+				DE6F68E0188DBFE30053DD9B /* src */,
+				F82F8D831898396500AB6992 /* Foundation */,
+				DE83207F1885B24300EA34AE /* Frameworks */,
+				DE83207E1885B24300EA34AE /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DE83207E1885B24300EA34AE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F82F8D811898396500AB6992 /* Foundation.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DE83207F1885B24300EA34AE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CA4DEE42198172D300B5A9EC /* CFNetwork.framework */,
+				CA4DEE43198172D300B5A9EC /* CoreFoundation.framework */,
+				CA4DEE3E198172BA00B5A9EC /* Security.framework */,
+				CA7DD02F191AFCF400F111A8 /* libxml2.so */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F82F8D831898396500AB6992 /* Foundation */ = {
+			isa = PBXGroup;
+			children = (
+				F82F8D841898396500AB6992 /* Supporting Files */,
+			);
+			path = Foundation;
+			sourceTree = "<group>";
+		};
+		F82F8D841898396500AB6992 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				F82F8D851898396500AB6992 /* Foundation-Info.plist */,
+				F82F8D861898396500AB6992 /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		F82F8D8E18983BC400AB6992 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				F82F8D8F18983BC400AB6992 /* Foundation */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		F82F8D8F18983BC400AB6992 /* Foundation */ = {
+			isa = PBXGroup;
+			children = (
+				F8E9E73A18B53D3A0019643D /* NSProgress.h */,
+				F82F8D9018983BC400AB6992 /* Foundation.h */,
+				F82F8D9118983BC400AB6992 /* FoundationErrors.h */,
+				F82F8D9218983BC400AB6992 /* NSArray.h */,
+				F82F8D9318983BC400AB6992 /* NSAttributedString.h */,
+				F82F8D9418983BC400AB6992 /* NSAutoreleasePool.h */,
+				F82F8D9518983BC400AB6992 /* NSBundle.h */,
+				F82F8D9618983BC400AB6992 /* NSByteCountFormatter.h */,
+				F82F8D9718983BC400AB6992 /* NSByteOrder.h */,
+				F82F8D9818983BC400AB6992 /* NSCache.h */,
+				F82F8D9918983BC400AB6992 /* NSCalendar.h */,
+				F82F8D9A18983BC400AB6992 /* NSCharacterSet.h */,
+				F82F8D9B18983BC400AB6992 /* NSCoder.h */,
+				F82F8D9C18983BC400AB6992 /* NSComparisonPredicate.h */,
+				F82F8D9D18983BC400AB6992 /* NSCompoundPredicate.h */,
+				F82F8D9E18983BC400AB6992 /* NSData.h */,
+				F82F8D9F18983BC400AB6992 /* NSDate.h */,
+				F82F8DA018983BC400AB6992 /* NSDateFormatter.h */,
+				F82F8DA118983BC400AB6992 /* NSDecimal.h */,
+				F82F8DA218983BC400AB6992 /* NSDecimalNumber.h */,
+				F82F8DA318983BC400AB6992 /* NSDictionary.h */,
+				F82F8DA418983BC400AB6992 /* NSEnumerator.h */,
+				F82F8DA518983BC400AB6992 /* NSError.h */,
+				F82F8DA618983BC400AB6992 /* NSException.h */,
+				F82F8DA718983BC400AB6992 /* NSExpression.h */,
+				F82F8DA818983BC400AB6992 /* NSFileCoordinator.h */,
+				F82F8DA918983BC400AB6992 /* NSFileHandle.h */,
+				F82F8DAA18983BC400AB6992 /* NSFileManager.h */,
+				F82F8DAB18983BC400AB6992 /* NSFilePresenter.h */,
+				F82F8DAC18983BC400AB6992 /* NSFileVersion.h */,
+				F82F8DAD18983BC400AB6992 /* NSFileWrapper.h */,
+				F82F8DAE18983BC400AB6992 /* NSFormatter.h */,
+				F82F8DAF18983BC400AB6992 /* NSHashTable.h */,
+				F82F8DB018983BC400AB6992 /* NSHTTPCookie.h */,
+				F82F8DB118983BC400AB6992 /* NSHTTPCookieStorage.h */,
+				F82F8DB218983BC400AB6992 /* NSIndexPath.h */,
+				F82F8DB318983BC400AB6992 /* NSIndexSet.h */,
+				F82F8DB418983BC400AB6992 /* NSInvocation.h */,
+				F82F8DB518983BC400AB6992 /* NSJSONSerialization.h */,
+				F82F8DB618983BC400AB6992 /* NSKeyedArchiver.h */,
+				F82F8DB718983BC400AB6992 /* NSKeyValueCoding.h */,
+				F82F8DB818983BC400AB6992 /* NSKeyValueObserving.h */,
+				F82F8DB918983BC400AB6992 /* NSLinguisticTagger.h */,
+				F82F8DBA18983BC400AB6992 /* NSLocale.h */,
+				F82F8DBB18983BC400AB6992 /* NSLock.h */,
+				F82F8DBC18983BC400AB6992 /* NSMapTable.h */,
+				F82F8DBD18983BC400AB6992 /* NSMetadata.h */,
+				F82F8DBE18983BC400AB6992 /* NSMethodSignature.h */,
+				F82F8DBF18983BC400AB6992 /* NSNetServices.h */,
+				F82F8DC018983BC400AB6992 /* NSNotification.h */,
+				F82F8DC118983BC400AB6992 /* NSNotificationQueue.h */,
+				F82F8DC218983BC400AB6992 /* NSNull.h */,
+				F82F8DC318983BC400AB6992 /* NSNumberFormatter.h */,
+				F82F8DC418983BC400AB6992 /* NSObjCRuntime.h */,
+				F82F8DC518983BC400AB6992 /* NSObject.h */,
+				F82F8DC618983BC400AB6992 /* NSOperation.h */,
+				F82F8DC718983BC400AB6992 /* NSOrderedSet.h */,
+				F82F8DC818983BC400AB6992 /* NSOrthography.h */,
+				F82F8DC918983BC400AB6992 /* NSPathUtilities.h */,
+				F82F8DCA18983BC400AB6992 /* NSPointerArray.h */,
+				F82F8DCB18983BC400AB6992 /* NSPointerFunctions.h */,
+				F82F8DCC18983BC400AB6992 /* NSPort.h */,
+				F82F8DCD18983BC400AB6992 /* NSPredicate.h */,
+				F82F8DCE18983BC400AB6992 /* NSProcessInfo.h */,
+				F82F8DCF18983BC400AB6992 /* NSPropertyList.h */,
+				F82F8DD018983BC400AB6992 /* NSProxy.h */,
+				F82F8DD118983BC400AB6992 /* NSRange.h */,
+				F82F8DD218983BC400AB6992 /* NSRegularExpression.h */,
+				F82F8DD318983BC400AB6992 /* NSRunLoop.h */,
+				F82F8DD418983BC400AB6992 /* NSScanner.h */,
+				F82F8DD518983BC400AB6992 /* NSSet.h */,
+				F82F8DD618983BC400AB6992 /* NSSortDescriptor.h */,
+				F82F8DD718983BC400AB6992 /* NSStream.h */,
+				F82F8DD818983BC400AB6992 /* NSString.h */,
+				F82F8DD918983BC400AB6992 /* NSTextCheckingResult.h */,
+				F82F8DDA18983BC400AB6992 /* NSThread.h */,
+				F82F8DDB18983BC400AB6992 /* NSTimer.h */,
+				F82F8DDC18983BC400AB6992 /* NSTimeZone.h */,
+				F82F8DDD18983BC400AB6992 /* NSUbiquitousKeyValueStore.h */,
+				F82F8DDE18983BC400AB6992 /* NSUndoManager.h */,
+				F82F8DDF18983BC400AB6992 /* NSURL.h */,
+				F82F8DE018983BC400AB6992 /* NSURLAuthenticationChallenge.h */,
+				F82F8DE118983BC400AB6992 /* NSURLCache.h */,
+				F82F8DE218983BC400AB6992 /* NSURLConnection.h */,
+				F82F8DE318983BC400AB6992 /* NSURLCredential.h */,
+				F82F8DE418983BC400AB6992 /* NSURLCredentialStorage.h */,
+				F82F8DE518983BC400AB6992 /* NSURLError.h */,
+				F82F8DE618983BC400AB6992 /* NSURLProtectionSpace.h */,
+				F82F8DE718983BC400AB6992 /* NSURLProtocol.h */,
+				F82F8DE818983BC400AB6992 /* NSURLRequest.h */,
+				F82F8DE918983BC400AB6992 /* NSURLResponse.h */,
+				F82F8DEA18983BC400AB6992 /* NSURLSession.h */,
+				F82F8DEB18983BC400AB6992 /* NSUserDefaults.h */,
+				F82F8DEC18983BC400AB6992 /* NSUUID.h */,
+				F82F8DED18983BC400AB6992 /* NSValue.h */,
+				F82F8DEE18983BC400AB6992 /* NSValueTransformer.h */,
+				F82F8DEF18983BC400AB6992 /* NSXMLParser.h */,
+				F82F8DF018983BC400AB6992 /* NSZone.h */,
+			);
+			path = Foundation;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		F82F8D8D18983BA100AB6992 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F82F8E2D18983BC400AB6992 /* NSPort.h in Headers */,
+				F82F8E4118983BC400AB6992 /* NSURLAuthenticationChallenge.h in Headers */,
+				F82F8E4018983BC400AB6992 /* NSURL.h in Headers */,
+				F82F8DF218983BC400AB6992 /* FoundationErrors.h in Headers */,
+				F82F8E2318983BC400AB6992 /* NSNull.h in Headers */,
+				F82F8DF118983BC400AB6992 /* Foundation.h in Headers */,
+				F82F8E5118983BC400AB6992 /* NSZone.h in Headers */,
+				F82F8E0D18983BC400AB6992 /* NSFileVersion.h in Headers */,
+				F82F8E1818983BC400AB6992 /* NSKeyValueCoding.h in Headers */,
+				F82F8DF718983BC400AB6992 /* NSByteCountFormatter.h in Headers */,
+				F82F8E2118983BC400AB6992 /* NSNotification.h in Headers */,
+				F82F8E3018983BC400AB6992 /* NSPropertyList.h in Headers */,
+				F82F8E2418983BC400AB6992 /* NSNumberFormatter.h in Headers */,
+				F82F8E0918983BC400AB6992 /* NSFileCoordinator.h in Headers */,
+				F82F8DFA18983BC400AB6992 /* NSCalendar.h in Headers */,
+				F82F8E0A18983BC400AB6992 /* NSFileHandle.h in Headers */,
+				F82F8E1A18983BC400AB6992 /* NSLinguisticTagger.h in Headers */,
+				F82F8DF418983BC400AB6992 /* NSAttributedString.h in Headers */,
+				F82F8E2B18983BC400AB6992 /* NSPointerArray.h in Headers */,
+				F82F8E1F18983BC400AB6992 /* NSMethodSignature.h in Headers */,
+				F82F8E2F18983BC400AB6992 /* NSProcessInfo.h in Headers */,
+				F82F8E2818983BC400AB6992 /* NSOrderedSet.h in Headers */,
+				F82F8E2A18983BC400AB6992 /* NSPathUtilities.h in Headers */,
+				F82F8E4A18983BC400AB6992 /* NSURLResponse.h in Headers */,
+				F82F8E1718983BC400AB6992 /* NSKeyedArchiver.h in Headers */,
+				4787B2A019C11E9E00156B18 /* _NSFileIO.h in Headers */,
+				F82F8E3818983BC400AB6992 /* NSStream.h in Headers */,
+				F82F8E0818983BC400AB6992 /* NSExpression.h in Headers */,
+				F82F8E1E18983BC400AB6992 /* NSMetadata.h in Headers */,
+				F82F8E4618983BC400AB6992 /* NSURLError.h in Headers */,
+				F82F8E0718983BC400AB6992 /* NSException.h in Headers */,
+				F82F8E3C18983BC400AB6992 /* NSTimer.h in Headers */,
+				F82F8E2C18983BC400AB6992 /* NSPointerFunctions.h in Headers */,
+				F82F8E0B18983BC400AB6992 /* NSFileManager.h in Headers */,
+				F82F8E3718983BC400AB6992 /* NSSortDescriptor.h in Headers */,
+				F82F8E4318983BC400AB6992 /* NSURLConnection.h in Headers */,
+				F82F8E1B18983BC400AB6992 /* NSLocale.h in Headers */,
+				F82F8E3318983BC400AB6992 /* NSRegularExpression.h in Headers */,
+				F82F8E4418983BC400AB6992 /* NSURLCredential.h in Headers */,
+				F82F8DFC18983BC400AB6992 /* NSCoder.h in Headers */,
+				F82F8E3918983BC400AB6992 /* NSString.h in Headers */,
+				F82F8E0118983BC400AB6992 /* NSDateFormatter.h in Headers */,
+				F82F8E0C18983BC400AB6992 /* NSFilePresenter.h in Headers */,
+				F82F8E0218983BC400AB6992 /* NSDecimal.h in Headers */,
+				F82F8E4218983BC400AB6992 /* NSURLCache.h in Headers */,
+				F82F8E0618983BC400AB6992 /* NSError.h in Headers */,
+				F82F8E4818983BC400AB6992 /* NSURLProtocol.h in Headers */,
+				F82F8E4F18983BC400AB6992 /* NSValueTransformer.h in Headers */,
+				F82F8E3F18983BC400AB6992 /* NSUndoManager.h in Headers */,
+				F82F8E1018983BC400AB6992 /* NSHashTable.h in Headers */,
+				F82F8E3D18983BC400AB6992 /* NSTimeZone.h in Headers */,
+				F82F8E2618983BC400AB6992 /* NSObject.h in Headers */,
+				5BEE515018FCCB0D004CD7FD /* NSLocalizableString.h in Headers */,
+				F82F8DFE18983BC400AB6992 /* NSCompoundPredicate.h in Headers */,
+				F82F8E1918983BC400AB6992 /* NSKeyValueObserving.h in Headers */,
+				F82F8E2518983BC400AB6992 /* NSObjCRuntime.h in Headers */,
+				F82F8E4B18983BC400AB6992 /* NSURLSession.h in Headers */,
+				F82F8E1118983BC400AB6992 /* NSHTTPCookie.h in Headers */,
+				F82F8E0518983BC400AB6992 /* NSEnumerator.h in Headers */,
+				F82F8E4918983BC400AB6992 /* NSURLRequest.h in Headers */,
+				F82F8DFB18983BC400AB6992 /* NSCharacterSet.h in Headers */,
+				F82F8E1518983BC400AB6992 /* NSInvocation.h in Headers */,
+				F82F8E3B18983BC400AB6992 /* NSThread.h in Headers */,
+				F82F8E0F18983BC400AB6992 /* NSFormatter.h in Headers */,
+				F82F8DFF18983BC400AB6992 /* NSData.h in Headers */,
+				F82F8E1418983BC400AB6992 /* NSIndexSet.h in Headers */,
+				F82F8DFD18983BC400AB6992 /* NSComparisonPredicate.h in Headers */,
+				F82F8E2018983BC400AB6992 /* NSNetServices.h in Headers */,
+				F82F8E2918983BC400AB6992 /* NSOrthography.h in Headers */,
+				F82F8E5018983BC400AB6992 /* NSXMLParser.h in Headers */,
+				F82F8E3518983BC400AB6992 /* NSScanner.h in Headers */,
+				F82F8E0E18983BC400AB6992 /* NSFileWrapper.h in Headers */,
+				F82F8E3A18983BC400AB6992 /* NSTextCheckingResult.h in Headers */,
+				F82F8E4518983BC400AB6992 /* NSURLCredentialStorage.h in Headers */,
+				F82F8E2718983BC400AB6992 /* NSOperation.h in Headers */,
+				F82F8DF818983BC400AB6992 /* NSByteOrder.h in Headers */,
+				F82F8DF918983BC400AB6992 /* NSCache.h in Headers */,
+				F82F8E1318983BC400AB6992 /* NSIndexPath.h in Headers */,
+				F82F8E4E18983BC400AB6992 /* NSValue.h in Headers */,
+				F82F8E0318983BC400AB6992 /* NSDecimalNumber.h in Headers */,
+				F82F8E3218983BC400AB6992 /* NSRange.h in Headers */,
+				F82F8E3618983BC400AB6992 /* NSSet.h in Headers */,
+				F82F8DF518983BC400AB6992 /* NSAutoreleasePool.h in Headers */,
+				F82F8E3118983BC400AB6992 /* NSProxy.h in Headers */,
+				F82F8E3418983BC400AB6992 /* NSRunLoop.h in Headers */,
+				F82F8E4718983BC400AB6992 /* NSURLProtectionSpace.h in Headers */,
+				F82F8E1618983BC400AB6992 /* NSJSONSerialization.h in Headers */,
+				F82F8E4D18983BC400AB6992 /* NSUUID.h in Headers */,
+				F82F8E0018983BC400AB6992 /* NSDate.h in Headers */,
+				F82F8DF318983BC400AB6992 /* NSArray.h in Headers */,
+				F82F8E1C18983BC400AB6992 /* NSLock.h in Headers */,
+				F82F8E1218983BC400AB6992 /* NSHTTPCookieStorage.h in Headers */,
+				F82F8E2218983BC400AB6992 /* NSNotificationQueue.h in Headers */,
+				F82F8DF618983BC400AB6992 /* NSBundle.h in Headers */,
+				F82F8E1D18983BC400AB6992 /* NSMapTable.h in Headers */,
+				F82F8E3E18983BC400AB6992 /* NSUbiquitousKeyValueStore.h in Headers */,
+				F82F8E0418983BC400AB6992 /* NSDictionary.h in Headers */,
+				F82F8E4C18983BC400AB6992 /* NSUserDefaults.h in Headers */,
+				F8E9E73B18B53D3A0019643D /* NSProgress.h in Headers */,
+				F82F8E2E18983BC400AB6992 /* NSPredicate.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		F82F8D801898396500AB6992 /* Foundation */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F82F8D8A1898396500AB6992 /* Build configuration list for PBXNativeTarget "Foundation" */;
+			buildPhases = (
+				F82F8D7D1898396500AB6992 /* Sources */,
+				F82F8D7E1898396500AB6992 /* Frameworks */,
+				F82F8D8D18983BA100AB6992 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5B04E2D219212F76002CDC61 /* ExternalPBXTargetDependency */,
+				5B04E2D419212F76002CDC61 /* ExternalPBXTargetDependency */,
+				5B04E2D619212F76002CDC61 /* ExternalPBXTargetDependency */,
+				5B04E2D819212F76002CDC61 /* ExternalPBXTargetDependency */,
+			);
+			name = Foundation;
+			productName = Foundation;
+			productReference = F82F8D811898396500AB6992 /* Foundation.framework */;
+			productType = "com.apple.product-type.framework.shallow";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DE8320751885B24300EA34AE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = Apportable;
+			};
+			buildConfigurationList = DE8320781885B24300EA34AE /* Build configuration list for PBXProject "Foundation" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = DE8320741885B24300EA34AE;
+			productRefGroup = DE83207E1885B24300EA34AE /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F82F8D801898396500AB6992 /* Foundation */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F82F8D7D1898396500AB6992 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F8333D3D18C523E20018CFF4 /* NSFilesystemItemRemoveOperation.m in Sources */,
+				F82F8E9318983DB100AB6992 /* _NSKeyedCoderOldStyleArray.m in Sources */,
+				F82F8E9418983DB100AB6992 /* _NSPredicateOperatorUtilities.m in Sources */,
+				F82F8E9518983DB100AB6992 /* _NSPredicateUtilities.m in Sources */,
+				F82F8E9718983DB100AB6992 /* NSLikePredicateOperator.m in Sources */,
+				F82F8E9818983DB100AB6992 /* NSLinkCheckingResult.m in Sources */,
+				F82F8E9918983DB100AB6992 /* NSLocale.m in Sources */,
+				F82F8E9A18983DB100AB6992 /* NSLock.m in Sources */,
+				F82F8E9B18983DB100AB6992 /* NSLog.m in Sources */,
+				F82F8E9C18983DB100AB6992 /* NSMapTable.m in Sources */,
+				F82F8E9D18983DB100AB6992 /* NSMatchingPredicateOperator.m in Sources */,
+				F82F8E9E18983DB100AB6992 /* NSNestedDictionary.m in Sources */,
+				F82F8E9F18983DB100AB6992 /* NSNetServices.m in Sources */,
+				F82F8EA018983DB100AB6992 /* NSNotification.m in Sources */,
+				F82F8EA118983DB100AB6992 /* NSNotificationCenter.m in Sources */,
+				F82F8EA218983DB100AB6992 /* NSNotificationQueue.m in Sources */,
+				F82F8EA318983DB100AB6992 /* NSNumber.m in Sources */,
+				F82F8EA418983DB100AB6992 /* NSNumberFormatter.m in Sources */,
+				F82F8EA518983DB100AB6992 /* NSObjCRuntime.m in Sources */,
+				F82F8EA618983DB100AB6992 /* NSOperation.m in Sources */,
+				F82F8EA718983DB100AB6992 /* NSOrthographyCheckingResult.m in Sources */,
+				F82F8EA818983DB100AB6992 /* NSPathStore.m in Sources */,
+				472583AE19074C0500BF7919 /* NSPredicateLexer.m in Sources */,
+				F82F8EA918983DB100AB6992 /* NSPathUtilities.m in Sources */,
+				F82F8EAA18983DB100AB6992 /* NSPhoneNumberCheckingResult.m in Sources */,
+				F82F8EAB18983DB100AB6992 /* NSPlatform.m in Sources */,
+				CA9CFB1E196B01760052AB98 /* NSTimeZone.m in Sources */,
+				F82F8EAC18983DB100AB6992 /* NSPointerArray.m in Sources */,
+				F82F8EAD18983DB100AB6992 /* NSPointerFunctions.m in Sources */,
+				F82F8EAE18983DB100AB6992 /* NSPort.m in Sources */,
+				F82F8EAF18983DB100AB6992 /* NSPredicate.m in Sources */,
+				F8E9E73918B53D2D0019643D /* NSProgress.m in Sources */,
+				F82F8EB018983DB100AB6992 /* NSPredicateOperator.m in Sources */,
+				F82F8EB118983DB100AB6992 /* NSProcessInfo.m in Sources */,
+				F82F8EB218983DB100AB6992 /* NSProxy.m in Sources */,
+				F82F8EB318983DB100AB6992 /* NSRange.m in Sources */,
+				F82F8EB418983DB100AB6992 /* NSRegularExpression.m in Sources */,
+				F82F8EB518983DB100AB6992 /* NSRegularExpressionCheckingResult.m in Sources */,
+				F82F8EB718983DB100AB6992 /* NSRunLoop.m in Sources */,
+				4787B2A119C11E9E00156B18 /* _NSFileIO.m in Sources */,
+				F82F8EB818983DB100AB6992 /* NSRunLoopModes.m in Sources */,
+				F82F8EB918983DB100AB6992 /* NSScanner.m in Sources */,
+				F82F8EBA18983DB100AB6992 /* NSSelfExpression.m in Sources */,
+				F82F8EBB18983DB100AB6992 /* NSSet.m in Sources */,
+				F82F8EBC18983DB100AB6992 /* NSSetExpression.m in Sources */,
+				F82F8EBD18983DB100AB6992 /* NSSortDescriptor.m in Sources */,
+				F82F8EBE18983DB100AB6992 /* NSSpellCheckingResult.m in Sources */,
+				F82F8EBF18983DB100AB6992 /* NSString.m in Sources */,
+				F82F8EC018983DB100AB6992 /* NSStringPredicateOperator.m in Sources */,
+				F82F8EC118983DB100AB6992 /* NSSubqueryExpression.m in Sources */,
+				F82F8EC218983DB100AB6992 /* NSSubstitutionCheckingResult.m in Sources */,
+				F82F8EC318983DB100AB6992 /* NSSubstringPredicateOperator.m in Sources */,
+				F82F8EC418983DB100AB6992 /* NSSymbolicExpression.m in Sources */,
+				F82F8EC518983DB100AB6992 /* NSTernaryExpression.m in Sources */,
+				F82F8EC618983DB100AB6992 /* NSTextCheckingResult.m in Sources */,
+				F82F8EC718983DB100AB6992 /* NSThread.m in Sources */,
+				F82F8EC818983DB100AB6992 /* NSTimer.m in Sources */,
+				F82F8EC918983DB100AB6992 /* NSTokenMatchingPredicateOperator.m in Sources */,
+				F82F8ECA18983DB100AB6992 /* NSTransitInformationCheckingResult.m in Sources */,
+				F82F8ECB18983DB100AB6992 /* NSTruePredicate.m in Sources */,
+				F82F8ECC18983DB100AB6992 /* NSUbiquitousKeyValueStore.m in Sources */,
+				F82F8ECD18983DB100AB6992 /* NSURL.m in Sources */,
+				F82F8ECE18983DB100AB6992 /* NSURLAuthenticationChallenge.m in Sources */,
+				F82F8ECF18983DB100AB6992 /* NSURLCache.m in Sources */,
+				F82F8ED018983DB100AB6992 /* NSURLConnection.m in Sources */,
+				F82F8ED118983DB100AB6992 /* NSURLCredential.m in Sources */,
+				F82F8ED218983DB100AB6992 /* NSURLCredentialStorage.m in Sources */,
+				F82F8ED318983DB100AB6992 /* NSURLError.m in Sources */,
+				F82F8ED418983DB100AB6992 /* NSURLProtectionSpace.m in Sources */,
+				F82F8ED518983DB100AB6992 /* NSURLProtocol.m in Sources */,
+				F82F8ED618983DB100AB6992 /* NSURLRequest.m in Sources */,
+				F82F8ED718983DB100AB6992 /* NSURLResponse.m in Sources */,
+				F82F8ED818983DB100AB6992 /* NSUserDefaults.m in Sources */,
+				F82F8ED918983DB100AB6992 /* NSUUID.m in Sources */,
+				F82F8EDA18983DB100AB6992 /* NSValue.m in Sources */,
+				F82F8EDB18983DB100AB6992 /* NSValueTransformer.m in Sources */,
+				F82F8EDC18983DB100AB6992 /* NSVariableAssignmentExpression.m in Sources */,
+				F82F8EDD18983DB100AB6992 /* NSVariableExpression.m in Sources */,
+				F82F8EDE18983DB100AB6992 /* NSXMLParser.m in Sources */,
+				F82F8EDF18983DB100AB6992 /* NSXPCCoder.m in Sources */,
+				F82F8EE018983DB100AB6992 /* NSZone.m in Sources */,
+				F82F8E5218983CBA00AB6992 /* NSDecimal.m in Sources */,
+				F82F8E5318983CBA00AB6992 /* NSKeyValueAccessor.m in Sources */,
+				F82F8E5418983CBA00AB6992 /* NSKeyValueChangeDictionary.m in Sources */,
+				F82F8E5518983CBA00AB6992 /* NSKeyValueCoding.m in Sources */,
+				F82F8E5618983CBA00AB6992 /* NSKeyValueCodingInternal.m in Sources */,
+				F82F8E5718983CBA00AB6992 /* NSKeyValueCollectionProxies.m in Sources */,
+				F82F8E5818983CBA00AB6992 /* NSKeyValueComputedProperty.m in Sources */,
+				F82F8E5918983CBA00AB6992 /* NSKeyValueContainerClass.m in Sources */,
+				F82F8E5A18983CBA00AB6992 /* NSKeyValueNestedProperty.m in Sources */,
+				F82F8E5B18983CBA00AB6992 /* NSKeyValueObservance.m in Sources */,
+				F82F8E5C18983CBA00AB6992 /* NSKeyValueObservationInfo.m in Sources */,
+				F82F8E5D18983CBA00AB6992 /* NSKeyValueObserving.m in Sources */,
+				F82F8E5E18983CBA00AB6992 /* NSKeyValueProperty.m in Sources */,
+				F82F8E5F18983CBA00AB6992 /* NSKeyValueUnnestedProperty.m in Sources */,
+				F82F8E6018983CBA00AB6992 /* NSAddressCheckingResult.m in Sources */,
+				F82F8E6118983CBA00AB6992 /* NSAggregateExpression.m in Sources */,
+				F82F8E6218983CBA00AB6992 /* NSAnyKeyExpression.m in Sources */,
+				F82F8E6318983CBA00AB6992 /* NSArchiver.m in Sources */,
+				F82F8E6418983CBA00AB6992 /* NSArray.m in Sources */,
+				F82F8E6518983CBA00AB6992 /* NSAttributedString.m in Sources */,
+				F82F8E6618983CBA00AB6992 /* NSAutoreleasePool.m in Sources */,
+				F82F8E6718983CBA00AB6992 /* NSBetweenPredicateOperator.m in Sources */,
+				F82F8E6818983CBA00AB6992 /* NSBlockExpression.m in Sources */,
+				F82F8E6918983CBA00AB6992 /* NSBlockPredicate.m in Sources */,
+				F82F8E6A18983CBA00AB6992 /* NSBOMEncoding.m in Sources */,
+				F82F8E6B18983CBA00AB6992 /* NSBundle.m in Sources */,
+				F82F8E6C18983CBA00AB6992 /* NSByteCountFormatter.m in Sources */,
+				F82F8E6D18983CBA00AB6992 /* NSCalendar.m in Sources */,
+				F82F8E6E18983CBA00AB6992 /* NSCoder.m in Sources */,
+				F82F8E6F18983CBA00AB6992 /* NSComparisonPredicate.m in Sources */,
+				F82F8E7018983CBA00AB6992 /* NSComparisonPredicateOperator.m in Sources */,
+				F82F8E7118983CBA00AB6992 /* NSCompoundPredicate.m in Sources */,
+				F82F8E7218983CBA00AB6992 /* NSCompoundPredicateOperator.m in Sources */,
+				F82F8E7318983CBA00AB6992 /* NSConstantValueExpression.m in Sources */,
+				F82F8E7418983CBA00AB6992 /* NSCustomPredicateOperator.m in Sources */,
+				F82F8E7518983CBA00AB6992 /* NSData.m in Sources */,
+				F82F8E7618983CBA00AB6992 /* NSDate.m in Sources */,
+				F82F8E7718983CBA00AB6992 /* NSDateCheckingResult.m in Sources */,
+				F82F8E7818983CBA00AB6992 /* NSDateFormatter.m in Sources */,
+				F82F8E7918983CBA00AB6992 /* NSDecimalNumber.m in Sources */,
+				F82F8E7A18983CBA00AB6992 /* NSDictionary.m in Sources */,
+				F82F8E7B18983CBA00AB6992 /* NSDirectoryEnumerator.m in Sources */,
+				F82F8E7C18983CBA00AB6992 /* NSEqualityPredicateOperator.m in Sources */,
+				472583AF19074C0500BF7919 /* NSPredicateParser.tab.c in Sources */,
+				F82F8E7D18983CBA00AB6992 /* NSException.m in Sources */,
+				F82F8E7E18983CBA00AB6992 /* NSExpression.m in Sources */,
+				F82F8E7F18983CBA00AB6992 /* NSExternals.m in Sources */,
+				F82F8E8018983CBA00AB6992 /* NSFalsePredicate.m in Sources */,
+				F82F8E8118983CBA00AB6992 /* NSFileAttributes.m in Sources */,
+				F82F8E8218983CBA00AB6992 /* NSFileCoordinator.m in Sources */,
+				F82F8E8318983CBA00AB6992 /* NSFileHandle.m in Sources */,
+				F82F8E8418983CBA00AB6992 /* NSFileManager.m in Sources */,
+				F82F8E8518983CBA00AB6992 /* NSFormatter.m in Sources */,
+				F82F8E8618983CBA00AB6992 /* NSFunctionExpression.m in Sources */,
+				F82F8E8718983CBA00AB6992 /* NSGrammarCheckingResult.m in Sources */,
+				F82F8E8818983CBA00AB6992 /* NSHashTable.m in Sources */,
+				F82F8E8918983CBA00AB6992 /* NSHTTPCookie.m in Sources */,
+				5BEE515118FCCB0D004CD7FD /* NSLocalizableString.m in Sources */,
+				F82F8E8A18983CBA00AB6992 /* NSHTTPCookieStorage.m in Sources */,
+				F82F8E8B18983CBA00AB6992 /* NSIndexPath.m in Sources */,
+				F82F8E8C18983CBA00AB6992 /* NSIndexSet.m in Sources */,
+				F82F8E8D18983CBA00AB6992 /* NSInPredicateOperator.m in Sources */,
+				F82F8E8E18983CBA00AB6992 /* NSJSONSerialization.m in Sources */,
+				F82F8E8F18983CBA00AB6992 /* NSKeyedArchiver.m in Sources */,
+				F82F8E9018983CBA00AB6992 /* NSKeyedUnarchiver.m in Sources */,
+				F82F8E9118983CBA00AB6992 /* NSKeyPathExpression.m in Sources */,
+				F82F8E9218983CBA00AB6992 /* NSKeyPathSpecifierExpression.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		F82F8D861898396500AB6992 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				F82F8D871898396500AB6992 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		DE83209E1885B24300EA34AE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CA244632191ADB75007250E2 /* ApportableSystemFramework.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = (
+					"-DINCLUDE_OBJC=1",
+					"-include",
+					CoreFoundation_Prefix.h,
+				);
+			};
+			name = Debug;
+		};
+		DE83209F1885B24300EA34AE /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CA244632191ADB75007250E2 /* ApportableSystemFramework.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				OTHER_CFLAGS = (
+					"-DINCLUDE_OBJC=1",
+					"-include",
+					CoreFoundation_Prefix.h,
+				);
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F82F8D8B1898396500AB6992 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DE6F6A68188DBFF30053DD9B /* ApportableSystem.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/dcf-fryntjbdcmpxowddvvrvxnslnoeg/Build/Products/Debug-android",
+				);
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"NSBUILDINGFOUNDATION=1",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../CoreFoundation/src",
+					"$(SRCROOT)/../CFNetwork/private_include",
+					"$(SRCROOT)/../v/src",
+					"$(SRCROOT)/include",
+				);
+				INFOPLIST_FILE = "Foundation/Foundation-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/dcf-ewktdhwazjkaorcxnjorcqjmmdrx/Build/Products/Debug-iphoneos",
+					"$(SDKROOT)/usr/lib/armv7a",
+				);
+				MACH_O_TYPE = mh_dylib;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lv",
+					"-lSystem",
+					"-licu",
+					"-lxml2",
+					"-upward-framework,CoreFoundation",
+					"-upward-framework,Security",
+					"-upward-framework,SystemConfiguration",
+					"-upward-framework,CFNetwork",
+				);
+				PUBLIC_HEADERS_FOLDER_PATH = "$(WRAPPER_NAME)/Headers";
+				STRIP_STYLE = all;
+			};
+			name = Debug;
+		};
+		F82F8D8C1898396500AB6992 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CAA988DF1975BC2600E0CBA2 /* ApportableSystemRelease.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/dcf-fryntjbdcmpxowddvvrvxnslnoeg/Build/Products/Debug-android",
+				);
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = "NSBUILDINGFOUNDATION=1";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../CoreFoundation/src",
+					"$(SRCROOT)/../CFNetwork/private_include",
+					"$(SRCROOT)/../v/src",
+					"$(SRCROOT)/include",
+				);
+				INFOPLIST_FILE = "Foundation/Foundation-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/dcf-ewktdhwazjkaorcxnjorcqjmmdrx/Build/Products/Debug-iphoneos",
+					"$(SDKROOT)/usr/lib/armv7a",
+				);
+				MACH_O_TYPE = mh_dylib;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lv",
+					"-lSystem",
+					"-licu",
+					"-lxml2",
+					"-upward-framework,CoreFoundation",
+					"-upward-framework,Security",
+					"-upward-framework,SystemConfiguration",
+					"-upward-framework,CFNetwork",
+				);
+				PUBLIC_HEADERS_FOLDER_PATH = "$(WRAPPER_NAME)/Headers";
+				STRIP_STYLE = all;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DE8320781885B24300EA34AE /* Build configuration list for PBXProject "Foundation" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE83209E1885B24300EA34AE /* Debug */,
+				DE83209F1885B24300EA34AE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F82F8D8A1898396500AB6992 /* Build configuration list for PBXNativeTarget "Foundation" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F82F8D8B1898396500AB6992 /* Debug */,
+				F82F8D8C1898396500AB6992 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DE8320751885B24300EA34AE /* Project object */;
+}
