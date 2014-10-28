@@ -978,8 +978,6 @@ static void requeueConnection(CFURLConnectionRef connection) {
     pthread_mutex_lock(&managerLock);
     CFArrayInsertValueAtIndex(enqueuedConnections, 0, connection);
     pthread_mutex_unlock(&managerLock);
-    CFRunLoopSourceSignal(managerSource);
-    CFRunLoopWakeUp(managerLoop);
 }
 
 static CFURLConnectionRef CF_RETURNS_RETAINED dequeueConnection() {
@@ -1044,6 +1042,7 @@ static void updateQueue(void *ctx) {
             OSSpinLockLock(&queue_lock);
             for (int i = 0; i < NUM_QUEUES; i++) {
                 if (activeConnections[i] == NULL) {
+                    // dequeueConnection returns retained, so we don't retain here
                     activeConnections[i] = connection;
                     found = i;
                     break;
@@ -1054,6 +1053,8 @@ static void updateQueue(void *ctx) {
                 openConnection(connection);
             } else {
                 requeueConnection(connection);
+                // dequeueConnection returns retained, so release here
+                CFRelease(connection);
                 break;
             }
         } else {
