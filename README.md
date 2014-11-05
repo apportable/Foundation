@@ -31,7 +31,7 @@ Building and running ApportableFoundation depend upon lower level include files 
 
 - Early versions of the SpriteBuilder Android plugin are [missing Xcode templates](https://github.com/spritebuilder/SpriteBuilder/issues/1002).
 	- Check: 
-		- *ls -l ~/Library/Developer/Xcode/Templates/Project\ Templates/Application/JNI\ Application.xctemplate*
+		- *ls -l /Library/SBAndroid/Developer/Xcode/Templates/Project\ Templates/Application/JNI\ Application.xctemplate*
 	- If it doesn't exist: 
 		- *cp -r XcodeTemplates/JNI\ Application.xctemplate ~/Library/Developer/Xcode/Templates/Project\ Templates/Application*
 
@@ -44,9 +44,9 @@ Before building this repo, back up the installed version of the module you plan 
 For example:
 
 - mkdir backup
-- cp -rp ~/"Library/Application Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks/Foundation.framework" backup
-- cp -rp ~/"Library/Application Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks/CoreFoundation.framework" backup
-- cp -rp ~/"Library/Application Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks/CFNetwork.framework" backup
+- cp -rp /"Library/SBAndroid/Application Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks/Foundation.framework" backup
+- cp -rp /"Library/SBAndroid/Application Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks/CoreFoundation.framework" backup
+- cp -rp /"Library/SBAndroid/Application Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks/CFNetwork.framework" backup
 
 Xcode Build
 ----------------
@@ -55,6 +55,8 @@ To Build Foundation:
 
 - Open System/Foundation/Foundation.xcodeproj
 - Click the Build arrow in Xcode
+- sudo rm -rf  "/Library/SBAndroid/Application Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks/Foundation.framework"
+- sudo cp -rp ~/Library/Application\ Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks/Foundation.framework "/Library/SBAndroid/Application Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks"/
 
 Similar for CoreFoundation and CFNetwork.
 
@@ -67,6 +69,8 @@ Command Line Build
 - cd System/Foundation
 - xcodebuild -config Debug 
 - or xcodebuild -config Release
+- sudo rm -rf  "/Library/SBAndroid/Application Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks/Foundation.framework"
+- sudo cp -rp ~/Library/Application\ Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks/Foundation.framework "/Library/SBAndroid/Application Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks"/
 
 Similar for CoreFoundation and CFNetwork.
 

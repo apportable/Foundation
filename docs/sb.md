@@ -21,6 +21,9 @@ Requirements:
 * Note that the Foundation shared library has an updated timestamp
 	* ls -l ~/Library/Application\ Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks/Foundation.framework/Foundation/armv7a-neon/libFoundation.so
 
+* sudo rm -rf  "/Library/SBAndroid/Application Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks/Foundation.framework"
+* sudo cp -rp ~/Library/Application\ Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks/Foundation.framework "/Library/SBAndroid/Application Support/Developer/Shared/Xcode/Platforms/Android.platform/Developer/SDKs/SBAndroid0.9.sdk/System/Library/Frameworks"/
+
 ![My text](images/sb/ls.png)
 
 * Open ~/Documents/Dummy/Dummy.xcodeproj
