@@ -34,12 +34,14 @@
 /* End ExternalPBXTargetDependency section */
 
 /* Begin PBXBuildFile section */
+		3F3EE9BD1A117EA000DEE62B /* _DebugUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F3EE9BB1A117EA000DEE62B /* _DebugUtils.m */; };
 		472583AE19074C0500BF7919 /* NSPredicateLexer.m in Sources */ = {isa = PBXBuildFile; fileRef = 472583AC19074C0500BF7919 /* NSPredicateLexer.m */; };
 		472583AF19074C0500BF7919 /* NSPredicateParser.tab.c in Sources */ = {isa = PBXBuildFile; fileRef = 472583AD19074C0500BF7919 /* NSPredicateParser.tab.c */; };
 		4787B2A019C11E9E00156B18 /* _NSFileIO.h in Headers */ = {isa = PBXBuildFile; fileRef = 4787B29E19C11E9E00156B18 /* _NSFileIO.h */; };
 		4787B2A119C11E9E00156B18 /* _NSFileIO.m in Sources */ = {isa = PBXBuildFile; fileRef = 4787B29F19C11E9E00156B18 /* _NSFileIO.m */; };
 		5BEE515018FCCB0D004CD7FD /* NSLocalizableString.h in Headers */ = {isa = PBXBuildFile; fileRef = 5BEE514E18FCCB0D004CD7FD /* NSLocalizableString.h */; };
 		5BEE515118FCCB0D004CD7FD /* NSLocalizableString.m in Sources */ = {isa = PBXBuildFile; fileRef = 5BEE514F18FCCB0D004CD7FD /* NSLocalizableString.m */; };
+		7D6FE2C31A03011100051A1E /* NSObjectInternal.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D6FE2C21A03011100051A1E /* NSObjectInternal.m */; };
 		CA4DEE41198172BA00B5A9EC /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA4DEE3E198172BA00B5A9EC /* Security.framework */; };
 		CA4DEE44198172D300B5A9EC /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA4DEE42198172D300B5A9EC /* CFNetwork.framework */; };
 		CA4DEE45198172D300B5A9EC /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA4DEE43198172D300B5A9EC /* CoreFoundation.framework */; };
@@ -289,12 +291,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3F3EE9BB1A117EA000DEE62B /* _DebugUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = _DebugUtils.m; sourceTree = "<group>"; };
 		472583AC19074C0500BF7919 /* NSPredicateLexer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPredicateLexer.m; sourceTree = "<group>"; };
 		472583AD19074C0500BF7919 /* NSPredicateParser.tab.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; fileEncoding = 4; path = NSPredicateParser.tab.c; sourceTree = "<group>"; };
 		4787B29E19C11E9E00156B18 /* _NSFileIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = _NSFileIO.h; sourceTree = "<group>"; };
 		4787B29F19C11E9E00156B18 /* _NSFileIO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = _NSFileIO.m; sourceTree = "<group>"; };
 		5BEE514E18FCCB0D004CD7FD /* NSLocalizableString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSLocalizableString.h; sourceTree = "<group>"; };
 		5BEE514F18FCCB0D004CD7FD /* NSLocalizableString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSLocalizableString.m; sourceTree = "<group>"; };
+		7D6FE2C21A03011100051A1E /* NSObjectInternal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSObjectInternal.m; sourceTree = "<group>"; };
 		CA244632191ADB75007250E2 /* ApportableSystemFramework.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = ApportableSystemFramework.xcconfig; path = ../ApportableSystemFramework.xcconfig; sourceTree = "<group>"; };
 		CA4DEE3E198172BA00B5A9EC /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		CA4DEE42198172D300B5A9EC /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
@@ -643,6 +647,7 @@
 		DE6F68E0188DBFE30053DD9B /* src */ = {
 			isa = PBXGroup;
 			children = (
+				7D6FE2C21A03011100051A1E /* NSObjectInternal.m */,
 				4787B29E19C11E9E00156B18 /* _NSFileIO.h */,
 				4787B29F19C11E9E00156B18 /* _NSFileIO.m */,
 				F8E9E73818B53D2D0019643D /* NSProgress.m */,
@@ -869,6 +874,7 @@
 				DE6F6901188DBFE30053DD9B /* NSKeyValueProperty.m */,
 				DE6F6902188DBFE30053DD9B /* NSKeyValueUnnestedProperty.h */,
 				DE6F6903188DBFE30053DD9B /* NSKeyValueUnnestedProperty.m */,
+				3F3EE9BB1A117EA000DEE62B /* _DebugUtils.m */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -1258,6 +1264,7 @@
 				F82F8EC618983DB100AB6992 /* NSTextCheckingResult.m in Sources */,
 				F82F8EC718983DB100AB6992 /* NSThread.m in Sources */,
 				F82F8EC818983DB100AB6992 /* NSTimer.m in Sources */,
+				3F3EE9BD1A117EA000DEE62B /* _DebugUtils.m in Sources */,
 				F82F8EC918983DB100AB6992 /* NSTokenMatchingPredicateOperator.m in Sources */,
 				F82F8ECA18983DB100AB6992 /* NSTransitInformationCheckingResult.m in Sources */,
 				F82F8ECB18983DB100AB6992 /* NSTruePredicate.m in Sources */,
@@ -1288,6 +1295,7 @@
 				F82F8E5518983CBA00AB6992 /* NSKeyValueCoding.m in Sources */,
 				F82F8E5618983CBA00AB6992 /* NSKeyValueCodingInternal.m in Sources */,
 				F82F8E5718983CBA00AB6992 /* NSKeyValueCollectionProxies.m in Sources */,
+				7D6FE2C31A03011100051A1E /* NSObjectInternal.m in Sources */,
 				F82F8E5818983CBA00AB6992 /* NSKeyValueComputedProperty.m in Sources */,
 				F82F8E5918983CBA00AB6992 /* NSKeyValueContainerClass.m in Sources */,
 				F82F8E5A18983CBA00AB6992 /* NSKeyValueNestedProperty.m in Sources */,

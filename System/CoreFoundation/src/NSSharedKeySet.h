@@ -4,14 +4,7 @@
 
 @interface NSSharedKeySet : NSObject <NSFastEnumeration, NSCopying, NSCoding>
 {
-    char *_g;
-    unsigned char _select;
-    void *_rankTable;
-    double _c;
-    unsigned int _M;
-    unsigned int _factor;
     NSUInteger _numKey;
-    unsigned int _seeds[2];
     id *_keys;
     NSSharedKeySet *_subSharedKeySet;
 }

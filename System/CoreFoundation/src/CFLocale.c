@@ -389,6 +389,10 @@ CFLocaleRef CFLocaleCopyCurrent(void) {
     return _CFLocaleCopyCurrentGuts(NULL, true, NULL);
 }
 
+CFLocaleRef CFLocaleCopyFromName(CFStringRef localeName) {
+    return _CFLocaleCopyCurrentGuts(localeName, true, NULL);
+}
+
 CF_PRIVATE CFDictionaryRef __CFLocaleGetPrefs(CFLocaleRef locale) {
     CF_OBJC_FUNCDISPATCHV(CFLocaleGetTypeID(), CFDictionaryRef, (NSLocale *)locale, _prefs);
     return locale->_prefs;

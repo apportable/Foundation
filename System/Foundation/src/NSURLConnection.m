@@ -25,10 +25,10 @@
 #import "NSURLRequestInternal.h"
 #import "NSURLResponseInternal.h"
 #import "NSURLCacheInternal.h"
+#import "NSObjectInternal.h"
 #import <CFNetwork/CFURLConnection.h>
 #import <CoreFoundation/CFData.h>
 #import <Foundation/NSURLError.h>
-
 
 @implementation NSURLConnectionInternal
 
@@ -47,12 +47,11 @@
 
 static Boolean canAuth(const void *info, CFURLProtectionSpaceRef cfspace)
 {
-    NSURLConnectionInternal *connectionInternal = (NSURLConnectionInternal *)info;
-    if (![connectionInternal isConnectionActive])
-    {
+    NSURLConnectionInternal *connectionInternal = [(_NSWeakRef *)info object];
+    if (!connectionInternal || ![connectionInternal isConnectionActive]) {
         return false;
     }
-    
+
     NSURLProtectionSpace *space = [[NSURLProtectionSpace alloc] _initWithCFURLProtectionSpace:cfspace];
     __block Boolean canAuth = false;
     void (^canAuthBlock)(void) = ^{
@@ -72,12 +71,11 @@ static Boolean canAuth(const void *info, CFURLProtectionSpaceRef cfspace)
 
 static void cancelledAuthChallenge(const void *info, CFURLAuthChallengeRef cfchallenge)
 {
-    NSURLConnectionInternal *connectionInternal = (NSURLConnectionInternal *)info;
-    if (![connectionInternal isConnectionActive])
-    {
+    NSURLConnectionInternal *connectionInternal = [(_NSWeakRef *)info object];
+    if (!connectionInternal || ![connectionInternal isConnectionActive]) {
         return;
     }
-    
+
     NSURLAuthenticationChallenge *challenge = [[NSURLAuthenticationChallenge alloc] _initWithCFAuthChallenge:cfchallenge sender:connectionInternal];
     void (^cancelBlock)(void) = ^{
         [connectionInternal->_delegate connection:connectionInternal->_connection didCancelAuthenticationChallenge:challenge];
@@ -92,12 +90,11 @@ static void cancelledAuthChallenge(const void *info, CFURLAuthChallengeRef cfcha
 
 static void failed(const void *info, CFErrorRef cferror)
 {
-    NSURLConnectionInternal *connectionInternal = (NSURLConnectionInternal *)info;
-    if (![connectionInternal isConnectionActive])
-    {
+    NSURLConnectionInternal *connectionInternal = [(_NSWeakRef *)info object];
+    if (!connectionInternal || ![connectionInternal isConnectionActive]) {
         return;
     }
-    
+
     NSError *error = (NSError *)cferror;
     void (^failBlock)(void) = ^{
         [connectionInternal->_delegate connection:connectionInternal->_connection didFailWithError:error];
@@ -116,12 +113,11 @@ static void failed(const void *info, CFErrorRef cferror)
 
 static void receivedAuthChallenge(const void *info, CFURLAuthChallengeRef cfchallenge)
 {
-    NSURLConnectionInternal *connectionInternal = (NSURLConnectionInternal *)info;
-    if (![connectionInternal isConnectionActive])
-    {
+    NSURLConnectionInternal *connectionInternal = [(_NSWeakRef *)info object];
+    if (!connectionInternal || ![connectionInternal isConnectionActive]) {
         return;
     }
-    
+
     NSURLAuthenticationChallenge *challenge = [[NSURLAuthenticationChallenge alloc] _initWithCFAuthChallenge:cfchallenge sender:connectionInternal];
     void (^receiveBlock)(void) = ^{
         [connectionInternal->_delegate connection:connectionInternal->_connection didReceiveAuthenticationChallenge:challenge];
@@ -136,12 +132,11 @@ static void receivedAuthChallenge(const void *info, CFURLAuthChallengeRef cfchal
 
 static void sendRequestForAuthChallenge(const void *info, CFURLAuthChallengeRef cfchallenge)
 {
-    NSURLConnectionInternal *connectionInternal = (NSURLConnectionInternal *)info;
-    if (![connectionInternal isConnectionActive])
-    {
+    NSURLConnectionInternal *connectionInternal = [(_NSWeakRef *)info object];
+    if (!connectionInternal || ![connectionInternal isConnectionActive]) {
         return;
     }
-    
+
     NSURLAuthenticationChallenge *challenge = [[NSURLAuthenticationChallenge alloc] _initWithCFAuthChallenge:cfchallenge sender:connectionInternal];
     void (^sendBlock)(void) = ^{
         [connectionInternal->_delegate connection:connectionInternal->_connection willSendRequestForAuthenticationChallenge:challenge];
@@ -156,12 +151,11 @@ static void sendRequestForAuthChallenge(const void *info, CFURLAuthChallengeRef 
 
 static Boolean useCredentialStorage(const void *info)
 {
-    NSURLConnectionInternal *connectionInternal = (NSURLConnectionInternal *)info;
-    if (![connectionInternal isConnectionActive])
-    {
+    NSURLConnectionInternal *connectionInternal = [(_NSWeakRef *)info object];
+    if (!connectionInternal || ![connectionInternal isConnectionActive]) {
         return false;
     }
-    
+
     __block Boolean useStorage = false;
     void (^storeBlock)(void) = ^{
         BOOL store = [connectionInternal->_delegate connectionShouldUseCredentialStorage:connectionInternal->_connection];
@@ -178,12 +172,11 @@ static Boolean useCredentialStorage(const void *info)
 }
 
 static CFURLRequestRef redirect(const void *info, CFURLRequestRef request, CFURLResponseRef response) {
-    NSURLConnectionInternal *connectionInternal = (NSURLConnectionInternal *)info;
-    if (![connectionInternal isConnectionActive])
-    {
+    NSURLConnectionInternal *connectionInternal = [(_NSWeakRef *)info object];
+    if (!connectionInternal || ![connectionInternal isConnectionActive]) {
         return NULL;
     }
-    
+
     __block NSURLRequest *redirection = nil;
     void (^redirectBlock)(void) = ^{
         @autoreleasepool {
@@ -213,9 +206,8 @@ static CFURLRequestRef redirect(const void *info, CFURLRequestRef request, CFURL
 }
 
 static void response(const void *info, CFURLResponseRef response) {
-    NSURLConnectionInternal *connectionInternal = (NSURLConnectionInternal *)info;
-    if (![connectionInternal isConnectionActive])
-    {
+    NSURLConnectionInternal *connectionInternal = [(_NSWeakRef *)info object];
+    if (!connectionInternal || ![connectionInternal isConnectionActive]) {
         return;
     }
 
@@ -234,12 +226,11 @@ static void response(const void *info, CFURLResponseRef response) {
 
 static void data(const void *info, CFDataRef cfdata) {
     NSData *data = (NSData *)cfdata;
-    NSURLConnectionInternal *connectionInternal = (NSURLConnectionInternal *)info;
-    if (![connectionInternal isConnectionActive])
-    {
+    NSURLConnectionInternal *connectionInternal = [(_NSWeakRef *)info object];
+    if (!connectionInternal || ![connectionInternal isConnectionActive]) {
         return;
     }
-    
+
     void (^dataBlock)(void) = ^{
         [connectionInternal->_delegate connection:connectionInternal->_connection didReceiveData:(NSData *)data];
     };
@@ -251,12 +242,11 @@ static void data(const void *info, CFDataRef cfdata) {
 }
 
 static CFReadStreamRef newBodyStream(const void *info, CFURLRequestRef request) {
-    NSURLConnectionInternal *connectionInternal = (NSURLConnectionInternal *)info;
-    if (![connectionInternal isConnectionActive])
-    {
+    NSURLConnectionInternal *connectionInternal = [(_NSWeakRef *)info object];
+    if (!connectionInternal || ![connectionInternal isConnectionActive]) {
         return NULL;
     }
-    
+
     __block CFReadStreamRef stream = nil;
     NSURLRequest *urlRequest = [[NSURLRequest alloc] _initWithCFURLRequest:request];
     void (^newBodyStreamBlock)(void) = ^{
@@ -275,22 +265,22 @@ static CFReadStreamRef newBodyStream(const void *info, CFURLRequestRef request) 
 
 static Boolean handledByProtocol(const void *info)
 {
-    NSURLConnectionInternal *connectionInternal = (NSURLConnectionInternal *)info;
-    if (connectionInternal->_protocol) {
-        [connectionInternal->_protocol startLoading];
-        [connectionInternal->_protocol stopLoading];
-        return true;
+    NSURLConnectionInternal *connectionInternal = [(_NSWeakRef *)info object];
+    if (!connectionInternal || !connectionInternal->_protocol) {
+        return false;
     }
-    return false;
+
+    [connectionInternal->_protocol startLoading];
+    [connectionInternal->_protocol stopLoading];
+    return true;
 }
 
 static void sent(const void *info, CFIndex bytesWritten, CFIndex totalBytesWritten, CFIndex totalBytesExpectedToWrite) {
-    NSURLConnectionInternal *connectionInternal = (NSURLConnectionInternal *)info;
-    if (![connectionInternal isConnectionActive])
-    {
+    NSURLConnectionInternal *connectionInternal = [(_NSWeakRef *)info object];
+    if (!connectionInternal || ![connectionInternal isConnectionActive]) {
         return;
     }
-    
+
     void (^sentBlock)(void) = ^{
         [connectionInternal->_delegate connection:connectionInternal->_connection didSendBodyData:(NSInteger)bytesWritten totalBytesWritten:(NSInteger)totalBytesWritten totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite];
     };
@@ -302,25 +292,26 @@ static void sent(const void *info, CFIndex bytesWritten, CFIndex totalBytesWritt
 }
 
 static void finished(const void *info) {
-    NSURLConnectionInternal *connectionInternal = (NSURLConnectionInternal *)info;
-    if ([connectionInternal isConnectionActive])
-    {
-        void (^finishedBlock)(void) = ^{
-            [connectionInternal->_delegate connectionDidFinishLoading:connectionInternal->_connection];
-        };
-        if (connectionInternal->_delegateQueue == nil) {
-            finishedBlock();
-        } else {
-            [connectionInternal->_delegateQueue addOperationWithBlock:finishedBlock];
-        }
+    NSURLConnectionInternal *connectionInternal = [(_NSWeakRef *)info object];
+    if (!connectionInternal || ![connectionInternal isConnectionActive]) {
+        return;
+    }
+
+    void (^finishedBlock)(void) = ^{
+        [connectionInternal->_delegate connectionDidFinishLoading:connectionInternal->_connection];
+    };
+    if (connectionInternal->_delegateQueue == nil) {
+        finishedBlock();
+    } else {
+        [connectionInternal->_delegateQueue addOperationWithBlock:finishedBlock];
     }
 
     [connectionInternal _invalidate];
 }
 
 static CFCachedURLResponseRef cache(const void *info, CFCachedURLResponseRef cachedResponse) {
-    NSURLConnectionInternal *connectionInternal = (NSURLConnectionInternal *)info;
-    if (![connectionInternal isConnectionActive]) {
+    NSURLConnectionInternal *connectionInternal = [(_NSWeakRef *)info object];
+    if (!connectionInternal || ![connectionInternal isConnectionActive]) {
         return NULL;
     }
 
@@ -384,8 +375,11 @@ static CFCachedURLResponseRef cache(const void *info, CFCachedURLResponseRef cac
         }
 
         _cfurlconnection = CFURLConnectionCreate(kCFAllocatorDefault, [_originalRequest _CFURLRequest], &ctx);
-        CFURLConnectionHandlerContext handler = {0};
-        handler.info = self;
+        CFURLConnectionHandlerContext handler = {
+            .info = [[[_NSWeakRef alloc] initWithObject:self] autorelease],
+            .retain = &CFRetain,
+            .release = &CFRelease
+        };
         if ([_delegate respondsToSelector:@selector(connection:willSendRequest:redirectResponse:)])
         {
             handler.redirect = &redirect;
@@ -415,10 +409,10 @@ static CFCachedURLResponseRef cache(const void *info, CFCachedURLResponseRef cac
             handler.cache = &cache;
         }
 
-        NSCachedURLResponse *cachedResponse = [[NSURLCache sharedURLCache] cachedResponseForRequest:_originalRequest];
         NSArray *registeredProtocols = [NSURLProtocol _registeredClasses];
         for (Class protocolClass in registeredProtocols) {
             if ([protocolClass canInitWithRequest:_originalRequest]) {
+                NSCachedURLResponse *cachedResponse = [[NSURLCache sharedURLCache] cachedResponseForRequest:_originalRequest];
                 NSURLRequest *requestForProtocol = [protocolClass canonicalRequestForRequest:_originalRequest];
                 NSURLProtocolDefaultClient *client = [[NSURLProtocolDefaultClient alloc] init];
                 client.connection = _connection;
@@ -457,6 +451,7 @@ static CFCachedURLResponseRef cache(const void *info, CFCachedURLResponseRef cac
             _connectionActive = NO;
             [_delegate autorelease];
             [_connection release];
+            _connection = nil;
             [self autorelease];
         }
     }
@@ -494,8 +489,7 @@ static CFCachedURLResponseRef cache(const void *info, CFCachedURLResponseRef cac
 
 - (void)start
 {
-    if (!_connectionActive)
-    {
+    if (!_connectionActive && _connection) {
         _connectionActive = YES;
         _delegate = [_delegate retain];
         _connection = [_connection retain];

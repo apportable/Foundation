@@ -22,6 +22,14 @@
 #include <zlib.h>
 #include <pthread.h>
 #include "CFHTTPCookieStorage.h"
+#include "CFRuntimeUtils.h"
+
+#ifndef NDEBUG
+#define CACHE_LOG_ENABLED
+#define CACHE_LOG(format, arguments...) debugLog("CACHE-DBG", format, ##arguments)
+#else
+#define CACHE_LOG(format, arguments...)
+#endif
 
 // https://devforums.apple.com/message/108292#108292
 #define CFURLREQUEST_MIN_TIMEOUT 240.0
@@ -31,7 +39,7 @@ static const CFStringRef ErrorDomain = CFSTR("NSURLErrorDomain");
 static const CFIndex kCFURLConnectionRedirectRetryMax = 10;
 
 #define RUNLOOP_WAIT        0.25
-#define NUM_QUEUES          4
+#define NUM_QUEUES          16
 
 // Timeout between readStreamEvent gets notified on certain stream.
 #define SCHEDULE_EVENT_TIMEOUT 10.0
@@ -81,57 +89,38 @@ enum {
 typedef CFIndex ConnectionEventType;
 
 typedef struct {
+    CFRuntimeBase _base;
     ConnectionEventType type;
     CFTypeRef payload;
 } ConnectionEvent;
 
-static const void *connectionEventRetain(CFAllocatorRef allocator, const void *value) {
-    ConnectionEvent *event = (ConnectionEvent *)value;
-    if (event->payload) {
-        CFRetain(event->payload);
-    }
-    return event;
-}
-
-static void connectionEventRelease(CFAllocatorRef allocator, const void *value) {
-    ConnectionEvent *event = (ConnectionEvent *)value;
+static void connectionEventDeallocate(CFTypeRef cf) {
+    ConnectionEvent *event = (ConnectionEvent *)cf;
     if (event->payload) {
         CFRelease(event->payload);
     }
 }
 
-static Boolean connectionEventEqual(const void *value1, const void *value2) {
-    ConnectionEvent *event1 = (ConnectionEvent *)value1;
-    ConnectionEvent *event2 = (ConnectionEvent *)value2;
+static const CFRuntimeClass connectionEventClass = {
+    .version = 0,
+    .className = "CFURLConnectionEvent",
+    .finalize = &connectionEventDeallocate
+};
+static CFTypeID connectionEventTypeID = _kCFRuntimeNotATypeID;
 
-    if (event1 == event2) {
-        return true;
-    }
-    if (!event1 || !event2) {
-        return false;
-    }
-    if (event1->type != event2->type) {
-        return false;
-    }
-    if (event1->payload && event2->payload && !CFEqual(event1->payload, event2->payload)) {
-        return false;
-    }
-    if (!event1->payload || !event2->payload) {
-        return false;
-    }
-    return true;
-}
-
-static ConnectionEvent* connectionEventAllocate(ConnectionEventType type, CFTypeRef payload) {
-    ConnectionEvent *event = (ConnectionEvent *)CFAllocatorAllocate(
-        kCFAllocatorDefault, sizeof(ConnectionEvent), 0);
+static ConnectionEvent *connectionEventAllocate(ConnectionEventType type, CFTypeRef payload) {
+    _CFRuntimeRegisterClassOnce(&connectionEventTypeID, &connectionEventClass);
+    CFIndex size = sizeof(ConnectionEvent) - sizeof(CFRuntimeBase);
+    ConnectionEvent *event = (ConnectionEvent *)_CFRuntimeCreateInstance(
+        kCFAllocatorDefault,
+        connectionEventTypeID,
+        size,
+        NULL);
     event->type = type;
-    event->payload = payload;
+    if (payload) {
+        event->payload = CFRetain(payload);
+    }
     return event;
-}
-
-static void connectionEventDeallocate(ConnectionEvent *event) {
-    CFAllocatorDeallocate(kCFAllocatorDefault, event);
 }
 
 typedef enum {
@@ -153,7 +142,6 @@ struct _CFURLConnection {
     Boolean finished;
 
     CFHTTPMessageRef message;
-    CFURLRequestRef original;
     CFURLRequestRef request;
     CFIndex redirectCycleCount;
     CFReadStreamRef stream;
@@ -193,11 +181,6 @@ static void __CFURLConnectionDeallocate(CFTypeRef cf) {
         connection->request = NULL;
     }
 
-    if (connection->original != NULL) {
-        CFRelease(connection->original);
-        connection->original = NULL;
-    }
-
     if (connection->stream != NULL) {
         CFRelease(connection->stream);
         connection->stream = NULL;
@@ -224,11 +207,6 @@ static void __CFURLConnectionDeallocate(CFTypeRef cf) {
     }
 
     if (connection->events != NULL) {
-        while (CFArrayGetCount(connection->events)) {
-            ConnectionEvent *event = (ConnectionEvent *)CFArrayGetValueAtIndex(connection->events, 0);
-            CFArrayRemoveValueAtIndex(connection->events, 0);
-            connectionEventDeallocate(event);
-        }
         CFRelease(connection->events);
         connection->events = NULL;
     }
@@ -376,14 +354,11 @@ static void queueConnectionEvent(struct _CFURLConnection *connection,
 
     OSSpinLockLock(&connection->eventsLock);
     if (!connection->events) {
-        connection->events = CFArrayCreateMutable(kCFAllocatorDefault, 0, &(CFArrayCallBacks){
-            .version = 0,
-            .retain = &connectionEventRetain,
-            .release = &connectionEventRelease,
-            .equal = &connectionEventEqual
-        });
+        connection->events = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
     }
-    CFArrayAppendValue(connection->events, connectionEventAllocate(type, payload));
+    ConnectionEvent *event = connectionEventAllocate(type, payload);
+    CFArrayAppendValue(connection->events, event);
+    CFRelease(event);
     OSSpinLockUnlock(&connection->eventsLock);
 
     CFRunLoopSourceSignal(connection->source);
@@ -418,17 +393,11 @@ static ConnectionEvent *dequeueConnectionEvent(struct _CFURLConnection *connecti
     ConnectionEvent *event = NULL;
     OSSpinLockLock(&connection->eventsLock);
     if (CFArrayGetCount(connection->events)) {
-        event = (ConnectionEvent *)CFArrayGetValueAtIndex(connection->events, 0);
-        connectionEventRetain(kCFAllocatorDefault, event);
+        event = (ConnectionEvent *)CFRetain(CFArrayGetValueAtIndex(connection->events, 0));
         CFArrayRemoveValueAtIndex(connection->events, 0);
     }
     OSSpinLockUnlock(&connection->eventsLock);
     return event;
-}
-
-static void disposeConnectionEvent(ConnectionEvent *event) {
-    connectionEventRelease(kCFAllocatorDefault, event);
-    CFAllocatorDeallocate(kCFAllocatorDefault, event);
 }
 
 static void connectionGotResponse(struct _CFURLConnection * connection, CFURLResponseRef response) {
@@ -546,11 +515,7 @@ static void readStreamEvent(CFReadStreamRef stream, CFStreamEventType type, void
                             return;
                         }
                         else {
-                            if (connection->original == NULL) {
-                                connection->original = CFRetain(connection->request);
-                            }
-
-                            CFRelease(connection->request);
+                            CFURLRequestRef originalRequest = connection->request;
 
                             CFURLRef redirectURL = CFURLCreateWithString(kCFAllocatorDefault, redirect_location, NULL);
                             if (CFURLGetByteRangeForComponent(redirectURL, kCFURLComponentNetLocation, NULL).location == kCFNotFound) {
@@ -596,8 +561,8 @@ static void readStreamEvent(CFReadStreamRef stream, CFStreamEventType type, void
                                 }
                             }
 
-                            CFMutableURLRequestRef redirectRequest = CFURLRequestCreateMutableCopy(kCFAllocatorDefault, connection->original);
-                            CFURLRequestSetURL(redirectRequest, redirectURL);
+                            CFMutableURLRequestRef redirectRequest = (CFMutableURLRequestRef)CFURLRequestCreate(kCFAllocatorDefault, redirectURL, CFURLRequestGetCachePolicy(originalRequest), CFURLRequestGetTimeout(originalRequest));
+                            CFRelease(connection->request);
                             CFRelease(redirectURL);
 
                             connection->request = redirectRequest;
@@ -682,10 +647,6 @@ static void readStreamEvent(CFReadStreamRef stream, CFStreamEventType type, void
         case kCFStreamEventOpenCompleted:
             break;
         case kCFStreamEventHasBytesAvailable: {
-            // Unschedule and then reschedule the stream, so that other streams in the queue can be scheduled in the next loop.
-            CFReadStreamUnscheduleFromRunLoop(stream, managerLoop, kCFRunLoopCommonModes);
-            CFReadStreamScheduleWithRunLoop(stream, managerLoop, kCFRunLoopCommonModes);
-
             CFDataRef data = NULL;
 
             CFIndex length = 0;
@@ -774,7 +735,6 @@ CFURLConnectionRef CFURLConnectionCreate(CFAllocatorRef allocator, CFURLRequestR
     connection->source = NULL;
     connection->error = NULL;
     connection->response = NULL;
-    connection->original = NULL;
     connection->eventsLock = OS_SPINLOCK_INIT;
     connection->runLoop = NULL;
     connection->handler = (CFURLConnectionHandlerContext){0};
@@ -878,9 +838,14 @@ static void connectionSourcePerform(struct _CFURLConnection *connection) {
                 }
                 break;
             }
+            default: {
+                assert(false);
+                CFRelease(event);
+                continue;
+            }
         }
         Boolean finished = (event->type & kConnectionEventFinishedBit) != 0;
-        disposeConnectionEvent(event);
+        CFRelease(event);
 
         if (finished) {
             unscheduleFromRunLoops(connection);
@@ -1066,16 +1031,14 @@ static void updateQueue(void *ctx) {
 static void runloop_callback(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *info) {
     cfurlconnection_runloop_info *rlInfo = info;
     switch (activity) {
-        case kCFRunLoopAfterWaiting:
+        case kCFRunLoopEntry:
+            rlInfo->pool_context = _objc_autoreleasePoolPush();
+            break;
+        case kCFRunLoopBeforeTimers:
             _objc_autoreleasePoolPop(rlInfo->pool_context);
             rlInfo->pool_context = _objc_autoreleasePoolPush();
             break;
-        case kCFRunLoopEntry:
-            //cacheLog(CFSTR("CFURLConnection autoreleasepool push"));
-            rlInfo->pool_context = _objc_autoreleasePoolPush();
-            break;
         case kCFRunLoopExit:
-            //cacheLog(CFSTR("CFURLConnection autoreleasepool pop"));
             _objc_autoreleasePoolPop(rlInfo->pool_context);
             break;
         default:
@@ -1099,8 +1062,10 @@ static void *CFURLConnectionManager(void *ctx) {
     };
 
     CFRunLoopObserverRef observer = CFRunLoopObserverCreate(kCFAllocatorDefault,
-                                                            /* Once for entry and another for exit of the event loop */
-                                                            kCFRunLoopAfterWaiting | kCFRunLoopExit | kCFRunLoopEntry,
+                                                            /* Once for entry and another for exit of the event loop 
+                                                             * as well as per handling of sources and timers
+                                                             */
+                                                            kCFRunLoopEntry | kCFRunLoopExit | kCFRunLoopBeforeTimers,
                                                             /* Repeats */
                                                             1,
                                                             /* Order */
@@ -1245,7 +1210,7 @@ void CFURLConnectionSendAsynchronousRequest(CFURLRequestRef request, void (^hand
         if (error != NULL) {
             CFRelease(error);
         }
-        if (response != NULL) { 
+        if (response != NULL) {
             CFRelease(response);
         }
         CFRelease(req);
@@ -1320,14 +1285,44 @@ static void setProxy(CFReadStreamRef stream) {
     }
 }
 
+static void debugLog(const char* tag, CFStringRef format, ...) {
+    va_list arguments;
+    va_start(arguments, format);
+    CFStringRef message = CFStringCreateWithFormatAndArguments(
+        kCFAllocatorDefault,
+        NULL, format, arguments);
+    va_end(arguments);
+
+    CFIndex utf8Length = 1 + CFStringGetMaximumSizeForEncoding(
+        CFStringGetLength(message),
+        kCFStringEncodingUTF8);
+    char utf8[utf8Length];
+    if (CFStringGetCString(message, utf8, utf8Length, kCFStringEncodingUTF8)) {
+        RELEASE_LOG("%s: %s", tag, utf8);
+    }
+    CFRelease(message);
+}
+
 static void startCaching(struct _CFURLConnection *connection) {
     if (connection->cachingState != kCachingStateNotCaching) {
         return;
     }
 
-    return; // Disable URL cache for now.
-
-    if (!_CFURLResponseIsCacheableWithRequest(connection->response, connection->request)) {
+    Boolean cacheable = _CFURLResponseIsCacheableWithRequest(connection->response, connection->request);
+#ifdef CACHE_LOG_ENABLED
+    {
+        CFTypeRef cacheControl = NULL;
+        CFDictionaryRef responseHeaders = CFURLResponseGetHeaderFields(connection->response);
+        if (responseHeaders) {
+            cacheControl = CFDictionaryGetValue(responseHeaders, CFSTR("Cache-Control"));
+        }
+        CACHE_LOG(CFSTR("%s request to '%@', Cache-Control is '%@'"),
+            (cacheable ? "CACHING" : "not caching"),
+            CFURLRequestGetURL(connection->request),
+            cacheControl);
+    }
+#endif
+    if (!cacheable) {
         return;
     }
 
@@ -1341,19 +1336,47 @@ static void startCaching(struct _CFURLConnection *connection) {
 }
 
 static void cacheData(struct _CFURLConnection *connection, CFDataRef data) {
-    // TODO: check total size and stop caching if it's too big
-    if (connection->cachedDataArray && data != NULL && CFDataGetLength(data) != 0) {
+    if (connection->cachingState != kCachingStateCaching || data == NULL || CFDataGetLength(data) == 0) {
+        return;
+    }
+
+    size_t maxCachedDataSize = 0;
+    {
+        CFURLCacheRef cache = NULL;
+        if (CFURLCacheGetShared(&cache)) {
+            // In documentation for 'connection:willCacheResponse:' Apple specifies
+            // that cache entry must not be larger than 5% of the disk cache size.
+            maxCachedDataSize = CFURLCacheDiskCapacity(cache) / 20;
+            CFRelease(cache);
+        }
+    }
+
+    size_t cachedDataSize = 0;
+    {
+        for (CFIndex i = 0; i != CFArrayGetCount(connection->cachedDataArray); ++i) {
+            CFDataRef cachedData = (CFDataRef)CFArrayGetValueAtIndex(
+                connection->cachedDataArray,
+                i);
+            cachedDataSize += CFDataGetLength(cachedData);
+        }
+        cachedDataSize += CFDataGetLength(data);
+    }
+
+    if (cachedDataSize > maxCachedDataSize) {
+        CACHE_LOG(CFSTR("STOPPING caching request to '%@' because it exceeded maximum size (%zu > %zu)"),
+            CFURLRequestGetURL(connection->request),
+            cachedDataSize,
+            maxCachedDataSize);
+        // Stop caching
+        connection->cachingState = kCachingStateNotCaching;
+        CFArrayRemoveAllValues(connection->cachedDataArray);
+    } else {
         CFArrayAppendValue(connection->cachedDataArray, data);
     }
 }
 
 static void finishCaching(struct _CFURLConnection *connection) {
     if (connection->cachingState != kCachingStateCaching) { // TODO: guard by lock
-        return;
-    }
-
-    if (!connection->handler.cache) { // TODO: guard
-        // No one to ask
         return;
     }
 
@@ -1366,10 +1389,16 @@ static void finishCaching(struct _CFURLConnection *connection) {
         }
 
         cachedData = CFDataCreateMutable(kCFAllocatorDefault, dataSize);
-        for (CFIndex i = 0; i != CFArrayGetCount(connection->cachedDataArray); ++i) {
-            CFDataRef data = (CFDataRef)CFArrayGetValueAtIndex(connection->cachedDataArray, i);
-            CFDataAppendBytes(cachedData, CFDataGetBytePtr(data), CFDataGetLength(data));
+        if (cachedData) {
+            for (CFIndex i = 0; i != CFArrayGetCount(connection->cachedDataArray); ++i) {
+                CFDataRef data = (CFDataRef)CFArrayGetValueAtIndex(connection->cachedDataArray, i);
+                CFDataAppendBytes(cachedData, CFDataGetBytePtr(data), CFDataGetLength(data));
+            }
         }
+    }
+
+    if (!cachedData) {
+        return;
     }
 
     CFCachedURLResponseRef originalCachedResponse = CFCachedURLResponseCreate(
@@ -1380,9 +1409,9 @@ static void finishCaching(struct _CFURLConnection *connection) {
         CFURLCacheStorageAllowed /* TODO: get this from request */);
     CFRelease(cachedData);
 
-    CFCachedURLResponseRef cachedResponse = connection->handler.cache( // TODO: guard
-        connection->handler.info,
-        originalCachedResponse);
+    CFCachedURLResponseRef cachedResponse = connection->handler.cache ? // TODO: guard
+        connection->handler.cache(connection->handler.info, originalCachedResponse):
+        originalCachedResponse;
     if (cachedResponse) {
         CFURLCacheRef cache = NULL;
         if (CFURLCacheGetShared(&cache)) {
@@ -1418,12 +1447,18 @@ static Boolean replayCached(struct _CFURLConnection *connection) {
         }
 #endif
         if (responseSource != kCFURLResponseSourceCache) {
+            CACHE_LOG(CFSTR("not replaying EXPIRED response for '%@'"),
+                CFURLRequestGetURL(connection->request));
             break;
         }
 
         if (!CFCachedURLResponseLoadData(cachedResponse, &data)) {
             break;
         }
+
+        CACHE_LOG(CFSTR("REPLAYING cached response for '%@', data size: %zd bytes"),
+            CFURLRequestGetURL(connection->request),
+            CFCachedURLResponseGetDataSize(cachedResponse));
 
         connection->cachingState = kCachingStateReplayingCached;
 

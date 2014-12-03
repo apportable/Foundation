@@ -375,11 +375,13 @@ CF_PRIVATE
         CFRelease(reason);
         return;
     }
+    obj = [obj retain];
     NSUInteger idx = [self indexOfObject:obj inRange:range];
     if (idx != NSNotFound)
     {
         [self removeObjectAtIndex:idx];
     }
+    [obj release];
 }
 
 - (void)removeObject:(id)obj
@@ -396,22 +398,26 @@ CF_PRIVATE
 
 - (void)removeObjectIdenticalTo:(id)obj inRange:(NSRange)range
 {
+    obj = [obj retain];
     NSUInteger idx = [self indexOfObjectIdenticalTo:obj inRange:range];
     while (idx != NSNotFound)
     {
         [self removeObjectAtIndex:idx];
         idx = [self indexOfObjectIdenticalTo:obj inRange:range];
     }
+    [obj release];
 }
 
 - (void)removeObjectIdenticalTo:(id)obj
 {
+    obj = [obj retain];
     NSUInteger idx = [self indexOfObjectIdenticalTo:obj];
     while (idx != NSNotFound)
     {
         [self removeObjectAtIndex:idx];
         idx = [self indexOfObjectIdenticalTo:obj];
     }
+    [obj release];
 }
 
 - (void)removeObjectsFromIndices:(NSUInteger *)indices numIndices:(NSUInteger)cnt

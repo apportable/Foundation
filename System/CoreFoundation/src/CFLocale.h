@@ -56,6 +56,17 @@ CFLocaleRef CFLocaleCopyCurrent(void);
 	// ensures that all the results of your operations are consistent.)
 
 CF_EXPORT
+CFLocaleRef CFLocaleCopyFromName(CFStringRef localeName);
+	// Returns the locale for the specified localeName
+	// [This is Copy in the sense that you get a retain you have to release,
+	// but we may return the same cached object over and over.]  Settings
+	// you get from this locale do not change under you as CFPreferences
+	// are changed (for safety and correctness).  Generally you would not
+	// grab this and hold onto it forever, but use it to do the operations
+	// you need to do at the moment, then throw it away.  (The non-changing
+	// ensures that all the results of your operations are consistent.)
+
+CF_EXPORT
 CFArrayRef CFLocaleCopyAvailableLocaleIdentifiers(void);
 	// Returns an array of CFStrings that represents all locales for
 	// which locale data is available.

@@ -80,6 +80,7 @@ sources = [
     'src/NSConstantValueExpression.m',
     'src/NSCustomPredicateOperator.m',
     'src/NSData.m',
+    'src/NSDataDetector.m',
     'src/NSDate.m',
     'src/NSDateCheckingResult.m',
     'src/NSDateFormatter.m',
@@ -206,6 +207,8 @@ sources = [
     'src/_NSKeyedCoderOldStyleArray.m',
     'src/_NSPredicateOperatorUtilities.m',
     'src/_NSPredicateUtilities.m',
+    'src/_DebugUtils.m',
+    'src/NSObjectInternal.m',
 ]
 
 Import('env')

@@ -2716,6 +2716,15 @@ static void __CFSocketDoCallback(CFSocketRef s, CFDataRef data, CFDataRef addres
     fprintf(stdout, "entering perform for socket %d with read signalled %d write signalled %d connect signalled %d callback types %d\n", s->_socket, readSignalled, writeSignalled, connectSignalled, callBackTypes);
 #endif
     if (writeSignalled) {
+#ifdef APPORTABLE
+        if (!s->_f.connected) {
+            // If we are not connected and got read/write events, it means that
+            // events are related to connection (since our socket is non-blocking),
+            // and not to the actual ability to read/write. Ignore them.
+            readSignalled = FALSE;
+            writeSignalled = FALSE;
+        }
+#endif
         errorCode = s->_errorCode;
         s->_f.connected = TRUE;
     }

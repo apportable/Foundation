@@ -54,6 +54,7 @@
 #include <pthread.h>
 #include <errno.h>
 #include <libv/libv.h>
+#include <assert.h>
 
 #define _PTHREAD_TSD_SLOT_INVALID           0xFFFFFFFF
 #define _PTHREAD_TSD_SLOT_PTHREAD_SELF      0

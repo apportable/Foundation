@@ -134,6 +134,23 @@
 #endif
 #endif
 
+#ifndef NS_DESIGNATED_INITIALIZER
+#if __has_attribute(objc_designated_initializer)
+#define NS_DESIGNATED_INITIALIZER __attribute__((objc_designated_initializer))
+#else
+#define NS_DESIGNATED_INITIALIZER
+#endif
+#endif
+
+#ifndef NS_PROTOCOL_REQUIRES_EXPLICIT_IMPLEMENTATION
+#if __has_attribute(objc_protocol_requires_explicit_implementation)
+#define NS_PROTOCOL_REQUIRES_EXPLICIT_IMPLEMENTATION __attribute__((objc_protocol_requires_explicit_implementation))
+#else
+#define NS_PROTOCOL_REQUIRES_EXPLICIT_IMPLEMENTATION
+#endif
+#endif
+
+
 #if !__has_feature(objc_instancetype)
 #undef instancetype
 #define instancetype id

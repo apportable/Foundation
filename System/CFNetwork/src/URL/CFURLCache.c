@@ -347,7 +347,6 @@ CFCachedURLResponseRef CFURLCacheCopyResponseForRequest(CFURLCacheRef cache,
     }
 }
 
-
 CFCachedURLResponseRef _CFURLCacheCopyResponseForRequest(CFURLCacheRef cache,
                                                          CFURLRequestRef request) {
     if (!isValidRequest(request)) {
@@ -725,6 +724,7 @@ static CacheEntry* cacheEntryCreateFromParcel(CFStringRef parcelPath) {
             break;
         }
 
+        entry->parcelPath = (CFStringRef)CFRetain(parcelPath);
         success = true;
     } while (0);
     CFRelease(rawParcel);
@@ -821,6 +821,11 @@ static void loadCacheEntries(_CFURLCache* cache) {
         CacheEntry* entry = cacheEntryCreateFromParcel(parcelPath);
         CFRelease(parcelPath);
         if (!entry) {
+            continue;
+        }
+
+        if (!_CFCachedURLResponseClaimOwnership(entry->cachedResponse, cache)) {
+            CFRelease(entry);
             continue;
         }
 

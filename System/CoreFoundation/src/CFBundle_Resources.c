@@ -2278,6 +2278,16 @@ CF_EXPORT CFTypeRef _CFBundleCopyFindResources(CFBundleRef bundle, CFURLRef bund
 #pragma mark -
 #pragma mark Localized Strings
 
+static CFURLRef _CFBundleGetTableURL( CFLocaleRef loc, CFBundleRef bundle, CFStringRef tableName) {
+    CFStringRef locIdent = CFLocaleGetIdentifier(loc);
+    CFURLRef tableURL = CFBundleCopyResourceURLForLocalization( bundle, tableName, _CFBundleStringTableType, NULL, locIdent);
+    if (tableURL == NULL) {
+        CFStringRef lprojName = _CFBundleCopyLanguageAbbreviationForLocalization(locIdent);
+        tableURL = CFBundleCopyResourceURLForLocalization( bundle, tableName, _CFBundleStringTableType, NULL, lprojName);
+        CFRelease(lprojName);
+    }
+    return tableURL;
+}
 
 CF_EXPORT CFStringRef CFBundleCopyLocalizedString(CFBundleRef bundle, CFStringRef key, CFStringRef value, CFStringRef tableName) {
     CFStringRef result = NULL;
@@ -2302,14 +2312,31 @@ CF_EXPORT CFStringRef CFBundleCopyLocalizedString(CFBundleRef bundle, CFStringRe
         // Go load the table.
         
         // Apportable: Modified to #1 not leak locales and lprojNames, and #2 actually check the locale identifier as it's lproj as it is expected
-        CFLocaleRef loc = CFLocaleCopyCurrent();
-        CFStringRef locIdent = CFLocaleGetIdentifier(loc);
-        CFURLRef tableURL = CFBundleCopyResourceURLForLocalization( bundle, tableName, _CFBundleStringTableType, NULL, locIdent);
-        if (tableURL == NULL) {
-            CFStringRef lprojName = _CFBundleCopyLanguageAbbreviationForLocalization(locIdent);
-            tableURL = CFBundleCopyResourceURLForLocalization( bundle, tableName, _CFBundleStringTableType, NULL, lprojName);
-            CFRelease(lprojName);
+        CFLocaleRef loc = NULL;
+        CFURLRef tableURL = NULL;
+        
+        CFArrayRef preferred = CFBundleCopyPreferredLocalizationsFromArray(CFBundleCopyBundleLocalizations(bundle));
+
+        for (size_t i = 0; i < CFArrayGetCount(preferred); ++i) {
+            CFStringRef identifier = CFArrayGetValueAtIndex(preferred, i);
+            loc = CFLocaleCopyFromName(identifier);
+
+            tableURL = _CFBundleGetTableURL( loc, bundle, tableName);
+            
+            if (tableURL != NULL) {
+                break;
+            }
         }
+
+        CFRelease(preferred);
+
+        if (tableURL == NULL) {
+            // Try english
+            CFRelease(loc);
+            loc = CFLocaleCopyFromName(CFSTR("en"));
+            tableURL = _CFBundleGetTableURL( loc, bundle, tableName);
+        }
+
         CFRelease(loc);
 
         if (tableURL) {

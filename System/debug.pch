@@ -70,12 +70,12 @@ extern float __toc(const char *desc) __attribute__((no_instrument_function, visi
 #endif
 
 // Avoid the residual hassle of tic/toc with the following TIC/TOC macros:
-#define TIC __tic()
-#define TOC__(file, line) __toc(file ":" #line)
-#define TOC_(file, line) TOC__(file, line)
-#define TOC TOC_(__SHORT_FILE__, __LINE__)
+#define __TIC __tic()
+#define __TOC__(file, line) __toc(file ":" #line)
+#define __TOC_(file, line) __TOC__(file, line)
+#define __TOC __TOC_(__SHORT_FILE__, __LINE__)
 // Break in the debugger if a particular section runs too slowly with TOC_BREAK(max_milliseconds):
-#define TOC_BREAK(max_milliseconds) if (TOC > max_milliseconds) { DEBUG_BREAK(); }
+#define __TOC_BREAK(max_milliseconds) if (TOC > max_milliseconds) { DEBUG_BREAK(); }
 
 #else // !NDEBUG
 

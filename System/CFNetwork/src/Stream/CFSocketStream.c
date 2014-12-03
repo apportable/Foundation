@@ -95,8 +95,6 @@ CONST_STRING_DECL(kCFStreamSSLPeerName, "kCFStreamSSLPeerName")
 CONST_STRING_DECL(kCFStreamSSLValidatesCertificateChain, "kCFStreamSSLValidatesCertificateChain")
 CONST_STRING_DECL(kCFStreamSocketSecurityLevelTLSv1SSLv3, "kCFStreamSocketSecurityLevelTLSv1SSLv3")
 
-CONST_STRING_DECL(_kCFStreamConnectTimeout, "_kCFStreamConnectTimeout")
-
 /*!
     @constant _kCFStreamPropertySSLAllowAnonymousCiphers
     @discussion Stream property key both set and copy operations. CFBooleanRef to set whether
@@ -119,8 +117,6 @@ CONST_STRING_DECL(kCFStreamPropertyCONNECTVersion, "kCFStreamPropertyCONNECTVers
 CONST_STRING_DECL(kCFStreamPropertyCONNECTAdditionalHeaders, "kCFStreamPropertyCONNECTAdditionalHeaders")
 CONST_STRING_DECL(kCFStreamPropertyCONNECTResponse, "kCFStreamPropertyCONNECTResponse")
 CONST_STRING_DECL(kCFStreamPropertyPreviousCONNECTResponse, "kCFStreamPropertyPreviousCONNECTResponse")
-
-CONST_STRING_DECL(_kCFStreamPropertyConnectTimeout, "_kCFStreamPropertyConnectTimeout")
 
 /* Properties used internally to CFSocketStream */
 #ifdef __CONSTANT_CFSTRINGS__
@@ -817,13 +813,10 @@ _SocketStreamRead(CFReadStreamRef stream, UInt8* buffer, CFIndex bufferLength,
 
 		/* Got a "would block" error, so clear it and wait for time to read. */
 		if ((ctxt->_error.error == EAGAIN) && (ctxt->_error.domain == _kCFStreamErrorDomainNativeSockets)) {
+			// It's OK if the following line is occasionally logged. It's NOT OK if it spams the log.
+			DEBUG_LOG("EAGAIN reading from socket %p (fd %d)", ctxt->_socket, CFSocketGetNative(ctxt->_socket));
 			memset(&ctxt->_error, 0, sizeof(ctxt->_error));
-            __CFSpinUnlock(&ctxt->_lock);
-            event = kCFStreamEventHasBytesAvailable;
-            __CFBitSet(ctxt->_flags, kFlagBitCanRead);
-            __CFBitClear(ctxt->_flags, kFlagBitPollRead);
-            _CFReadStreamSignalEventDelayed(stream, event, NULL);
-            return result;
+			continue;
 		}
 
 		break;
@@ -1087,13 +1080,10 @@ _SocketStreamWrite(CFWriteStreamRef stream, const UInt8* buffer, CFIndex bufferL
 
 		/* Got a "would block" error, so clear it and wait for time to write. */
 		if ((ctxt->_error.error == EAGAIN) && (ctxt->_error.domain == _kCFStreamErrorDomainNativeSockets)) {
+			// It's OK if the following line is occasionally logged. It's NOT OK if it spams the log.
+			DEBUG_LOG("EAGAIN writing to socket %p (fd %d)", ctxt->_socket, CFSocketGetNative(ctxt->_socket));
 			memset(&ctxt->_error, 0, sizeof(ctxt->_error));
-			event = kCFStreamEventCanAcceptBytes;
-            __CFBitSet(ctxt->_flags, kFlagBitCanWrite);
-            __CFBitClear(ctxt->_flags, kFlagBitPollWrite);
-            __CFSpinUnlock(&ctxt->_lock);
-            _CFWriteStreamSignalEventDelayed(stream, event, NULL);
-            return result;
+			continue;
 		}
 
 		break;
@@ -1693,6 +1683,9 @@ _SocketCallBack(CFSocketRef s, CFSocketCallBackType type, CFDataRef address, con
 					/* Create and schedule reachability on this socket. */
 					if (!reach || (reach != kCFBooleanFalse))
 						_SocketStreamAddReachability_NoLock(ctxt);
+
+					// Now that we are connected, request actual read/write events.
+					CFSocketEnableCallBacks(ctxt->_socket, kCFSocketReadCallBack | kCFSocketWriteCallBack);
 				}
 				
 				else {
@@ -3152,14 +3145,6 @@ _SocketStreamConnect_NoLock(_CFSocketStreamContext* ctxt, CFDataRef address) {
 	
 	int i;
 	Boolean result = FALSE;
-	CFTimeInterval t = -1.0;
-	CFNumberRef to = (CFNumberRef)CFDictionaryGetValue(ctxt->_properties, _kCFStreamPropertyConnectTimeout);
-	if (to) {
-		CFTimeInterval timeout = 3.0;
-		if (CFNumberGetValue(to, kCFNumberDoubleType, &timeout)) {
-			t = timeout;
-		}
-	}
 	CFArrayRef loops[3] = {ctxt->_readloops, ctxt->_writeloops, ctxt->_sharedloops};
 	
 	/* Now schedule the socket on all loops and modes */
@@ -3167,7 +3152,7 @@ _SocketStreamConnect_NoLock(_CFSocketStreamContext* ctxt, CFDataRef address) {
 		_CFTypeScheduleOnMultipleRunLoops(ctxt->_socket, loops[i]);
 		
 	/* Start the connect */
-	if ((result = (CFSocketConnectToAddress(ctxt->_socket, address, t) == kCFSocketSuccess))) {
+	if ((result = (CFSocketConnectToAddress(ctxt->_socket, address, -1.0) == kCFSocketSuccess))) {
 		
 		memset(&ctxt->_error, 0, sizeof(ctxt->_error));
 		

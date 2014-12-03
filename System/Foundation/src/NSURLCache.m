@@ -287,10 +287,10 @@ static Boolean sharedURLCacheSet = false;
 
 - (NSUInteger)_cf_currentDiskUsage
 {
-    return [self _cf_currentDiskUsage];
+    return [self currentDiskUsage];
 }
 
-- (NSCachedURLResponse *)cachedResponseForRequest:(NSURLRequest*)request
+- (NSCachedURLResponse*)cachedResponseForRequest:(NSURLRequest*)request
 {
     CFCachedURLResponseRef cachedResponse = _CFURLCacheCopyResponseForRequest(_cacheRef, request._CFURLRequest);
     if (!cachedResponse)
@@ -305,8 +305,7 @@ static Boolean sharedURLCacheSet = false;
 - (CFCachedURLResponseRef)_cf_cachedResponseForRequest:(CFURLRequestRef)cfRequest
 {
     NSURLRequest *request = [[[NSURLRequest alloc] _initWithCFURLRequest:cfRequest] autorelease];
-    NSCachedURLResponse *cached = [self cachedResponseForRequest:request];
-    return [cached _CFCachedURLResponse];
+    return [self cachedResponseForRequest:request]._CFCachedURLResponse;
 }
 
 - (void)storeCachedResponse:(NSCachedURLResponse*)cachedResponse forRequest:(NSURLRequest*)request

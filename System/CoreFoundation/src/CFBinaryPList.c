@@ -211,9 +211,9 @@ static void bufferFlush(__CFBinaryPlistWriteBuffer *buf) {
 static void bufferWrite(__CFBinaryPlistWriteBuffer *buf, const uint8_t *buffer, CFIndex count) {
     if (0 == count) return;
     if ((CFIndex)sizeof(buf->buffer) <= count) {
-	bufferFlush(buf);
-	writeBytes(buf, buffer, count);
-	return;
+	    bufferFlush(buf);
+	    writeBytes(buf, buffer, count);
+	    return;
     }
     CFIndex copyLen = __CFMin(count, (CFIndex)sizeof(buf->buffer) - buf->used);
     if (buf->stream || buf->databytes) {
@@ -226,12 +226,17 @@ static void bufferWrite(__CFBinaryPlistWriteBuffer *buf, const uint8_t *buffer, 
         }
     }
     buf->used += copyLen;
-    if (sizeof(buf->buffer) == buf->used) {
-	writeBytes(buf, buf->buffer, sizeof(buf->buffer));
+
+    CFIndex copied = 0;
+    while (sizeof(buf->buffer) == buf->used) {
+	    writeBytes(buf, buf->buffer, sizeof(buf->buffer));
+	    copied += copyLen;
+        count -= copyLen;
+	    copyLen = __CFMin(count, (CFIndex)sizeof(buf->buffer));
         if (buf->stream || buf->databytes) {
-            memmove(buf->buffer, buffer + copyLen, count - copyLen);
+            memmove(buf->buffer, buffer + copied, copyLen);
         }
-	buf->used = count - copyLen;
+	    buf->used = copyLen;
     }
 }
 

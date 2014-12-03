@@ -1226,10 +1226,6 @@ static inline BOOL writeObject(_NSJSONWriter *writer, id object, NSJSONWritingOp
 
 - (NSInteger)writeRootObject:(id)object toStream:(NSOutputStream *)stream options:(NSJSONWritingOptions)opts error:(NSError **)error
 {
-    if (error != NULL)
-    {
-        *error = nil;
-    }
     if (outputStream != stream)
     {
         [outputStream release];
@@ -1274,14 +1270,9 @@ static inline BOOL writeObject(_NSJSONWriter *writer, id object, NSJSONWritingOp
 
 + (id)JSONObjectWithData:(NSData *)data options:(NSJSONReadingOptions)opt error:(NSError **)error
 {
-    if (error != NULL)
-    {
-        *error = nil;
-    }
-
     _NSJSONReader *reader = [[_NSJSONReader alloc] init];
     id parsed = [reader parseData:data options:opt];
-    if (error) {
+    if (error && parsed == nil) {
         *error = [[[reader error] retain] autorelease];
     }
     [reader release];

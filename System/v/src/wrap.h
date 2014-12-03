@@ -325,8 +325,6 @@ LIBV_EXPORT void (*_start)(int argc, const char *argv[]);
 LIBV_EXPORT pthread_t pthread_main_thread_np();
 LIBV_EXPORT int pthread_main_np();
 LIBV_EXPORT int pthread_set_main_np(pthread_t thread);
-LIBV_EXPORT int pthread_suspend_all_np();
-LIBV_EXPORT int pthread_resume_all_np();
 
 LIBV_EXTERN int __cxa_atexit(void (*)(void *), void *, void *);
 LIBV_EXTERN void __cxa_finalize(void *);
