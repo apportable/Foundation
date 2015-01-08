@@ -1,3 +1,4 @@
 xcuserdata/
 *.xcworkspace/
 **/.gitignore
+.DS_Store
