@@ -6,19 +6,25 @@
 //
 
 #import "NSURLSession.h"
-#import 
+
+#import <Foundation/NSException.h>
+
 const int64_t NSURLSessionTransferSizeUnknown = -1LL;
 
 @implementation NSURLSession
+@end
 
-+ (void)initialize
-{
-    static dispatch_once_t once = 0L;
-    dispatch_once(&once, ^{
-        Class cls = objc_lookupClass("__NSCFURLSession");
-        assert(cls != Nil);
-        class_setSuperclass(self, cls);
-    });
-}
+@implementation NSURLSessionConfiguration
+@end
 
+@implementation NSURLSessionTask
+@end
+
+@implementation NSURLSessionDataTask
+@end
+
+@implementation NSURLSessionUploadTask
+@end
+
+@implementation NSURLSessionDownloadTask
 @end
